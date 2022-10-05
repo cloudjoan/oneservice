@@ -6,7 +6,7 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["OneService/OneService.csproj", "OneService/"]
+COPY ["~/OneService/OneService.csproj", "OneService/"]
 RUN dotnet restore "OneService/OneService.csproj"
 COPY . .
 WORKDIR "/src/OneService"
