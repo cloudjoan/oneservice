@@ -9026,19 +9026,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Leon\\.nuget\\packages\\": {}
+    "C:\\Users\\leon.huang.ETATUNG\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "F:\\Developer\\VSProject\\oneservice\\OneService\\OneService.csproj",
+      "projectUniqueName": "D:\\VSProject\\oneservice\\OneService\\OneService.csproj",
       "projectName": "OneService",
-      "projectPath": "F:\\Developer\\VSProject\\oneservice\\OneService\\OneService.csproj",
-      "packagesPath": "C:\\Users\\Leon\\.nuget\\packages\\",
-      "outputPath": "F:\\Developer\\VSProject\\oneservice\\OneService\\obj\\",
+      "projectPath": "D:\\VSProject\\oneservice\\OneService\\OneService.csproj",
+      "packagesPath": "C:\\Users\\leon.huang.ETATUNG\\.nuget\\packages\\",
+      "outputPath": "D:\\VSProject\\oneservice\\OneService\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Leon\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\leon.huang.ETATUNG\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [

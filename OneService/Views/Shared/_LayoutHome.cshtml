@@ -36,7 +36,7 @@
 
 								<span class="clear">
 									<span class="block m-t-xs">
-										<strong class="font-bold">保固暨備品管理</strong>
+										<strong class="font-bold">OneService</strong>
 									</span>
 									<!--<span class="text-muted text-xs block"> <b class="caret"></b></span>-->
 								</span>
@@ -75,27 +75,30 @@
 		<li>
 			<a href='@Url.Action("Demo2", "Home")'><i class="fa fa-cubes"></i> <span class="nav-label">按鈕元件</span>  </a>
 		</li>*@
-					<li>
-						<a href='#'><i class="fa fa-window-restore"></i> <span class="nav-label">工時管理</span></a>
+					<li class="active">
+						<a href="index.html"><i class="fa fa-calendar-o"></i> <span class="nav-label"> 工時管理</span> <span class="fa arrow"></span></a>
 						<ul class="nav nav-second-level">
-							<li class="active"><a href="index.html">Dashboard v.1</a></li>
-							<li><a href="dashboard_2.html">Dashboard v.2</a></li>
-							<li><a href="dashboard_3.html">Dashboard v.3</a></li>
-							<li><a href="dashboard_4_1.html">Dashboard v.4</a></li>
-							<li><a href="dashboard_5.html">Dashboard v.5 </a></li>
+							<li class="active"><a href="index.html"><i class="fa fa-clock-o"></i> 工時登錄</a></li>
+							<li><a href="dashboard_2.html"> <i class="fa fa-search"></i> 工時查詢</a></li>
 						</ul>
 					</li>
-					<li>
-						<a href='@Url.Action("Index", "Spare")'><i class="fa fa-user-plus"></i> <span class="nav-label">備品借用</span>  </a>
+					<li class="active">
+						<a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">服務請求管理</span> <span class="fa arrow"></span></a>
+						<ul class="nav nav-second-level">
+							<li class="active"><a href="index.html"> <i class="fa fa-wrench"></i> 一般服務請求</a></li>
+							<li><a href="dashboard_2.html"> <i class="fa fa-cogs"></i> 裝機服務請求</a></li>
+							<li><a href="dashboard_3.html"> <i class="fa fa-calendar-check-o"></i> 定維服務請求</a></li>
+							<li><a href="dashboard_3.html"> <i class="fa fa-list-ul"></i> 服務總表</a></li>
+						</ul>
 					</li>
-					<li>
-						<a href='@Url.Action("QueryAmount", "Spare")'><i class="fa fa-search"></i> <span class="nav-label">可供量查詢</span>  </a>
-					</li>
-					<li>
-						<a href='@Url.Action("QueryProgress", "Spare")'><i class="fa fa-hourglass-half"></i> <span class="nav-label">借用進度查詢</span>  </a>
-					</li>
-					<li>
-						<a href='@Url.Action("Demo2", "Spare")'><i class="fa fa-exchange"></i> <span class="nav-label">異動查詢</span>  </a>
+					<li class="active">
+						<a href="index.html"><i class="fa fa-window-restore"></i> <span class="nav-label">備品管理</span> <span class="fa arrow"></span></a>
+						<ul class="nav nav-second-level">
+							<li class="active"><a href="index.html"><i class="fa fa-window-restore"></i> 備品借用</a></li>
+							<li><a href="dashboard_2.html"> <i class="fa fa-search"></i>  可供量查詢</a></li>
+							<li><a href="dashboard_3.html"> <i class="fa fa-hourglass-half"></i> 借用進度查詢</a></li>
+							<li><a href="dashboard_3.html"> <i class="fa fa-exchange"></i> 異動查詢</a></li>
+						</ul>
 					</li>
 				</ul>
 
