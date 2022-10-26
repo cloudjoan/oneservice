@@ -480,3 +480,9 @@ D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\Syst
 D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
 D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 D:\VSProject\OneService\OneService\obj\Debug\net6.0\OneService.csproj.CopyComplete
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.dll
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Design.dll
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Relational.dll
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\Microsoft.Extensions.Caching.Memory.dll
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\Microsoft.Extensions.DependencyInjection.dll
