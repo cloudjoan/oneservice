@@ -31,6 +31,9 @@ namespace OneService.Controllers
 
         public IActionResult Demo()
         {
+            PSIPContext psipDB = new PSIPContext();
+            var beans = psipDB.TbBulletinItems;
+            ViewBag.beans = beans;
             return View();
         }
     }

@@ -29,7 +29,12 @@
 		<nav class="navbar-default navbar-static-side" role="navigation">
 			<div class="sidebar-collapse">
 				<ul class="nav metismenu" id="side-menu">
-					<li class="nav-header">
+					<li>
+						<a class="dropdown profile-element" href="#" target="_blank" style="padding: 0px;">
+							<img src="~/img/tsti_OneServicelogo.png" style="width: 100%;" />
+						</a>
+					</li>
+					<li class="nav-header" style="display:none">
 						<div class="dropdown profile-element">
 
 							<a data-toggle="dropdown" class="dropdown-toggle" href="#">
@@ -78,8 +83,8 @@
 					<li class="active">
 						<a href="index.html"><i class="fa fa-calendar-o"></i> <span class="nav-label"> 工時管理</span> <span class="fa arrow"></span></a>
 						<ul class="nav nav-second-level">
-							<li><a href="index.html"><i class="fa fa-clock-o"></i> 工時登錄</a></li>
-							<li><a href="dashboard_2.html"> <i class="fa fa-search"></i> 工時查詢</a></li>
+							<li><a href="@Url.Action("CreateWH", "WorkingHours")"><i class="fa fa-clock-o"></i> 工時登錄</a></li>
+							<li><a href="@Url.Action("Index", "WorkingHours")"> <i class="fa fa-search"></i> 工時查詢</a></li>
 						</ul>
 					</li>
 					<li class="active">

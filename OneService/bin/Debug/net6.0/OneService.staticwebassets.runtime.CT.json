@@ -1,7 +1,7 @@
 {
   "ContentRoots": [
-    "/src/OneService/wwwroot/",
-    "/src/OneService/obj/Debug/net6.0/scopedcss/bundle/"
+    "F:\\Developer\\VSProject\\oneservice\\OneService\\wwwroot\\",
+    "F:\\Developer\\VSProject\\oneservice\\OneService\\obj\\Debug\\net6.0\\scopedcss\\bundle\\"
   ],
   "Root": {
     "Children": {
