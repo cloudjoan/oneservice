@@ -7,11 +7,10 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["OneService/OneService.csproj", "OneService/"]
-#RUN curl https://api.nuget.org/v3/index.json -k
-#RUN dotnet restore "OneService/OneService.csproj"
+RUN dotnet restore "OneService/OneService.csproj"
 COPY . .
 WORKDIR "/src/OneService"
-#RUN dotnet build "OneService.csproj" -c Release -o /app/build
+RUN dotnet build "OneService.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "OneService.csproj" -c Release -o /app/publish /p:UseAppHost=false
