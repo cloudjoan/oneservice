@@ -1,0 +1,438 @@
+﻿@{
+	ViewData["Title"] = "OperationParameter";
+	Layout = "~/Views/Shared/_LayoutSysParameter.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>
+		$(document).ready(function () {			
+			initTable();
+		});
+
+		function initTable() {
+			var buttonCommon = {
+				exportOptions: {
+					format: {
+						body: function (data, row, column, node) {
+							//替換&符號
+							var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+								translate = {
+									'nbsp': String.fromCharCode(160),
+									'amp': '&',
+									'quot': '"',
+									'lt': '<',
+									'gt': '>'
+								},
+								translator = function ($0, $1) {
+									return translate[$1];
+								};
+
+							if (typeof data === 'string')
+								data = data.replace(translate_re, translator);
+
+							return data;
+						}
+					}
+				}
+			};
+
+			$('#tableAll').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				order: [[0, "desc"]],
+				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+				buttons: [
+					$.extend(true, {}, buttonCommon, {
+						extend: 'excelHtml5',
+						title: '資訊系統作業設定主檔_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						text: '匯出Excel',
+						sheetName: '資訊系統作業設定主檔',
+						exportOptions: {
+							columns: [1, 2, 3, 4, 5, 6] //要顯示的欄位
+						},
+						customize: function (xlsx) {
+							var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+							$('row c[r^="A"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="E"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="F"]', sheet).attr('s', '0');	//設成文字格式
+						}
+					}),
+				],
+			});
+
+			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+		}
+
+		//檢查上傳Excel檔案路徑是否有填寫
+		function checkEmpty() {
+			var reValue = false;
+			var strFileName = $("#file").val();
+
+			if (strFileName == "") {
+				alert('請先選擇欲上傳的檔案！');
+			}
+			else {
+				reValue = confirm('上傳的檔案會覆蓋原本資料，是否確定繼續上傳?');
+			}
+
+			return reValue;
+		}
+
+		//儲存明細
+		function saveSYS() {
+			var strMsg = "";
+			var tbx_cID = $("#tbx_cID");						//GUID系統編號
+			var ddl_cModuleID = $("#ddl_cModuleID");			//模組別
+			var tbx_cOperationID = $("#tbx_cOperationID");		//程式作業編號
+			var tbx_cOperationName = $("#tbx_cOperationName");	//程式作業名稱
+			var tbx_cOperationURL = $("#tbx_cOperationURL");		//程式作業網址
+
+			if (ddl_cModuleID.val() == "-1") {
+				strMsg += "請選擇模組別！\n";
+			}
+
+			if (tbx_cOperationID.val() == "") {
+				strMsg += "程式作業編號不得為空！\n";
+			}
+
+			if (tbx_cOperationName.val() == "") {
+				strMsg += "程式作業名稱不得為空！\n";
+			}
+
+			if (strMsg != "") {
+				alert(strMsg);
+			}
+			else {
+				$("#btn_saveSYS").hide();
+				$("#img_waiting_saveSYS").show();
+				$.ajax({
+					url: '@Url.Action("saveSYS", "SysParameter")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: tbx_cID.val(),
+						cModuleID: ddl_cModuleID.val(),
+						cOperationID: tbx_cOperationID.val(),
+						cOperationName: tbx_cOperationName.val(),
+						cOperationURL: tbx_cOperationURL.val(),
+					},
+					success: function (result) {
+						if (result == "") {
+							alert("儲存成功");
+							$("#dialog_pSYS").modal('hide');
+							Query();
+						}
+						else {
+							alert(result);
+						}
+						$("#img_waiting_saveSYS").hide();
+						$("#btn_saveSYS").show();
+					},					
+				});
+			}
+		}
+
+		//刪除
+		function deleteSYS(rowId, cID) {
+			if (confirm("確定刪除？")) {
+				$.ajax({
+					url: '@Url.Action("DeleteOperationParameter", "SysParameter")',
+					type: 'post',
+					dataType: 'json',
+					data: { cID: cID },
+					success: function (result) {
+						if (result > 0) {
+							$('#' + rowId).remove();
+						}
+					}
+				})
+			}
+		}
+
+		//新增
+		function btn_add_pSYSonclick() {
+			resetPopup("#dialog_pSYS"); //popup各欄位reset
+			$("#ddl_cModuleID").removeAttr("disabled");
+			$("#tbx_cOperationID").removeAttr("disabled");
+
+			$("#dialog_pSYS .dropzone").show();
+			$("#dialog_pSYS").modal('show');
+		}
+
+		//修改
+		function EditSYSDialog(obj, cID) {
+			resetPopup("#dialog_pSYS"); //popup各欄位reset
+
+			$("#ddl_cModuleID").attr('disabled', true);
+			$("#tbx_cOperationID").attr('disabled', true);
+
+			//設定各欄位資料
+			$("#tbx_cID").val(cID);																//GUID系統編號
+			$("#ddl_cModuleID").val($(obj).parent().parent().find('.tdcModuleID').text());			//模組別			
+			$("#tbx_cOperationID").val($(obj).parent().parent().find('.tdcOperationID').text());		//程式作業編號
+			$("#tbx_cOperationName").val($(obj).parent().parent().find('.tdcOperationName').text());	//程式作業名稱
+			$("#tbx_cOperationURL").val($(obj).parent().parent().find('.tdcOperationURL').text());	//程式作業網址
+
+			$("#dialog_pSYS .dropzone").show();
+			$("#dialog_pSYS").modal('show');
+		}
+
+		//popup各欄位reset
+		function resetPopup(popupId) {
+			$(popupId).find("input").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find("select").each(function (index, value) {
+				$(this).val("-1");
+			});
+			$(popupId).find("textarea").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find(".file-box").each(function (index, value) {
+				$(this).remove();
+			});
+		}
+
+		//年度查詢
+		function Query() {
+			$("#waitingImg").show();
+
+			var tMsg = "";
+			var ddl_QuerycModuleID = $("#ddl_QuerycModuleID");			//模組別
+			var tbx_QuerycOperationID = $("#tbx_QuerycOperationID");		//程式作業編號
+			var tbx_QuerycOperationName = $("#tbx_QuerycOperationName");	//程式作業名稱
+
+			//if (ddl_QuerycModuleID.val() == "" && tbx_QuerycOperationID.val() == "" && tbx_QuerycOperationName.val() == "") {
+			//	tMsg += "請至少輸入一個條件值！\n";
+			//}
+
+			if (tMsg != "") {
+				alert(tMsg);
+				$("#waitingImg").hide();
+				return false;
+			}
+			else {
+				searchSYS(ddl_QuerycModuleID.val(), tbx_QuerycOperationID.val(), tbx_QuerycOperationName.val());
+			}
+
+			return true;
+		}
+
+		//查詢結果
+		function searchSYS(cModuleID, cOperationID, cOperationName) {
+			$("#dataDiv").html('');
+			$.ajax({
+				url: '@Url.Action("OperationParameterResult", "SysParameter")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cModuleID: cModuleID,
+					cOperationID: cOperationID,
+					cOperationName: cOperationName
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#dataDiv").html(result.responseText);
+					$("#waitingImg").hide();
+				}
+			});
+		}		
+	</script>
+}
+
+	@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>資訊系統作業設定</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">資訊系統帳號與權限設定項目檢核表</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>資訊系統作業設定</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+	<div class="row">
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>
+						資訊系統作業設定
+						<button id="btn_add_pNA" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_add_pSYSonclick();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+					</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content">
+					<form name="form" action='#' method="post">
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">模組別</label>
+							<div class="col-lg-4">
+								<select class="form-control" name='ddl_QuerycModuleID' id="ddl_QuerycModuleID">
+									<option value="">全選</option>
+									<option value="ALL">全模組</option>
+									<option value="PRODUCT">產品</option>
+									<option value="SALES">業務</option>
+									<option value="PROSERVICE">專業服務</option>
+									<option value="HR">人力</option>
+									<option value="FIN">財務</option>
+									<option value="DOCMA">文管</option>
+									<option value="INFO">資訊</option>
+									<option value="ONESERVICE">One Service</option>
+								</select>
+							</div>
+							<div class="col-lg-6"></div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">程式作業編號</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerycOperationID" name="tbx_QuerycOperationID" class="form-control" placeholder="程式作業編號">
+							</div>
+							<label class="col-lg-2 col-form-label">程式作業名稱</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerycOperationName" name="tbx_QuerycOperationName" class="form-control" placeholder="程式作業名稱">
+							</div>
+						</div>
+						<div class="form-group row">
+							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>資訊系統作業設定查詢結果</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+					<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+						<thead>
+							<tr>
+								<th></th>
+								<th>系統GUID</th>
+								<th>模組別</th>
+								<th>模組名稱</th>
+								<th>程式作業編號</th>
+								<th>程式作業名稱</th>
+								<th>程式作業網址</th>
+							</tr>
+						</thead>
+						<tbody>
+							@{
+							if (ViewBag.QueryToListBean != null)
+							{
+								int count = 0;
+								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								{
+									count++;
+									<tr id='tr@(count)'>
+										<td>
+											<button class="btn btn-info" type="button" onclick="EditSYSDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+											<button class="btn btn-danger" type="button" onclick="deleteSYS('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+										</td>
+										<td class="tdcID">@Html.Raw(QueryInfo[0])</td>
+										<td class="tdcModuleID">@Html.Raw(QueryInfo[1])</td>
+										<td class="tdcModuleName">@Html.Raw(QueryInfo[2])</td>
+										<td class="tdcOperationID">@Html.Raw(QueryInfo[3])</td>
+										<td class="tdcOperationName">@Html.Raw(QueryInfo[4])</td>
+										<td class="tdcOperationURL">@Html.Raw(QueryInfo[5])</td>
+									</tr>
+								}
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--新增/修改彈出視窗-->
+<div class="modal fade" id="dialog_pSYS" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i>資訊系統作業設定</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">								
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">GUID系統編號(系統自動產生)</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cID" name="tbx_cID" class="form-control" placeholder="GUID系統編號" disabled>
+					</div>
+				</div>
+				<div class="form-group row">				
+					<label class="col-lg-2 col-form-label">模組別*</label>
+					<div class="col-lg-4">
+						<select class="form-control" name='ddl_cModuleID' id="ddl_cModuleID">
+							<option value="-1" selected="selected">請選擇</option>
+							<option value="ALL">全模組</option>
+							<option value="PRODUCT">產品</option>
+							<option value="SALES">業務</option>
+							<option value="PROSERVICE">專業服務</option>
+							<option value="HR">人力</option>
+							<option value="FIN">財務</option>
+							<option value="DOCMA">文管</option>
+							<option value="INFO">資訊</option>
+							<option value="ONESERVICE">One Service</option>
+						</select>
+					</div>	
+					<div class="col-lg-6">
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">程式作業編號*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cOperationID" name="tbx_cOperationID" class="form-control" placeholder="程式作業編號">
+					</div>					
+				</div>
+				<div class="form-group row">					
+					<label class="col-lg-2 col-form-label">程式作業名稱*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cOperationName" name="tbx_cOperationName" class="form-control" placeholder="程式作業名稱">
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">程式作業網址</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cOperationURL" name="tbx_cOperationURL" class="form-control" placeholder="程式作業網址">
+					</div>					
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="col-lg-5"></div>
+				<button id="btn_saveSYS" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveSYS();"> <i class="fa fa-save"></i> 儲 存</button>
+				<img id="img_waiting_saveSYS" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<div class="col-lg-5"></div>
+			</div>
+		</div>
+	</div>
+</div>

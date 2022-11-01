@@ -1,7 +1,7 @@
 {
   "ContentRoots": [
-    "F:\\Developer\\VSProject\\oneservice\\OneService\\wwwroot\\",
-    "F:\\Developer\\VSProject\\oneservice\\OneService\\obj\\Debug\\net6.0\\scopedcss\\bundle\\"
+    "/src/OneService/wwwroot/",
+    "/src/OneService/obj/Debug/net6.0/scopedcss/bundle/"
   ],
   "Root": {
     "Children": {
@@ -9134,6 +9134,14 @@
             "Asset": {
               "ContentRootIndex": 0,
               "SubPath": "img/starter_logo.jpg"
+            },
+            "Patterns": null
+          },
+          "tsti_OneServicelogo.png": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "img/tsti_OneServicelogo.png"
             },
             "Patterns": null
           },
