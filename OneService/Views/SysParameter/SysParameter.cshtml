@@ -1,0 +1,632 @@
+﻿@{
+	ViewData["Title"] = "SysParameter";
+	Layout = "~/Views/Shared/_LayoutSysParameter.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>
+		$(document).ready(function () {			
+			initTable();
+		});
+
+		function initTable() {
+			var buttonCommon = {
+				exportOptions: {
+					format: {
+						body: function (data, row, column, node) {
+							//替換&符號
+							var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+								translate = {
+									'nbsp': String.fromCharCode(160),
+									'amp': '&',
+									'quot': '"',
+									'lt': '<',
+									'gt': '>'
+								},
+								translator = function ($0, $1) {
+									return translate[$1];
+								};
+
+							if (typeof data === 'string')
+								data = data.replace(translate_re, translator);
+
+							return data;
+						}
+					}
+				}
+			};
+
+			$('#tableAll').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				order: [[0, "desc"]],
+				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+				buttons: [
+					$.extend(true, {}, buttonCommon, {
+						extend: 'excelHtml5',
+						title: '資訊系統參數設定檔_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						text: '匯出Excel',
+						sheetName: '資訊系統參數設定檔',
+						exportOptions: {
+							columns: [1, 2, 3, 4, 5, 6, 7] //要顯示的欄位
+						},
+						customize: function (xlsx) {
+							var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+							$('row c[r^="A"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="E"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="F"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="G"]', sheet).attr('s', '0');	//設成文字格式
+						}
+					}),
+				],
+			});
+
+			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+		}
+
+		//儲存明細
+		function saveSYS() {
+			var strMsg = "";
+			var cType = $("#hid_cType").val();					//目前狀態
+			var IsDo = $("#hid_IsDoADD");						//是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			var hid_cID = $("#hid_cID");						//系統ID
+			var tbx_cOperationID = $("#tbx_cOperationID");		//程式作業編號檔系統ID
+			var ddl_cFunctionID = $("#ddl_cFunctionID");		//功能別
+			var ddl_cCompanyID = $("#ddl_cCompanyID");			//公司別
+			var tbx_cNo = $("#tbx_cNo");						//參數No
+			var tbx_cValue = $("#tbx_cValue");					//參數值
+			var tbx_cDescription = $("#tbx_cDescription");		//參數值說明
+
+			if (tbx_cOperationID.val() == "") {
+				strMsg += "程式作業編號檔系統ID不得為空！\n";
+			}
+
+			if (ddl_cFunctionID.val() == "-1") {
+				strMsg += "請選擇功能別！\n";
+			}
+
+			if (ddl_cCompanyID.val() == "-1") {
+				strMsg += "請選擇公司別！\n";
+			}
+
+			if (tbx_cNo.val() == "") {
+				strMsg += "參數No不得為空！\n";
+			}
+
+			if (tbx_cValue.val() == "") {
+				strMsg += "參數值不得為空！\n";
+			}
+
+			if (tbx_cDescription.val() == "") {
+				strMsg += "參數值說明不得為空！\n";
+			}
+
+			if (strMsg != "") {
+				alert(strMsg);
+			}
+			else {
+				$("#btn_saveSYS").hide();
+				$("#img_waiting_saveSYS").show();
+				$.ajax({
+					url: '@Url.Action("SaveSys", "SysParameter")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: hid_cID.val(),
+						cOperationID: tbx_cOperationID.val(),
+						cFunctionID: ddl_cFunctionID.val(),
+						cCompanyID: ddl_cCompanyID.val(),
+						cNo: tbx_cNo.val(),
+						cValue: tbx_cValue.val(),
+						cDescription: tbx_cDescription.val(),
+					},
+					success: function (result) {
+						if (result == "") {
+							alert("儲存成功");
+							$("#dialog_pSYS").modal('hide');
+							
+							if (cType == "ADD")
+							{
+								IsDo.val("Y");
+							}
+							else
+							{
+								IsDo.val("");
+							}
+
+							Query();
+						}
+						else {
+							alert(result);
+						}
+						$("#img_waiting_saveSYS").hide();
+						$("#btn_saveSYS").show();
+					},
+				});
+			}
+		}
+
+		//刪除
+		function deleteSYS(rowId, cID) {
+			if (confirm("確定刪除？")) {
+				$.ajax({
+					url: '@Url.Action("DeleteSysParameter", "SysParameter")',
+					type: 'post',
+					dataType: 'json',
+					data: { cID: cID },
+					success: function (result) {
+						if (result > 0) {
+							$('#' + rowId).remove();
+						}
+					}
+				})
+			}
+		}
+
+		//新增
+		function btn_add_pSYSonclick() {
+			$("#hid_cType").val("ADD");	//目前狀態
+			$("#hid_cID").val("");		//清空系統ID
+
+			resetPopup("#dialog_pSYS"); //popup各欄位reset
+
+			$("#ddl_cModuleID").show();
+			$("#ddl_cOperationID").show();
+
+			$("#ddl_cFunctionID").removeAttr("disabled");	//功能別
+			$("#ddl_cCompanyID").removeAttr("disabled");	//公司別
+			$("#tbx_cNo").removeAttr("disabled");			//參數No
+
+			$("#dialog_pSYS .dropzone").show();
+			$("#dialog_pSYS").modal('show');
+		}
+
+		//修改
+		function EditSYSDialog(obj, cID) {
+			$("#hid_cType").val("EDIT");	//目前狀態
+			$("#hid_IsDoADD").val("");	//清空是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			resetPopup("#dialog_pSYS"); //popup各欄位reset
+
+			var ddl_cModuleID = $("#ddl_cModuleID");			
+			var ddl_cOperationID = $("#ddl_cOperationID");		
+
+			var hid_cID = $("#hid_cID");						//系統ID			
+			var tbx_cOperationID = $("#tbx_cOperationID");		//程式作業編號檔系統ID
+			var ddl_cFunctionID = $("#ddl_cFunctionID");		//功能別
+			var ddl_cCompanyID = $("#ddl_cCompanyID");			//公司別
+			var tbx_cNo = $("#tbx_cNo");						//參數No
+			var tbx_cValue = $("#tbx_cValue");					//參數值
+			var tbx_cDescription = $("#tbx_cDescription");		//參數值說明
+
+			ddl_cModuleID.hide();
+			ddl_cOperationID.hide();
+
+			ddl_cFunctionID.attr('disabled', true);
+			ddl_cCompanyID.attr('disabled', true);
+			tbx_cNo.attr('disabled', true);
+
+			//設定各欄位資料
+			hid_cID.val(cID);
+			tbx_cOperationID.val($(obj).parent().parent().find('.tdcOperationID').text());
+			ddl_cFunctionID.val($(obj).parent().parent().find('.tdcFunctionID').text());
+			ddl_cCompanyID.val($(obj).parent().parent().find('.tdcCompanyID').text());
+			tbx_cNo.val($(obj).parent().parent().find('.tdcNo').text());
+			tbx_cValue.val($(obj).parent().parent().find('.tdcValue').text());
+			tbx_cDescription.val($(obj).parent().parent().find('.tdcDescription').text());
+
+			$("#dialog_pSYS .dropzone").show();
+			$("#dialog_pSYS").modal('show');
+		}
+
+		//popup各欄位reset		
+		function resetPopup(popupId) {
+			var cType = $("#hid_cType").val();		//ADD.新增 EDIT.編輯
+			var cIsDo = $("#hid_IsDoADD").val();	//是否已執行新增存檔過(Y.已執行 空白.未執行)
+			
+			if (cType == "ADD" && cIsDo == "Y")
+			{
+				//不做事
+			}
+			else
+			{
+				$(popupId).find("input").each(function (index, value) {
+					$(this).val("");
+				});
+				$(popupId).find("select").each(function (index, value) {
+					$(this).val("-1");
+				});
+			}
+
+			$(popupId).find("textarea").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find(".file-box").each(function (index, value) {
+				$(this).remove();
+			});
+		}
+
+		//年度查詢
+		function Query() {
+			$("#waitingImg").show();
+
+			var tMsg = "";
+			var tbx_QuerycOperationID = $("#tbx_QuerycOperationID");		//程式作業編號檔系統ID
+			var ddl_QuerycFunctionID = $("#ddl_QuerycFunctionID");		//功能別
+			var ddl_QuerycCompanyID = $("#ddl_QuerycCompanyID");			//公司別
+			var tbx_QuerycNo = $("#tbx_QuerycNo");						//參數No
+			var tbx_QuerycValue = $("#tbx_QuerycValue");				//參數值
+			var tbx_QuerycDescription = $("#tbx_QuerycDescription");		//參數值說明
+
+			if (tbx_QuerycOperationID.val() == "" && ddl_QuerycFunctionID.val() == "" && ddl_QuerycCompanyID.val() == "" &&
+				tbx_QuerycNo.val() == "" && tbx_QuerycValue.val() == "" && tbx_QuerycDescription.val() == "") {
+				tMsg += "請至少輸入一個條件值！\n";
+			}
+
+			if (tMsg != "") {
+				alert(tMsg);
+				$("#waitingImg").hide();
+				return false;
+			}
+			else {
+				searchSYS(tbx_QuerycOperationID.val(), ddl_QuerycFunctionID.val(), ddl_QuerycCompanyID.val(), tbx_QuerycNo.val(), tbx_QuerycValue.val(), tbx_QuerycDescription.val());
+			}
+
+			return true;
+		}
+
+		//查詢結果
+		function searchSYS(cOperationID, cFunctionID, cCompanyID, cNo, cValue, cDescription) {
+			$("#dataDiv").html('');
+			$.ajax({
+				url: '@Url.Action("SysParameterResult", "SysParameter")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cOperationID: cOperationID,
+					cFunctionID: cFunctionID,
+					cCompanyID: cCompanyID,
+					cNo: cNo,
+					cValue: cValue,
+					cDescription: cDescription
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#dataDiv").html(result.responseText);
+					$("#waitingImg").hide();
+				}
+			});
+		}
+
+		//清除
+		function clearSYS() {
+			$("#ddl_QuerycModuleID").val("");
+			$("#ddl_QuerycOperationID").html("");
+			$('#tbx_QuerycOperationID').val("");
+
+			$("#ddl_QuerycFunctionID").val("");
+			$("#ddl_QuerycCompanyID").val("");
+			$("#tbx_QuerycNo").val("");
+			$("#tbx_QuerycValue").val("");
+			$("#tbx_QuerycDescription").val("");			
+		}
+
+		//模組別 onChange(for查詢)
+		function onChangeModuleList() {
+
+			//先清空下拉選單選項，才不會一直append
+			$('#ddl_QuerycOperationID').empty();
+			$('#tbx_QuerycOperationID').val("");
+
+			$.ajax({
+				url: '@Url.Action("AjaxfindOperationList", "SysParameter")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cModuleID: $('#ddl_QuerycModuleID').val(),
+				},
+				success: function (result) {
+					$.each(result, function (index, obj) {
+						$("#ddl_QuerycOperationID").append(
+							$('<option></option>').val(obj.value).html(obj.text)
+						);
+					});
+				}				
+			});
+		}
+
+		//程式作業編號 onChange(for查詢)
+		function onChangeOperationList() {
+
+			var cModuleID = $('#ddl_QuerycModuleID').val();			//模組別
+			var cOperationID = $('#ddl_QuerycOperationID').val();	//程式作業編號
+
+			$.ajax({
+				url: '@Url.Action("AjaxfindOperationID", "SysParameter")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cModuleID: cModuleID,
+					cOperationID: cOperationID
+				},
+				success: function (result) {
+					$('#tbx_QuerycOperationID').val(result);
+				}				
+			});
+		}
+
+		//模組別 onChange(for新增/修改)
+		function onChangeModuleList_EDIT() {
+
+			//先清空下拉選單選項，才不會一直append
+			$('#ddl_cOperationID').empty();
+			$('#tbx_cOperationID').val("");
+
+			$.ajax({
+				url: '@Url.Action("AjaxfindOperationList", "SysParameter")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cModuleID: $('#ddl_cModuleID').val(),
+				},
+				success: function (result) {
+					$.each(result, function (index, obj) {
+						$("#ddl_cOperationID").append(
+							$('<option></option>').val(obj.value).html(obj.text)
+						);
+					});
+				}
+			});
+		}
+
+		//程式作業編號 onChange(for新增/修改)
+		function onChangeOperationList_EDIT() {
+
+			var cModuleID = $('#ddl_cModuleID').val();			//模組別
+			var cOperationID = $('#ddl_cOperationID').val();	//程式作業編號
+
+			$.ajax({
+				url: '@Url.Action("AjaxfindOperationID", "SysParameter")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cModuleID: cModuleID,
+					cOperationID: cOperationID
+				},
+				success: function (result) {
+					$('#tbx_cOperationID').val(result);
+				}
+			});
+		}
+	</script>
+}
+
+	@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>資訊系統參數設定</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">資訊系統帳號與權限設定項目檢核表</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>資訊系統參數設定</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+	<div class="row">
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>
+						資訊系統參數設定
+						<button id="btn_add_pNA" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_add_pSYSonclick();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+					</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content">
+					<form name="form" action='#' method="post">
+						<!--目前狀態 ADD.新增 or EDIT.編輯-->
+						<input type="hidden" id="hid_cType" />
+						<!--是否已經執行過新增存檔，用來判斷下次新增的時候，會預設帶上一次的值-->
+						<input type="hidden" id="hid_IsDoADD" />
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">程式作業編號檔系統ID</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_QuerycModuleID", (IEnumerable<SelectListItem>)ViewBag.ModuleList, new { @class = "form-control", @onchange = "javascript:onChangeModuleList();" })
+								@Html.DropDownList("ddl_QuerycOperationID", (IEnumerable<SelectListItem>)ViewBag.OperationList, new { @class = "form-control", @onchange = "javascript:onChangeOperationList();" })
+								<input type="text" id="tbx_QuerycOperationID" name="tbx_QuerycOperationID" class="form-control" placeholder="程式作業編號檔系統ID">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">功能別</label>
+							<div class="col-lg-4">
+								<select class="form-control" name='ddl_QuerycFunctionID' id="ddl_QuerycFunctionID">
+									<option value="">全選</option>
+									<option value="SENDMAIL">寄送Mail</option>
+									<option value="ACCOUNT">人員帳號</option>
+									<option value="OTHER">其他自定義</option>
+								</select>
+							</div>
+							<label class="col-lg-2 col-form-label">公司別</label>
+							<div class="col-lg-4">
+								<select class="form-control" name='ddl_QuerycCompanyID' id="ddl_QuerycCompanyID">
+									<option value="">全選</option>
+									<option value="ALL">全集團</option>
+									<option value="T012">大世科</option>
+									<option value="T016">群輝</option>
+									<option value="C069">大世科技上海</option>
+									<option value="T022">協志科</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">參數No</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerycNo" name="tbx_QuerycNo" class="form-control" placeholder="參數No">
+							</div>
+							<label class="col-lg-2 col-form-label">參數值</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerycValue" name="tbx_QuerycValue" class="form-control" placeholder="參數值">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">參數值說明</label>
+							<div class="col-lg-8">
+								<input type="text" id="tbx_QuerycDescription" name="tbx_QuerycDescription" class="form-control" placeholder="參數值說明">
+							</div>
+						</div>
+						<div class="form-group row">
+							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+							<button class="btn btn-default btn-lg" type="button" onclick="clearSYS();"><i class="fa fa-trash"></i> 清 除 </button>
+							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>資訊系統參數設定查詢結果</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+					<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+						<thead>
+							<tr>
+								<th></th>
+								<th>程式作業編號檔系統ID</th>
+								<th>功能別</th>
+								<th>功能別名稱</th>
+								<th>公司別</th>
+								<th>參數No</th>
+								<th>參數值</th>
+								<th>參數值說明</th>
+							</tr>
+						</thead>
+						<tbody>
+							@{
+							if (ViewBag.QueryToListBean != null)
+							{
+								int count = 0;
+								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								{
+									count++;
+											<tr id='tr@(count)'>
+												<td>
+													<button class="btn btn-info" type="button" onclick="EditSYSDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+													<button class="btn btn-danger" type="button" onclick="deleteSYS('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+												</td>
+												<td class="tdcOperationID">@Html.Raw(QueryInfo[1])</td>
+												<td class="tdcFunctionID">@Html.Raw(QueryInfo[2])</td>
+												<td class="tdcFunctionName">@Html.Raw(QueryInfo[3])</td>
+												<td class="tdcCompanyID">@Html.Raw(QueryInfo[4])</td>
+												<td class="tdcNo">@Html.Raw(QueryInfo[5])</td>
+												<td class="tdcValue">@Html.Raw(QueryInfo[6])</td>
+												<td class="tdcDescription">@Html.Raw(QueryInfo[7])</td>
+											</tr>
+								}
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--新增/修改彈出視窗-->
+<div class="modal fade" id="dialog_pSYS" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i>資訊系統參數設定</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">				
+				<!--系統ID-->
+				<input type="hidden" id="hid_cID" />
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">程式作業編號檔系統ID*</label>
+					<div class="col-lg-10">
+						@Html.DropDownList("ddl_cModuleID", (IEnumerable<SelectListItem>)ViewBag.ModuleList, new { @class = "form-control", @onchange = "javascript:onChangeModuleList_EDIT();" })
+						@Html.DropDownList("ddl_cOperationID", (IEnumerable<SelectListItem>)ViewBag.OperationList, new { @class = "form-control", @onchange = "javascript:onChangeOperationList_EDIT();" })
+						<input type="text" id="tbx_cOperationID" name="tbx_cOperationID" class="form-control" placeholder="程式作業編號檔系統ID" disabled>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">功能別*</label>
+					<div class="col-lg-4">
+						<select class="form-control" name='ddl_cFunctionID' id="ddl_cFunctionID">
+							<option value="-1">請選擇</option>
+							<option value="SENDMAIL">寄送Mail</option>
+							<option value="ACCOUNT">人員帳號</option>
+							<option value="OTHER">其他自定義</option>
+						</select>
+					</div>
+					<label class="col-lg-2 col-form-label">公司別*</label>
+					<div class="col-lg-4">
+						<select class="form-control" name='ddl_cCompanyID' id="ddl_cCompanyID">
+							<option value="-1">請選擇</option>
+							<option value="ALL">全集團</option>
+							<option value="T012">大世科</option>
+							<option value="T016">群輝</option>
+							<option value="C069">大世科技上海</option>
+							<option value="T022">協志科</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">參數No*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cNo" name="tbx_cNo" class="form-control" placeholder="參數No">
+					</div>					
+				</div>
+				<div class="form-group row">					
+					<label class="col-lg-2 col-form-label">參數值*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cValue" name="tbx_cValue" class="form-control" placeholder="參數值">
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">參數值說明*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cDescription" name="tbx_cDescription" class="form-control" placeholder="參數值說明">
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="col-lg-5"></div>
+				<button id="btn_saveSYS" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveSYS();"> <i class="fa fa-save"></i> 儲 存</button>
+				<img id="img_waiting_saveSYS" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<div class="col-lg-5"></div>
+			</div>
+		</div>
+	</div>
+</div>

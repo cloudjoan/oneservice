@@ -71,22 +71,7 @@
 			});
 
 			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
-		}
-
-		//檢查上傳Excel檔案路徑是否有填寫
-		function checkEmpty() {
-			var reValue = false;
-			var strFileName = $("#file").val();
-
-			if (strFileName == "") {
-				alert('請先選擇欲上傳的檔案！');
-			}
-			else {
-				reValue = confirm('上傳的檔案會覆蓋原本資料，是否確定繼續上傳?');
-			}
-
-			return reValue;
-		}
+		}		
 
 		//儲存明細
 		function saveSYS() {
@@ -116,7 +101,7 @@
 				$("#btn_saveSYS").hide();
 				$("#img_waiting_saveSYS").show();
 				$.ajax({
-					url: '@Url.Action("saveSYS", "SysParameter")',
+					url: '@Url.Action("saveOperation", "SysParameter")',
 					type: 'post',
 					dataType: 'json',
 					data: {
@@ -151,8 +136,11 @@
 					dataType: 'json',
 					data: { cID: cID },
 					success: function (result) {
-						if (result > 0) {
+						if (result == "") {							
 							$('#' + rowId).remove();
+						}
+						else {
+							alert(result);
 						}
 					}
 				})
@@ -247,7 +235,14 @@
 					$("#waitingImg").hide();
 				}
 			});
-		}		
+		}
+
+		//清除
+		function clearSYS() {
+			$("#ddl_QuerycModuleID").val("");
+			$('#tbx_QuerycOperationID').val("");
+			$("#tbx_QuerycOperationName").val("");			
+		}
 	</script>
 }
 
@@ -312,6 +307,7 @@
 						</div>
 						<div class="form-group row">
 							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+							<button class="btn btn-default btn-lg" type="button" onclick="clearSYS();"><i class="fa fa-trash"></i> 清 除 </button>
 							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
 						</div>
 					</form>
@@ -350,18 +346,18 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-									<tr id='tr@(count)'>
-										<td>
-											<button class="btn btn-info" type="button" onclick="EditSYSDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
-											<button class="btn btn-danger" type="button" onclick="deleteSYS('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
-										</td>
-										<td class="tdcID">@Html.Raw(QueryInfo[0])</td>
-										<td class="tdcModuleID">@Html.Raw(QueryInfo[1])</td>
-										<td class="tdcModuleName">@Html.Raw(QueryInfo[2])</td>
-										<td class="tdcOperationID">@Html.Raw(QueryInfo[3])</td>
-										<td class="tdcOperationName">@Html.Raw(QueryInfo[4])</td>
-										<td class="tdcOperationURL">@Html.Raw(QueryInfo[5])</td>
-									</tr>
+											<tr id='tr@(count)'>
+												<td>
+													<button class="btn btn-info" type="button" onclick="EditSYSDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+													<button class="btn btn-danger" type="button" onclick="deleteSYS('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+												</td>
+												<td class="tdcID">@Html.Raw(QueryInfo[0])</td>
+												<td class="tdcModuleID">@Html.Raw(QueryInfo[1])</td>
+												<td class="tdcModuleName">@Html.Raw(QueryInfo[2])</td>
+												<td class="tdcOperationID">@Html.Raw(QueryInfo[3])</td>
+												<td class="tdcOperationName">@Html.Raw(QueryInfo[4])</td>
+												<td class="tdcOperationURL">@Html.Raw(QueryInfo[5])</td>
+											</tr>
 								}
 							}
 						}
