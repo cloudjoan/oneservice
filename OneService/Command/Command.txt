@@ -1,2 +1,3 @@
 ﻿#PSIP 
 dotnet ef dbcontext scaffold "Server=PSIP-PRD-DB;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -f
+dotnet ef dbcontext scaffold "Server=TSTI-BPMDB;Database=TAIF;User=BPM;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t tblEmployee -t tblDepartment -f

@@ -4,12 +4,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneService.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace OneService.Controllers
 {
 	public class SysParameterController : Controller
 	{        
         PSIPContext psipDb = new PSIPContext();
+        TAIFContext bpmDB = new TAIFContext();
 
         #region -----資訊系統作業設定 Start-----
         /// <summary>
@@ -34,7 +36,7 @@ namespace OneService.Controllers
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
             #region 組待查詢清單
-            var beans = psipDb.TbOneOperationParameters.OrderBy(x => x.CModuleId).Where(x => x.Disabled == 0 &&
+            var beans = psipDb.TbOneOperationParameters.OrderBy(x => x.CModuleId).OrderBy(x => x.COperationId).Where(x => x.Disabled == 0 &&
                                                            (string.IsNullOrEmpty(cModuleID) ? true : x.CModuleId == cModuleID) &&
                                                            (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.Contains(cOperationID)) &&
                                                            (string.IsNullOrEmpty(cOperationName) ? true : x.COperationName.Contains(cOperationName)));
@@ -212,6 +214,10 @@ namespace OneService.Controllers
         #endregion -----資訊系統作業設定 End-----
 
         #region -----資訊系統參數作業設定 Start-----
+        /// <summary>
+        /// 資訊系統參數作業設定
+        /// </summary>
+        /// <returns></returns>
         public IActionResult SysParameter()
         {
             #region 程式作業編號檔系統ID清單
@@ -227,9 +233,9 @@ namespace OneService.Controllers
             return View();
         }
 
-        #region 資訊系統作業設定查詢結果
+        #region 資訊系統參數作業設定查詢結果
         /// <summary>
-        /// 資訊系統作業設定查詢結果
+        /// 資訊系統參數作業設定查詢結果
         /// </summary>
         /// <param name="cOperationID">程式作業編號檔系統ID</param>
         /// <param name="cFunctionID">功能別</param>
@@ -247,7 +253,7 @@ namespace OneService.Controllers
                                               .Where(x => x.Disabled == 0 && 
                                                             (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.ToString() == cOperationID) &&
                                                             (string.IsNullOrEmpty(cCompanyID) ? true : x.CCompanyId == cCompanyID) &&
-                                                            (string.IsNullOrEmpty(cFunctionID) ? true : x.CFunctionId.Contains(cFunctionID)) &&                                                            
+                                                            (string.IsNullOrEmpty(cFunctionID) ? true : x.CFunctionId == cFunctionID) &&
                                                             (string.IsNullOrEmpty(cNo) ? true : x.CNo.Contains(cNo)) &&
                                                             (string.IsNullOrEmpty(cValue) ? true : x.CValue.Contains(cValue)) &&
                                                             (string.IsNullOrEmpty(cDescription) ? true : x.CDescription.Contains(cDescription)));
@@ -256,14 +262,14 @@ namespace OneService.Controllers
             {
                 string[] QueryInfo = new string[8];
 
-                QueryInfo[0] = bean.CId.ToString();                 //系統ID
-                QueryInfo[1] = bean.COperationId.ToString();         //程式作業編號檔系統ID
-                QueryInfo[2] = bean.CFunctionId;                    //功能別
-                QueryInfo[3] = TransFunctionID(bean.CFunctionId);   //功能別名稱
-                QueryInfo[4] = bean.CCompanyId;                     //公司別
-                QueryInfo[5] = bean.CNo;                           //參數No
-                QueryInfo[6] = bean.CValue;                        //參數值        
-                QueryInfo[7] = bean.CDescription;                   //參數值說明       
+                QueryInfo[0] = bean.CId.ToString();                   //系統ID
+                QueryInfo[1] = bean.COperationId.ToString();           //程式作業編號檔系統ID
+                QueryInfo[2] = bean.CFunctionId;                       //功能別
+                QueryInfo[3] = TransSysFunctionID(bean.CFunctionId);   //功能別名稱
+                QueryInfo[4] = bean.CCompanyId;                        //公司別
+                QueryInfo[5] = bean.CNo;                              //參數No
+                QueryInfo[6] = bean.CValue;                           //參數值        
+                QueryInfo[7] = bean.CDescription;                     //參數值說明       
 
                 QueryToList.Add(QueryInfo);
             }
@@ -380,13 +386,13 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 功能別ID轉換成名稱
+        #region 參數功能別ID轉換成名稱
         /// <summary>
-        /// 功能別ID轉換成名稱
+        /// 參數功能別ID轉換成名稱
         /// </summary>
-        /// <param name="cModuleID">模組別</param>
+        /// <param name="cFunctionID">模組別</param>
         /// <returns></returns>
-        private string TransFunctionID(string cFunctionID)
+        private string TransSysFunctionID(string cFunctionID)
         {
             string reValue = string.Empty;
 
@@ -525,7 +531,308 @@ namespace OneService.Controllers
 
         #endregion -----資訊系統參數作業設定 End-----
 
+        #region -----資訊系統角色權限作業設定 Start-----
+        /// <summary>
+        /// 資訊系統角色權限作業設定
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult RoleParameter()
+        {
+            #region 程式作業編號檔系統ID清單
+            var ModuleList = findModuleIDList();
+
+            var OperationList = new List<SelectListItem>();
+            OperationList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            ViewBag.ModuleList = ModuleList;
+            ViewBag.OperationList = OperationList;
+            #endregion
+
+            return View();
+        }
+
+        #region 資訊系統角色權限作業設定查詢結果
+        /// <summary>
+        /// 資訊系統角色權限作業設定查詢結果
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cFunctionID">功能別</param>
+        /// <param name="cCompanyID">公司別</param>        
+        /// <param name="cValue">參數值</param>
+        /// <param name="cDescription">參數值說明</param>        
+        /// <returns></returns>
+        public IActionResult RoleParameterResult(string cOperationID, string cFunctionID, string cCompanyID, string cValue, string cDescription)
+        {
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            #region 組待查詢清單
+            var beans = psipDb.TbOneRoleParameters.OrderBy(x => x.COperationId).OrderBy(x => x.CFunctionId).OrderBy(x => x.CCompanyId).OrderBy(x => x.CValue)
+                                               .Where(x => x.Disabled == 0 &&
+                                                            (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.ToString() == cOperationID) &&
+                                                            (string.IsNullOrEmpty(cCompanyID) ? true : x.CCompanyId == cCompanyID) &&                                                            
+                                                            (string.IsNullOrEmpty(cFunctionID) ? true : x.CFunctionId == cFunctionID) &&
+                                                            (string.IsNullOrEmpty(cValue) ? true : x.CValue.Contains(cValue)) &&
+                                                            (string.IsNullOrEmpty(cDescription) ? true : x.CDescription.Contains(cDescription)));
+
+            foreach (var bean in beans)
+            {
+                string[] QueryInfo = new string[12];
+
+                QueryInfo[0] = bean.CId.ToString();                    //系統ID
+                QueryInfo[1] = bean.COperationId.ToString();            //程式作業編號檔系統ID
+                QueryInfo[2] = bean.CFunctionId;                        //功能別
+                QueryInfo[3] = TransRoleFunctionID(bean.CFunctionId);   //功能別名稱
+                QueryInfo[4] = bean.CCompanyId;                         //公司別                
+                QueryInfo[5] = bean.CValue;                            //參數值        
+                QueryInfo[6] = bean.CDescription;                       //參數值說明
+                QueryInfo[7] = bean.CIncludeSubDept;                    //是否含子部門
+                QueryInfo[8] = bean.CExeQuery;                         //是否可執行查詢
+                QueryInfo[9] = bean.CExeInsert;                        //是否可執行新增
+                QueryInfo[10] = bean.CExeEdit;                         //是否可執行編輯
+                QueryInfo[11] = bean.CExeDel;                          //是否可執行刪除
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion
+
+        #region 儲存資資訊系統角色權限設定檔
+        /// <summary>
+        /// 儲存資訊系統角色權限設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cFunctionID">功能別</param>
+        /// <param name="cCompanyID">公司別</param>        
+        /// <param name="cValue">參數值</param>
+        /// <param name="cDescription">參數值說明</param>
+        /// <param name="cIncludeSubDept">是否含子部門(Y、N)</param>
+        /// <param name="cExeQuery">是否可執行查詢(Y、N)</param>
+        /// <param name="cExeInsert">是否可執行新增(Y、N)</param>
+        /// <param name="cExeEdit">是否可執行編輯(Y、N)</param>
+        /// <param name="cExeDel">是否可執行刪除(Y、N)</param>
+        /// <returns></returns>
+        public ActionResult SaveRole(string cID, string cOperationID, string cFunctionID, string cCompanyID, string cValue, string cDescription,
+                                   string cIncludeSubDept, string cExeQuery, string cExeInsert, string cExeEdit, string cExeDel)
+        {
+            string tMsg = string.Empty;
+
+            try
+            {
+                int result = 0;
+                if (cID == null)
+                {
+                    #region -- 新增 --
+                    var prBean = psipDb.TbOneRoleParameters.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                            x.COperationId.ToString() == cOperationID &&
+                                                                            x.CFunctionId == cFunctionID &&
+                                                                            x.CCompanyId == cCompanyID &&                                                                            
+                                                                            x.CValue == cValue);
+                    if (prBean == null)
+                    {
+                        TbOneRoleParameter prBean1 = new TbOneRoleParameter();
+                        prBean1.COperationId = Guid.Parse(cOperationID);
+                        prBean1.CFunctionId = cFunctionID;
+                        prBean1.CCompanyId = cCompanyID;                        
+                        prBean1.CValue = cValue;
+                        prBean1.CDescription = cDescription;
+                        prBean1.CIncludeSubDept = cIncludeSubDept == null ? "N" : cIncludeSubDept;
+                        prBean1.CExeQuery = cExeQuery == null ? "N" : cExeQuery;
+                        prBean1.CExeInsert = cExeInsert == null ? "N" : cExeInsert; 
+                        prBean1.CExeEdit = cExeEdit == null ? "N" : cExeEdit;
+                        prBean1.CExeDel = cExeDel == null ? "N" : cExeDel;
+                        prBean1.Disabled = 0;
+
+                        prBean1.CreatedUserName = "SYS";
+                        prBean1.CreatedDate = DateTime.Now;
+
+                        psipDb.TbOneRoleParameters.Add(prBean1);
+                        result = psipDb.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此角色權限已存在，請重新輸入！";
+                    }
+                    #endregion                
+                }
+                else
+                {
+                    #region -- 編輯 --
+                    var prBean = psipDb.TbOneRoleParameters.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                            x.CId.ToString() != cID &&
+                                                                            x.COperationId.ToString() == cOperationID &&
+                                                                            x.CFunctionId == cFunctionID &&
+                                                                            x.CCompanyId == cCompanyID &&                                                                            
+                                                                            x.CValue == cValue);
+                    if (prBean == null)
+                    {
+                        var prBean1 = psipDb.TbOneRoleParameters.FirstOrDefault(x => x.CId.ToString() == cID);
+                        prBean1.CValue = cValue;
+                        prBean1.CDescription = cDescription;
+                        prBean1.CIncludeSubDept = cIncludeSubDept == null ? "N" : cIncludeSubDept;
+                        prBean1.CExeQuery = cExeQuery == null ? "N" : cExeQuery;
+                        prBean1.CExeInsert = cExeInsert == null ? "N" : cExeInsert; 
+                        prBean1.CExeEdit = cExeEdit == null ? "N" : cExeEdit;
+                        prBean1.CExeDel = cExeDel == null ? "N" : cExeDel;
+
+                        prBean1.ModifiedUserName = "SYS";
+                        prBean1.ModifiedDate = DateTime.Now;
+                        result = psipDb.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此角色權限已存在，請重新輸入！";
+                    }
+                    #endregion
+                }
+                return Json(tMsg);
+            }
+            catch (Exception e)
+            {
+                return Json(e.Message);
+            }
+        }
+        #endregion
+
+        #region 刪除資訊系統角色權限設定檔
+        /// <summary>
+        /// 刪除資訊系統角色權限設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public ActionResult DeleteRoleParameter(string cID)
+        {
+            var ctBean = psipDb.TbOneRoleParameters.FirstOrDefault(x => x.CId.ToString() == cID);
+            ctBean.Disabled = 1;
+            ctBean.ModifiedUserName = "SYS"; //EmpBean.EmployeeCName;
+            ctBean.ModifiedDate = DateTime.Now;
+
+            var result = psipDb.SaveChanges();
+
+            return Json(result);
+        }
+        #endregion
+
+        #region 角色權限功能別ID轉換成名稱
+        /// <summary>
+        /// 角色權限功能別ID轉換成名稱
+        /// </summary>
+        /// <param name="cFunctionID">模組別</param>
+        /// <returns></returns>
+        private string TransRoleFunctionID(string cFunctionID)
+        {
+            string reValue = string.Empty;
+
+            switch (cFunctionID.ToUpper())
+            {
+                case "DEPT":
+                    reValue = "依部門";
+                    break;
+                case "PERSON":
+                    reValue = "依人員";
+                    break;                
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #endregion -----資訊系統角色權限作業設定 End-----
+
+        #region -----共用參數 Start-----
+
+        #region 公司別轉換
+        /// <summary>
+        /// 公司別轉換
+        /// </summary>
+        /// <param name="CompanyID">T012、T016、C069、T022</param>
+        /// <returns></returns>
+        public string TrnasCompanyID(string CompanyID)
+        {
+            string reValue = string.Empty;
+
+            switch(CompanyID)
+            {
+                case "T012":
+                    reValue = "Comp-1";
+                    break;
+                case "T016":
+                    reValue = "Comp-2";
+                    break;
+                case "C069":
+                    reValue = "Comp-3";
+                    break;
+                case "T022":
+                    reValue = "Comp-4";
+                    break;
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region Ajax用中文或英文姓名查詢人員
+        /// <summary>
+        /// Ajax用中文或英文姓名查詢人員
+        /// </summary>        
+        /// <returns></returns>
+        public IActionResult AjaxfindEmployeeBy(string keyword)
+        {           
+            var beans = psipDb.TbOneOperationParameters.Where(x => x.CModuleId == "ALL").Take(5);
+
+            return Json(beans);
+        }
+        #endregion
+
+        #region Ajax用中文或英文姓名查詢人員
+        /// <summary>
+        /// Ajax用中文或英文姓名查詢人員
+        /// </summary>
+        /// <param name="keyword">中文/英文姓名</param>
+        /// <param name="CompanyID">公司別</param>
+        /// <returns></returns>
+        public IActionResult AjaxfindEmployeeByKeyword(string keyword, string CompanyID)
+        {
+            string compcde = TrnasCompanyID(CompanyID);
+
+            object contentObj = null;            
+
+            contentObj = bpmDB.TblEmployees.Where(x => (string.IsNullOrEmpty(compcde) ? true : x.CEmployeeCompanyCode.Trim() == compcde) &&
+                                                    (x.CEmployeeAccount.Contains(keyword) || x.CEmployeeCName.Contains(keyword)) &&
+                                                    (x.CEmployeeLeaveReason == null && x.CEmployeeLeaveDay == null)).Take(5);
 
 
+
+            string json = JsonConvert.SerializeObject(contentObj);
+            return Content(json, "application/json");
+        }
+        #endregion
+
+        #region Ajax用部門代號/名稱查詢部門代號
+        /// <summary>
+        /// Ajax用部門代號/名稱查詢部門代號
+        /// </summary>
+        /// <param name="keyword">中文/英文姓名</param>
+        /// <param name="CompanyID">公司別</param>
+        /// <returns></returns>
+        public IActionResult AjaxfindDeptByKeyword(string keyword, string CompanyID)
+        {
+            string compcde = CompanyID == "ALL" ? "" : CompanyID.Substring(2, 2);
+
+            var beans = bpmDB.TblDepartments.Where(x => x.CDepartmentIsEnable == true && 
+                                                    (string.IsNullOrEmpty(compcde) ? true : x.Pk.Trim().Substring(0, 2) == compcde) &&
+                                                    (x.CDepartmentName.Contains(keyword) || x.Pk.Contains(keyword))).Take(10);
+
+            
+            return Json(beans);
+        }
+        #endregion
+
+        #endregion -----共用參數 End-----
     }
 }

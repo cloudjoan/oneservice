@@ -409,7 +409,7 @@
 					$('#tbx_cOperationID').val(result);
 				}
 			});
-		}
+		}		
 	</script>
 }
 
@@ -461,20 +461,20 @@
 							<div class="col-lg-4">
 								<select class="form-control" name='ddl_QuerycFunctionID' id="ddl_QuerycFunctionID">
 									<option value="">全選</option>
-									<option value="SENDMAIL">寄送Mail</option>
-									<option value="ACCOUNT">人員帳號</option>
-									<option value="OTHER">其他自定義</option>
+									<option value="SENDMAIL">SENDMAIL.寄送Mail</option>
+									<option value="ACCOUNT">ACCOUNT.人員帳號</option>
+									<option value="OTHER">OTHER.其他自定義</option>
 								</select>
 							</div>
 							<label class="col-lg-2 col-form-label">公司別</label>
 							<div class="col-lg-4">
 								<select class="form-control" name='ddl_QuerycCompanyID' id="ddl_QuerycCompanyID">
 									<option value="">全選</option>
-									<option value="ALL">全集團</option>
-									<option value="T012">大世科</option>
-									<option value="T016">群輝</option>
-									<option value="C069">大世科技上海</option>
-									<option value="T022">協志科</option>
+									<option value="ALL">ALL.全集團</option>
+									<option value="T012">T012.大世科</option>
+									<option value="T016">T016.群輝</option>
+									<option value="C069">C069.大世科技上海</option>
+									<option value="T022">T022.協志科</option>
 								</select>
 							</div>
 						</div>
@@ -536,19 +536,19 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-											<tr id='tr@(count)'>
-												<td>
-													<button class="btn btn-info" type="button" onclick="EditSYSDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
-													<button class="btn btn-danger" type="button" onclick="deleteSYS('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
-												</td>
-												<td class="tdcOperationID">@Html.Raw(QueryInfo[1])</td>
-												<td class="tdcFunctionID">@Html.Raw(QueryInfo[2])</td>
-												<td class="tdcFunctionName">@Html.Raw(QueryInfo[3])</td>
-												<td class="tdcCompanyID">@Html.Raw(QueryInfo[4])</td>
-												<td class="tdcNo">@Html.Raw(QueryInfo[5])</td>
-												<td class="tdcValue">@Html.Raw(QueryInfo[6])</td>
-												<td class="tdcDescription">@Html.Raw(QueryInfo[7])</td>
-											</tr>
+										<tr id='tr@(count)'>
+											<td style="width:100px;">
+												<button class="btn btn-info" type="button" onclick="EditSYSDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+												<button class="btn btn-danger" type="button" onclick="deleteSYS('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+											</td>
+											<td class="tdcOperationID">@Html.Raw(QueryInfo[1])</td>
+											<td class="tdcFunctionID">@Html.Raw(QueryInfo[2])</td>
+											<td class="tdcFunctionName">@Html.Raw(QueryInfo[3])</td>
+											<td class="tdcCompanyID">@Html.Raw(QueryInfo[4])</td>
+											<td class="tdcNo">@Html.Raw(QueryInfo[5])</td>
+											<td class="tdcValue">@Html.Raw(QueryInfo[6])</td>
+											<td class="tdcDescription">@Html.Raw(QueryInfo[7])</td>
+										</tr>
 								}
 							}
 						}

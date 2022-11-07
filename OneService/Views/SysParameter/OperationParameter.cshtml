@@ -346,18 +346,18 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-											<tr id='tr@(count)'>
-												<td>
-													<button class="btn btn-info" type="button" onclick="EditSYSDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
-													<button class="btn btn-danger" type="button" onclick="deleteSYS('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
-												</td>
-												<td class="tdcID">@Html.Raw(QueryInfo[0])</td>
-												<td class="tdcModuleID">@Html.Raw(QueryInfo[1])</td>
-												<td class="tdcModuleName">@Html.Raw(QueryInfo[2])</td>
-												<td class="tdcOperationID">@Html.Raw(QueryInfo[3])</td>
-												<td class="tdcOperationName">@Html.Raw(QueryInfo[4])</td>
-												<td class="tdcOperationURL">@Html.Raw(QueryInfo[5])</td>
-											</tr>
+									<tr id='tr@(count)'>
+										<td style="width:100px;">
+											<button class="btn btn-info" type="button" onclick="EditSYSDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+											<button class="btn btn-danger" type="button" onclick="deleteSYS('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+										</td>
+										<td class="tdcID">@Html.Raw(QueryInfo[0])</td>
+										<td class="tdcModuleID">@Html.Raw(QueryInfo[1])</td>
+										<td class="tdcModuleName">@Html.Raw(QueryInfo[2])</td>
+										<td class="tdcOperationID">@Html.Raw(QueryInfo[3])</td>
+										<td class="tdcOperationName">@Html.Raw(QueryInfo[4])</td>
+										<td class="tdcOperationURL" style="width:250px; word-break:break-all">@Html.Raw(QueryInfo[5])</td>
+									</tr>
 								}
 							}
 						}
