@@ -4,6 +4,17 @@
     Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
 
+@section js_section{
+	<script>
+		$(document).ready(function(){
+
+			
+
+		});
+
+	</script>
+}
+
 @section breadcrumb_section{
 	<div class="col-lg-10">
 		<h2>工時查詢</h2>
@@ -44,19 +55,39 @@
 									<option value="A">A.客戶服務</option>
 									<option value="B">B.專案導入</option>
 									<option value="C">C.內部作業</option>
+									<option value="D">D.研發</option>
+									<option value="E">E.專業服務</option>
 								</select>
 							</div>
-							<label class="col-lg-2 col-form-label"> 專案（商機）：</label>
-							<div class="col-lg-4"><input type="text" id="tbx_CustName" name="tbx_CustName" class="form-control" placeholder="專案（商機）"></div>
+							<label class="col-lg-2 col-form-label">任務活動：</label>
+							<div class="col-lg-4">
+								<select class="form-control">
+									<option value="A">維修</option>
+									<option value="B">定維</option>
+									<option value="C">裝機</option>
+									<option value="D">會議</option>
+									<option value="E">開發/測試</option>
+									<option value="F">教育訓練</option>
+									<option value="G">文件整理</option>
+									<option value="H">前置準備</option>
+								</select>
+							</div>
+							
 						</div>
+						
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label"> 專案（商機）：</label>
+							<div class="col-lg-4"><input type="text" id="tbx_CrmOppNo" name="tbx_CustName" class="form-control" placeholder="專案（商機）"></div>
+						</div>
+						
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">時間起訖：</label>
 							<div class="input-group m-b col-lg-5">
-								<input type="text" class="form-control calendar" placeholder="開始日期">
+								<input type="text" class="form-control calendar" name="tbx_StartTime" placeholder="開始時間">
 								<div class="input-group-append">
 									<span class="input-group-addon"> ~ </span>
 								</div>
-								<input type="text" class="form-control calendar" placeholder="結束日期">
+								<input type="text" class="form-control calendar" placeholder="結束時間">
 							</div>
 						</div>
 						<!-- 檔案上傳start-->

@@ -4,6 +4,54 @@
     Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
 
+@section js_section{
+	<script>
+		$(document).ready(function () {
+
+			$("#tbx_EmpName").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13) {
+						var keyword = $(this).val();
+						var obj = $(this);
+						$.ajax({
+							url: '@Url.Action("AjaxHandler", "Ajax")',
+							type: 'post',
+							dataType: 'json',
+							data: { functionName: 'findEmployeeByKeyword', keyword: keyword },
+							success: function (result) {
+								objects = [];
+								$.each(result, function (i, idata) {
+									objects[i] = {
+										label: idata.CEmployeeEname + "\\" + idata.CEmployeeCName,
+										idx: i,
+										value: idata.CEmployeeCName,
+										account: idata.CEmployeeAccount
+									};
+								});
+
+								//綁定foucs事件
+								obj.autocomplete({
+									source: objects,
+									select: function (event, ui) {
+									}
+								}).bind('focus', function () { $(this).autocomplete("search"); });
+
+								//開啟autocomplete選單
+								obj.focus();
+							}
+						})
+					}
+
+				}
+			})
+
+		});
+
+	</script>
+}
+
+
 @section breadcrumb_section{
 	<div class="col-lg-10">
 		<h2>工時登錄</h2>
@@ -34,7 +82,7 @@
 					<form name="form" action='#' method="post">
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">同仁姓名：</label>
-							<div class="col-lg-3"><input type="text" id="tbx_CustName" name="tbx_CustName" class="form-control" placeholder="姓名" required></div>
+							<div class="col-lg-3"><input type="text" id="tbx_EmpName" name="tbx_EmpName" class="form-control" placeholder="姓名" required></div>
 							<label class="col-lg-6 col-form-label">系統服務事業群 客戶服務處</label>
 						</div>
 						<div class="form-group row">
@@ -112,42 +160,20 @@
 									<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
 								</td>
 							</tr>
-							<tr>
-								<td>2022-10-02</td>
-								<td>2</td>
-								<td>B.專案導入</td>
-								<td>裝機</td>
-								<td>830000125 硬碟裝機</td>
-								<td>裝機</td>
-								<td>
-									<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-									<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-								</td>
-							</tr>
-							<tr>
-								<td>2022-10-01</td>
-								<td>3</td>
-								<td>C.內部作業</td>
-								<td>裝機</td>
-								<td>830000125 硬碟裝機</td>
-								<td>裝機</td>
-								<td>
-									<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-									<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-								</td>
-							</tr>
-							<tr>
-								<td>2022-10-01</td>
-								<td>1</td>
-								<td>A.客戶服務</td>
-								<td>裝機</td>
-								<td>830000125 硬碟裝機</td>
-								<td>裝機</td>
-								<td>
-									<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-									<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-								</td>
-							</tr>
+							@foreach(var bean in ViewBag.SRLaborBeans){
+								<tr>
+									<td>@bean.Finish</td>
+									<td>@bean.Labor</td>
+									<td>A.客戶服務</td>
+									<td>@bean.ProcessTypeText</td>
+								<td>@bean.Srid @bean.Description</td>
+									<td>裝機</td>
+									<td>
+										<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
+										<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
+									</td>
+								</tr>
+							}
 						</tbody>
 						<tfoot>
 							<tr>
