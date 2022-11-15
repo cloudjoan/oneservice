@@ -142,7 +142,112 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region -- 取得客戶聯絡人 --
+        #region Ajax取得鄉鎮市區、路段(名)、門牌號碼
+        /// <summary>
+        /// Ajax取得鄉鎮市區、路段(名)、門牌號碼
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <param name="keyword2"></param>
+        /// <param name="keyword3"></param>
+        /// <returns></returns>
+        public IActionResult findPostalaAddressInfo(string keyword, string keyword2, string keyword3)
+        {
+            List<string> reLists = new List<string>();
+
+            if (string.IsNullOrEmpty(keyword)) //縣市名稱
+            {
+                var result = (from p in dbProxy.PostalaAddressAndCodes
+                              select new { p.City, p.Code }).Distinct().OrderBy(x => x.Code);
+
+                foreach (var bean in result)
+                {
+                    if (!reLists.Contains(bean.City))
+                    {
+                        reLists.Add(bean.City);
+                    }
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(keyword3)) //門牌號碼
+                {
+                    var result = (from p in dbProxy.PostalaAddressAndCodes
+                                  where p.City == keyword.Trim() && p.Township == keyword2.Trim() && p.Road == keyword3.Trim()
+                                  select p.No).Distinct();
+
+                    reLists = result.ToList();
+                }
+                else if (!string.IsNullOrEmpty(keyword2)) //路段(名)
+                {
+                    var result = (from p in dbProxy.PostalaAddressAndCodes
+                                  where p.City == keyword.Trim() && p.Township == keyword2.Trim()
+                                  select p.Road).Distinct();
+
+                    reLists = result.ToList();
+                }
+                else if (!string.IsNullOrEmpty(keyword)) //鄉鎮市區
+                {
+                    var result = (from p in dbProxy.PostalaAddressAndCodes
+                                  where p.City == keyword.Trim()
+                                  select p.Township).Distinct();
+
+                    reLists = result.ToList();
+                }
+            }
+
+            return Json(reLists);
+        }
+        #endregion
+
+        #region Ajax取得郵遞區號和地址
+        /// <summary>
+        /// Ajax取得郵遞區號和地址
+        /// </summary>
+        /// <param name="keyword">縣市名稱</param>
+        /// <param name="keyword2">鄉鎮市區</param>
+        /// <param name="keyword3">路段(名)</param>
+        /// <param name="keyword4">門牌號碼</param>
+        /// <returns></returns>
+        public IActionResult findPostalaAddressAndCode(string keyword, string keyword2, string keyword3, string keyword4)
+        {
+            object contentObj = null;
+
+            if (!string.IsNullOrEmpty(keyword4)) //門牌號碼
+            {
+                contentObj = dbProxy.PostalaAddressAndCodes.Where(x => x.City == keyword.Trim() && x.Township == keyword2.Trim() && x.Road == keyword3.Trim() && x.No.Contains(keyword4.Trim()));
+            }
+            else if (!string.IsNullOrEmpty(keyword3)) //路段(名)
+            {
+                contentObj = dbProxy.PostalaAddressAndCodes.Where(x => x.City == keyword.Trim() && x.Township == keyword2.Trim() && x.Road == keyword3.Trim());
+            }
+            else if (!string.IsNullOrEmpty(keyword2)) //鄉鎮市區
+            {
+                contentObj = dbProxy.PostalaAddressAndCodes.Where(x => x.City == keyword.Trim() && x.Township == keyword2.Trim());
+            }
+            else if (!string.IsNullOrEmpty(keyword)) //縣市名稱
+            {
+                contentObj = dbProxy.PostalaAddressAndCodes.Where(x => x.City == keyword.Trim());
+            }
+
+            return Json(contentObj);
+        }
+        #endregion
+
+        #region Ajax判斷Email格式是否正確
+        /// <summary>
+        /// Ajax判斷Email格式是否正確
+        /// </summary>        
+        /// <param name="email">email信箱</param>        
+        /// <returns></returns>
+        public IActionResult CheckEmailValid(string email)
+        {
+            bool contentObj = CMF.IsEmailValid(email);
+
+            return Json(contentObj);
+        }
+        #endregion
+
+        #region Ajax取得客戶聯絡人
         /// <summary>
         /// 取得客戶聯絡人
         /// </summary>
@@ -157,7 +262,7 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region -- Ajax儲存客戶聯絡人 --
+        #region Ajax儲存客戶聯絡人
         /// <summary>
         /// /Ajax儲存客戶聯絡人
         /// </summary>        
@@ -170,14 +275,14 @@ namespace OneService.Controllers
         /// <param name="cAddContactAddress">客戶聯絡人地址</param>
         /// <param name="cAddContactPhone">客戶聯絡人電話</param>
         /// <param name="cAddContactEmail">客戶聯絡人Email</param>
-        /// <param name="ModifiedUserName">修改人姓名</param>
+        /// <param name="ModifiedUserName">修改人姓名</param>        
         /// <returns></returns>
         public IActionResult SaveContactInfo(string cAddContactID, string cBUKRS, string cCustomerID, string cCustomerName, string cAddContactName,
                                            string cAddContactCity, string cAddContactAddress, string cAddContactPhone, string cAddContactEmail, string ModifiedUserName)
         {
             string tBpmNo = "GenerallySR";
 
-            var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.ContactId.ToString() == cAddContactID && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
+            var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
 
             if (bean != null) //修改
             {
@@ -193,7 +298,7 @@ namespace OneService.Controllers
             {
                 CustomerContact bean1 = new CustomerContact();
 
-                bean1.ContactId = new Guid(cAddContactID);
+                bean1.ContactId = Guid.NewGuid();
                 bean1.Kna1Kunnr = cCustomerID;
                 bean1.Kna1Name1 = cCustomerName;
                 bean1.Knb1Bukrs = cBUKRS;
@@ -204,8 +309,9 @@ namespace OneService.Controllers
                 bean1.ContactPhone = cAddContactPhone;
                 bean1.ContactEmail = cAddContactEmail;
                 bean1.BpmNo = tBpmNo;
+                bean1.Disabled = 0;
 
-                bean1.ModifiedUserName = ModifiedUserName;
+                bean1.ModifiedUserName = ModifiedUserName;                
                 bean1.ModifiedDate = DateTime.Now;
 
                 dbProxy.CustomerContacts.Add(bean1);

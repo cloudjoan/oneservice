@@ -238,3 +238,203 @@ function showDialogMsg(title, content) {
     $("#dialogTitle").html(title);
     $("#dialogContent").html(content);
 }
+
+//-----↓↓↓↓↓新增加共用可查詢郵遞區號和地址 ↓↓↓↓↓-----
+//change縣市名稱
+$('.changePostCity').change(function () {
+    callPostAddress('City');
+});
+
+//change鄉鎮市區
+$('.changePostTownship').change(function () {
+    callPostAddress('Township');
+});
+
+//change路段(名)
+$('.changePostRoad').change(function () {
+    callPostAddress('Road');
+});
+
+//開啟郵遞區號和地址查詢視窗
+function openPostAddress() {
+    callfindPostalaAddressInfo("", "", ""); //初始縣市名稱
+
+    $("#div_PostAddressList").html("<br><br><br><br>");
+    $("#div_PostAddress").modal('show');
+}
+
+//呼叫Ajax地址相關資訊
+//tType：City.縣市名稱、Township.鄉鎮市區、Road.路段(名)
+//keyword.  縣市名稱
+//keyword2. 鄉鎮市區
+//keyword3. 路段(名)
+function callPostAddress(tType) {
+    var ddl_City = $("#ddl_PostAddressCity");
+    var ddl_Township = $("#ddl_PostAddressTownship");
+    var ddl_Road = $("#ddl_PostAddressRoad");
+    var ddl_No = $("#ddl_PostAddressNo");
+
+    var keyword = ddl_City.val();
+
+    var keyword2 = ddl_Township.val();
+    if (keyword2 == undefined || keyword2 == null) {
+        keyword2 = "";
+    }
+
+    var keyword3 = ddl_Road.val();
+    if (keyword3 == undefined || keyword3 == null) {
+        keyword3 = "";
+    }
+
+    if (tType == "City") {
+        keyword2 = "";
+        keyword3 = "";
+
+        ddl_Township.html('');
+        ddl_Road.html('');
+        ddl_No.html('');
+
+        ddl_Township.append(new Option("請選擇", ""));
+    }
+    else if (tType == "Township") {
+        keyword3 = "";
+
+        ddl_Road.html('');
+        ddl_No.html('');
+
+        ddl_Road.append(new Option("請選擇", ""));
+    }
+    else if (tType == "Road") {
+        ddl_No.html('');
+        ddl_No.append(new Option("請選擇", ""));
+    }
+
+    callfindPostalaAddressInfo(keyword, keyword2, keyword3); //呼叫取得該對應的地址名稱
+}
+
+//呼叫取得該對應的地址名稱
+function callfindPostalaAddressInfo(keyword, keyword2, keyword3) {
+    var ddl_City = $("#ddl_PostAddressCity");
+    var ddl_Township = $("#ddl_PostAddressTownship");
+    var ddl_Road = $("#ddl_PostAddressRoad");
+    var ddl_No = $("#ddl_PostAddressNo");
+    var url = "../ServiceRequest/findPostalaAddressInfo";
+
+    $.ajax({
+        url: url,
+        type: 'post',
+        dataType: 'json',
+        data: { functionName: 'findPostalaAddressInfo', keyword: keyword, keyword2: keyword2, keyword3: keyword3 },
+        success: function (result) {
+            if (keyword == "") {
+                ddl_City.html('');
+                ddl_City.append(new Option("請選擇", ""));
+            }
+
+            $.each(result, function (i, idata) {
+                if (keyword == "") {
+                    ddl_City.append(new Option(idata, idata));
+                }
+                else {
+                    if (keyword3 != "") {
+                        ddl_No.append(new Option(idata, idata));
+                    }
+                    else if (keyword2 != "") {
+                        ddl_Road.append(new Option(idata, idata));
+                    }
+                    else {
+                        ddl_Township.append(new Option(idata, idata));
+                    }
+                }
+            });
+        }
+    })
+}
+
+//查詢郵遞區號和地址
+function findPostAddress() {
+    var strMsg = "";
+    var ddl_City = $("#ddl_PostAddressCity");         //縣市名稱
+    var ddl_Township = $("#ddl_PostAddressTownship"); //鄉鎮市區
+    var ddl_Road = $("#ddl_PostAddressRoad");         //路段(名)
+    var ddl_No = $("#ddl_PostAddressNo");             //門牌號碼
+    var url = "../ServiceRequest/findPostalaAddressAndCode";
+
+    var keyword = ddl_City.val();
+    if (keyword == undefined || keyword == null) {
+        keyword = "";
+    }
+
+    var keyword2 = ddl_Township.val();
+    if (keyword2 == undefined || keyword2 == null) {
+        keyword2 = "";
+    }
+
+    var keyword3 = ddl_Road.val();
+    if (keyword3 == undefined || keyword3 == null) {
+        keyword3 = "";
+    }
+
+    var keyword4 = ddl_No.val();
+    if (keyword4 == undefined || keyword4 == null) {
+        keyword4 = "";
+    }
+
+    if (keyword == "" && keyword2 == "" && keyword3 == "" && keyword4 == "") strMsg += "請至少選擇一種查詢方式！\n";
+
+    if (strMsg != "") {
+        alert(strMsg);
+    }
+    else {
+        $("#waitingImg1").show();
+        $.ajax({
+            url: url,
+            type: 'post',
+            dataType: 'json',
+            data: { functionName: 'findPostalaAddressAndCode', keyword: keyword, keyword2: keyword2, keyword3: keyword3, keyword4: keyword4 },
+            complete: function () {
+                $("#waitingImg1").hide();
+            },
+            success: function (result) {
+                var list = "";
+                $.each(result, function (i, bean) {
+                    var strCode = bean.code;
+                    var strCity = bean.city;
+                    var strTownship = bean.township;
+                    var strRoad = bean.road;
+
+                    var strNo = bean.no;
+                    strNo = strNo.replace(/\s+/g, "&nbsp;");
+                    strNo = strNo.replace(/\s+/g, "&nbsp;");
+                    strNo = strNo.replace(/\"/g, "&quot;");
+
+                    list += "<tr><td data-th='郵遞區號'><input id='" + bean.code + i + "' name='rdCode' type='radio' value='" + bean.code + "' onclick=selectPostalaAddress('" + strCode + "','" + strCity + "','" + strTownship + "','" + strRoad + "','" + strNo + "') /><label for='" + bean.code + "'>" + bean.code + "</label></td>"
+                        + "<td data-th='縣市名稱'>" + strCity + "</td><td data-th='鄉鎮市區'>" + strTownship + "</td><td data-th='路段(名)'>" + strRoad + "</td><td data-th='門牌號碼'>" + strNo + "</td></tr>";
+                });
+
+                if (list != "") {
+                    list = "<table class='table table-striple table-bordered table-hover dataTables-example'><tr><th>郵遞區號</th><th>縣市名稱</th><th>鄉鎮市區</th><th>路段(名)</th><th>門牌號碼</th></tr>"
+                        + list + "</table>";
+                }
+                else {
+                    list = "查無資料！";
+                }
+
+                $("#div_PostAddressList").html(list);
+            }
+        });
+    }
+}
+
+//將選擇的郵遞區號和地址帶回原欄位中
+function selectPostalaAddress(Code, City, Township, Road, No) {    
+    var tbx_cAddContactCity = $("#tbx_cAddContactCity");         //城市
+    var tbx_cAddContactAddress = $("#tbx_cAddContactAddress");    //地址   
+    var tAddress = Township + Road; 
+
+    tbx_cAddContactCity.val(City);
+    tbx_cAddContactAddress.val(tAddress);
+
+    $("#div_PostAddress").modal('hide');
+}
+//-----↑↑↑↑↑客戶聯絡人 ↑↑↑↑↑-----

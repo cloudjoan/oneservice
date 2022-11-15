@@ -18,6 +18,7 @@ namespace OneService.Models
 
         public virtual DbSet<CustomerContact> CustomerContacts { get; set; } = null!;
         public virtual DbSet<Material> Materials { get; set; } = null!;
+        public virtual DbSet<PostalaAddressAndCode> PostalaAddressAndCodes { get; set; } = null!;
         public virtual DbSet<ViewCustomer2> ViewCustomer2s { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -206,6 +207,25 @@ namespace OneService.Models
                 entity.Property(e => e.StorageBlock)
                     .HasMaxLength(20)
                     .HasComment("儲格");
+            });
+
+            modelBuilder.Entity<PostalaAddressAndCode>(entity =>
+            {
+                entity.HasKey(e => new { e.Code, e.City, e.Township, e.Road, e.No });
+
+                entity.ToTable("PostalaAddressAndCode");
+
+                entity.Property(e => e.Code)
+                    .HasMaxLength(10)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.City).HasMaxLength(20);
+
+                entity.Property(e => e.Township).HasMaxLength(20);
+
+                entity.Property(e => e.Road).HasMaxLength(50);
+
+                entity.Property(e => e.No).HasMaxLength(50);
             });
 
             modelBuilder.Entity<ViewCustomer2>(entity =>

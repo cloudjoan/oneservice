@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OneService.Models;
+using System.Net.Mail;
 using System.Security.Principal;
 
 namespace OneService.Controllers
@@ -219,6 +220,29 @@ namespace OneService.Controllers
             }
 
             return reValue;
+        }
+        #endregion
+
+        #region 判斷Email格式是否正確
+        /// <summary>
+        /// 判斷Email格式是否正確
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public bool IsEmailValid(string email)
+        {
+            var valid = true;
+
+            try
+            {
+                var emailAddress = new MailAddress(email);
+            }
+            catch
+            {
+                valid = false;
+            }
+
+            return valid;
         }
         #endregion
 

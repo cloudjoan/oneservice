@@ -1,5 +1,5 @@
 ﻿#PSIP 
 dotnet ef dbcontext scaffold "Server=PSIP-PRD-DB;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -f
 dotnet ef dbcontext scaffold "Server=TSTI-BPMDB;Database=TAIF;User=BPM;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t tblEmployee -t tblDepartment -f
-dotnet ef dbcontext scaffold "Server=TSTI-SAP-PROXY;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MATERIAL -t VIEW_CUSTOMER_2 -t CUSTOMER_Contact -f
+dotnet ef dbcontext scaffold "Server=TSTI-SAP-PROXY;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MATERIAL -t VIEW_CUSTOMER_2 -t CUSTOMER_Contact -t PostalaAddressAndCode -f
 dotnet ef dbcontext scaffold "Server=TSTI-EIPDB;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -f
