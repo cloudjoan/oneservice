@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "OlrPXF/SXFBTaiiwTnsigA/P8kV7JEv91Iz7laXA9zw=",
+  "Hash": "BkYP1nir2nzhKw9+y1B2ZxYlT0RI4joCyNgWMrhNmxA=",
   "Source": "OneService",
   "BasePath": "_content/OneService",
   "Mode": "Default",
@@ -899,6 +899,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\css\\plugins\\daterangepicker\\daterangepicker-bs3.css"
+    },
+    {
+      "Identity": "F:\\Developer\\VSProject\\oneservice\\OneService\\wwwroot\\css\\plugins\\datetimepicker\\bootstrap-datetimepicker.css",
+      "SourceId": "OneService",
+      "SourceType": "Discovered",
+      "ContentRoot": "F:\\Developer\\VSProject\\oneservice\\OneService\\wwwroot\\",
+      "BasePath": "_content/OneService",
+      "RelativePath": "css/plugins/datetimepicker/bootstrap-datetimepicker.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\plugins\\datetimepicker\\bootstrap-datetimepicker.css"
     },
     {
       "Identity": "F:\\Developer\\VSProject\\oneservice\\OneService\\wwwroot\\css\\plugins\\dropzone\\basic.css",
@@ -23050,6 +23067,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\js\\plugins\\daterangepicker\\daterangepicker.js"
+    },
+    {
+      "Identity": "F:\\Developer\\VSProject\\oneservice\\OneService\\wwwroot\\js\\plugins\\datetimepicker\\bootstrap-datetimepicker.js",
+      "SourceId": "OneService",
+      "SourceType": "Discovered",
+      "ContentRoot": "F:\\Developer\\VSProject\\oneservice\\OneService\\wwwroot\\",
+      "BasePath": "_content/OneService",
+      "RelativePath": "js/plugins/datetimepicker/bootstrap-datetimepicker.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\plugins\\datetimepicker\\bootstrap-datetimepicker.js"
     },
     {
       "Identity": "F:\\Developer\\VSProject\\oneservice\\OneService\\wwwroot\\js\\plugins\\diff_match_patch\\COPYING",

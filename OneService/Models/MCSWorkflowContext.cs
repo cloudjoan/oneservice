@@ -18,6 +18,7 @@ namespace OneService.Models
 
         public virtual DbSet<Department> Departments { get; set; } = null!;
         public virtual DbSet<Person> People { get; set; } = null!;
+        public virtual DbSet<ViewEmpInfo> ViewEmpInfos { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -409,6 +410,53 @@ namespace OneService.Models
                     .IsFixedLength();
 
                 entity.Property(e => e.Workers).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<ViewEmpInfo>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_EMP_INFO");
+
+                entity.Property(e => e.Account)
+                    .HasMaxLength(108)
+                    .HasColumnName("ACCOUNT");
+
+                entity.Property(e => e.CompName)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasColumnName("COMP_NAME");
+
+                entity.Property(e => e.Constellation)
+                    .HasMaxLength(12)
+                    .IsUnicode(false)
+                    .HasColumnName("CONSTELLATION");
+
+                entity.Property(e => e.DeptId)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("DEPT_ID");
+
+                entity.Property(e => e.DeptName)
+                    .HasMaxLength(50)
+                    .HasColumnName("DEPT_NAME");
+
+                entity.Property(e => e.EmpName)
+                    .HasMaxLength(100)
+                    .HasColumnName("EMP_NAME");
+
+                entity.Property(e => e.ErpId)
+                    .HasMaxLength(10)
+                    .HasColumnName("ERP_ID");
+
+                entity.Property(e => e.Id)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("ID");
+
+                entity.Property(e => e.RegistDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("REGIST_DATE");
             });
 
             OnModelCreatingPartial(modelBuilder);

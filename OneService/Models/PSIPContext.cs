@@ -21,6 +21,7 @@ namespace OneService.Models
         public virtual DbSet<TbOneRoleParameter> TbOneRoleParameters { get; set; } = null!;
         public virtual DbSet<TbOneSysParameter> TbOneSysParameters { get; set; } = null!;
         public virtual DbSet<TbProTask> TbProTasks { get; set; } = null!;
+        public virtual DbSet<TbWorkingHoursMain> TbWorkingHoursMains { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -103,7 +104,7 @@ namespace OneService.Models
                     .HasColumnName("cOperationName");
 
                 entity.Property(e => e.COperationUrl)
-                    .HasMaxLength(255)
+                    .HasMaxLength(500)
                     .HasColumnName("cOperationURL");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
@@ -282,6 +283,31 @@ namespace OneService.Models
                 entity.Property(e => e.UpdateTime).HasMaxLength(22);
 
                 entity.Property(e => e.WorkHours).HasColumnType("numeric(6, 1)");
+            });
+
+            modelBuilder.Entity<TbWorkingHoursMain>(entity =>
+            {
+                entity.ToTable("TB_WorkingHoursMain");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.ActType).HasMaxLength(10);
+
+                entity.Property(e => e.CrmOppNo).HasMaxLength(10);
+
+                entity.Property(e => e.EndTime).HasMaxLength(22);
+
+                entity.Property(e => e.InsertTime).HasMaxLength(22);
+
+                entity.Property(e => e.StartTime).HasMaxLength(22);
+
+                entity.Property(e => e.UserErpId).HasMaxLength(30);
+
+                entity.Property(e => e.UserName).HasMaxLength(30);
+
+                entity.Property(e => e.Whtype)
+                    .HasMaxLength(10)
+                    .HasColumnName("WHType");
             });
 
             OnModelCreatingPartial(modelBuilder);
