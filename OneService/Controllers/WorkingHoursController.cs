@@ -20,6 +20,9 @@ namespace OneService.Controllers
             ViewBag.now = string.Format("{0:yyyy-MM-dd HH:mm}", DateTime.Now);
 
             var beans = psipDB.TbWorkingHoursMains.OrderByDescending(x => x.Id);
+
+            ViewBag.beans = beans;
+
             return View();
         }
 
