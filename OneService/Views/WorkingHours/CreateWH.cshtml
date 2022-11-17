@@ -1,28 +1,61 @@
 ﻿
 @{
-    ViewData["Title"] = "CreateWH";
-    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+	ViewData["Title"] = "CreateWH";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+	Dictionary<string, string> whTypeDict = new Dictionary<string, string>();
+	Dictionary<string, string> actTypeDict = new Dictionary<string, string>();
+	whTypeDict.Add("A", "A.客戶服務");
+	whTypeDict.Add("B", "B.專案導入");
+	whTypeDict.Add("C", "C.內部作業");
+	whTypeDict.Add("D", "D.研發");
+	whTypeDict.Add("E", "E.專業服務");
+
+	actTypeDict.Add("A", "維修");
+	actTypeDict.Add("B", "定維");
+	actTypeDict.Add("C", "裝機");
+	actTypeDict.Add("D", "會議");
+	actTypeDict.Add("E", "開發/測試");
+	actTypeDict.Add("F", "教育訓練");
+	actTypeDict.Add("G", "文件整理");
+	actTypeDict.Add("H", "前置準備");
 }
 
 @section js_section{
 	<script>
 		$(document).ready(function(){
-
-
+			
 		});
+
+		function GetWHById(id) {
+			$.ajax({
+				url: '@Url.Action("GetWHById", "WorkingHours")',
+				type:'post',
+				dataType:'Json',
+				data:{"id":id},
+				success:function(result){
+					$("#Id").val(result.id);
+					$("#ddl_WHType").val(result.whtype);
+					$("#ddl_ActType").val(result.actType);
+					$("#tbx_CrmOppNo").val(result.crmOppNo);
+					$("#tbx_WhDescript").val(result.whDescript);
+					$("#tbx_StartTime").val(result.startTime);
+					$("#tbx_EndTime").val(result.endTime);
+				}
+			})
+		}
 
 	</script>
 }
 
 @section breadcrumb_section{
 	<div class="col-lg-10">
-		<h2>工時查詢</h2>
+		<h2>工時登錄</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
-				<a href="#">工作管理</a>
+				<a href="#">工時登錄</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>工時查詢</strong>
+				<strong>工時登錄</strong>
 			</li>
 		</ol>
 	</div>
@@ -33,7 +66,7 @@
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>工時查詢</h5>
+					<h5>工時登錄</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
@@ -41,7 +74,8 @@
 					</div>
 				</div>
 				<div class="ibox-content">
-					<form name="form" action='@Url.Action("SaveWH", "WorkingHours")' method="post">
+					<form id="form" name="form" action='@Url.Action("SaveWH", "WorkingHours")' method="post">
+						<input type="hidden" id="Id" name="Id" />
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">同仁姓名：</label>
 							<div class="col-lg-4">
@@ -92,11 +126,11 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">時間起訖：</label>
 							<div class="input-group m-b col-lg-5">
-								<input type="text" class="form-control datetimepicker" id="tbx_StartTime" name="tbx_StartTime" value="@ViewBag.now" placeholder="開始時間">
+								<input type="text" class="form-control datetimepicker" id="tbx_StartTime" name="tbx_StartTime" value="@ViewBag.now" placeholder="開始時間" required>
 								<div class="input-group-append">
 									<span class="input-group-addon"> ~ </span>
 								</div>
-								<input type="text" class="form-control datetimepicker" id="tbx_EndTime" name="tbx_EndTime" placeholder="結束時間">
+								<input type="text" class="form-control datetimepicker" id="tbx_EndTime" name="tbx_EndTime" placeholder="結束時間" required>
 							</div>
 						</div>
 						<!-- 檔案上傳start-->
@@ -125,7 +159,7 @@
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>DataTable列表</h5>
+					<h5>工時明細</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
@@ -136,8 +170,9 @@
 					<table id="table1" class="table table-striple table-bordered table-hover dataTables-example">
 						<thead>
 							<tr>
+								<th>編輯/刪除</th>
 								<th>日期</th>
-								<th>工時</th>
+								<th>工時(分)</th>
 								<th>工時類型</th>
 								<th>任務活動</th>
 								<th>專案（商機）</th>
@@ -147,10 +182,14 @@
 						<tbody>
 							@foreach(var bean in ViewBag.beans){
 								<tr>
+									<td>
+									<a class="btn btn-warning" href="javascript:GetWHById(@bean.Id)"><i class="fa fa-pencil"></i></a>
+										<a class="btn btn-danger" href="javascript:void()"><i class="fa fa-trash"></i></a>
+									</td>
 									<td>@bean.StartTime</td>
-									<td>@bean.UserName</td>
-									<td>@bean.UserName</td>
-									<td>@bean.UserName</td>
+									<td>@bean.Labor</td>
+									<td>@whTypeDict[@bean.Whtype]</td>
+									<td>@actTypeDict[@bean.ActType]</td>
 									<td>@bean.CrmOppNo</td>
 									<td>@bean.WhDescript</td>
 								</tr>

@@ -295,11 +295,17 @@ namespace OneService.Models
 
                 entity.Property(e => e.CrmOppNo).HasMaxLength(10);
 
+                entity.Property(e => e.Disabled).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.EndTime).HasMaxLength(22);
 
                 entity.Property(e => e.InsertTime).HasMaxLength(22);
 
                 entity.Property(e => e.StartTime).HasMaxLength(22);
+
+                entity.Property(e => e.UpdateTime)
+                    .HasMaxLength(22)
+                    .HasColumnName("UpdateTIme");
 
                 entity.Property(e => e.UserErpId).HasMaxLength(30);
 
