@@ -240,25 +240,36 @@ namespace OneService.Controllers
                                                           x.ContactAddress != "" && x.ContactPhone != "" &&
                                                           x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID).ToList();
 
+            List<string> tTempList = new List<string>();
+
+            string tTempValue = string.Empty;
+
             List<PCustomerContact> liPCContact = new List<PCustomerContact>();
             if (qPjRec != null && qPjRec.Count() > 0)
             {
                 foreach (var prBean in qPjRec)
                 {
-                    PCustomerContact prDocBean = new PCustomerContact();
+                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "");
 
-                    prDocBean.ContactID = prBean.ContactId.ToString();
-                    prDocBean.CustomerID = prBean.Kna1Kunnr.Trim().Replace(" ", "");
-                    prDocBean.CustomerName = prBean.Kna1Name1.Trim().Replace(" ", "");
-                    prDocBean.BUKRS = cBUKRS;
-                    prDocBean.Name = prBean.ContactName.Trim().Replace(" ", "");
-                    prDocBean.City = prBean.ContactCity.Trim().Replace(" ", "");
-                    prDocBean.Address = prBean.ContactAddress.Trim().Replace(" ", "");
-                    prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
-                    prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
-                    prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");
+                    if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人名姓名不重覆才要顯示
+                    {
+                        tTempList.Add(tTempValue);
 
-                    liPCContact.Add(prDocBean);
+                        PCustomerContact prDocBean = new PCustomerContact();
+
+                        prDocBean.ContactID = prBean.ContactId.ToString();
+                        prDocBean.CustomerID = prBean.Kna1Kunnr.Trim().Replace(" ", "");
+                        prDocBean.CustomerName = prBean.Kna1Name1.Trim().Replace(" ", "");
+                        prDocBean.BUKRS = cBUKRS;
+                        prDocBean.Name = prBean.ContactName.Trim().Replace(" ", "");
+                        prDocBean.City = prBean.ContactCity.Trim().Replace(" ", "");
+                        prDocBean.Address = prBean.ContactAddress.Trim().Replace(" ", "");
+                        prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
+                        prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
+                        prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");
+
+                        liPCContact.Add(prDocBean);
+                    }
                 }
             }
 
