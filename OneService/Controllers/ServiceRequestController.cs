@@ -388,7 +388,7 @@ namespace OneService.Controllers
                 bean1.Kna1Kunnr = cCustomerID;
                 bean1.Kna1Name1 = cCustomerName;
                 bean1.Knb1Bukrs = cBUKRS;
-                bean1.ContactType = "0";
+                bean1.ContactType = "4";
                 bean1.ContactName = cAddContactName;
                 bean1.ContactCity = cAddContactCity;
                 bean1.ContactAddress = cAddContactAddress;
