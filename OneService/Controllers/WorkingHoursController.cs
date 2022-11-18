@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OneService.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OneService.Controllers
 {
@@ -9,7 +11,14 @@ namespace OneService.Controllers
         PSIPContext psipDB = new PSIPContext();
         public IActionResult Index()
         {
-            var SRLaborBeans =  biDB.MartAnalyseServiceRequestLabors.Take(50);
+            var SRLaborBeans =  biDB.MartAnalyseServiceRequestLabors.Where(x => x.EngineerId == "10010640");
+            ViewBag.SRLaborBeans = SRLaborBeans;
+            return View();
+        }
+
+        public IActionResult GetSRLabor(string erpId)
+        {
+            var SRLaborBeans = biDB.MartAnalyseServiceRequestLabors.Where(x => x.EngineerId == erpId);
             ViewBag.SRLaborBeans = SRLaborBeans;
             return View();
         }
@@ -19,8 +28,11 @@ namespace OneService.Controllers
         {
             ViewBag.now = string.Format("{0:yyyy-MM-dd HH:mm}", DateTime.Now);
 
-            var beans = psipDB.TbWorkingHoursMains.OrderByDescending(x => x.Id);
+            var beans = psipDB.TbWorkingHoursMains.Where(x => x.Disabled != 1).OrderByDescending(x => x.Id);
 
+            List<TbWorkingHoursMain> list2 = new List<TbWorkingHoursMain>();
+
+            
             ViewBag.beans = beans;
 
             return View();
@@ -29,7 +41,7 @@ namespace OneService.Controllers
         public IActionResult SaveWH(IFormCollection formCollection)
         {
             TbWorkingHoursMain bean;
-            if (string.IsNullOrEmpty(formCollection["Id"]))
+            if (!string.IsNullOrEmpty(formCollection["Id"]))
             {
                 bean = psipDB.TbWorkingHoursMains.Find(int.Parse(formCollection["Id"]));
                 bean.Whtype = formCollection["ddl_WHType"].ToString();
@@ -77,6 +89,16 @@ namespace OneService.Controllers
         {
             var bean = psipDB.TbWorkingHoursMains.Find(id);
             return Json(bean);
+        }
+
+        public IActionResult DeleteWHById(int id)
+        {
+            var bean = psipDB.TbWorkingHoursMains.Find(id);
+            bean.Disabled = 1;
+
+            psipDB.SaveChanges();
+
+            return Json("OK");
         }
     }
 }

@@ -40,8 +40,27 @@
 					$("#tbx_WhDescript").val(result.whDescript);
 					$("#tbx_StartTime").val(result.startTime);
 					$("#tbx_EndTime").val(result.endTime);
+
+					$("#tbx_WhDescript").focus();
 				}
 			})
+		}
+
+		function DeleteWHById(id, obj){
+			if(confirm("確定刪除？")){
+				$.ajax({
+					url: '@Url.Action("GetWHById", "WorkingHours")',
+					type: 'post',
+					dataType: 'Json',
+					data: { "id": id },
+					success: function(result) {
+						if(result == 'OK'){
+							$(obj).parent().parent().remove("fade");
+						}
+					}
+				});
+			}
+
 		}
 
 	</script>
@@ -184,7 +203,7 @@
 								<tr>
 									<td>
 									<a class="btn btn-warning" href="javascript:GetWHById(@bean.Id)"><i class="fa fa-pencil"></i></a>
-										<a class="btn btn-danger" href="javascript:void()"><i class="fa fa-trash"></i></a>
+										<a class="btn btn-danger" href="javascript:DeleteWHById(@bean.Id, this)"><i class="fa fa-trash"></i></a>
 									</td>
 									<td>@bean.StartTime</td>
 									<td>@bean.Labor</td>

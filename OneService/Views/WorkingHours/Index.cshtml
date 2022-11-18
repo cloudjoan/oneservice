@@ -26,7 +26,8 @@
 										label: idata.CEmployeeEname + "\\" + idata.CEmployeeCName,
 										idx: i,
 										value: idata.CEmployeeCName,
-										account: idata.CEmployeeAccount
+										account: idata.CEmployeeAccount,
+										erpId: idata.CEmployeeErpid
 									};
 								});
 
@@ -34,6 +35,7 @@
 								obj.autocomplete({
 									source: objects,
 									select: function (event, ui) {
+										$("#hie_ErpId").val(ui.item.erpId);
 									}
 								}).bind('focus', function () { $(this).autocomplete("search"); });
 
@@ -47,6 +49,23 @@
 			})
 
 		});
+
+		function SearchSRLabor(){
+			$("#dataDiv").html('');
+			$.ajax({
+				url: '@Url.Action("GetSRLabor", "WorkingHours")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					erpId: $("#hie_ErpId").val(),
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#dataDiv").html(result.responseText);
+				}
+			});
+		}
 
 	</script>
 }
@@ -71,7 +90,7 @@
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>工時登錄</h5>
+					<h5>工時查詢</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
@@ -82,7 +101,10 @@
 					<form name="form" action='#' method="post">
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">同仁姓名：</label>
-							<div class="col-lg-3"><input type="text" id="tbx_EmpName" name="tbx_EmpName" class="form-control" placeholder="姓名" required></div>
+							<div class="col-lg-3">
+								<input type="text" id="tbx_EmpName" name="tbx_EmpName" class="form-control" placeholder="姓名" required>
+								<input type="hidden" id="hie_ErpId" name="hie_ErpId">
+							</div>
 							<label class="col-lg-6 col-form-label">系統服務事業群 客戶服務處</label>
 						</div>
 						<div class="form-group row">
@@ -117,7 +139,7 @@
 						</div>
 						<!-- 檔案上傳end-->
 						<div class="hr-line-dashed"></div>
-						<button class="btn btn-primary btn-lg" type="button" onclick="searchCust()"><i class="fa fa-search"></i> 查 詢 </button>
+						<button class="btn btn-primary btn-lg" type="button" onclick="SearchSRLabor()"><i class="fa fa-search"></i> 查 詢 </button>
 						<button class="btn btn-default btn-lg" type="button" onclick="searchCust()"><i class="fa fa-eraser"></i> 清 除 </button>
 					</form>
 				</div>
@@ -138,40 +160,28 @@
 					<table id="table1" class="table table-striple table-bordered table-hover dataTables-example">
 						<thead>
 							<tr>
+								<th width="120px">編輯/刪除</th>
 								<th>日期</th>
 								<th>工時</th>
 								<th>工時類型</th>
 								<th>任務活動</th>
 								<th>專案（商機）</th>
 								<th>工作說明</th>
-								<th width="130">功能</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr>
-								<td>2022-10-01</td>
-								<td>1</td>
-								<td>A.客戶服務</td>
-								<td>裝機</td>
-								<td>830000125 硬碟裝機</td>
-								<td>裝機</td>
-								<td>
-									<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-									<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-								</td>
-							</tr>
 							@foreach(var bean in ViewBag.SRLaborBeans){
 								<tr>
-									<td>@bean.Finish</td>
+									<td>
+										<a href="" class="btn btn-warning"><i class="fa fa-pencil"></i> </a>
+										<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> </a>
+									</td>
+									<td>@bean.Finish  @(bean.Finish == "111"?"123" : "abc")</td>
 									<td>@bean.Labor</td>
 									<td>A.客戶服務</td>
 									<td>@bean.ProcessTypeText</td>
-								<td>@bean.Srid @bean.Description</td>
+									<td>@bean.Srid @bean.Description</td>
 									<td>裝機</td>
-									<td>
-										<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-										<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-									</td>
 								</tr>
 							}
 						</tbody>

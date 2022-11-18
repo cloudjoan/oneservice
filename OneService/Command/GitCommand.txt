@@ -1,0 +1,17 @@
+﻿#程式簽入
+git add -A
+git commit -m '備註'
+
+#放到git server
+git push
+
+
+#從git server 拉回來
+git pull
+
+#從git server強制拉回來覆蓋
+git fetch --all 
+git reset --hard origin/main
+git pull origin main
+
+#切支線 

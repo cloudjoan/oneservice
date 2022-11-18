@@ -523,6 +523,20 @@
                 "Asset": null,
                 "Patterns": null
               },
+              "datetimepicker": {
+                "Children": {
+                  "bootstrap-datetimepicker.css": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "css/plugins/datetimepicker/bootstrap-datetimepicker.css"
+                    },
+                    "Patterns": null
+                  }
+                },
+                "Asset": null,
+                "Patterns": null
+              },
               "dropzone": {
                 "Children": {
                   "basic.css": {
@@ -11864,6 +11878,20 @@
                     "Asset": {
                       "ContentRootIndex": 0,
                       "SubPath": "js/plugins/daterangepicker/daterangepicker.js"
+                    },
+                    "Patterns": null
+                  }
+                },
+                "Asset": null,
+                "Patterns": null
+              },
+              "datetimepicker": {
+                "Children": {
+                  "bootstrap-datetimepicker.js": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "js/plugins/datetimepicker/bootstrap-datetimepicker.js"
                     },
                     "Patterns": null
                   }
