@@ -239,6 +239,15 @@ function showDialogMsg(title, content) {
     $("#dialogContent").html(content);
 }
 
+//-----↓↓↓↓↓服務請求 ↓↓↓↓↓-----
+//顯示確認提交的提示訊息
+function ShowSRConfirmDialogMsg(title, content) {
+    $("#ShowSRConfirmDialog").modal("show");
+    $("#ShowSRConfirmdialogTitle").html(title);
+    $("#ShowSRConfirmdialogContent").html(content);
+}
+//-----↑↑↑↑↑服務請求 ↑↑↑↑↑-----
+
 //-----↓↓↓↓↓新增加共用可查詢郵遞區號和地址 ↓↓↓↓↓-----
 //change縣市名稱
 $('.changePostCity').change(function () {

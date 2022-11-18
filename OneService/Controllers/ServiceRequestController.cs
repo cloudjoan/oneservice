@@ -59,6 +59,7 @@ namespace OneService.Controllers
 
         CommonFunction CMF = new CommonFunction();
         PSIPContext psipDb = new PSIPContext();
+        TSTIONEContext dbOne = new TSTIONEContext();
         TAIFContext bpmDB = new TAIFContext();
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
@@ -82,12 +83,71 @@ namespace OneService.Controllers
             ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
-            ViewBag.pOperationID = pOperationID_GenerallySR;
+            #region 報修類別
+            var SRTypeOneList = CMF.findFirstKINDList();
+
+            var SRTypeSecList = new List<SelectListItem>();
+            SRTypeSecList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            var SRTypeThrList = new List<SelectListItem>();
+            SRTypeThrList.Add(new SelectListItem { Text = " ", Value = "" });          
+
+            ViewBag.SRTypeOneList = SRTypeOneList;
+            ViewBag.SRTypeSecList = SRTypeSecList;
+            ViewBag.SRTypeThrList = SRTypeThrList;
+            #endregion
+
+            #region 取得SRID
+            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == "6100000001");
+
+            if (beanM != null)
+            {
+                //記錄目前GUID，用來判斷更新的先後順序
+                ViewBag.pGUID = beanM.CSystemGuid.ToString();
+
+                ViewBag.cSRID = beanM.CSrid;
+                ViewBag.cCustomerID = beanM.CCustomerId;
+                ViewBag.cCustomerName = beanM.CCustomerName;
+                ViewBag.cDesc = beanM.CDesc;
+                ViewBag.cNotes = beanM.CNotes;
+                ViewBag.cSRPathWay = beanM.CSrpathWay;
+                ViewBag.pStatus = "E0001";
+            }
+            #endregion
+
+            #region 設定狀態
+            var model = new StatusViewModel();
+            model.ddl_cStatus = "E0001";
+            #endregion
+
             ViewBag.pStatus = "E0001";
-            return View();
+            ViewBag.pOperationID = pOperationID_GenerallySR;           
+
+            return View(model);
+        }
+
+        public IActionResult SaveGenerallySR()
+        {            
+            getLoginAccount();
+
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            pLoginName = EmpBean.EmployeeCName;
+
+            return RedirectToAction("finishForm");
         }
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
+
+        /// <summary>
+        /// 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult finishForm()
+        {
+            return View();
+        }
 
         #region 取得登入帳號權限
         /// <summary>
@@ -102,6 +162,32 @@ namespace OneService.Controllers
 
             ViewBag.pIsMIS = pIsMIS;
             #endregion            
+        }
+        #endregion
+
+        #region 產生SRID
+        /// <summary>
+        /// 產生SRID
+        /// </summary>
+        /// <param name="cTitle">SRID開頭編號</param>
+        /// <param name="cSRID">SRID</param>
+        /// <param name="cGUID">系統GUID</param>
+        /// <returns></returns>
+        public IActionResult getSRID(string cTitle, string cSRID, string cGUID)
+        {
+            string reValue = CMF.GetSRID(cTitle, cSRID);
+
+            #region 判斷系統目前GUID是否已被異動
+            if (cGUID != "")
+            {
+                if (reValue != "")
+                {
+                    reValue = CMF.checkSRIDIsChang(reValue, cGUID);
+                }
+            }
+            #endregion
+
+            return Json(reValue);
         }
         #endregion
 
@@ -323,6 +409,67 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----
+        #region Ajax傳入第一階(大類)並取得第二階(中類)清單
+        /// <summary>
+        /// Ajax傳入第一階(大類)並取得第二階(中類)清單
+        /// </summary>
+        /// <param name="keyword">第一階(大類)代碼</param>
+        /// <returns></returns>
+        public ActionResult findSRTypeSecList(string keyword)
+        {
+            var tList = new List<SelectListItem>();
+
+            tList = CMF.findSRTypeSecList(keyword);
+
+            ViewBag.SRTypeSecList = tList;
+            return Json(tList);
+        }
+        #endregion
+
+        #region Ajax傳入第二階(中類)並取得第三階(小類)清單
+        /// <summary>
+        /// Ajax傳入第二階(中類)並取得第三階(小類)清單
+        /// </summary>
+        /// <param name="keyword">第二階(中類)代碼</param>
+        /// <returns></returns>
+        public ActionResult findSRTypeThrList(string keyword)
+        {
+            var tList = new List<SelectListItem>();
+
+            tList = CMF.findSRTypeThrList(keyword);
+
+            ViewBag.SRTypeThrList = tList;
+            return Json(tList);
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----    
+
+        #region -----↓↓↓↓↓自定義Class ↓↓↓↓↓-----
+
+        #region 狀態
+        /// <summary>
+        /// 狀態
+        /// </summary>
+        public class StatusViewModel
+        {
+            public string ddl_cStatus { get; set; }
+            public List<SelectListItem> ListStatus { get; } = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "E0001", Text = "新建" },
+                new SelectListItem { Value = "E0002", Text = "L2處理中" },
+                new SelectListItem { Value = "E0003", Text = "報價中" },
+                new SelectListItem { Value = "E0004", Text = "3rd Party處理中" },
+                new SelectListItem { Value = "E0005", Text = "L3處理中" },
+                new SelectListItem { Value = "E0006", Text = "完修" },
+                new SelectListItem { Value = "E0012", Text = "HPGCSN 申請" },
+                new SelectListItem { Value = "E0013", Text = "HPGCSN 完成" },
+                new SelectListItem { Value = "E0014", Text = "駁回" },
+                new SelectListItem { Value = "E0015", Text = "取消" },                
+            };
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----  
     }
 }

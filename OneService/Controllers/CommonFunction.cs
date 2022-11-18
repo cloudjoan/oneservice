@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using OneService.Models;
 using System.Net.Mail;
 using System.Security.Principal;
@@ -8,9 +9,112 @@ namespace OneService.Controllers
     public class CommonFunction
     {
         PSIPContext psipDb = new PSIPContext();
+        TSTIONEContext dbOne = new TSTIONEContext();
         TAIFContext bpmDB = new TAIFContext();
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
+
+        #region -----↓↓↓↓↓一般服務請求 ↓↓↓↓↓-----        
+
+        #region 取得所有第一階List清單(報修類別)
+        /// <summary>
+        /// 取得所有第一階List清單(報修類別)
+        /// </summary>
+        /// <returns></returns>
+        public List<SelectListItem> findFirstKINDList()
+        {
+            List<string> tTempList = new List<string>();
+
+            string tKIND_KEY = string.Empty;
+            string tKIND_NAME = string.Empty;
+
+            var beansKIND = dbOne.TbOneSrrepairTypes.OrderBy(x => x.CKindKey).Where(x => x.Disabled == 0 && x.CUpKindKey == "0");
+
+            var tList = new List<SelectListItem>();
+            tList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            foreach (var bean in beansKIND)
+            {
+                if (!tTempList.Contains(bean.CKindKey))
+                {
+                    tKIND_NAME = bean.CKindKey + "_" + bean.CKindName;
+
+                    tList.Add(new SelectListItem { Text = tKIND_NAME, Value = bean.CKindKey});
+                    tTempList.Add(bean.CKindKey);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
+        #region 傳入第一階(大類)並取得第二階(中類)清單
+        /// <summary>
+        /// 傳入第一階(大類)並取得第二階(中類)清單
+        /// </summary>
+        /// <param name="keyword">第一階(大類)代碼</param>
+        /// <returns></returns>
+        public List<SelectListItem> findSRTypeSecList(string keyword)
+        {
+            List<string> tTempList = new List<string>();
+
+            string tKIND_KEY = string.Empty;
+            string tKIND_NAME = string.Empty;
+
+            var beansKIND = dbOne.TbOneSrrepairTypes.OrderBy(x => x.CKindKey).Where(x => x.Disabled == 0 && x.CKindLevel == 2 && x.CUpKindKey == keyword);
+
+            var tList = new List<SelectListItem>();
+            tList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            foreach (var bean in beansKIND)
+            {
+                if (!tTempList.Contains(bean.CKindKey))
+                {                    
+                    tKIND_NAME = bean.CKindKey + "_" + bean.CKindName;
+
+                    tList.Add(new SelectListItem { Text = tKIND_NAME, Value = bean.CKindKey });
+                    tTempList.Add(bean.CKindKey);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
+        #region 傳入第二階(中類)並取得第三階(小類)清單
+        /// <summary>
+        /// 傳入第二階(中類)並取得第三階(小類)清單
+        /// </summary>
+        /// <param name="keyword">第二階(中類)代碼</param>
+        /// <returns></returns>
+        public List<SelectListItem> findSRTypeThrList(string keyword)
+        {
+            List<string> tTempList = new List<string>();
+
+            string tKIND_KEY = string.Empty;
+            string tKIND_NAME = string.Empty;
+
+            var beansKIND = dbOne.TbOneSrrepairTypes.OrderBy(x => x.CKindKey).Where(x => x.Disabled == 0 && x.CKindLevel == 3 && x.CUpKindKey == keyword);
+
+            var tList = new List<SelectListItem>();
+            tList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            foreach (var bean in beansKIND)
+            {
+                if (!tTempList.Contains(bean.CKindKey))
+                {
+                    tKIND_NAME = bean.CKindKey + "_" + bean.CKindName;
+
+                    tList.Add(new SelectListItem { Text = tKIND_NAME, Value = bean.CKindKey });
+                    tTempList.Add(bean.CKindKey);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑一般服務請求 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
@@ -243,6 +347,83 @@ namespace OneService.Controllers
             }
 
             return valid;
+        }
+        #endregion
+
+        #region 取號(SRID)
+        /// <summary>
+        /// 取號(SRID)
+        /// </summary>
+        /// <param name="cTilte">SRID開頭</param>
+        /// <param name="cSRID">SRID</param>
+        /// <returns></returns>
+        public string GetSRID(string cTilte, string cSRID)
+        {
+            string strCNO = "";
+            string tYear = DateTime.Now.Year.ToString().Substring(2, 2);
+            string tMonth = DateTime.Now.Month.ToString().PadLeft(2, '0');
+            string tDay = DateTime.Now.Day.ToString().PadLeft(2, '0');
+
+            //若原本就有值就不須再取號
+            if (string.IsNullOrEmpty(cSRID))
+            {
+                var bean = dbOne.TbOneSridformats.FirstOrDefault(x => x.CTitle == cTilte && x.CYear == tYear && x.CMonth == tMonth && x.CDay == tDay);
+
+                if (bean == null) //若沒有資料，則新增一筆當月的資料
+                {
+                    TbOneSridformat FormNoTable = new TbOneSridformat();
+
+                    FormNoTable.CTitle = cTilte;
+                    FormNoTable.CYear = tYear;
+                    FormNoTable.CMonth = tMonth;
+                    FormNoTable.CDay = tDay;
+                    FormNoTable.CNo = "0000";
+
+                    dbOne.TbOneSridformats.Add(FormNoTable);
+                    dbOne.SaveChanges();
+                }
+
+                bean = dbOne.TbOneSridformats.FirstOrDefault(x => x.CTitle == cTilte && x.CYear == tYear && x.CMonth == tMonth && x.CDay == tDay);
+
+                if (bean != null)
+                {
+                    strCNO = cTilte + (bean.CYear + bean.CMonth + bean.CDay) + (int.Parse(bean.CNo) + 1).ToString().PadLeft(4, '0');
+                    bean.CNo = (int.Parse(bean.CNo) + 1).ToString().PadLeft(4, '0');
+
+                    dbOne.SaveChanges();
+                }
+            }
+            else
+            {
+                strCNO = cSRID.Trim();
+            }
+
+            return strCNO;
+        }
+        #endregion
+
+        #region 判斷系統目前GUID是否已被異動
+        /// <summary>
+        /// 判斷系統目前GUID是否已被異動(回傳CHANGE代表被動異動；回傳表單編號代表沒被異動)
+        /// </summary>
+        /// <param name="cSRID">SRID</param>
+        /// <param name="tGUID">傳入的GUID</param>
+        /// <returns></returns>
+        public string checkSRIDIsChang(string cSRID, string tGUID)
+        {
+            string reValue = cSRID;
+
+            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == cSRID);
+
+            if (beanM != null)
+            {
+                if (tGUID != beanM.CSystemGuid.ToString())
+                {
+                    reValue = "CHANGE";
+                }
+            }
+
+            return reValue;
         }
         #endregion
 
