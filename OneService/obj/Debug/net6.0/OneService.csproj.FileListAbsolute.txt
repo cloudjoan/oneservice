@@ -795,3 +795,8 @@ D:\VSProject\OneService\OneService\bin\Debug\net6.0\System.DirectoryServices.Pro
 D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\linux\lib\net6.0\System.DirectoryServices.Protocols.dll
 D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\osx\lib\net6.0\System.DirectoryServices.Protocols.dll
 D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.Protocols.dll
+F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.Negotiate.dll
+F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.DirectoryServices.Protocols.dll
+F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\linux\lib\net6.0\System.DirectoryServices.Protocols.dll
+F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\osx\lib\net6.0\System.DirectoryServices.Protocols.dll
+F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.Protocols.dll

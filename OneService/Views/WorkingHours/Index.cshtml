@@ -100,7 +100,7 @@
 				<div class="ibox-content">
 					<form name="form" action='#' method="post">
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">同仁姓名：</label>
+							<label class="col-lg-2 col-form-label">同仁姓名：@User.Identity.IsAuthenticated </label>
 							<div class="col-lg-3">
 								<input type="text" id="tbx_EmpName" name="tbx_EmpName" class="form-control" placeholder="姓名" required>
 								<input type="hidden" id="hie_ErpId" name="hie_ErpId">

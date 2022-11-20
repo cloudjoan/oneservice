@@ -11,6 +11,9 @@ namespace OneService.Controllers
         PSIPContext psipDB = new PSIPContext();
         public IActionResult Index()
         {
+            var userAccount = User.Identity.Name;
+            System.Diagnostics.Debug.WriteLine(userAccount);
+
             var SRLaborBeans =  biDB.MartAnalyseServiceRequestLabors.Where(x => x.EngineerId == "10010640");
             ViewBag.SRLaborBeans = SRLaborBeans;
             return View();
