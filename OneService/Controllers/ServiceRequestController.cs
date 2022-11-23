@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -47,6 +48,11 @@ namespace OneService.Controllers
         bool pIsMIS = false;
 
         /// <summary>
+        /// 服務請求ID
+        /// </summary>
+        string pSRID = string.Empty;
+
+        /// <summary>
         /// 程式作業編號檔系統ID(ALL，固定的GUID)
         /// </summary>
         string pSysOperationID = "F8EFC55F-FA77-4731-BB45-2F2147244A2D";
@@ -54,16 +60,24 @@ namespace OneService.Controllers
         /// <summary>
         /// 程式作業編號檔系統ID(一般服務請求)
         /// </summary>
-        string pOperationID_GenerallySR = "869FC989-1049-4266-ABDE-69A9B07BCD0A";
-        //edit by elvis 2022/10/19 End
+        static string pOperationID_GenerallySR = "869FC989-1049-4266-ABDE-69A9B07BCD0A";
 
-        CommonFunction CMF = new CommonFunction();
+        /// <summary>
+        /// 公司別(T012、T016、C069、T022)
+        /// </summary>
+        static string pCompanyCode = string.Empty;
+
+        static CommonFunction CMF = new CommonFunction();
+
         PSIPContext psipDb = new PSIPContext();
         TSTIONEContext dbOne = new TSTIONEContext();
         TAIFContext bpmDB = new TAIFContext();
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
 
+        #region -----↓↓↓↓↓一般服務請求 ↓↓↓↓↓-----
+
+        #region 一般服務請求index
         public IActionResult GenerallySR()
         {
             getLoginAccount();
@@ -81,6 +95,17 @@ namespace OneService.Controllers
             ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
             ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
             ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            var model = new ViewModel();
+
+            #region Request參數            
+            if (HttpContext.Request.Query["SRID"].FirstOrDefault() != null)
+            {
+                pSRID = HttpContext.Request.Query["SRID"].FirstOrDefault();
+            }
             #endregion
 
             #region 報修類別
@@ -97,8 +122,12 @@ namespace OneService.Controllers
             ViewBag.SRTypeThrList = SRTypeThrList;
             #endregion
 
+            #region 取得服務團隊清單
+            var SRTeamIDList = CMF.findSRTeamIDList();           
+            #endregion
+
             #region 取得SRID
-            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == "6100000001");
+            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
 
             if (beanM != null)
             {
@@ -111,21 +140,41 @@ namespace OneService.Controllers
                 ViewBag.cDesc = beanM.CDesc;
                 ViewBag.cNotes = beanM.CNotes;
                 ViewBag.cSRPathWay = beanM.CSrpathWay;
+                ViewBag.cMAServiceType = beanM.CMaserviceType;
                 ViewBag.pStatus = "E0001";
+                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
+
+                //指定要顯示的服務團隊清單
+                SRTeamIDList.Where(q => q.Value == beanM.CTeamId).First().Selected = true;
+            }
+            else
+            {
+                ViewBag.cSRPathWay = "Z05";     //手動建立
+                ViewBag.pStatus = "E0001";      //新建
+                ViewBag.cMAServiceType = "";    //請選擇
+                ViewBag.cSRProcessWay = "";     //請選擇
             }
             #endregion
 
-            #region 設定狀態
-            var model = new StatusViewModel();
-            model.ddl_cStatus = "E0001";
+            #region 指派Option值
+            model.ddl_cStatus = ViewBag.pStatus;                //設定狀態
+            model.ddl_cSRPathWay = ViewBag.cSRPathWay;          //設定報修管道
+            model.ddl_cMAServiceType = ViewBag.cMAServiceType;   //設定維護服務種類
+            model.ddl_cSRProcessWay = ViewBag.cSRProcessWay;    //設定處理方式
             #endregion
 
-            ViewBag.pStatus = "E0001";
-            ViewBag.pOperationID = pOperationID_GenerallySR;           
+            ViewBag.pOperationID = pOperationID_GenerallySR;
+            ViewBag.SRTeamIDList = SRTeamIDList;
 
             return View(model);
         }
+        #endregion
 
+        #region 儲存一般服務請求
+        /// <summary>
+        /// 儲存一般服務請求
+        /// </summary>
+        /// <returns></returns>
         public IActionResult SaveGenerallySR()
         {            
             getLoginAccount();
@@ -137,9 +186,65 @@ namespace OneService.Controllers
 
             return RedirectToAction("finishForm");
         }
+        #endregion
+
+        #region 取得系統參數清單
+        /// <summary>
+        /// 取得系統參數清單
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cFunctionID">功能別(OTHER.其他自定義)</param>
+        /// <param name="cCompanyID">公司別</param>
+        /// <param name="cNo">參數No</param>
+        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
+        /// <returns></returns>
+        static public List<SelectListItem> findSysParameterList(string cOperationID, string cFunctionID, string cCompanyID, string cNo, bool cEmptyOption)
+        {
+            var tList = CMF.findSysParameterListItem(cOperationID, cFunctionID, cCompanyID, cNo, cEmptyOption);
+
+            return tList;
+        }
+        #endregion
+
+        #region Ajax傳入第一階(大類)並取得第二階(中類)清單
+        /// <summary>
+        /// Ajax傳入第一階(大類)並取得第二階(中類)清單
+        /// </summary>
+        /// <param name="keyword">第一階(大類)代碼</param>
+        /// <returns></returns>
+        public ActionResult findSRTypeSecList(string keyword)
+        {
+            var tList = new List<SelectListItem>();
+
+            tList = CMF.findSRTypeSecList(keyword);
+
+            ViewBag.SRTypeSecList = tList;
+            return Json(tList);
+        }
+        #endregion
+
+        #region Ajax傳入第二階(中類)並取得第三階(小類)清單
+        /// <summary>
+        /// Ajax傳入第二階(中類)並取得第三階(小類)清單
+        /// </summary>
+        /// <param name="keyword">第二階(中類)代碼</param>
+        /// <returns></returns>
+        public ActionResult findSRTypeThrList(string keyword)
+        {
+            var tList = new List<SelectListItem>();
+
+            tList = CMF.findSRTypeThrList(keyword);
+
+            ViewBag.SRTypeThrList = tList;
+            return Json(tList);
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑一般服務請求 ↑↑↑↑↑-----    
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
+        #region 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
         /// <summary>
         /// 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
         /// </summary>
@@ -148,6 +253,7 @@ namespace OneService.Controllers
         {
             return View();
         }
+        #endregion
 
         #region 取得登入帳號權限
         /// <summary>
@@ -409,37 +515,71 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region Ajax傳入第一階(大類)並取得第二階(中類)清單
+        #region Ajax產品序號資訊查詢
         /// <summary>
-        /// Ajax傳入第一階(大類)並取得第二階(中類)清單
+        /// Ajax產品序號資訊查詢
         /// </summary>
-        /// <param name="keyword">第一階(大類)代碼</param>
+        /// <param name="IV_SERIAL">序號</param>
         /// <returns></returns>
-        public ActionResult findSRTypeSecList(string keyword)
+        public IActionResult findMaterialBySerial(string IV_SERIAL)
         {
-            var tList = new List<SelectListItem>();
+            var beans = dbProxy.Stockalls.Where(x => x.IvSerial.Contains(IV_SERIAL.Trim()));
 
-            tList = CMF.findSRTypeSecList(keyword);
+            List<SerialMaterialInfo> tList = new List<SerialMaterialInfo>();
 
-            ViewBag.SRTypeSecList = tList;
+            foreach (var bean in beans)
+            {
+                SerialMaterialInfo ProBean = new SerialMaterialInfo();
+
+                ProBean.IV_SERIAL = bean.IvSerial;
+                ProBean.ProdID = bean.ProdId;
+                ProBean.Product = bean.Product;                
+
+                tList.Add(ProBean);
+            }
+
             return Json(tList);
         }
         #endregion
 
-        #region Ajax傳入第二階(中類)並取得第三階(小類)清單
+        #region Ajax取得製造商零件號碼和裝機號碼
         /// <summary>
-        /// Ajax傳入第二階(中類)並取得第三階(小類)清單
+        /// Ajax取得製造商零件號碼和裝機號碼
         /// </summary>
-        /// <param name="keyword">第二階(中類)代碼</param>
+        /// <param name="ProdID">料號</param>
+        /// <param name="IV_SERIAL">序號</param>
         /// <returns></returns>
-        public ActionResult findSRTypeThrList(string keyword)
+        public IActionResult findMFRPandInstallNumber(string ProdID, string IV_SERIAL)
         {
-            var tList = new List<SelectListItem>();
+            string[] tAry = new string[2];
 
-            tList = CMF.findSRTypeThrList(keyword);
+            tAry[0] = CMF.findMFRPNumber(ProdID);
+            tAry[1] = CMF.findInstallNumber(IV_SERIAL);
 
-            ViewBag.SRTypeThrList = tList;
-            return Json(tList);
+            return Json(tAry);
+        }
+        #endregion
+
+        #region Ajax取得BOM表查詢結果
+        /// <summary>
+        /// BOM表查詢結果
+        /// </summary>
+        /// <param name="ProdID">物料編號</param>        
+        /// <returns></returns>
+        public ActionResult SpareBOM(string ProdID)
+        {
+            string reValue = string.Empty;
+
+            reValue = CMF.findMaterialBOM(ProdID);
+
+            if (reValue == "")
+            {
+                reValue = "無BOM表資訊！";
+            }
+
+            ViewBag.BasicContent = reValue.Replace("\r\n", "<br/>");
+
+            return View();
         }
         #endregion
 
@@ -447,26 +587,64 @@ namespace OneService.Controllers
 
         #region -----↓↓↓↓↓自定義Class ↓↓↓↓↓-----
 
-        #region 狀態
+        #region DropDownList選項Class
         /// <summary>
-        /// 狀態
+        /// DropDownList選項Class
         /// </summary>
-        public class StatusViewModel
+        public class ViewModel
         {
+            #region 狀態
             public string ddl_cStatus { get; set; }
-            public List<SelectListItem> ListStatus { get; } = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "E0001", Text = "新建" },
-                new SelectListItem { Value = "E0002", Text = "L2處理中" },
-                new SelectListItem { Value = "E0003", Text = "報價中" },
-                new SelectListItem { Value = "E0004", Text = "3rd Party處理中" },
-                new SelectListItem { Value = "E0005", Text = "L3處理中" },
-                new SelectListItem { Value = "E0006", Text = "完修" },
-                new SelectListItem { Value = "E0012", Text = "HPGCSN 申請" },
-                new SelectListItem { Value = "E0013", Text = "HPGCSN 完成" },
-                new SelectListItem { Value = "E0014", Text = "駁回" },
-                new SelectListItem { Value = "E0015", Text = "取消" },                
-            };
+
+            //不抓DB參數的設定
+            //public List<SelectListItem> ListStatus { get; } = new List<SelectListItem>
+            //{                
+            //    new SelectListItem { Value = "E0001", Text = "新建" },
+            //    new SelectListItem { Value = "E0002", Text = "L2處理中" },
+            //    new SelectListItem { Value = "E0003", Text = "報價中" },
+            //    new SelectListItem { Value = "E0004", Text = "3rd Party處理中" },
+            //    new SelectListItem { Value = "E0005", Text = "L3處理中" },
+            //    new SelectListItem { Value = "E0006", Text = "完修" },
+            //    new SelectListItem { Value = "E0012", Text = "HPGCSN 申請" },
+            //    new SelectListItem { Value = "E0013", Text = "HPGCSN 完成" },
+            //    new SelectListItem { Value = "E0014", Text = "駁回" },
+            //    new SelectListItem { Value = "E0015", Text = "取消" },                
+            //};
+
+            public List<SelectListItem> ListStatus = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRSTATUS", false);
+            #endregion
+
+            #region 報修管道
+            public string ddl_cSRPathWay { get; set; }
+            public List<SelectListItem> ListSRPathWay = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPATH", false);
+            #endregion
+
+            #region 維護服務種類
+            public string ddl_cMAServiceType { get; set; }
+            public List<SelectListItem> ListMAServiceType = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRMATYPE", true);
+            #endregion
+
+            #region 處理方式
+            public string ddl_cSRProcessWay { get; set; }            
+            public List<SelectListItem> ListSRProcessWay = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPROCESS", true);
+            #endregion
+        }
+        #endregion
+
+        #region 關鍵字產品序號物料資訊
+        /// <summary>關鍵字產品序號物料資訊</summary>
+        public struct SerialMaterialInfo
+        {
+            /// <summary>序號</summary>
+            public string IV_SERIAL { get; set; }
+            /// <summary>料號</summary>
+            public string ProdID { get; set; }
+            /// <summary>料號說明</summary>
+            public string Product { get; set; }
+            /// <summary>製造商零件號碼</summary>
+            public string MFRPN { get; set; }
+            /// <summary>裝機號碼</summary>
+            public string InstallNo { get; set; }
         }
         #endregion
 

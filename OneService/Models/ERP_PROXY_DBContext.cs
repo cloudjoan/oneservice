@@ -19,6 +19,7 @@ namespace OneService.Models
         public virtual DbSet<CustomerContact> CustomerContacts { get; set; } = null!;
         public virtual DbSet<Material> Materials { get; set; } = null!;
         public virtual DbSet<PostalaAddressAndCode> PostalaAddressAndCodes { get; set; } = null!;
+        public virtual DbSet<Stockall> Stockalls { get; set; } = null!;
         public virtual DbSet<ViewCustomer2> ViewCustomer2s { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -226,6 +227,147 @@ namespace OneService.Models
                 entity.Property(e => e.Road).HasMaxLength(50);
 
                 entity.Property(e => e.No).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<Stockall>(entity =>
+            {
+                entity.HasKey(e => e.IvSerial);
+
+                entity.ToTable("STOCKALL");
+
+                entity.HasIndex(e => new { e.VendoromSdate, e.VendoromEdate, e.OmSdate, e.OmEdate, e.ExSdate, e.ExEdate, e.TmSdate, e.TmEdate }, "NonClusteredIndex-20220901-160826");
+
+                entity.Property(e => e.IvSerial)
+                    .HasMaxLength(40)
+                    .HasColumnName("IV_SERIAL");
+
+                entity.Property(e => e.ContractEdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("ContractEDate");
+
+                entity.Property(e => e.ContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("ContractID");
+
+                entity.Property(e => e.ContractName).HasMaxLength(255);
+
+                entity.Property(e => e.ContractSdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("ContractSDATE");
+
+                entity.Property(e => e.CrDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("CR_DATE");
+
+                entity.Property(e => e.CustomerId)
+                    .HasMaxLength(10)
+                    .HasColumnName("CustomerID");
+
+                entity.Property(e => e.CustomerName).HasMaxLength(35);
+
+                entity.Property(e => e.ExEdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("EX_EDATE");
+
+                entity.Property(e => e.ExSdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("EX_SDATE");
+
+                entity.Property(e => e.ExWtyid)
+                    .HasMaxLength(40)
+                    .HasColumnName("EX_WTYID");
+
+                entity.Property(e => e.Internalno)
+                    .HasMaxLength(20)
+                    .HasColumnName("INTERNALNO");
+
+                entity.Property(e => e.IvDndate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("IV_DNDATE");
+
+                entity.Property(e => e.IvGrdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("IV_GRDATE");
+
+                entity.Property(e => e.IvPono)
+                    .HasMaxLength(10)
+                    .HasColumnName("IV_PONO");
+
+                entity.Property(e => e.IvSlaresp)
+                    .HasMaxLength(10)
+                    .HasColumnName("IV_SLARESP");
+
+                entity.Property(e => e.IvSlasrv)
+                    .HasMaxLength(10)
+                    .HasColumnName("IV_SLASRV");
+
+                entity.Property(e => e.IvVendor)
+                    .HasMaxLength(10)
+                    .HasColumnName("IV_VENDOR");
+
+                entity.Property(e => e.IvVname)
+                    .HasMaxLength(40)
+                    .HasColumnName("IV_VNAME");
+
+                entity.Property(e => e.OmEdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("OM_EDATE");
+
+                entity.Property(e => e.OmSdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("OM_SDATE");
+
+                entity.Property(e => e.OmWtyid)
+                    .HasMaxLength(40)
+                    .HasColumnName("OM_WTYID");
+
+                entity.Property(e => e.OppNo).HasMaxLength(10);
+
+                entity.Property(e => e.ProdHierarchy).HasMaxLength(18);
+
+                entity.Property(e => e.ProdId)
+                    .HasMaxLength(40)
+                    .HasColumnName("ProdID");
+
+                entity.Property(e => e.Product).HasMaxLength(50);
+
+                entity.Property(e => e.ProjName).HasMaxLength(200);
+
+                entity.Property(e => e.RenewStatus)
+                    .HasMaxLength(2)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.SoAmount).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.SoNo).HasMaxLength(10);
+
+                entity.Property(e => e.SoSales).HasMaxLength(20);
+
+                entity.Property(e => e.SoSalesName).HasMaxLength(20);
+
+                entity.Property(e => e.TmEdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("TM_EDATE");
+
+                entity.Property(e => e.TmSdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("TM_SDATE");
+
+                entity.Property(e => e.TmWtyid)
+                    .HasMaxLength(40)
+                    .HasColumnName("TM_WTYID");
+
+                entity.Property(e => e.VendoromEdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("VENDOROM_EDATE");
+
+                entity.Property(e => e.VendoromSdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("VENDOROM_SDATE");
+
+                entity.Property(e => e.VendoromWtyid)
+                    .HasMaxLength(40)
+                    .HasColumnName("VENDOROM_WTYID");
             });
 
             modelBuilder.Entity<ViewCustomer2>(entity =>

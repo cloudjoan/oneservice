@@ -38,8 +38,8 @@ namespace OneService.Controllers
             #region 組待查詢清單
             var beans = psipDb.TbOneOperationParameters.OrderBy(x => x.CModuleId).OrderBy(x => x.COperationId).Where(x => x.Disabled == 0 &&
                                                            (string.IsNullOrEmpty(cModuleID) ? true : x.CModuleId == cModuleID) &&
-                                                           (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.Contains(cOperationID)) &&
-                                                           (string.IsNullOrEmpty(cOperationName) ? true : x.COperationName.Contains(cOperationName)));
+                                                           (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.Contains(cOperationID.Trim())) &&
+                                                           (string.IsNullOrEmpty(cOperationName) ? true : x.COperationName.Contains(cOperationName.Trim())));
 
             foreach (var bean in beans)
             {
@@ -88,9 +88,9 @@ namespace OneService.Controllers
                         TbOneOperationParameter prBean1 = new TbOneOperationParameter();
                         prBean1.CId = Guid.NewGuid();
                         prBean1.CModuleId = cModuleID;
-                        prBean1.COperationId = cOperationID;
-                        prBean1.COperationName = cOperationName;
-                        prBean1.COperationUrl = cOperationURL == null ? "" : cOperationURL;
+                        prBean1.COperationId = cOperationID.Trim();
+                        prBean1.COperationName = cOperationName.Trim();
+                        prBean1.COperationUrl = cOperationURL == null ? "" : cOperationURL.Trim();
                         prBean1.Disabled = 0;
 
                         prBean1.CreatedUserName = "SYS";
@@ -109,8 +109,8 @@ namespace OneService.Controllers
                 {
                     #region -- 編輯 --
                     var prBean = psipDb.TbOneOperationParameters.FirstOrDefault(x => x.CId.ToString() == cID);
-                    prBean.COperationName = cOperationName;
-                    prBean.COperationUrl = cOperationURL == null ? "": cOperationURL;
+                    prBean.COperationName = cOperationName.Trim();
+                    prBean.COperationUrl = cOperationURL == null ? "": cOperationURL.Trim();
 
                     prBean.ModifiedUserName = "SYS";
                     prBean.ModifiedDate = DateTime.Now;
@@ -254,9 +254,9 @@ namespace OneService.Controllers
                                                             (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.ToString() == cOperationID) &&
                                                             (string.IsNullOrEmpty(cCompanyID) ? true : x.CCompanyId == cCompanyID) &&
                                                             (string.IsNullOrEmpty(cFunctionID) ? true : x.CFunctionId == cFunctionID) &&
-                                                            (string.IsNullOrEmpty(cNo) ? true : x.CNo.Contains(cNo)) &&
-                                                            (string.IsNullOrEmpty(cValue) ? true : x.CValue.Contains(cValue)) &&
-                                                            (string.IsNullOrEmpty(cDescription) ? true : x.CDescription.Contains(cDescription)));
+                                                            (string.IsNullOrEmpty(cNo) ? true : x.CNo.Contains(cNo.Trim())) &&
+                                                            (string.IsNullOrEmpty(cValue) ? true : x.CValue.Contains(cValue.Trim())) &&
+                                                            (string.IsNullOrEmpty(cDescription) ? true : x.CDescription.Contains(cDescription.Trim())));
 
             foreach (var bean in beans)
             {
@@ -315,9 +315,9 @@ namespace OneService.Controllers
                         prBean1.COperationId = Guid.Parse(cOperationID);
                         prBean1.CFunctionId = cFunctionID;
                         prBean1.CCompanyId = cCompanyID;
-                        prBean1.CNo = cNo;
-                        prBean1.CValue = cValue;
-                        prBean1.CDescription = cDescription;
+                        prBean1.CNo = cNo.Trim();
+                        prBean1.CValue = cValue.Trim();
+                        prBean1.CDescription = cDescription.Trim();
                         prBean1.Disabled = 0;
 
                         prBean1.CreatedUserName = "SYS";
@@ -345,8 +345,8 @@ namespace OneService.Controllers
                     if (prBean == null)
                     {
                         var prBean1 = psipDb.TbOneSysParameters.FirstOrDefault(x => x.CId.ToString() == cID);
-                        prBean1.CValue = cValue;
-                        prBean1.CDescription = cDescription;
+                        prBean1.CValue = cValue.Trim();
+                        prBean1.CDescription = cDescription.Trim();
 
                         prBean1.ModifiedUserName = "SYS";
                         prBean1.ModifiedDate = DateTime.Now;
@@ -571,8 +571,8 @@ namespace OneService.Controllers
                                                             (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.ToString() == cOperationID) &&
                                                             (string.IsNullOrEmpty(cCompanyID) ? true : x.CCompanyId == cCompanyID) &&                                                            
                                                             (string.IsNullOrEmpty(cFunctionID) ? true : x.CFunctionId == cFunctionID) &&
-                                                            (string.IsNullOrEmpty(cValue) ? true : x.CValue.Contains(cValue)) &&
-                                                            (string.IsNullOrEmpty(cDescription) ? true : x.CDescription.Contains(cDescription)));
+                                                            (string.IsNullOrEmpty(cValue) ? true : x.CValue.Contains(cValue.Trim())) &&
+                                                            (string.IsNullOrEmpty(cDescription) ? true : x.CDescription.Contains(cDescription.Trim())));
 
             foreach (var bean in beans)
             {
@@ -639,8 +639,8 @@ namespace OneService.Controllers
                         prBean1.COperationId = Guid.Parse(cOperationID);
                         prBean1.CFunctionId = cFunctionID;
                         prBean1.CCompanyId = cCompanyID;                        
-                        prBean1.CValue = cValue;
-                        prBean1.CDescription = cDescription;
+                        prBean1.CValue = cValue.Trim();
+                        prBean1.CDescription = cDescription.Trim();
                         prBean1.CIncludeSubDept = cIncludeSubDept == null ? "N" : cIncludeSubDept;
                         prBean1.CExeQuery = cExeQuery == null ? "N" : cExeQuery;
                         prBean1.CExeInsert = cExeInsert == null ? "N" : cExeInsert; 
@@ -672,8 +672,8 @@ namespace OneService.Controllers
                     if (prBean == null)
                     {
                         var prBean1 = psipDb.TbOneRoleParameters.FirstOrDefault(x => x.CId.ToString() == cID);
-                        prBean1.CValue = cValue;
-                        prBean1.CDescription = cDescription;
+                        prBean1.CValue = cValue.Trim();
+                        prBean1.CDescription = cDescription.Trim();
                         prBean1.CIncludeSubDept = cIncludeSubDept == null ? "N" : cIncludeSubDept;
                         prBean1.CExeQuery = cExeQuery == null ? "N" : cExeQuery;
                         prBean1.CExeInsert = cExeInsert == null ? "N" : cExeInsert; 

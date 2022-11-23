@@ -19,6 +19,7 @@ namespace OneService.Models
         public virtual DbSet<TbOneSridformat> TbOneSridformats { get; set; } = null!;
         public virtual DbSet<TbOneSrmain> TbOneSrmains { get; set; } = null!;
         public virtual DbSet<TbOneSrrepairType> TbOneSrrepairTypes { get; set; } = null!;
+        public virtual DbSet<TbOneSrteamMapping> TbOneSrteamMappings { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -218,6 +219,43 @@ namespace OneService.Models
                 entity.Property(e => e.CUpKindKey)
                     .HasMaxLength(20)
                     .HasColumnName("cUP_KIND_KEY");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneSrteamMapping>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRTeamMapping");
+
+                entity.HasIndex(e => new { e.CTeamNewId, e.CTeamOldId }, "NonClusteredIndex-20221108-160629");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CTeamNewId)
+                    .HasMaxLength(36)
+                    .IsUnicode(false)
+                    .HasColumnName("cTeamNewID");
+
+                entity.Property(e => e.CTeamNewName)
+                    .HasMaxLength(50)
+                    .HasColumnName("cTeamNewName");
+
+                entity.Property(e => e.CTeamOldId)
+                    .HasMaxLength(36)
+                    .IsUnicode(false)
+                    .HasColumnName("cTeamOldID");
+
+                entity.Property(e => e.CTeamOldName)
+                    .HasMaxLength(50)
+                    .HasColumnName("cTeamOldName");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 

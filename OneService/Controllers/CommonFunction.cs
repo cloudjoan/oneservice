@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OneService.Models;
+using System.Drawing;
 using System.Net.Mail;
 using System.Security.Principal;
 
@@ -107,6 +108,38 @@ namespace OneService.Controllers
 
                     tList.Add(new SelectListItem { Text = tKIND_NAME, Value = bean.CKindKey });
                     tTempList.Add(bean.CKindKey);
+                }
+            }
+
+            return tList;
+        }
+        #endregion       
+
+        #region 取得服務團隊清單
+        /// <summary>
+        /// 取得服務團隊清單
+        /// </summary>
+        /// <returns></returns>
+        public List<SelectListItem> findSRTeamIDList()
+        {
+            List<string> tTempList = new List<string>();
+
+            string tKEY = string.Empty;
+            string tNAME = string.Empty;
+
+            var beans = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0);
+
+            var tList = new List<SelectListItem>();
+            tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
+
+            foreach (var bean in beans)
+            {
+                if (!tTempList.Contains(bean.CTeamOldId))
+                {
+                    tNAME = bean.CTeamOldId + "_" + bean.CTeamOldName;
+
+                    tList.Add(new SelectListItem { Text = tNAME, Value = bean.CTeamOldId });
+                    tTempList.Add(bean.CTeamOldId);
                 }
             }
 
@@ -431,6 +464,121 @@ namespace OneService.Controllers
                 if (tGUID != beanM.CSystemGuid.ToString())
                 {
                     reValue = "CHANGE";
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
+        /// <summary>
+        /// 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cFunctionID">功能別(OTHER.其他自定義)</param>
+        /// <param name="cCompanyID">公司別</param>
+        /// <param name="cNo">參數No</param>
+        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
+        /// <returns></returns>
+        public List<SelectListItem> findSysParameterListItem(string cOperationID, string cFunctionID, string cCompanyID, string cNo, bool cEmptyOption)
+        {
+            var tList = new List<SelectListItem>();
+            List<string> tTempList = new List<string>();
+
+            string tKEY = string.Empty;
+            string tNAME = string.Empty;
+
+            var beans = psipDb.TbOneSysParameters.OrderBy(x => x.COperationId).OrderBy(x => x.CFunctionId).OrderBy(x => x.CCompanyId).OrderBy(x => x.CNo).
+                                               Where(x => x.Disabled == 0 && 
+                                                          x.COperationId.ToString() == cOperationID && 
+                                                          x.CFunctionId == cFunctionID &&
+                                                          x.CCompanyId == cCompanyID && 
+                                                          x.CNo == cNo);
+
+            if (cEmptyOption)
+            {
+                tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
+            }
+
+            foreach (var bean in beans)
+            {
+                if (!tTempList.Contains(bean.CValue))
+                {
+                    tNAME = bean.CValue + "_" + bean.CDescription;
+
+                    tList.Add(new SelectListItem { Text = tNAME, Value = bean.CValue });
+                    tTempList.Add(bean.CValue);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
+        #region 取得製造商零件號碼
+        /// <summary>
+        /// 取得製造商零件號碼
+        /// </summary>        
+        /// <param name="IV_MATERIAL">物料代號</param>
+        /// <returns></returns>
+        public string findMFRPNumber(string IV_MATERIAL)
+        {
+            string reValue = string.Empty;            
+
+            #region 取得製造商零件號碼
+            var beanM = dbProxy.Materials.FirstOrDefault(x => x.MaraMatnr == IV_MATERIAL.Trim());
+
+            if (beanM != null)
+            {
+                reValue = beanM.MaraMfrpn;                
+            }
+            #endregion           
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得裝機號碼(83 or 63)
+        /// <summary>
+        /// 取得裝機號碼(83 or 63)
+        /// </summary>        
+        /// <param name="IV_SERIAL">序號</param>
+        /// <returns></returns>
+        public string findInstallNumber(string IV_SERIAL)
+        {
+            string reValue = string.Empty;
+
+            #region 取得製造商零件號碼
+            var beanM = psipDb.TbPisInstallmaterials.FirstOrDefault(x => x.Srserial == IV_SERIAL.Trim());
+
+            if (beanM != null)
+            {
+                reValue = beanM.Srid;
+            }
+            #endregion           
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得物料BOM表
+        /// <summary>
+        /// 取得物料BOM表
+        /// </summary>        
+        /// <param name="tMARA_MATNR">料號</param>
+        /// <returns></returns>
+        public string findMaterialBOM(string tMARA_MATNR)
+        {
+            string reValue = string.Empty;
+
+            var bean = dbProxy.Materials.FirstOrDefault(x => x.MaraMatnr == tMARA_MATNR && x.BasicContent != "");
+
+            if (bean != null)
+            {
+                if (bean.BasicContent != null)
+                {
+                    reValue = bean.BasicContent;
                 }
             }
 

@@ -20,6 +20,7 @@ namespace OneService.Models
         public virtual DbSet<TbOneOperationParameter> TbOneOperationParameters { get; set; } = null!;
         public virtual DbSet<TbOneRoleParameter> TbOneRoleParameters { get; set; } = null!;
         public virtual DbSet<TbOneSysParameter> TbOneSysParameters { get; set; } = null!;
+        public virtual DbSet<TbPisInstallmaterial> TbPisInstallmaterials { get; set; } = null!;
         public virtual DbSet<TbProTask> TbProTasks { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -103,7 +104,7 @@ namespace OneService.Models
                     .HasColumnName("cOperationName");
 
                 entity.Property(e => e.COperationUrl)
-                    .HasMaxLength(255)
+                    .HasMaxLength(500)
                     .HasColumnName("cOperationURL");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
@@ -221,6 +222,27 @@ namespace OneService.Models
                 entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbPisInstallmaterial>(entity =>
+            {
+                entity.HasKey(e => new { e.Srid, e.Srserial });
+
+                entity.ToTable("TB_PIS_INSTALLMaterial");
+
+                entity.Property(e => e.Srid)
+                    .HasMaxLength(20)
+                    .HasColumnName("SRID");
+
+                entity.Property(e => e.Srserial)
+                    .HasMaxLength(50)
+                    .HasColumnName("SRSerial");
+
+                entity.Property(e => e.MaterialId)
+                    .HasMaxLength(100)
+                    .HasColumnName("MaterialID");
+
+                entity.Property(e => e.MaterialName).HasMaxLength(100);
             });
 
             modelBuilder.Entity<TbProTask>(entity =>
