@@ -20,7 +20,9 @@ namespace OneService.Models
         public virtual DbSet<Material> Materials { get; set; } = null!;
         public virtual DbSet<PostalaAddressAndCode> PostalaAddressAndCodes { get; set; } = null!;
         public virtual DbSet<Stockall> Stockalls { get; set; } = null!;
+        public virtual DbSet<Stockwty> Stockwties { get; set; } = null!;
         public virtual DbSet<ViewCustomer2> ViewCustomer2s { get; set; } = null!;
+        public virtual DbSet<ViewMaterialByComp> ViewMaterialByComps { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -370,6 +372,95 @@ namespace OneService.Models
                     .HasColumnName("VENDOROM_WTYID");
             });
 
+            modelBuilder.Entity<Stockwty>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("STOCKWTY");
+
+                entity.Property(e => e.CId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("cID");
+
+                entity.Property(e => e.Advice).HasColumnName("ADVICE");
+
+                entity.Property(e => e.BpNo)
+                    .HasMaxLength(40)
+                    .HasColumnName("BP_NO");
+
+                entity.Property(e => e.BpmNo)
+                    .HasMaxLength(20)
+                    .HasColumnName("BPM_NO");
+
+                entity.Property(e => e.CarePackNo)
+                    .HasMaxLength(50)
+                    .HasColumnName("CARE_PACK_NO");
+
+                entity.Property(e => e.CrDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("CR_DATE");
+
+                entity.Property(e => e.CrUser)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("CR_USER");
+
+                entity.Property(e => e.IvCid)
+                    .HasMaxLength(10)
+                    .HasColumnName("IV_CID");
+
+                entity.Property(e => e.IvDndate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("IV_DNDATE");
+
+                entity.Property(e => e.IvEdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("IV_EDATE");
+
+                entity.Property(e => e.IvSdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("IV_SDATE");
+
+                entity.Property(e => e.IvSerial)
+                    .HasMaxLength(40)
+                    .HasColumnName("IV_SERIAL");
+
+                entity.Property(e => e.IvSlaresp)
+                    .HasMaxLength(10)
+                    .HasColumnName("IV_SLARESP");
+
+                entity.Property(e => e.IvSlasrv)
+                    .HasMaxLength(10)
+                    .HasColumnName("IV_SLASRV");
+
+                entity.Property(e => e.IvSono)
+                    .HasMaxLength(10)
+                    .HasColumnName("IV_SONO");
+
+                entity.Property(e => e.IvWtydesc)
+                    .HasMaxLength(50)
+                    .HasColumnName("IV_WTYDESC");
+
+                entity.Property(e => e.IvWtyid)
+                    .HasMaxLength(40)
+                    .HasColumnName("IV_WTYID");
+
+                entity.Property(e => e.Note).HasColumnName("NOTE");
+
+                entity.Property(e => e.ReceiptDate).HasMaxLength(22);
+
+                entity.Property(e => e.ReceiptNo).HasMaxLength(100);
+
+                entity.Property(e => e.UpDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("UP_DATE");
+
+                entity.Property(e => e.UpUser)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("UP_USER");
+            });
+
             modelBuilder.Entity<ViewCustomer2>(entity =>
             {
                 entity.HasNoKey();
@@ -391,6 +482,41 @@ namespace OneService.Models
                 entity.Property(e => e.KnvvVkorg)
                     .HasMaxLength(4)
                     .HasColumnName("KNVV_VKORG");
+            });
+
+            modelBuilder.Entity<ViewMaterialByComp>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_MATERIAL_ByComp");
+
+                entity.Property(e => e.MaktTxza1Zf)
+                    .HasMaxLength(40)
+                    .HasColumnName("MAKT_TXZA1_ZF");
+
+                entity.Property(e => e.MaraMatkl)
+                    .HasMaxLength(9)
+                    .HasColumnName("MARA_MATKL");
+
+                entity.Property(e => e.MaraMatnr)
+                    .HasMaxLength(18)
+                    .HasColumnName("MARA_MATNR");
+
+                entity.Property(e => e.MaraStxl1)
+                    .HasMaxLength(200)
+                    .HasColumnName("MARA_STXL1");
+
+                entity.Property(e => e.MardWerks)
+                    .HasMaxLength(4)
+                    .HasColumnName("MARD_WERKS");
+
+                entity.Property(e => e.MvkeProdh)
+                    .HasMaxLength(18)
+                    .HasColumnName("MVKE_PRODH");
+
+                entity.Property(e => e.MvkeVkorg)
+                    .HasMaxLength(4)
+                    .HasColumnName("MVKE_VKORG");
             });
 
             OnModelCreatingPartial(modelBuilder);

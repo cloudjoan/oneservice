@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OneService.Models;
+using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Net.Mail;
 using System.Security.Principal;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace OneService.Controllers
 {
@@ -13,7 +16,17 @@ namespace OneService.Controllers
         TSTIONEContext dbOne = new TSTIONEContext();
         TAIFContext bpmDB = new TAIFContext();
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
-        MCSWorkflowContext dbEIP = new MCSWorkflowContext();
+        MCSWorkflowContext dbEIP = new MCSWorkflowContext();       
+
+        /// <summary>
+        /// 呼叫SAPERP正式區或測試區(true.正式區 false.測試區)
+        /// </summary>
+        bool pIsFormal = false;
+
+        public CommonFunction()
+        {
+            
+        }
 
         #region -----↓↓↓↓↓一般服務請求 ↓↓↓↓↓-----        
 
@@ -144,6 +157,47 @@ namespace OneService.Controllers
             }
 
             return tList;
+        }
+        #endregion
+
+        #region 取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
+        /// <summary>
+        /// 取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <returns></returns>
+        public bool getCallSAPERPPara(string cOperationID)
+        {
+            bool reValue = false;
+
+            string tValue =  findSysParameterValue(cOperationID, "OTHER", "ALL", "SAPERP");
+
+            reValue = Convert.ToBoolean(tValue);
+
+            return reValue;
+        }
+        #endregion
+
+        #region 呼叫BPM保固申請單並取得計費業務、發票號碼、發票日期
+        /// <summary>
+        /// 呼叫BPM保固申請單並取得計費業務、發票號碼、發票日期
+        /// </summary>
+        /// <param name="BPMNO">保固表單編號</param>
+        /// <returns></returns>
+        public string[] findBPMWarrantyInfo(string BPMNO)
+        {
+            string[] reValue = new string[3];
+
+            var bean = bpmDB.TblFormGuaranteePops.FirstOrDefault(x => x.CFormNo == BPMNO);
+
+            if (bean != null)
+            {
+                reValue[0] = bean.CApplyName;   //計費業務
+                reValue[1] = bean.CReceiptNo;   //發票號碼
+                reValue[2] = bean.CReceiptDate; //發票日期
+            }
+
+            return reValue;
         }
         #endregion
 
@@ -469,52 +523,7 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion
-
-        #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
-        /// <summary>
-        /// 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
-        /// </summary>
-        /// <param name="cOperationID">程式作業編號檔系統ID</param>
-        /// <param name="cFunctionID">功能別(OTHER.其他自定義)</param>
-        /// <param name="cCompanyID">公司別</param>
-        /// <param name="cNo">參數No</param>
-        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
-        /// <returns></returns>
-        public List<SelectListItem> findSysParameterListItem(string cOperationID, string cFunctionID, string cCompanyID, string cNo, bool cEmptyOption)
-        {
-            var tList = new List<SelectListItem>();
-            List<string> tTempList = new List<string>();
-
-            string tKEY = string.Empty;
-            string tNAME = string.Empty;
-
-            var beans = psipDb.TbOneSysParameters.OrderBy(x => x.COperationId).OrderBy(x => x.CFunctionId).OrderBy(x => x.CCompanyId).OrderBy(x => x.CNo).
-                                               Where(x => x.Disabled == 0 && 
-                                                          x.COperationId.ToString() == cOperationID && 
-                                                          x.CFunctionId == cFunctionID &&
-                                                          x.CCompanyId == cCompanyID && 
-                                                          x.CNo == cNo);
-
-            if (cEmptyOption)
-            {
-                tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
-            }
-
-            foreach (var bean in beans)
-            {
-                if (!tTempList.Contains(bean.CValue))
-                {
-                    tNAME = bean.CValue + "_" + bean.CDescription;
-
-                    tList.Add(new SelectListItem { Text = tNAME, Value = bean.CValue });
-                    tTempList.Add(bean.CValue);
-                }
-            }
-
-            return tList;
-        }
-        #endregion
+        #endregion        
 
         #region 取得製造商零件號碼
         /// <summary>
@@ -585,6 +594,93 @@ namespace OneService.Controllers
             return reValue;
         }
         #endregion
+
+        #region 依關鍵字查詢物料資訊
+        /// <summary>
+        /// 依關鍵字查詢物料資訊
+        /// </summary>        
+        /// <param name="keyword">料號/料號說明關鍵字</param>
+        /// <returns></returns>
+        public Object findMaterialByKeyWords(string keyword)
+        {
+            Object contentObj = dbProxy.ViewMaterialByComps.Where(x => x.MaraMatnr.Contains(keyword) || x.MaktTxza1Zf.Contains(keyword)).Take(8);
+
+            return contentObj;
+        }
+        #endregion
+
+        #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
+        /// <summary>
+        /// 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cFunctionID">功能別(OTHER.其他自定義)</param>
+        /// <param name="cCompanyID">公司別(ALL.全集團、T012.大世科、T016.群輝、C069.大世科技上海、T022.協志科)</param>
+        /// <param name="cNo">參數No</param>
+        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
+        /// <returns></returns>
+        public List<SelectListItem> findSysParameterListItem(string cOperationID, string cFunctionID, string cCompanyID, string cNo, bool cEmptyOption)
+        {
+            var tList = new List<SelectListItem>();
+            List<string> tTempList = new List<string>();
+
+            string tKEY = string.Empty;
+            string tNAME = string.Empty;
+
+            var beans = psipDb.TbOneSysParameters.OrderBy(x => x.COperationId).OrderBy(x => x.CFunctionId).OrderBy(x => x.CCompanyId).OrderBy(x => x.CNo).
+                                               Where(x => x.Disabled == 0 &&
+                                                          x.COperationId.ToString() == cOperationID &&
+                                                          x.CFunctionId == cFunctionID.Trim() &&
+                                                          x.CCompanyId == cCompanyID.Trim() &&
+                                                          x.CNo == cNo.Trim());
+
+            if (cEmptyOption)
+            {
+                tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
+            }
+
+            foreach (var bean in beans)
+            {
+                if (!tTempList.Contains(bean.CValue))
+                {
+                    tNAME = bean.CValue + "_" + bean.CDescription;
+
+                    tList.Add(new SelectListItem { Text = tNAME, Value = bean.CValue });
+                    tTempList.Add(bean.CValue);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
+        #region 取得【資訊系統參數設定檔】的參數值
+        /// <summary>
+        /// 取得【資訊系統參數設定檔】的參數值
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cFunctionID">功能別(SENDMAIL.寄送Mail、ACCOUNT.取得人員帳號、OTHER.其他自定義)</param>
+        /// <param name="cCompanyID">公司別(ALL.全集團、T012.大世科、T016.群輝、C069.大世科技上海、T022.協志科)</param>
+        /// <param name="cNo">參數No</param>
+        /// <returns></returns>
+        public string findSysParameterValue(string cOperationID, string cFunctionID, string cCompanyID, string cNo)
+        {
+            string reValue = string.Empty;
+
+            var bean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                 x.COperationId.ToString() == cOperationID &&
+                                                                 x.CFunctionId == cFunctionID.Trim() &&
+                                                                 x.CCompanyId == cCompanyID.Trim() &&
+                                                                 x.CNo == cNo.Trim());
+
+            if (bean != null)
+            {
+                reValue = bean.CValue;
+            }
+
+            return reValue;
+        }
+        #endregion       
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----
     }

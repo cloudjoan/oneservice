@@ -18,6 +18,7 @@ namespace OneService.Models
 
         public virtual DbSet<TblDepartment> TblDepartments { get; set; } = null!;
         public virtual DbSet<TblEmployee> TblEmployees { get; set; } = null!;
+        public virtual DbSet<TblFormGuaranteePop> TblFormGuaranteePops { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -371,6 +372,82 @@ namespace OneService.Models
                 entity.Property(e => e.Pk)
                     .HasMaxLength(100)
                     .HasColumnName("pk");
+            });
+
+            modelBuilder.Entity<TblFormGuaranteePop>(entity =>
+            {
+                entity.HasKey(e => e.CFormNo)
+                    .HasName("PK__tblForm___FE82A1B27132C993");
+
+                entity.ToTable("tblForm_Guarantee_Pop");
+
+                entity.Property(e => e.CFormNo)
+                    .HasMaxLength(50)
+                    .HasColumnName("cFormNo");
+
+                entity.Property(e => e.CApplyEmail)
+                    .HasMaxLength(100)
+                    .HasColumnName("cApplyEmail");
+
+                entity.Property(e => e.CApplyName)
+                    .HasMaxLength(50)
+                    .HasColumnName("cApplyName");
+
+                entity.Property(e => e.CApplyTel)
+                    .HasMaxLength(30)
+                    .HasColumnName("cApplyTel");
+
+                entity.Property(e => e.CCounts)
+                    .HasMaxLength(10)
+                    .HasColumnName("cCounts");
+
+                entity.Property(e => e.CCustAddr)
+                    .HasMaxLength(200)
+                    .HasColumnName("cCustAddr");
+
+                entity.Property(e => e.CCustComp)
+                    .HasMaxLength(100)
+                    .HasColumnName("cCustComp");
+
+                entity.Property(e => e.CCustEmail)
+                    .HasMaxLength(100)
+                    .HasColumnName("cCustEmail");
+
+                entity.Property(e => e.CCustName)
+                    .HasMaxLength(100)
+                    .HasColumnName("cCustName");
+
+                entity.Property(e => e.CCustTel)
+                    .HasMaxLength(30)
+                    .HasColumnName("cCustTel");
+
+                entity.Property(e => e.COrgWarrantyDate)
+                    .HasMaxLength(22)
+                    .HasColumnName("cOrgWarrantyDate");
+
+                entity.Property(e => e.CProdName)
+                    .HasMaxLength(100)
+                    .HasColumnName("cProdName");
+
+                entity.Property(e => e.CProdSn)
+                    .HasMaxLength(200)
+                    .HasColumnName("cProdSN");
+
+                entity.Property(e => e.CPurpose)
+                    .HasMaxLength(2000)
+                    .HasColumnName("cPurpose");
+
+                entity.Property(e => e.CReceiptDate)
+                    .HasMaxLength(22)
+                    .HasColumnName("cReceiptDate");
+
+                entity.Property(e => e.CReceiptNo)
+                    .HasMaxLength(100)
+                    .HasColumnName("cReceiptNo");
+
+                entity.Property(e => e.CWarrantyDate)
+                    .HasMaxLength(22)
+                    .HasColumnName("cWarrantyDate");
             });
 
             OnModelCreatingPartial(modelBuilder);
