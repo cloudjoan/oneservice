@@ -774,20 +774,7 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion
-
-        #region Ajax用中文或英文姓名查詢人員
-        /// <summary>
-        /// Ajax用中文或英文姓名查詢人員
-        /// </summary>        
-        /// <returns></returns>
-        public IActionResult AjaxfindEmployeeBy(string keyword)
-        {           
-            var beans = psipDb.TbOneOperationParameters.Where(x => x.CModuleId == "ALL").Take(5);
-
-            return Json(beans);
-        }
-        #endregion
+        #endregion       
 
         #region Ajax用中文或英文姓名查詢人員
         /// <summary>

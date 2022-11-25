@@ -682,6 +682,26 @@ namespace OneService.Controllers
         }
         #endregion       
 
+        #region 寫log 
+        /// <summary>
+        /// 寫log
+        /// </summary>
+        /// <param name="tContent">內容</param>
+        /// <param name="tMethodName">方法目錄</param>
+        public void writeToLog(string tContent, string tMethodName)
+        {
+            string filePath = "C://ONEServiceLogs//" + tMethodName + "//";
+            if (!(Directory.Exists(filePath)))
+            {
+                Directory.CreateDirectory(filePath);
+            }
+            // Write the string to a file.
+            System.IO.StreamWriter file = new System.IO.StreamWriter(filePath + DateTime.Now.ToString("yyyyMMddHH") + ".txt", true);
+            file.WriteLine(tContent);
+            file.Close();
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----
     }
 }

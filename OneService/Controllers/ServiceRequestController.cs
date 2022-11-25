@@ -7,6 +7,7 @@ using OneService.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
+using System.Security.Cryptography;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 
@@ -176,7 +177,8 @@ namespace OneService.Controllers
         /// 儲存一般服務請求
         /// </summary>
         /// <returns></returns>
-        public IActionResult SaveGenerallySR()
+        [HttpPost]
+        public IActionResult SaveGenerallySR(IFormCollection formCollection)
         {            
             getLoginAccount();
 
@@ -184,6 +186,115 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             pLoginName = EmpBean.EmployeeCName;
+
+            string tSRID = string.Empty;
+
+            try
+            {
+                #region 新增主檔
+                TbOneSrmain beanM = new TbOneSrmain();
+
+                 tSRID = formCollection["hid_cSRID"].FirstOrDefault();
+
+                //主表資料
+                beanM.CSrid = tSRID;
+                beanM.CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
+                beanM.CCustomerId = formCollection["hid_cCustomerID"].FirstOrDefault();
+                beanM.CRepairName = formCollection["tbx_cRepairName"].FirstOrDefault();
+                beanM.CDesc = formCollection["tbx_cDesc"].FirstOrDefault();
+                beanM.CNotes = formCollection["tbx_cNotes"].FirstOrDefault();
+                beanM.CMaserviceType = formCollection["ddl_cMAServiceType"].FirstOrDefault();                
+                beanM.CSrtypeOne = formCollection["ddl_cSRTypeOne"].FirstOrDefault();
+                beanM.CSrtypeSec = formCollection["ddl_cSRTypeSec"].FirstOrDefault();
+                beanM.CSrtypeThr = formCollection["ddl_cSRTypeThr"].FirstOrDefault();
+                beanM.CSrpathWay = formCollection["ddl_cSRPathWay"].FirstOrDefault();
+                beanM.CSrprocessWay = formCollection["ddl_cSRProcessWay"].FirstOrDefault();
+                beanM.CContacterName = formCollection["tbx_cContacterName"].FirstOrDefault();
+                beanM.CContactAddress = formCollection["tbx_cContactAddress"].FirstOrDefault();
+                beanM.CContactPhone = formCollection["tbx_cContactPhone"].FirstOrDefault();
+                beanM.CContactEmail = formCollection["tbx_cContactEmail"].FirstOrDefault();
+                beanM.CTeamId = formCollection["ddl_cTeamID"].FirstOrDefault();
+                beanM.CSqperson = formCollection["tbx_cSQPerson"].FirstOrDefault();
+                beanM.CSalesName = formCollection["tbx_cSalesName"].FirstOrDefault();
+                beanM.CSalesId = formCollection["hid_cSalesID"].FirstOrDefault();
+                beanM.CMainEngineerName = formCollection["tbx_cMainEngineerName"].FirstOrDefault();
+                beanM.CMainEngineerId = formCollection["hid_cMainEngineerID"].FirstOrDefault();
+                beanM.CAssEngineerId = formCollection["txt_cAssEngineerID"].FirstOrDefault();
+                beanM.CSystemGuid = Guid.NewGuid();
+                
+                beanM.CreatedDate = DateTime.Now;                
+                beanM.CreatedUserName = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
+
+                dbOne.TbOneSrmains.Add(beanM);
+                #endregion
+
+                #region 新增【產品序號資訊】明細
+                string[] PRcSerialID = formCollection["tbx_PRcSerialID"];
+                string[] PRcMaterialID = formCollection["tbx_PRcMaterialID"];
+                string[] PRcMaterialName = formCollection["tbx_PRcMaterialName"];
+                string[] PRcProductNumber = formCollection["tbx_PRcProductNumber"];
+                string[] PRcInstallID = formCollection["tbx_PRcInstallID"];
+                
+                int countPR = PRcSerialID.Length;                
+
+                for (int i = 0; i < countPR; i++)
+                {
+                    TbOneSrdetailProduct beanD = new TbOneSrdetailProduct();
+
+                    beanD.CSrid = tSRID;
+                    beanD.CSerialId = PRcSerialID[i];
+                    beanD.CMaterialId = PRcMaterialID[i];
+                    beanD.CMaterialName = PRcMaterialName[i];
+                    beanD.CProductNumber = PRcProductNumber[i];
+                    beanD.CInstallId = PRcInstallID[i];
+
+                    dbOne.TbOneSrdetailProducts.Add(beanD);
+                }
+                #endregion
+
+                #region 新增【保固SLA資訊】明細
+                string[] WAcSerialID = formCollection["hidcSerialID"];
+                string[] WAcWTYID = formCollection["hidcWTYID"];
+                string[] WAcWTYName = formCollection["hidcWTYName"];
+                string[] WAcWTYSDATE = formCollection["hidcWTYSDATE"];
+                string[] WAcWTYEDATE = formCollection["hidcWTYEDATE"];
+                string[] WAcSLARESP = formCollection["hidcSLARESP"];
+                string[] WAcSLASRV = formCollection["hidcSLASRV"];
+                string[] WAcContractID = formCollection["hidcContractID"];
+                string[] WAcBPMFormNo = formCollection["hidcBPMFormNo"];
+                string[] WACheckUsed = formCollection["hid_CheckUsed"];
+
+                int countWA = PRcSerialID.Length;
+
+                for (int i = 0; i < countWA; i++)
+                {
+                    TbOneSrdetailWarranty beanD = new TbOneSrdetailWarranty();
+
+                    beanD.CSrid = tSRID;
+                    beanD.CSerialId = WAcSerialID[i];
+                    beanD.CWtyid = WAcWTYID[i];
+                    beanD.CWtyname = WAcWTYName[i];
+                    beanD.CWtysdate = Convert.ToDateTime(WAcWTYSDATE[i]);
+                    beanD.CWtyedate = Convert.ToDateTime(WAcWTYEDATE[i]);
+                    beanD.CSlaresp = WAcSLARESP[i];
+                    beanD.CSlasrv = WAcSLASRV[i];
+                    beanD.CContractId = WAcContractID[i];
+                    beanD.CBpmformNo = WAcBPMFormNo[i];
+                    beanD.CUsed = WACheckUsed[i];
+
+                    dbOne.TbOneSrdetailWarranties.Add(beanD);
+                }
+                #endregion
+
+                dbOne.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
+                pMsg += " 失敗行數：" + ex.ToString();
+                
+                CMF.writeToLog("SaveGenerallySR:" + Environment.NewLine + pMsg, "SaveGenerallySR");
+            }
 
             return RedirectToAction("finishForm");
         }
@@ -358,7 +469,7 @@ namespace OneService.Controllers
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
 
-                //CMF.writeToLog("QueryStockALLWTYResult:" + Environment.NewLine + pMsg, "QueryStockALLWTYResult");
+                CMF.writeToLog("QuerySRDetail_Warranty:" + Environment.NewLine + pMsg, "QuerySRDetail_Warranty");
             }
 
             return Json(QueryToList);
@@ -417,6 +528,177 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region -- 修改協助工程師 --
+        /// <summary>
+        /// 修改協助工程師
+        /// </summary>
+        /// <param name="cAssEngineerID">目前的協助工程師ERPID(;號隔開)</param>
+        /// <param name="AssEngineerAcc">欲修改的協助工程師ERPID</param>
+        /// <returns></returns>
+        public ActionResult SavepjAssEngineer(string cAssEngineerID, string AssEngineerAcc)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            string reValue = string.Empty;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(cAssEngineerID))
+                {
+                    var oldAssEngineerAcc = cAssEngineerID;
+
+                    if (oldAssEngineerAcc.Contains(AssEngineerAcc))
+                    {
+                        reValue = "協助工程師已存在，請重新輸入！";
+                    }
+                    else
+                    {
+                        reValue = oldAssEngineerAcc + ";" + AssEngineerAcc;
+
+                        ////紀錄修改log
+                        //TB_LOG logBean = new TB_LOG
+                        //{
+                        //    CrmOppNo = oppNo,
+                        //    EventName = "PMO",
+                        //    Log = "修改協助工程師_舊值: " + oldAssEngineerAcc + "; 新值: " + pjInfoBean.AssEngineerAcc,
+                        //    UserAcc = loginAccount,
+                        //    UserName = empName,
+                        //    InsertTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                        //};
+
+                        //psipDb.TB_LOG.Add(logBean);
+                        //psipDb.SaveChanges();                        
+                    }
+                }
+                else
+                {
+                    reValue = AssEngineerAcc;
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("SaveAssignAssEngineer Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 取得協助工程師
+        /// <summary>
+        /// 取得協助工程師
+        /// </summary>
+        /// <param name="cAssEngineerID">協助工程師ERPID(;號隔開)</param>
+        /// <returns></returns>
+        public ActionResult GetpjAssEngineer(string cAssEngineerID)
+        {            
+            List<AssEngineerInfo> liAssEngineerInfo = new List<AssEngineerInfo>();
+            
+            if (!string.IsNullOrEmpty(cAssEngineerID))
+            {
+                List<string> liAssAcc = cAssEngineerID.Split(';').ToList();
+                int pmId = 0;
+                foreach (var AssAcc in liAssAcc)
+                {
+                    pmId++;
+                    if (string.IsNullOrEmpty(AssAcc)) continue;
+
+                    var qPm = dbEIP.People.FirstOrDefault(x => x.ErpId == AssAcc);
+                    if (qPm != null)
+                    {
+                        var qPmDept = dbEIP.Departments.FirstOrDefault(x => x.Id == qPm.DeptId && x.Status == 0);
+                        if (qPmDept == null)
+                        {
+                            AssEngineerInfo pmBean = new AssEngineerInfo(pmId, AssAcc, qPm.Name2, qPm.Extension, qPm.Mobile, qPm.Email, "", "");
+                            liAssEngineerInfo.Add(pmBean);
+                        }
+                        else
+                        {
+                            AssEngineerInfo pmBean = new AssEngineerInfo(pmId, AssAcc, qPm.Name2, qPm.Extension, qPm.Mobile, qPm.Email, qPmDept.Id, qPmDept.Name);
+                            liAssEngineerInfo.Add(pmBean);
+                        }
+                    }
+                }
+            }
+
+            return Json(liAssEngineerInfo);
+        }
+        #endregion
+
+        #region 刪除協助工程師
+        /// <summary>
+        /// 刪除協助工程師
+        /// </summary>
+        /// <param name="cAssEngineerID">目前的協助工程師ERPID(;號隔開)</param>
+        /// <param name="cAssEngineerAcc">欲刪除的協助工程師ERPID</param>
+        /// <returns></returns>
+        public ActionResult DeletepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+          
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            string reValue = cAssEngineerID;                
+
+            try
+            {                
+                if (!string.IsNullOrEmpty(cAssEngineerID))
+                {
+                    #region 刪除工程師，並回傳最新的工程師
+                    var oldPMAcc = cAssEngineerID;
+
+                    List<string> liPmAcc = cAssEngineerID.Split(';').ToList();
+                    List<string> liPmAccNew = new List<string>();
+
+                    foreach (string tValue in liPmAcc)
+                    {
+                        if (tValue.ToLower() != cAssEngineerAcc)
+                        {
+                            liPmAccNew.Add(tValue);
+                        }
+                    }
+
+                    reValue = string.Join(";", liPmAccNew);
+                    #endregion
+
+                    ////紀錄修改log
+                    //TB_LOG logBean = new TB_LOG
+                    //{
+                    //    CrmOppNo = oppNo,
+                    //    EventName = "PMO",
+                    //    Log = "修改協助工程師_舊值: " + oldPMAcc + "; 新值: " + cAssEngineerBean.PMAcc,
+                    //    UserAcc = loginAccount,
+                    //    UserName = empName,
+                    //    InsertTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                    //};
+
+                    //psipDb.TB_LOG.Add(logBean);
+                    //psipDb.SaveChanges();                    
+                }                
+            }
+            catch (Exception e)
+            {                
+                return Json("DeletecAssEngineer Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑一般服務請求 ↑↑↑↑↑-----    
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
@@ -458,6 +740,9 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult getSRID(string cTitle, string cSRID, string cGUID)
         {
+            cSRID = string.IsNullOrEmpty(cSRID) ? "" : cSRID;
+            cGUID = string.IsNullOrEmpty(cGUID) ? "" : cGUID;
+
             string reValue = CMF.GetSRID(cTitle, cSRID);
 
             #region 判斷系統目前GUID是否已被異動
@@ -774,6 +1059,25 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region Ajax用中文或英文姓名查詢人員
+        /// <summary>
+        /// Ajax用中文或英文姓名查詢人員
+        /// </summary>
+        /// <param name="keyword">中文/英文姓名</param>        
+        /// <returns></returns>
+        public IActionResult AjaxfindEmployeeByKeyword(string keyword)
+        {           
+
+            object contentObj = null;
+
+            contentObj = bpmDB.TblEmployees.Where(x => (x.CEmployeeAccount.Contains(keyword) || x.CEmployeeCName.Contains(keyword)) &&
+                                                    (x.CEmployeeLeaveReason == null && x.CEmployeeLeaveDay == null)).Take(5);
+
+            string json = JsonConvert.SerializeObject(contentObj);
+            return Content(json, "application/json");
+        }
+        #endregion       
+
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----    
 
         #region -----↓↓↓↓↓自定義Class ↓↓↓↓↓-----
@@ -867,6 +1171,32 @@ namespace OneService.Controllers
             public string cBPMFormNoUrl { get; set; }
             /// <summary>本次使用</summary>
             public string cUsed { get; set; }
+        }
+        #endregion
+
+        #region 協助工程師資訊
+        public class AssEngineerInfo
+        {
+            public int ID { get; private set; }
+            public string Acc { get; private set; }
+            public string Name { get; private set; }
+            public string Ext { get; private set; }
+            public string Mobile { get; private set; }
+            public string Email { get; private set; }
+            public string DeptId { get; private set; }
+            public string DeptName { get; private set; }
+
+            public AssEngineerInfo(int id, string acc, string name, string ext, string mobile, string email, string deptId, string deptName)
+            {
+                ID = id;
+                Acc = acc;
+                Name = name;
+                Ext = ext;
+                Mobile = mobile;
+                Email = email;
+                DeptId = deptId;
+                DeptName = deptName;
+            }
         }
         #endregion
 

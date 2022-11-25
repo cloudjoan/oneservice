@@ -16,6 +16,8 @@ namespace OneService.Models
         {
         }
 
+        public virtual DbSet<TbOneSrdetailProduct> TbOneSrdetailProducts { get; set; } = null!;
+        public virtual DbSet<TbOneSrdetailWarranty> TbOneSrdetailWarranties { get; set; } = null!;
         public virtual DbSet<TbOneSridformat> TbOneSridformats { get; set; } = null!;
         public virtual DbSet<TbOneSrmain> TbOneSrmains { get; set; } = null!;
         public virtual DbSet<TbOneSrrepairType> TbOneSrrepairTypes { get; set; } = null!;
@@ -32,6 +34,114 @@ namespace OneService.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<TbOneSrdetailProduct>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRDetail_Product");
+
+                entity.HasIndex(e => new { e.CSrid, e.CSerialId }, "NonClusteredIndex-20221108-160519");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CInstallId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cInstallID");
+
+                entity.Property(e => e.CMaterialId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cMaterialID");
+
+                entity.Property(e => e.CMaterialName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cMaterialName");
+
+                entity.Property(e => e.CProductNumber)
+                    .HasMaxLength(50)
+                    .HasColumnName("cProductNumber");
+
+                entity.Property(e => e.CSerialId)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSerialID");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneSrdetailWarranty>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRDetail_Warranty");
+
+                entity.HasIndex(e => new { e.CSrid, e.CSerialId }, "NonClusteredIndex-20221108-160541");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CBpmformNo)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("cBPMFormNo");
+
+                entity.Property(e => e.CContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cContractID");
+
+                entity.Property(e => e.CSerialId)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSerialID");
+
+                entity.Property(e => e.CSlaresp)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSLARESP");
+
+                entity.Property(e => e.CSlasrv)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSLASRV");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
+
+                entity.Property(e => e.CUsed)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cUsed");
+
+                entity.Property(e => e.CWtyedate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cWTYEDATE");
+
+                entity.Property(e => e.CWtyid)
+                    .HasMaxLength(40)
+                    .HasColumnName("cWTYID");
+
+                entity.Property(e => e.CWtyname)
+                    .HasMaxLength(50)
+                    .HasColumnName("cWTYName");
+
+                entity.Property(e => e.CWtysdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cWTYSDATE");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
             modelBuilder.Entity<TbOneSridformat>(entity =>
             {
                 entity.HasKey(e => new { e.CId, e.CTitle, e.CYear, e.CMonth, e.CDay });
