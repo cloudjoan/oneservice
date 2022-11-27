@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
 	ViewData["Title"] = "CreateWH";
 	Layout = "~/Views/Shared/_LayoutHome.cshtml";
 
@@ -245,7 +244,7 @@
 							@foreach(var bean in ViewBag.beans){
 								<tr>
 									<td>
-									<a class="btn btn-warning" href="javascript:GetWHById(@bean.Id)"><i class="fa fa-pencil"></i></a>
+										<a class="btn btn-warning" href="javascript:GetWHById(@bean.Id)"><i class="fa fa-pencil"></i></a>
 										<a class="btn btn-danger" href="javascript:DeleteWHById(@bean.Id, this)"><i class="fa fa-trash"></i></a>
 									</td>
 									<td>@bean.StartTime</td>

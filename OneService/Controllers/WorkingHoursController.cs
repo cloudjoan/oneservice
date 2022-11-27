@@ -22,10 +22,6 @@ namespace OneService.Controllers
             var userAccount = User.Identity.Name;
             System.Diagnostics.Debug.WriteLine(userAccount);
 
-            var SRLaborBeans =  biDB.MartAnalyseServiceRequestLabors.Where(x => x.EngineerId == "10010640");
-            ViewBag.SRLaborBeans = SRLaborBeans;
-
-
             var client = new RestClient("http://tsti-sapapp01.etatung.com.tw/api/ticc");
            
             var request = new RestRequest();
@@ -52,18 +48,16 @@ namespace OneService.Controllers
 
             var data   = JsonConvert.DeserializeObject(response.Content);
             System.Diagnostics.Debug.WriteLine(data);
-            
 
             return View();
         }
 
-        public IActionResult GetSRLabor(string erpId)
+        public ActionResult GetSRLabor(string erpId)
         {
             var SRLaborBeans = biDB.MartAnalyseServiceRequestLabors.Where(x => x.EngineerId == erpId);
             ViewBag.SRLaborBeans = SRLaborBeans;
             return View();
         }
-
 
         public IActionResult CreateWH()
         {

@@ -100,7 +100,7 @@
 				<div class="ibox-content">
 					<form name="form" action='#' method="post">
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">同仁姓名：@User.Identity.IsAuthenticated </label>
+							<label class="col-lg-2 col-form-label">同仁姓名： </label>
 							<div class="col-lg-3">
 								<input type="text" id="tbx_EmpName" name="tbx_EmpName" class="form-control" placeholder="姓名" required>
 								<input type="hidden" id="hie_ErpId" name="hie_ErpId">
@@ -156,48 +156,7 @@
 						</a>
 					</div>
 				</div>
-				<div class="ibox-content" id="dataDiv">
-					<table id="table1" class="table table-striple table-bordered table-hover dataTables-example">
-						<thead>
-							<tr>
-								<th width="120px">編輯/刪除</th>
-								<th>日期</th>
-								<th>工時</th>
-								<th>工時類型</th>
-								<th>任務活動</th>
-								<th>專案（商機）</th>
-								<th>工作說明</th>
-							</tr>
-						</thead>
-						<tbody>
-							@foreach(var bean in ViewBag.SRLaborBeans){
-								<tr>
-									<td>
-										<a href="" class="btn btn-warning"><i class="fa fa-pencil"></i> </a>
-										<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> </a>
-									</td>
-									<td>@bean.Finish  @(bean.Finish == "111"?"123" : "abc")</td>
-									<td>@bean.Labor</td>
-									<td>A.客戶服務</td>
-									<td>@bean.ProcessTypeText</td>
-									<td>@bean.Srid @bean.Description</td>
-									<td>裝機</td>
-								</tr>
-							}
-						</tbody>
-						<tfoot>
-							<tr>
-								<td></td>
-								<td>10</td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-							</tr>
-						</tfoot>
-				</table>
-			</div>
+				<div class="ibox-content" id="dataDiv"></div>
 		</div>
 	</div>
 

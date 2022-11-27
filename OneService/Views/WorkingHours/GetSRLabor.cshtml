@@ -1,5 +1,6 @@
-﻿
-
+﻿@{
+	Layout = null;
+}
 <script>
 
 	$(document).ready(function () {
@@ -25,29 +26,30 @@
 <table id="table1" class="table table-striple table-bordered table-hover dataTables-example">
 	<thead>
 		<tr>
+			<th width="120px">編輯/刪除</th>
 			<th>日期</th>
 			<th>工時</th>
 			<th>工時類型</th>
 			<th>任務活動</th>
 			<th>專案（商機）</th>
 			<th>工作說明</th>
-			<th width="130">功能</th>
 		</tr>
 	</thead>
 	<tbody>
 		@foreach (var bean in ViewBag.SRLaborBeans)
 		{
 			<tr>
+				<td>
+					<a href="" class="btn btn-warning"><i class="fa fa-pencil"></i> </a>
+					<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> </a>
+				</td>
 				<td>@bean.Finish</td>
 				<td>@bean.Labor</td>
 				<td>A.客戶服務</td>
 				<td>@bean.ProcessTypeText</td>
 				<td>@bean.Srid @bean.Description</td>
 				<td>裝機</td>
-				<td>
-					<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-					<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-				</td>
+				
 			</tr>
 		}
 	</tbody>
