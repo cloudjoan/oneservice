@@ -19,6 +19,8 @@ FROM base AS final
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libldap-2.4-2 \
+        realmd \
+        gss-ntlmssp \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=publish /app/publish .

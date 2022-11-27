@@ -2,6 +2,10 @@
 @{
 	ViewData["Title"] = "CreateWH";
 	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+
+	DateTime dt = Convert.ToDateTime("2022-01-01 00:00");
+	DateTime dt2 = Convert.ToDateTime("2022-01-01 00:00");
+
 	Dictionary<string, string> whTypeDict = new Dictionary<string, string>();
 	Dictionary<string, string> actTypeDict = new Dictionary<string, string>();
 	whTypeDict.Add("A", "A.客戶服務");
@@ -38,8 +42,22 @@
 					$("#ddl_ActType").val(result.actType);
 					$("#tbx_CrmOppNo").val(result.crmOppNo);
 					$("#tbx_WhDescript").val(result.whDescript);
-					$("#tbx_StartTime").val(result.startTime);
-					$("#tbx_EndTime").val(result.endTime);
+					$("#tbx_StartDate").val(result.startTime.split(' ')[0]);
+					$("#hid_StartTime").val(result.startTime.split(' ')[1]);
+					$("#tbx_EndDate").val(result.endTime.split(' ')[0]);
+					$("#hid_EndTime").val(result.endTime.split(' ')[1]);
+					$(".startTime").removeClass("active");
+					$(".endTime").removeClass("active");
+
+					console.log(result.startTime.split(' ')[1]);
+
+					$.each($(".startTime"), function(i, obj){
+						if (result.startTime.split(' ')[1] == $(obj).val()) $(obj).addClass("active");
+					});
+
+					$.each($(".endTime"), function (i, obj) {
+						if (result.endTime.split(' ')[1] == $(obj).val()) $(obj).addClass("active");
+					});
 
 					$("#tbx_WhDescript").focus();
 				}
@@ -49,18 +67,25 @@
 		function DeleteWHById(id, obj){
 			if(confirm("確定刪除？")){
 				$.ajax({
-					url: '@Url.Action("GetWHById", "WorkingHours")',
+					url: '@Url.Action("DeleteWHById", "WorkingHours")',
 					type: 'post',
 					dataType: 'Json',
 					data: { "id": id },
 					success: function(result) {
 						if(result == 'OK'){
-							$(obj).parent().parent().remove("fade");
+							var temp =  $(obj).parent().parent();
+							console.log(temp);
 						}
 					}
 				});
 			}
 
+		}
+
+		function ActiveBtn(targetId, disabledClassName, obj){
+			$(disabledClassName).removeClass("active");
+			$("#" + targetId).val($(obj).val());
+			$(obj).addClass("active");
 		}
 
 	</script>
@@ -142,16 +167,34 @@
 							</div>
 						</div>
 						
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">時間起訖：</label>
-							<div class="input-group m-b col-lg-5">
-								<input type="text" class="form-control datetimepicker" id="tbx_StartTime" name="tbx_StartTime" value="@ViewBag.now" placeholder="開始時間" required>
-								<div class="input-group-append">
-									<span class="input-group-addon"> ~ </span>
-								</div>
-								<input type="text" class="form-control datetimepicker" id="tbx_EndTime" name="tbx_EndTime" placeholder="結束時間" required>
+						<div class="form-group row btn-group" role="group">
+							<label class="col-lg-2 col-form-label">時間起：</label>
+							<div class="col-lg-2">
+								<input type="text" class="form-control calendar" id="tbx_StartDate" name="tbx_StartDate" value="@ViewBag.now" placeholder="開始時間" required>
+							</div>
+							<div class="col-lg-8">
+								@while (dt <= Convert.ToDateTime("2022-01-01 23:45"))
+								{
+								<button type="button" class="btn btn-outline btn-primary startTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt))" onclick="ActiveBtn('hid_StartTime', '.startTime', this)">@(string.Format("{0:HH:mm}", dt))</button>
+									dt = dt.AddMinutes(15);
+								}
+							<input type="hidden" id="hid_StartTime" name="hid_startTime" />
 							</div>
 						</div>
+					<div class="form-group row btn-group" role="group">
+						<label class="col-lg-2 col-form-label">時間訖：</label>
+						<div class="col-lg-2">
+							<input type="text" class="form-control calendar" id="tbx_EndDate" name="tbx_EndDate" value="@ViewBag.now" placeholder="結束時間" required>
+						</div>
+						<div class="col-lg-8">
+							@while (dt2 <= Convert.ToDateTime("2022-01-01 23:45"))
+							{
+								<button type="button" class="btn btn-outline btn-success endTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt2))" onclick="ActiveBtn('hid_EndTime', '.endTime', this)">@(string.Format("{0:HH:mm}", dt2))</button>
+								dt2 = dt2.AddMinutes(15);
+							}
+							<input type="hidden" id="hid_EndTime" name="hid_EndTime" />
+						</div>
+					</div>
 						<!-- 檔案上傳start-->
 						<div class="form-group row" hidden="hidden">
 							<div class="col-lg-3 dropzone" id="zone_1">

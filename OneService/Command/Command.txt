@@ -1,5 +1,5 @@
 ﻿#PSIP 
-dotnet ef dbcontext scaffold "Server=PSIP-PRD-DB;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_WorkingHoursMain -f
+dotnet ef dbcontext scaffold "Server=PSIP-PRD-DB;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -f
 
 #BI TSTI-WD
 dotnet ef dbcontext scaffold "Server=TSTI-DW;Database=BI;User=biread;Password=!QAZ2wsx" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MART_AnalyseServiceRequestLabor -f
