@@ -24,6 +24,7 @@ namespace OneService.Models
         public virtual DbSet<TbProPjRecord> TbProPjRecords { get; set; } = null!;
         public virtual DbSet<TbProTask> TbProTasks { get; set; } = null!;
         public virtual DbSet<TbWorkingHoursMain> TbWorkingHoursMains { get; set; } = null!;
+        public virtual DbSet<ViewWorkingHour> ViewWorkingHours { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -419,6 +420,31 @@ namespace OneService.Models
 
                 entity.Property(e => e.Whtype)
                     .HasMaxLength(10)
+                    .HasColumnName("WHType");
+            });
+
+            modelBuilder.Entity<ViewWorkingHour>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_WORKING_HOURS");
+
+                entity.Property(e => e.CrmOppNo).HasMaxLength(10);
+
+                entity.Property(e => e.FinishTime).HasMaxLength(22);
+
+                entity.Property(e => e.SourceFrom)
+                    .HasMaxLength(5)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.SrId).HasMaxLength(10);
+
+                entity.Property(e => e.UserErpId).HasMaxLength(30);
+
+                entity.Property(e => e.UserName).HasMaxLength(40);
+
+                entity.Property(e => e.Whtype)
+                    .HasMaxLength(40)
                     .HasColumnName("WHType");
             });
 

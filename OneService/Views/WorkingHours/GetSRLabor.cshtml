@@ -36,19 +36,23 @@
 		</tr>
 	</thead>
 	<tbody>
-		@foreach (var bean in ViewBag.SRLaborBeans)
+		@foreach (var bean in ViewBag.viewWHBeans)
 		{
 			<tr>
 				<td>
-					<a href="" class="btn btn-warning"><i class="fa fa-pencil"></i> </a>
-					<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> </a>
+					@if (bean.SourceFrom != "CRM")
+					{
+						<a href="" class="btn btn-warning"><i class="fa fa-pencil"></i> </a>
+						<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> </a>
+					}
+
 				</td>
-				<td>@bean.Finish</td>
+				<td>@bean.FinishTime</td>
 				<td>@bean.Labor</td>
-				<td>A.客戶服務</td>
-				<td>@bean.ProcessTypeText</td>
-				<td>@bean.Srid @bean.Description</td>
-				<td>裝機</td>
+				<td>@bean.Whtype</td>
+				<td>@bean.WhDescript</td>
+				<td>@bean.SrId</td>
+				<td>@bean.WhDescript</td>
 				
 			</tr>
 		}

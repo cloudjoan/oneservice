@@ -52,10 +52,10 @@ namespace OneService.Controllers
             return View();
         }
 
-        public ActionResult GetSRLabor(string erpId)
+        public IActionResult GetSRLabor(string erpId)
         {
-            var SRLaborBeans = biDB.MartAnalyseServiceRequestLabors.Where(x => x.EngineerId == erpId);
-            ViewBag.SRLaborBeans = SRLaborBeans;
+            var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId);
+            ViewBag.viewWHBeans = viewWHBeans;
             return View();
         }
 
