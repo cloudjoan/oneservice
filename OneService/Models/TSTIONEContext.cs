@@ -16,6 +16,7 @@ namespace OneService.Models
         {
         }
 
+        public virtual DbSet<TbOneLog> TbOneLogs { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailProduct> TbOneSrdetailProducts { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailWarranty> TbOneSrdetailWarranties { get; set; } = null!;
         public virtual DbSet<TbOneSridformat> TbOneSridformats { get; set; } = null!;
@@ -34,6 +35,28 @@ namespace OneService.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<TbOneLog>(entity =>
+            {
+                entity.HasKey(e => e.CId)
+                    .HasName("PK_TB_PRO_LOG");
+
+                entity.ToTable("TB_ONE_LOG");
+
+                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20221125-140220");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.EventName).HasMaxLength(200);
+            });
+
             modelBuilder.Entity<TbOneSrdetailProduct>(entity =>
             {
                 entity.HasKey(e => e.CId);
@@ -289,7 +312,7 @@ namespace OneService.Models
                 entity.Property(e => e.CSystemGuid).HasColumnName("cSystemGUID");
 
                 entity.Property(e => e.CTeamId)
-                    .HasMaxLength(36)
+                    .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("cTeamID");
 

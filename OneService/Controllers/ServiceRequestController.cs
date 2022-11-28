@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneService.Models;
+using RestSharp;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
@@ -117,11 +119,7 @@ namespace OneService.Controllers
             SRTypeSecList.Add(new SelectListItem { Text = " ", Value = "" });
 
             var SRTypeThrList = new List<SelectListItem>();
-            SRTypeThrList.Add(new SelectListItem { Text = " ", Value = "" });          
-
-            ViewBag.SRTypeOneList = SRTypeOneList;
-            ViewBag.SRTypeSecList = SRTypeSecList;
-            ViewBag.SRTypeThrList = SRTypeThrList;
+            SRTypeThrList.Add(new SelectListItem { Text = " ", Value = "" });           
             #endregion
 
             #region 取得服務團隊清單
@@ -136,6 +134,7 @@ namespace OneService.Controllers
                 //記錄目前GUID，用來判斷更新的先後順序
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
+                #region 報修資訊
                 ViewBag.cSRID = beanM.CSrid;
                 ViewBag.cCustomerID = beanM.CCustomerId;
                 ViewBag.cCustomerName = beanM.CCustomerName;
@@ -143,11 +142,40 @@ namespace OneService.Controllers
                 ViewBag.cNotes = beanM.CNotes;
                 ViewBag.cSRPathWay = beanM.CSrpathWay;
                 ViewBag.cMAServiceType = beanM.CMaserviceType;
-                ViewBag.pStatus = "E0001";
-                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
 
-                //指定要顯示的服務團隊清單
-                SRTeamIDList.Where(q => q.Value == beanM.CTeamId).First().Selected = true;
+                ViewBag.pStatus = "E0001";  //beanM.CStatus;
+                #endregion
+
+                #region 報修類別
+                if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                {                    
+                    SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
+                }
+
+                if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
+                {
+                    SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
+                    SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
+                }
+
+                if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
+                {
+                    SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
+                    SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
+                }
+                #endregion
+
+                #region 服務團隊
+                ViewBag.cTeamID = beanM.CTeamId;
+                ViewBag.cMainEngineerID = beanM.CMainEngineerId;
+                ViewBag.cMainEngineerName = beanM.CMainEngineerName;
+                ViewBag.cSQPerson = beanM.CSqperson;
+                ViewBag.cSalesID = beanM.CSalesId;
+                ViewBag.cSalesName = beanM.CSalesName;
+                ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                #endregion
+                
+                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
             }
             else
             {
@@ -165,6 +193,9 @@ namespace OneService.Controllers
             model.ddl_cSRProcessWay = ViewBag.cSRProcessWay;    //設定處理方式
             #endregion
 
+            ViewBag.SRTypeOneList = SRTypeOneList;
+            ViewBag.SRTypeSecList = SRTypeSecList;
+            ViewBag.SRTypeThrList = SRTypeThrList;
             ViewBag.pOperationID = pOperationID_GenerallySR;
             ViewBag.SRTeamIDList = SRTeamIDList;
 
@@ -337,132 +368,73 @@ namespace OneService.Controllers
 
             DataTable dtWTY = null; //RFC保固Table
 
-            int count = 0;
+            int NowCount = 0;
 
             List<SRWarranty> QueryToList = new List<SRWarranty>();    //查詢出來的清單             
 
             try
             {
-                foreach(string IV_SERIAL in ArySERIAL)
-                {
-                    //#region 先塞RFC保固Table
-                    //dtWTY = CMF.ZFM_TICC_SERIAL_SEARCHWTYList(IV_SERIAL);
+                #region 呼叫RFC並回傳保固SLA Table清單
+                QueryToList = CMF.ZFM_TICC_SERIAL_SEARCHWTYList(ArySERIAL, ref NowCount, tURLName);
+                #endregion
 
-                    //foreach (DataRow dr in dtWTY.Rows)
-                    //{
-                    //    if (dr["WTYCODE"].ToString().Trim() == "") //空白代表才有合約編號才執行
-                    //    {
-                    //        #region 組待查詢清單
-                    //        string[] QueryInfo = new string[16];
+                #region 保固，因RFC已經有回傳所有清單，這邊暫時先不用
+                //foreach (string IV_SERIAL in ArySERIAL)
+                //{
+                //    if (IV_SERIAL != null)
+                //    {
+                //        var beans = dbProxy.Stockwties.OrderByDescending(x => x.IvEdate).ThenByDescending(x => x.BpmNo).Where(x => x.IvSerial == IV_SERIAL.Trim());
 
-                    //        SDATE = dr["WTYSTART"].ToString() == "" ? "" : Convert.ToDateTime(dr["WTYSTART"].ToString()).ToString("yyyy-MM-dd");
-                    //        EDATE = dr["WTYEND"].ToString() == "" ? "" : Convert.ToDateTime(dr["WTYEND"].ToString()).ToString("yyyy-MM-dd");
+                //        foreach (var bean in beans)
+                //        {
+                //            NowCount++;
 
-                    //        #region 取得BPM Url
-                    //        BPMNO = "";
-                    //        tURL = "";
+                //            #region 組待查詢清單
+                //            SRWarranty QueryInfo = new SRWarranty();
 
-                    //        if (dr["CONTRACT"].ToString() != "")
-                    //        {
-                    //            BPMNO = CMF.findContractSealsFormNo(dr["CONTRACT"].ToString().Trim());
+                //            //string[] tBPMList = CMF.findBPMWarrantyInfo(bean.BpmNo);
 
-                    //            try
-                    //            {
-                    //                if (dr["CONTRACT"].ToString().Trim() != "")
-                    //                {
-                    //                    Int32 ContractID = Int32.Parse(dr["CONTRACT"].ToString().Trim());
+                //            DNDATE = bean.IvDndate == null ? "" : Convert.ToDateTime(bean.IvDndate).ToString("yyyy-MM-dd");
+                //            SDATE = bean.IvSdate == null ? "" : Convert.ToDateTime(bean.IvSdate).ToString("yyyy-MM-dd");
+                //            EDATE = bean.IvEdate == null ? "" : Convert.ToDateTime(bean.IvEdate).ToString("yyyy-MM-dd");
 
-                    //                    if (ContractID >= 10506151 && ContractID != 10506152 && ContractID != 10506157) //新的用印申請單
-                    //                    {
-                    //                        tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/ContractSeals/ContractSealsForm.aspx?FormNo=" + BPMNO + " target=_blank";
-                    //                    }
-                    //                    else //舊的用印申請單
-                    //                    {
-                    //                        tURL = "http://" + tURLName + "/ContractSeals/_layouts/FormServer.aspx?XmlLocation=%2fContractSeals%2fBPMContractSealsForm%2f" + BPMNO + ".xml&ClientInstalled=true&DefaultItemOpen=1&source=/_layouts/TSTI.SharePoint.BPM/CloseWindow.aspx target=_blank";
-                    //                    }
-                    //                }
-                    //            }
-                    //            catch (Exception ex)
-                    //            {
-                    //                BPMNO = "";
-                    //                tURL = "";
-                    //            }
-                    //        }
-                    //        #endregion
+                //            #region 取得BPM Url
+                //            tURL = "";
 
-                    //        QueryInfo[0] = IV_SERIAL;                  //序號
-                    //        QueryInfo[1] = "";                         //銷售訂單號
-                    //        QueryInfo[2] = "";                         //出貨日期
-                    //        QueryInfo[3] = "";                         //保固                                                               
-                    //        QueryInfo[4] = "";                         //保固說明
-                    //        QueryInfo[5] = SDATE;                      //保固開始日期
-                    //        QueryInfo[6] = EDATE;                      //保固結束日期                                                          
-                    //        QueryInfo[7] = dr["SLARESP"].ToString();    //回應條件
-                    //        QueryInfo[8] = dr["SLASRV"].ToString();     //服務條件
-                    //        QueryInfo[9] = dr["CONTRACT"].ToString();   //合約編號
-                    //        QueryInfo[10] = "";                        //計費業務
-                    //        QueryInfo[11] = "";                        //委外廠商HP CARE PACK
-                    //        QueryInfo[12] = "";                        //備註
-                    //        QueryInfo[13] = BPMNO;                     //BPM表單編號
-                    //        QueryInfo[14] = "";                        //客服主管建議                        
-                    //        QueryInfo[15] = tURL;                      //BPM URL                        
+                //            if (bean.BpmNo != null)
+                //            {
+                //                if (bean.BpmNo.IndexOf("WTY") != -1)
+                //                {
+                //                    tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/Warranty/WarrantyForm.aspx?FormNo=" + bean.BpmNo + " target=_blank";
+                //                }
+                //                else
+                //                {
+                //                    tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Form/Guarantee/GuaranteeForm.aspx?FormNo=" + bean.BpmNo + " target=_blank";
+                //                }
+                //            }
+                //            #endregion
 
-                    //        QueryToList.Add(QueryInfo);
-                    //        #endregion
-                    //    }
-                    //}
-                    //#endregion
+                //            QueryInfo.cID = NowCount.ToString();                                        //系統ID
+                //            QueryInfo.cSerialID = bean.IvSerial;                                         //序號                        
+                //            QueryInfo.cWTYID = bean.IvWtyid;                                             //保固
+                //            QueryInfo.cWTYName = bean.IvWtydesc;                                         //保固說明
+                //            QueryInfo.cWTYSDATE = SDATE;                                                //保固開始日期
+                //            QueryInfo.cWTYEDATE = EDATE;                                                //保固結束日期                                                          
+                //            QueryInfo.cSLARESP = bean.IvSlaresp;                                         //回應條件
+                //            QueryInfo.cSLASRV = bean.IvSlasrv;                                          //服務條件
+                //            QueryInfo.cContractID = "";                                                 //合約編號                        
+                //            QueryInfo.cBPMFormNo = string.IsNullOrEmpty(bean.BpmNo) ? "" : bean.BpmNo;      //BPM表單編號                        
+                //            QueryInfo.cBPMFormNoUrl = tURL;                                             //BPM URL                    
+                //            QueryInfo.cUsed = "N";                                                     //本次使用
 
-                    #region 保固
-                    var beans = dbProxy.Stockwties.OrderByDescending(x => x.IvEdate).ThenByDescending(x => x.BpmNo).Where(x => x.IvSerial == IV_SERIAL.Trim());
+                //            QueryToList.Add(QueryInfo);
+                //            #endregion
+                //        }
+                //    }
+                //}
+                #endregion
 
-                    foreach (var bean in beans)
-                    {
-                        count++;
-
-                        #region 組待查詢清單
-                        SRWarranty QueryInfo = new SRWarranty();
-
-                        //string[] tBPMList = CMF.findBPMWarrantyInfo(bean.BpmNo);
-
-                        DNDATE = bean.IvDndate== null ? "" : Convert.ToDateTime(bean.IvDndate).ToString("yyyy-MM-dd");
-                        SDATE = bean.IvSdate == null ? "" : Convert.ToDateTime(bean.IvSdate).ToString("yyyy-MM-dd");
-                        EDATE = bean.IvEdate == null ? "" : Convert.ToDateTime(bean.IvEdate).ToString("yyyy-MM-dd");
-
-                        #region 取得BPM Url
-                        tURL = "";
-
-                        if (bean.BpmNo != null)
-                        {
-                            if (bean.BpmNo.IndexOf("WTY") != -1)
-                            {
-                                tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/Warranty/WarrantyForm.aspx?FormNo=" + bean.BpmNo + " target=_blank";
-                            }
-                            else
-                            {
-                                tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Form/Guarantee/GuaranteeForm.aspx?FormNo=" + bean.BpmNo + " target=_blank";
-                            }
-                        }
-                        #endregion
-
-                        QueryInfo.cID = count.ToString();                                           //系統ID
-                        QueryInfo.cSerialID = bean.IvSerial;                                         //序號                        
-                        QueryInfo.cWTYID = bean.IvWtyid;                                             //保固
-                        QueryInfo.cWTYName = bean.IvWtydesc;                                         //保固說明
-                        QueryInfo.cWTYSDATE = SDATE;                                                //保固開始日期
-                        QueryInfo.cWTYEDATE = EDATE;                                                //保固結束日期                                                          
-                        QueryInfo.cSLARESP = bean.IvSlaresp;                                         //回應條件
-                        QueryInfo.cSLASRV = bean.IvSlasrv;                                          //服務條件
-                        QueryInfo.cContractID = "";                                                 //合約編號                        
-                        QueryInfo.cBPMFormNo = string.IsNullOrEmpty(bean.BpmNo) ? "" : bean.BpmNo;      //BPM表單編號                        
-                        QueryInfo.cBPMFormNoUrl = tURL;                                             //BPM URL                    
-                        QueryInfo.cUsed = "N";                                                     //本次使用
-
-                        QueryToList.Add(QueryInfo);
-                        #endregion
-                    }
-                    #endregion
-                }                
+                QueryToList = QueryToList.OrderByDescending(x => x.cWTYEDATE).ToList();
             }
             catch (Exception ex)
             {
@@ -528,14 +500,180 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region -- 修改協助工程師 --
+        #region 修改服務團隊
+        /// <summary>
+        /// 修改服務團隊
+        /// </summary>
+        /// <param name="cAssEngineerID">目前的服務團隊ERPID(;號隔開)</param>
+        /// <param name="cAssEngineerAcc">欲修改的服務團隊ERPID</param>
+        /// <returns></returns>
+        public ActionResult SavepjTeam(string cTeamID, string cTeamAcc)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            string reValue = string.Empty;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(cTeamID))
+                {
+                    var oldTeamAcc = cTeamID;
+
+                    if (oldTeamAcc.Contains(cTeamAcc))
+                    {
+                        reValue = "Error：服務團隊已存在，請重新輸入！";
+                    }
+                    else
+                    {
+                        reValue = oldTeamAcc + ";" + cTeamAcc;
+
+                        #region 紀錄修改log
+                        TbOneLog logBean = new TbOneLog
+                        {
+                            CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
+                            EventName = "SavepjTeam",
+                            Log = "修改服務團隊_舊值: " + oldTeamAcc + "; 新值: " + reValue,
+                            CreatedUserName = ViewBag.cLoginUser_Name,
+                            CreatedDate = DateTime.Now
+                        };
+
+                        dbOne.TbOneLogs.Add(logBean);
+                        dbOne.SaveChanges();
+                        #endregion
+                    }
+                }
+                else
+                {
+                    reValue = cTeamAcc;
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("SavepjTeam Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 取得服務團隊
+        /// <summary>
+        /// 取得服務團隊
+        /// </summary>
+        /// <param name="cTeamID">服務團隊ERPID(;號隔開)</param>
+        /// <returns></returns>
+        public ActionResult GetpjTeam(string cTeamID)
+        {
+            List<SRTeamInfo> liSRTeamInfo = new List<SRTeamInfo>();
+
+            string tEmpName = string.Empty; //服務團隊姓名(中文姓名+英文姓名)
+
+            if (!string.IsNullOrEmpty(cTeamID))
+            {
+                List<string> liAssAcc = cTeamID.Split(';').ToList();
+                int pmId = 0;
+                foreach (var AssAcc in liAssAcc)
+                {
+                    pmId++;
+                    if (string.IsNullOrEmpty(AssAcc)) continue;
+
+                    var qPm = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamOldId == AssAcc);
+                    if (qPm != null)
+                    {
+                        tEmpName = qPm.CTeamOldId + " " + qPm.CTeamOldName;
+
+                        SRTeamInfo pmBean = new SRTeamInfo(pmId, AssAcc, tEmpName, qPm.CTeamNewId, qPm.CTeamNewName);
+                        liSRTeamInfo.Add(pmBean);
+                    }
+                }
+            }
+
+            return Json(liSRTeamInfo);
+        }
+        #endregion
+
+        #region 刪除服務團隊
+        /// <summary>
+        /// 刪除服務團隊
+        /// </summary>
+        /// <param name="cTeamID">目前的服務團隊ERPID(;號隔開)</param>
+        /// <param name="cTeamAcc">欲刪除的服務團隊ERPID</param>
+        /// <returns></returns>
+        public ActionResult DeletepjTeam(string cTeamID, string cTeamAcc)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            string reValue = cTeamID;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(cTeamID))
+                {
+                    #region 刪除工程師，並回傳最新的工程師
+                    var oldPMAcc = cTeamID;
+
+                    List<string> liPmAcc = cTeamID.Split(';').ToList();
+                    List<string> liPmAccNew = new List<string>();
+
+                    foreach (string tValue in liPmAcc)
+                    {
+                        if (tValue.ToLower() != cTeamAcc)
+                        {
+                            liPmAccNew.Add(tValue);
+                        }
+                    }
+
+                    reValue = string.Join(";", liPmAccNew);
+                    #endregion
+
+                    #region 紀錄刪除log
+                    TbOneLog logBean = new TbOneLog
+                    {
+                        CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
+                        EventName = "DeletepjTeam",
+                        Log = "刪除服務團隊_舊值: " + cTeamID + "; 新值: " + reValue,
+                        CreatedUserName = ViewBag.cLoginUser_Name,
+                        CreatedDate = DateTime.Now
+                    };
+
+                    dbOne.TbOneLogs.Add(logBean);
+                    dbOne.SaveChanges();
+                    #endregion
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("DeletepjTeam Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 修改協助工程師
         /// <summary>
         /// 修改協助工程師
         /// </summary>
         /// <param name="cAssEngineerID">目前的協助工程師ERPID(;號隔開)</param>
-        /// <param name="AssEngineerAcc">欲修改的協助工程師ERPID</param>
+        /// <param name="cAssEngineerAcc">欲修改的協助工程師ERPID</param>
         /// <returns></returns>
-        public ActionResult SavepjAssEngineer(string cAssEngineerID, string AssEngineerAcc)
+        public ActionResult SavepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
         {
             getLoginAccount();
 
@@ -555,37 +693,37 @@ namespace OneService.Controllers
                 {
                     var oldAssEngineerAcc = cAssEngineerID;
 
-                    if (oldAssEngineerAcc.Contains(AssEngineerAcc))
+                    if (oldAssEngineerAcc.Contains(cAssEngineerAcc))
                     {
-                        reValue = "協助工程師已存在，請重新輸入！";
+                        reValue = "Error：協助工程師已存在，請重新輸入！";
                     }
                     else
                     {
-                        reValue = oldAssEngineerAcc + ";" + AssEngineerAcc;
+                        reValue = oldAssEngineerAcc + ";" + cAssEngineerAcc;
 
-                        ////紀錄修改log
-                        //TB_LOG logBean = new TB_LOG
-                        //{
-                        //    CrmOppNo = oppNo,
-                        //    EventName = "PMO",
-                        //    Log = "修改協助工程師_舊值: " + oldAssEngineerAcc + "; 新值: " + pjInfoBean.AssEngineerAcc,
-                        //    UserAcc = loginAccount,
-                        //    UserName = empName,
-                        //    InsertTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-                        //};
+                        #region 紀錄修改log
+                        TbOneLog logBean = new TbOneLog
+                        {
+                            CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "": ViewBag.cSRID,
+                            EventName = "SavepjAssEngineer",
+                            Log = "修改協助工程師_舊值: " + oldAssEngineerAcc + "; 新值: " + reValue,
+                            CreatedUserName = ViewBag.cLoginUser_Name,
+                            CreatedDate = DateTime.Now
+                        };
 
-                        //psipDb.TB_LOG.Add(logBean);
-                        //psipDb.SaveChanges();                        
+                        dbOne.TbOneLogs.Add(logBean);
+                        dbOne.SaveChanges();
+                        #endregion
                     }
                 }
                 else
                 {
-                    reValue = AssEngineerAcc;
+                    reValue = cAssEngineerAcc;
                 }
             }
             catch (Exception e)
             {
-                return Json("SaveAssignAssEngineer Error：" + e.Message);
+                return Json("SavepjAssEngineer Error：" + e.Message);
             }
 
             return Json(reValue);
@@ -601,7 +739,9 @@ namespace OneService.Controllers
         public ActionResult GetpjAssEngineer(string cAssEngineerID)
         {            
             List<AssEngineerInfo> liAssEngineerInfo = new List<AssEngineerInfo>();
-            
+
+            string tEmpName = string.Empty; //協助工程師姓名(中文姓名+英文姓名)
+
             if (!string.IsNullOrEmpty(cAssEngineerID))
             {
                 List<string> liAssAcc = cAssEngineerID.Split(';').ToList();
@@ -614,15 +754,17 @@ namespace OneService.Controllers
                     var qPm = dbEIP.People.FirstOrDefault(x => x.ErpId == AssAcc);
                     if (qPm != null)
                     {
+                        tEmpName = qPm.Name2 + " " + qPm.Name;
+
                         var qPmDept = dbEIP.Departments.FirstOrDefault(x => x.Id == qPm.DeptId && x.Status == 0);
                         if (qPmDept == null)
                         {
-                            AssEngineerInfo pmBean = new AssEngineerInfo(pmId, AssAcc, qPm.Name2, qPm.Extension, qPm.Mobile, qPm.Email, "", "");
+                            AssEngineerInfo pmBean = new AssEngineerInfo(pmId, AssAcc, tEmpName, qPm.Extension, qPm.Mobile, qPm.Email, "", "");
                             liAssEngineerInfo.Add(pmBean);
                         }
                         else
                         {
-                            AssEngineerInfo pmBean = new AssEngineerInfo(pmId, AssAcc, qPm.Name2, qPm.Extension, qPm.Mobile, qPm.Email, qPmDept.Id, qPmDept.Name);
+                            AssEngineerInfo pmBean = new AssEngineerInfo(pmId, AssAcc, tEmpName, qPm.Extension, qPm.Mobile, qPm.Email, qPmDept.Id, qPmDept.Name);
                             liAssEngineerInfo.Add(pmBean);
                         }
                     }
@@ -675,24 +817,24 @@ namespace OneService.Controllers
                     reValue = string.Join(";", liPmAccNew);
                     #endregion
 
-                    ////紀錄修改log
-                    //TB_LOG logBean = new TB_LOG
-                    //{
-                    //    CrmOppNo = oppNo,
-                    //    EventName = "PMO",
-                    //    Log = "修改協助工程師_舊值: " + oldPMAcc + "; 新值: " + cAssEngineerBean.PMAcc,
-                    //    UserAcc = loginAccount,
-                    //    UserName = empName,
-                    //    InsertTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-                    //};
+                    #region 紀錄刪除log
+                    TbOneLog logBean = new TbOneLog
+                    {
+                        CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
+                        EventName = "DeletepjAssEngineer",
+                        Log = "刪除協助工程師_舊值: " + cAssEngineerID + "; 新值: " + reValue,
+                        CreatedUserName = ViewBag.cLoginUser_Name,
+                        CreatedDate = DateTime.Now
+                    };
 
-                    //psipDb.TB_LOG.Add(logBean);
-                    //psipDb.SaveChanges();                    
-                }                
+                    dbOne.TbOneLogs.Add(logBean);
+                    dbOne.SaveChanges();
+                    #endregion
+                }
             }
             catch (Exception e)
             {                
-                return Json("DeletecAssEngineer Error：" + e.Message);
+                return Json("DeletepjAssEngineer Error：" + e.Message);
             }
 
             return Json(reValue);
@@ -1171,6 +1313,26 @@ namespace OneService.Controllers
             public string cBPMFormNoUrl { get; set; }
             /// <summary>本次使用</summary>
             public string cUsed { get; set; }
+        }
+        #endregion
+
+        #region 服務團隊資訊
+        public class SRTeamInfo
+        {
+            public int ID { get; private set; }
+            public string TeamID { get; private set; }            
+            public string TeamName { get; private set; }            
+            public string DeptId { get; private set; }
+            public string DeptName { get; private set; }
+
+            public SRTeamInfo(int id, string teamid, string teamname, string deptId, string deptName)
+            {
+                ID = id;
+                TeamID = teamid;
+                TeamName = teamname;             
+                DeptId = deptId;
+                DeptName = deptName;
+            }
         }
         #endregion
 

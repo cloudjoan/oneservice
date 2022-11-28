@@ -790,3 +790,4 @@ D:\GIT\oneservice\OneService\obj\Debug\net6.0\refint\OneService.dll
 D:\GIT\oneservice\OneService\obj\Debug\net6.0\OneService.pdb
 D:\GIT\oneservice\OneService\obj\Debug\net6.0\OneService.genruntimeconfig.cache
 D:\GIT\oneservice\OneService\obj\Debug\net6.0\ref\OneService.dll
+D:\GIT\oneservice\OneService\bin\Debug\net6.0\RestSharp.dll

@@ -6,7 +6,13 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Net.Mail;
 using System.Security.Principal;
+using RestSharp;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using static OneService.Controllers.ServiceRequestController;
+using System.Diagnostics.Metrics;
+using System.Security.Policy;
 
 namespace OneService.Controllers
 {
@@ -195,6 +201,180 @@ namespace OneService.Controllers
                 reValue[0] = bean.CApplyName;   //計費業務
                 reValue[1] = bean.CReceiptNo;   //發票號碼
                 reValue[2] = bean.CReceiptDate; //發票日期
+            }
+
+            return reValue;
+        }
+        #endregion       
+
+        #region 呼叫RFC並回傳SLA Table清單
+        /// <summary>
+        /// 呼叫RFC並回傳SLA Table清單
+        /// </summary>        
+        /// <param name="ArySERIAL">序號Array</param>
+        /// <param name="NowCount">目前的項次</param>
+        /// <param name="tURLName">URL站台名稱</param>
+        /// <returns></returns>
+        public List<SRWarranty> ZFM_TICC_SERIAL_SEARCHWTYList(string[] ArySERIAL, ref int NowCount, string tURLName)
+        {
+            List<SRWarranty> QueryToList = new List<SRWarranty>();
+
+            string cWTYID = string.Empty;
+            string cWTYName = string.Empty;            
+            string cWTYSDATE = string.Empty;
+            string cWTYEDATE = string.Empty;
+            string cSLARESP = string.Empty;
+            string cSLASRV = string.Empty;
+            string cContractID = string.Empty;
+            string tBPMNO = string.Empty;            
+            string tURL = string.Empty;            
+
+            int tLength = 0;
+
+            try
+            {
+                var client = new RestClient("http://tsti-sapapp01.etatung.com.tw/api/ticc");
+                var request = new RestRequest();
+                request.Method = RestSharp.Method.Post;
+
+                foreach (string IV_SERIAL in ArySERIAL)
+                {
+                    if (IV_SERIAL != null)
+                    {
+                        Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+                        parameters.Add("SAP_FUNCTION_NAME", "ZFM_TICC_SERIAL_SEARCH");
+                        parameters.Add("IV_SERIAL", IV_SERIAL);
+
+                        request.AddHeader("Content-Type", "application/json");
+                        request.AddParameter("application/json", parameters, ParameterType.RequestBody);
+
+                        RestResponse response = client.Execute(request);
+
+                        var data = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+                        tLength = int.Parse(data["ET_WARRANTY"]["Length"].ToString());                          //保固共有幾筆
+
+                        for (int i = 0; i < tLength; i++)
+                        {
+                            NowCount++;
+
+                            tBPMNO = "";
+                            tURL = "";
+
+                            cWTYID = data["ET_WARRANTY"]["SyncRoot"][i]["wTYCODEField"].ToString().Trim();       //保固
+                            cWTYName = data["ET_WARRANTY"]["SyncRoot"][i]["wTYCODEField"].ToString().Trim();     //保固說明
+                            cWTYSDATE = data["ET_WARRANTY"]["SyncRoot"][i]["wTYSTARTField"].ToString().Trim();   //保固開始日期
+                            cWTYEDATE = data["ET_WARRANTY"]["SyncRoot"][i]["wTYENDField"].ToString().Trim();     //保固結束日期                                                          
+                            cSLARESP = data["ET_WARRANTY"]["SyncRoot"][i]["sLASRVField"].ToString().Trim();      //回應條件
+                            cSLASRV = data["ET_WARRANTY"]["SyncRoot"][i]["sLARESPField"].ToString().Trim();      //服務條件
+                            cContractID = data["ET_WARRANTY"]["SyncRoot"][i]["cONTRACTField"].ToString().Trim(); //合約編號
+                            tBPMNO = data["ET_WARRANTY"]["SyncRoot"][i]["bPM_NOField"].ToString().Trim();        //BPM表單編號
+
+                            #region 取得BPM Url
+                            if (cContractID != "")
+                            {
+                                tBPMNO = findContractSealsFormNo(cContractID);
+
+                                try
+                                {
+                                    Int32 ContractID = Int32.Parse(cContractID);
+
+                                    if (ContractID >= 10506151 && ContractID != 10506152 && ContractID != 10506157) //新的用印申請單
+                                    {
+                                        tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/ContractSeals/ContractSealsForm.aspx?FormNo=" + tBPMNO + " target=_blank";
+                                    }
+                                    else //舊的用印申請單
+                                    {
+                                        tURL = "http://" + tURLName + "/ContractSeals/_layouts/FormServer.aspx?XmlLocation=%2fContractSeals%2fBPMContractSealsForm%2f" + tBPMNO + ".xml&ClientInstalled=true&DefaultItemOpen=1&source=/_layouts/TSTI.SharePoint.BPM/CloseWindow.aspx target=_blank";
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    tBPMNO = "";
+                                    tURL = "";
+                                }
+                            }
+                            else
+                            {
+                                if (tBPMNO.IndexOf("WTY") != -1)
+                                {
+                                    tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/Warranty/WarrantyForm.aspx?FormNo=" + tBPMNO + " target=_blank";
+                                }
+                                else
+                                {
+                                    tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Form/Guarantee/GuaranteeForm.aspx?FormNo=" + tBPMNO + " target=_blank";
+                                }
+                            }
+                            #endregion
+
+                            #region 取得清單
+                            SRWarranty QueryInfo = new SRWarranty();
+
+                            QueryInfo.cID = NowCount.ToString();    //系統ID
+                            QueryInfo.cSerialID = IV_SERIAL;        //序號                        
+                            QueryInfo.cWTYID = cWTYID;              //保固
+                            QueryInfo.cWTYName = cWTYName;          //保固說明
+                            QueryInfo.cWTYSDATE = cWTYSDATE;        //保固開始日期
+                            QueryInfo.cWTYEDATE = cWTYEDATE;        //保固結束日期                                                          
+                            QueryInfo.cSLARESP = cSLARESP;          //回應條件
+                            QueryInfo.cSLASRV = cSLASRV;            //服務條件
+                            QueryInfo.cContractID = cContractID;    //合約編號                        
+                            QueryInfo.cBPMFormNo = tBPMNO;          //BPM表單編號                        
+                            QueryInfo.cBPMFormNoUrl = tURL;         //BPM URL                    
+                            QueryInfo.cUsed = "N";
+
+                            QueryToList.Add(QueryInfo);
+                            #endregion
+                        }
+                    }
+                }                
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+            return QueryToList;
+        }
+        #endregion
+
+        #region 傳入合約編號並取得BPM用印申請單表單編號
+        /// <summary>
+        /// 傳入合約編號並取得BPM用印申請單表單編號
+        /// </summary>
+        /// <returns></returns>
+        public string findContractSealsFormNo(string NO)
+        {
+            string reValue = string.Empty;
+
+            var bean = dbProxy.F4501s.FirstOrDefault(x => x.No == NO);
+
+            if (bean != null)
+            {
+                if (bean.Bpmno != null)
+                {
+                    reValue = bean.Bpmno.Trim();
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得保固說明
+        /// <summary>
+        /// 取得保固說明
+        /// </summary>
+        /// <returns></returns>
+        public string findWTYName(string cWTYID)
+        {
+            string reValue = string.Empty;
+
+            var bean = dbProxy.F0005s.FirstOrDefault(x => x.Modt == "SD" && x.Alias == "WARTY" && x.Dsc2 == cWTYID);
+
+            if (bean != null)
+            {
+                reValue = bean.Dsc1.Trim();
             }
 
             return reValue;

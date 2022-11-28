@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "C+6GFqqnwXrpbDVNr9qwaMNIBFUR+nznQPw+nTvaxPI5q/DRKDlrgfh2nlVa0Oif0QiLcVvmp9hG/ZW1rSJU1g==",
+  "dgSpecHash": "x813Xm7AjyOhTzX+mOXcCwDExDzdUrNeJvTL/uHYqalMS61qdjurmbt1d0seigeHr3WE3N3GUlS9GMkm4sFZsQ==",
   "success": true,
   "projectFilePath": "D:\\GIT\\oneservice\\OneService\\OneService.csproj",
   "expectedPackageFiles": [
@@ -80,6 +80,7 @@
     "C:\\Users\\elvis.chang\\.nuget\\packages\\nuget.projectmodel\\5.11.0\\nuget.projectmodel.5.11.0.nupkg.sha512",
     "C:\\Users\\elvis.chang\\.nuget\\packages\\nuget.protocol\\5.11.0\\nuget.protocol.5.11.0.nupkg.sha512",
     "C:\\Users\\elvis.chang\\.nuget\\packages\\nuget.versioning\\6.2.1\\nuget.versioning.6.2.1.nupkg.sha512",
+    "C:\\Users\\elvis.chang\\.nuget\\packages\\restsharp\\108.0.3\\restsharp.108.0.3.nupkg.sha512",
     "C:\\Users\\elvis.chang\\.nuget\\packages\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
     "C:\\Users\\elvis.chang\\.nuget\\packages\\runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
     "C:\\Users\\elvis.chang\\.nuget\\packages\\runtime.fedora.24-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.fedora.24-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
