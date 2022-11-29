@@ -7,6 +7,8 @@ using RestSharp;
 using System.IdentityModel.Tokens.Jwt;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using Newtonsoft.Json.Linq;
+using NuGet.Packaging.Signing;
 
 namespace OneService.Controllers
 {
@@ -26,28 +28,21 @@ namespace OneService.Controllers
            
             var request = new RestRequest();
             request.Method = RestSharp.Method.Post;
-            
-            MultipartFormDataContent content = new MultipartFormDataContent();
 
-            Dictionary<Object, Object> keyValuePairs = new Dictionary<Object, Object>();
-            keyValuePairs.Add("SAP_FUNCTION_NAME", "ZFM_TICC_SERIAL_SEARCH");
-            keyValuePairs.Add("IV_SERIAL", "2CE3231K6X");
+            Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+            parameters.Add("SAP_FUNCTION_NAME", "ZFM_TICC_SERIAL_SEARCH");
+            parameters.Add("IV_SERIAL", "2CE3231K6X");
 
             request.AddHeader("Content-Type", "application/json");
-//            var body = @"{ 
-//" + "\n" +
-//            @"    ""SAP_FUNCTION_NAME"":""ZFM_TICC_SERIAL_SEARCH"", 
-//" + "\n" +
-//            @"    ""IV_SERIAL"":""2CE3231K6X""
-//" + "\n" +
-//            @"}";
-            request.AddParameter("application/json", keyValuePairs, ParameterType.RequestBody);
+            request.AddParameter("application/json", parameters, ParameterType.RequestBody);
             
             RestResponse response = client.Execute(request);
+
             Console.WriteLine(response.Content);
 
-            var data   = JsonConvert.DeserializeObject(response.Content);
-            System.Diagnostics.Debug.WriteLine(data);
+            var data   = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+            System.Diagnostics.Debug.WriteLine(data["ET_REQUEST"]["SyncRoot"][0]["cNAMEField"]);
 
             return View();
         }
@@ -315,14 +310,27 @@ namespace OneService.Controllers
         #region 依起訖時間，取得里程碑
         public string GetMileStone(string oppNo, string startDate, string endDate)
         {
-            var bean = psipDB.TbProMilestones.FirstOrDefault(x => x.CrmOppNo == OppNoFormat(oppNo)
-                && (Convert.ToDateTime(x.EstimatedDate) >= Convert.ToDateTime(startDate)
-                && Convert.ToDateTime(x.FinishedDate) <= Convert.ToDateTime(startDate))
-                && (Convert.ToDateTime(x.EstimatedDate) >= Convert.ToDateTime(endDate)
-                && Convert.ToDateTime(x.FinishedDate) <= Convert.ToDateTime(endDate)));
+            var beans = psipDB.TbProMilestones.Where(x => x.CrmOppNo == OppNoFormat(oppNo));
+            var _startDate = Convert.ToDateTime(startDate);
+            var _endDate = Convert.ToDateTime(startDate);
 
-            if (bean != null) return bean.MilestoneNo;
-            else return "";
+            foreach (var bean in beans)
+            {
+                if (!string.IsNullOrEmpty(bean.EstimatedDate))
+                {
+                    var eDate = Convert.ToDateTime(bean.EstimatedDate);
+
+                    if (eDate.Year == _startDate.Year && eDate.Month == _startDate.Month && eDate.Day == _startDate.Day) return bean.MilestoneNo; 
+
+                }else if(!string.IsNullOrEmpty(bean.EstimatedDate) && !string.IsNullOrEmpty(bean.FinishedDate))
+                {
+                    var eDate = Convert.ToDateTime(bean.EstimatedDate);
+                    var fDate = Convert.ToDateTime(bean.FinishedDate);
+                    if (_startDate >= eDate && _startDate <= fDate) return bean.MilestoneNo;
+                    if (_endDate >= fDate && _endDate <= fDate) return bean.MilestoneNo;
+                }
+            }
+            return "";
         }
 
         #endregion
