@@ -1,0 +1,42 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+
+    <div class="middle-box text-center loginscreen animated fadeInDown">
+        <div>
+            <form class="m-t" role="form" runat="server">
+
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>系統登入 <small></small></h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-sm-12 b-r">
+                                <form role="form">
+                                    <div class="form-group"><input id="account" type="text" placeholder="請輸入AD帳號" class="form-control" required="" runat="server"></div>
+                                    <div class="form-group"><input id="password" type="password" placeholder="請輸入AD密碼" class="form-control" required="" runat="server"></div>
+                                    <asp:Label ID="Label1" runat="server" Text="" ForeColor="#FF3300"></asp:Label>
+                                    <div>
+                                        <br /><br /><button class="btn btn-primary m-t-n-xs full-width m-b" type="button" runat="server" onserverclick="LoginBtn_Click"><i class="fa fa-check"></i> &nbsp;登 入</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+        
+    </div>

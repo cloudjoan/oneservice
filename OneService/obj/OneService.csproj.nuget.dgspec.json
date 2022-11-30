@@ -75,6 +75,10 @@
             "RestSharp": {
               "target": "Package",
               "version": "[108.0.3, )"
+            },
+            "System.DirectoryServices.AccountManagement": {
+              "target": "Package",
+              "version": "[7.0.0, )"
             }
           },
           "imports": [

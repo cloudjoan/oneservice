@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OneService.Models;
 using System.Diagnostics;
+using System.DirectoryServices;
+using System.DirectoryServices.Protocols;
+using System.Net;
 
 namespace OneService.Controllers
 {
@@ -23,6 +26,11 @@ namespace OneService.Controllers
             return View();
         }
 
+        public IActionResult Login()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -35,6 +43,25 @@ namespace OneService.Controllers
             var beans = psipDB.TbBulletinItems;
             ViewBag.beans = beans;
             return View();
+        }
+
+        //AD帳密驗證
+        public static bool IsAuthenticated(string username, string pwd)
+        {
+            try
+            {
+                using (var ldapConnection = new LdapConnection(new LdapDirectoryIdentifier("139.223.14.100")))
+                {
+                    ldapConnection.Credential = new NetworkCredential(@"etatung\" + username, pwd);
+                    ldapConnection.AuthType = AuthType.Basic;
+                    ldapConnection.Bind();
+                    return true;
+                }
+            }
+            catch (LdapException ex)
+            {
+                return false;
+            }
         }
     }
 }

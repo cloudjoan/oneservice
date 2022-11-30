@@ -312,22 +312,37 @@ namespace OneService.Controllers
         {
             var beans = psipDB.TbProMilestones.Where(x => x.CrmOppNo == OppNoFormat(oppNo));
             var _startDate = Convert.ToDateTime(startDate);
-            var _endDate = Convert.ToDateTime(startDate);
+            var _endDate = Convert.ToDateTime(endDate);
 
             foreach (var bean in beans)
             {
                 if (!string.IsNullOrEmpty(bean.EstimatedDate))
                 {
-                    var eDate = Convert.ToDateTime(bean.EstimatedDate);
+                    var esDate = Convert.ToDateTime(bean.EstimatedDate);
 
-                    if (eDate.Year == _startDate.Year && eDate.Month == _startDate.Month && eDate.Day == _startDate.Day) return bean.MilestoneNo; 
+                    if (esDate.Year == _startDate.Year && esDate.Month == _startDate.Month && esDate.Day == _startDate.Day) return bean.MilestoneNo; 
 
-                }else if(!string.IsNullOrEmpty(bean.EstimatedDate) && !string.IsNullOrEmpty(bean.FinishedDate))
+                    if (esDate >= _startDate && esDate <= _endDate) return bean.MilestoneNo;
+
+                }
+                else if(!string.IsNullOrEmpty(bean.EstimatedDate) && !string.IsNullOrEmpty(bean.FinishedDate))
                 {
-                    var eDate = Convert.ToDateTime(bean.EstimatedDate);
+                    var esDate = Convert.ToDateTime(bean.EstimatedDate);
                     var fDate = Convert.ToDateTime(bean.FinishedDate);
-                    if (_startDate >= eDate && _startDate <= fDate) return bean.MilestoneNo;
-                    if (_endDate >= fDate && _endDate <= fDate) return bean.MilestoneNo;
+
+                    if (fDate.Year == _startDate.Year && fDate.Month == _startDate.Month && fDate.Day == _startDate.Day) return bean.MilestoneNo;
+
+                    if (esDate >= fDate)
+                    {
+                        if (_startDate >= esDate && _startDate <= fDate) return bean.MilestoneNo;
+                        if (_endDate >= esDate && _endDate <= fDate) return bean.MilestoneNo;
+                    }
+                    else
+                    {
+                        if (_startDate >= fDate && _startDate <= esDate) return bean.MilestoneNo;
+                        if (_endDate >= fDate && _endDate <= fDate) return bean.MilestoneNo;
+                    }
+
                 }
             }
             return "";
