@@ -10,17 +10,18 @@
 	whTypeDict.Add("A", "A.客戶服務");
 	whTypeDict.Add("B", "B.專案導入");
 	whTypeDict.Add("C", "C.內部作業");
-	whTypeDict.Add("D", "D.研發");
-	whTypeDict.Add("E", "E.專業服務");
+	whTypeDict.Add("D", "D.專業服務");
 
 	actTypeDict.Add("A", "維修");
 	actTypeDict.Add("B", "定維");
 	actTypeDict.Add("C", "裝機");
 	actTypeDict.Add("D", "會議");
-	actTypeDict.Add("E", "開發/測試");
-	actTypeDict.Add("F", "教育訓練");
-	actTypeDict.Add("G", "文件整理");
-	actTypeDict.Add("H", "前置準備");
+	actTypeDict.Add("E", "需求訪談");
+	actTypeDict.Add("F", "分析/設計");
+	actTypeDict.Add("G", "開發/測試");
+	actTypeDict.Add("H", "佈版/版控");
+	actTypeDict.Add("I", "教育訓練");
+	actTypeDict.Add("J", "前置準備");
 }
 
 @section js_section{
@@ -81,6 +82,20 @@
 
 		}
 
+		function findCrmOppByOppNo(){
+			$.ajax({
+				url: '@Url.Action("AjaxHandler", "Ajax")',
+				type: 'post',
+				dataType: 'json',
+				data: { functionName: 'findCrmOppByOppNo', keyword: $("#tbx_CrmOppNo").val() },
+				success: function (result) {
+					console.log(result.OppDescription);
+					$("#hid_CrmOppName").val(result.OppDescription);
+					$("#lb_CrmOppName").html(result.OppDescription);
+				}
+			})
+		}
+
 		function ActiveBtn(targetId, disabledClassName, obj){
 			$(disabledClassName).removeClass("active");
 			$("#" + targetId).val($(obj).val());
@@ -134,8 +149,7 @@
 									<option value="A">A.客戶服務</option>
 									<option value="B">B.專案導入</option>
 									<option value="C">C.內部作業</option>
-									<option value="D">D.研發</option>
-									<option value="E">E.專業服務</option>
+									<option value="D">D.專業服務</option>
 								</select>
 							</div>
 							<label class="col-lg-2 col-form-label">任務活動：</label>
@@ -145,10 +159,12 @@
 									<option value="B">定維</option>
 									<option value="C">裝機</option>
 									<option value="D">會議</option>
-									<option value="E">開發/測試</option>
-									<option value="F">教育訓練</option>
-									<option value="G">文件整理</option>
-									<option value="H">前置準備</option>
+									<option value="E">需求訪談</option>
+									<option value="F">分析/設計</option>
+									<option value="G">開發/測試</option>
+									<option value="H">佈版/版控</option>
+									<option value="I">教育訓練</option>
+									<option value="J">前置準備</option>
 								</select>
 							</div>
 							
@@ -156,7 +172,9 @@
 						
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label"> 專案（商機）：</label>
-							<div class="col-lg-4"><input type="text" id="tbx_CrmOppNo" name="tbx_CrmOppNo" class="form-control" placeholder="專案（商機）"></div>
+							<div class="col-lg-2"><input type="text" id="tbx_CrmOppNo" name="tbx_CrmOppNo" class="form-control" placeholder="專案（商機）" onblur="findCrmOppByOppNo()"></div>
+							<label class="col-lg-2 col-form-label" id="lb_CrmOppName" ></label>
+							<input type="hidden" id="hid_CrmOppName" name="hid_CrmOppName" />
 						</div>
 
 						<div class="form-group row">

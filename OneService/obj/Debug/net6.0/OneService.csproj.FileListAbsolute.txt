@@ -531,6 +531,10 @@ D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\linux\lib\net6.0\Sy
 D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\osx\lib\net6.0\System.DirectoryServices.Protocols.dll
 D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.Protocols.dll
 D:\VSProject\OneService\OneService\bin\Debug\net6.0\RestSharp.dll
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\System.DirectoryServices.dll
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\System.DirectoryServices.AccountManagement.dll
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.dll
+D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.AccountManagement.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\appsettings.Development.json
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\appsettings.json
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\OneService.staticwebassets.runtime.json
@@ -604,6 +608,8 @@ F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.Composition
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.Composition.Runtime.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.Composition.TypedParts.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.Configuration.ConfigurationManager.dll
+F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.DirectoryServices.dll
+F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.DirectoryServices.AccountManagement.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.DirectoryServices.Protocols.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.Drawing.Common.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll
@@ -774,10 +780,11 @@ F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win-arm64
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
+F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.dll
+F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.AccountManagement.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\linux\lib\net6.0\System.DirectoryServices.Protocols.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\osx\lib\net6.0\System.DirectoryServices.Protocols.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.Protocols.dll
-F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\unix\lib\net6.0\System.Drawing.Common.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Drawing.Common.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll
 F:\Developer\VSProject\oneservice\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Security.Cryptography.ProtectedData.dll
@@ -801,7 +808,3 @@ F:\Developer\VSProject\oneservice\OneService\obj\Debug\net6.0\refint\OneService.
 F:\Developer\VSProject\oneservice\OneService\obj\Debug\net6.0\OneService.pdb
 F:\Developer\VSProject\oneservice\OneService\obj\Debug\net6.0\OneService.genruntimeconfig.cache
 F:\Developer\VSProject\oneservice\OneService\obj\Debug\net6.0\ref\OneService.dll
-D:\VSProject\OneService\OneService\bin\Debug\net6.0\System.DirectoryServices.dll
-D:\VSProject\OneService\OneService\bin\Debug\net6.0\System.DirectoryServices.AccountManagement.dll
-D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.dll
-D:\VSProject\OneService\OneService\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.DirectoryServices.AccountManagement.dll

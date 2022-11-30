@@ -11,6 +11,7 @@ namespace OneService.Controllers
 
         TAIFContext bpmDB = new TAIFContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
+        ERP_PROXY_DBContext proxyDB = new ERP_PROXY_DBContext();
         public IActionResult Index()
 		{
 			return View();
@@ -90,7 +91,13 @@ namespace OneService.Controllers
 
                 //    contentObj = empBean2;
                 //    break;
-                    //#endregion
+                //#endregion
+
+                case "findCrmOppByOppNo":
+                    contentObj = proxyDB.TbCrmOppHeads.FirstOrDefault(x => x.CrmOppNo == OppNoFormat(keyword));
+                    break;
+                default:
+                    break;
             }
 
             string json = JsonConvert.SerializeObject(contentObj);
@@ -137,6 +144,13 @@ namespace OneService.Controllers
                 ViewBag.Message = "File upload failed!!";
                 return View();
             }
+        }
+
+        public string OppNoFormat(string oppNo)
+        {
+            var _oppNo = "0000000000" + oppNo;
+            var oppNoFormat = _oppNo.Substring(_oppNo.Length - 10);
+            return oppNoFormat;
         }
 
 

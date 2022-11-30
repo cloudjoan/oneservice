@@ -9,3 +9,6 @@ dotnet ef dbcontext scaffold "Server=TSTI-BPMDB;Database=TAIF;User=bpm;Password=
 
 #EIPDB
 dotnet ef dbcontext scaffold "Server=TSTI-EIPDB;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -t VIEW_EMP_INFO -f
+
+#PROXY DB
+dotnet ef dbcontext scaffold "Server=TSTI-SAP-PROXY;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_CRM_OPP_HEAD  -f
