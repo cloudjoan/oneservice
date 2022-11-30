@@ -3,6 +3,23 @@
 	Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
 
+<!--要透過Server Code處理寫在裡面-->
+@functions{
+	public string TransDateFormat(object tDate)
+	{
+		string reValue = string.Empty;
+		string TempDate = string.Empty;
+
+        if (tDate != null)
+        {
+			TempDate = Convert.ToString(tDate);
+            reValue = Convert.ToDateTime(TempDate).ToString("yyyy-MM-dd");
+        }
+
+        return reValue;
+    }    
+}
+
 <!--Java Script寫在js_section裡面-->
 @section js_section{
 	<script>
@@ -12,16 +29,14 @@
 
 		$(document).ready(function () {
 			openPostAddress();			
-			CustSearch('Comp-1');		//取得客戶資料	
-			SerialSearch();				//產品序號資訊查詢
-			findMaterialByKeyword();	//用關鍵字查詢物料
-			PeopleSearch();				//Ajax用中文或英文姓名查詢人員帳號
-			getpjTeam();				//取得服務團隊
-			getpjAssEngineer();			//取得協助工程師			
-
-			 $(".i-checks input[name='CheckUsed']").on('ifChanged', function (event) {
-                getShowCheck();
-            });
+			CustSearch('Comp-1');				//取得客戶資料	
+			SerialSearch();						//產品序號資訊查詢
+			findMaterialByKeyword();			//用關鍵字查詢物料
+			PeopleSearch();						//Ajax用中文或英文姓名查詢人員帳號
+			SQPersonSearch();					//Ajax用關鍵字查詢SQ人員
+			getpjTeam();						//取得服務團隊
+			getpjAssEngineer();					//取得協助工程師	
+			getSRDetail_Warranty();				//取得保固SLA明細Table(非新建或駁回狀態)			
 
 			//顯示協助工程師設定popup
             $('#btn_pjAssEngineer').click(function () {
@@ -54,15 +69,9 @@
 		
 		//確認提交事件
 		function onclickBtnSave() {
-			var cStatus = $("#ddl_cStatus").val();
-
-			if (cStatus == "E0001" || cStatus == "E0014") //新建 or 駁回
-			{
-				if (checkBeforeSend()) { getSRID(); }
-			}
-			else //處理中
-			{
-				if (checkBeforeApprove()) { getSRID(); }
+			if (checkBeforeSend()) 
+			{ 
+				getSRID(); 
 			}			
 		}
 
@@ -115,6 +124,7 @@
 			var ddl_cMAServiceType = $("#ddl_cMAServiceType");		//維護服務種類
 			var ddl_cSRTypeOne = $("#ddl_cSRTypeOne");				//報修類別(大類)
 			var ddl_cSRTypeSec = $("#ddl_cSRTypeSec");				//報修類別(中類)
+			var ddl_cSRTypeThr = $("#ddl_cSRTypeThr");				//報修類別(小類)
 			var ddl_cSRPathWay = $("#ddl_cSRPathWay");				//報修管道
 			var ddl_cSRProcessWay = $("#ddl_cSRProcessWay");			//處理方式
 
@@ -123,7 +133,7 @@
 			var tbx_cContactPhone = $("#tbx_cContactPhone");			//客戶聯絡人電話
 			var tbx_cContactEmail	= $("#tbx_cContactEmail");			//客戶聯絡人Email
 
-			var ddl_cTeamID = $("#ddl_cTeamID");					//服務團隊
+			var hid_cTeamID = $("#hid_cTeamID");					//服務團隊
 			var tbx_cMainEngineerName = $("#tbx_cMainEngineerName");	//主要工程師
 			var hid_cMainEngineerID = $("#hid_cMainEngineerID");		//主要工程師ERPID
 
@@ -163,6 +173,13 @@
 				Msg += "請選擇【報修類別(中類)】！\n";
 			}
 
+			if (ddl_cSRTypeOne.val() != "ZA05" && ddl_cSRTypeOne.val() != "ZA06")
+			{
+				if (ddl_cSRTypeThr.val() == "") {
+					Msg += "請選擇【報修類別(小類)】！\n";
+				}
+			}
+
 			if (ddl_cSRPathWay.val() == "") {
 				Msg += "請選擇【報修管道】！\n";
 			}
@@ -187,7 +204,7 @@
 				Msg += "【客戶聯絡人Email】不得為空！\n";
 			}
 
-			if (ddl_cTeamID.val() == "") {
+			if (hid_cTeamID.val() == "") {
 				Msg += "請選擇【服務團隊】！\n";
 			}
 
@@ -200,12 +217,15 @@
 			}
 
              //明細判斷
-			if ($("#tableAddPR tr").length == 1) {
+			if ($("#tablePR tr").length == 1) {
 				Msg += "請至少新增一筆【產品序號資訊】明細！\n";
 			}			
 
 			//【產品序號資訊】明細檢查
 			Msg += checkDetail_PR();
+
+			//【零件更換資訊】明細檢查
+			Msg += checkDetail_PA();
 
 			if (Msg != "") {
 				alert(Msg);
@@ -221,51 +241,101 @@
 			return true;
 		}
 
-		//送審前【產品序號資訊】明細檢查
+		//提交前【產品序號資訊】明細檢查
 		function checkDetail_PR() {
 			var Msg = "";
-			var cStatus = $("#ddl_cStatus").val();			
-			var tableName = "";			
+			var cStatus = $("#ddl_cStatus").val();						
             var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
 
-			if (cStatus == "E0001" || cStatus == "E0014") //新建 or 駁回
-			{
-				tableName = "tableAddPR";
-			}
-			else
-			{
-				tableName = "tableDispatchPR";
-			}
-
+			var tableName = "tablePR";
 			var trs = $("#" + tableName + " tr");
 
 			$.each(trs, function (i, itr) {
 				var tds = $(itr).find('td');
+				var objSerialID = tds.eq(0).children();		//序號
+				var objMaterialID = tds.eq(1).children();		//料號
+				var objMaterialName = tds.eq(2).children();	//料號說明					
 
-				if (cStatus == "E0001" || cStatus == "E0014") //新建 or 駁回
-				{
-					var objSerialID = tds.eq(0).children();		//序號
-					var objMaterialID = tds.eq(1).children();		//料號
-					var objMaterialName = tds.eq(2).children();	//料號說明					
-
-					if (objSerialID.val() != undefined) {
-                        if (objSerialID.val() == "") {
-							Msg += "明細【產品序號資訊-序號】不得為空！\n";
+				if (objSerialID.val() != undefined) {
+                    if (objSerialID.val() == "") {
+						Msg += "明細【產品序號資訊-序號】不得為空！\n";
+					}
+					else
+					{
+						if (objMaterialID.val() == "") {
+							Msg += "明細【產品序號資訊-序號】「" + objSerialID.val() + "」的【料號】不得為空！\n";
 						}
-						else
-						{
-							if (objMaterialID.val() == "") {
-								Msg += "明細【產品序號資訊-序號】「" + objSerialID.val() + "」的【料號】不得為空！\n";
-							}
 
-							if (objMaterialName.val() == "") {
-								Msg += "明細【產品序號資訊-序號】「" + objSerialID.val() + "」的【料號說明】不得為空！\n";
-							}							
+						if (objMaterialName.val() == "") {
+							Msg += "明細【產品序號資訊-序號】「" + objSerialID.val() + "」的【料號說明】不得為空！\n";
+						}							
 							
-						}
-                    }					
-				}				
+					}
+                }				
 			})			
+
+			return Msg;
+		}
+
+		//提交前【零件更換資訊】明細檢查
+		function checkDetail_PA() {
+			var Msg = "";
+			var cStatus = $("#ddl_cStatus").val();			
+            var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
+
+			var tableName = "tablePA";
+			var trs = $("#" + tableName + " tr");
+
+			$.each(trs, function (i, itr) {
+				var tds = $(itr).find('td');				
+				var objMaterialID = tds.eq(1).children();		//料號
+				var objArriveDate = tds.eq(9).children();		//到貨日
+				var objReturnDate = tds.eq(10).children();		//歸還日
+
+				if (objMaterialID.val() != undefined) {
+                    if (objMaterialID.val() == "") {
+						Msg += "明細【零件更換資訊-更換零件料號ID】不得為空！\n";
+					}
+					else
+					{
+						var reValue = checkDetail_PADate(objArriveDate, objReturnDate);
+						if (reValue != "")
+						{
+							Msg += "明細【零件更換資訊-更換零件料號ID】「" + objMaterialID.val() + "」\n" + reValue;
+						}
+
+					}
+                }					
+			})			
+
+			return Msg;
+		}
+
+		//檢查日期區間(true.ok false.不ok)
+		function checkDetail_PADate(StartDate, EndDate) {
+			var Msg = "";
+
+			if (StartDate.val() != "" && EndDate.val() != "") {
+				var reS = dateValidationCheck(StartDate.val());
+				var reE = dateValidationCheck(EndDate.val());
+
+				if (!reS)
+				{
+					Msg += '的【到貨日期】格式不正確，請檢查格式是否符合【yyyy-MM-dd】！\n';
+				}
+
+				if (!reE)
+				{
+					Msg += '的【歸還日期】格式不正確，請檢查格式是否符合【yyyy-MM-dd】！\n';
+				}
+
+				if (reS && reE)
+				{
+					if (Date.parse(StartDate.val()) > Date.parse(EndDate.val())) {
+						Msg += '的【到貨日期】不能大於【歸還日期】！\n';
+					}
+				}
+			}
 
 			return Msg;
 		}
@@ -308,13 +378,7 @@
 				var obj = $(this);
 				obj.prop('disabled', IsDisabled);
 			});			
-		}
-
-		//核可前檢查
-		function checkBeforeApprove()
-		{
-
-		}
+		}		
 
 		//SAP客戶代號/客戶名稱查詢
 		//compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
@@ -472,8 +536,8 @@
 				keyup: function (event) {
 					if (event.keyCode != 13 && event.keyCode != 38 && event.keyCode != 40) {
 						var keyword = $(this).val();
-
 						var obj = $(this);
+						var ojbID = $(this).attr("id");
 							$.ajax({
 								url: '@Url.Action("findMaterial", "ServiceRequest")',
 								type: 'post',
@@ -486,13 +550,26 @@
 											label: idata.maraMatnr + "\\" + idata.maktTxza1Zf,
 											idx: i,
 											value: idata.maraMatnr,
+											Name: idata.maktTxza1Zf,
 										Desc: idata.maktTxza1Zf
 										};
 									});
 
 									 //綁定foucs事件
 									obj.autocomplete({
-										source: materials
+										source: materials,
+										select: function (event, ui) {
+											var tr = obj.parent().parent();
+											var tds = tr.find("td");
+											if (ojbID.indexOf('tbx_PRcMaterialID') >= 0)
+											{
+												tds.eq(2).children().val(ui.item.Name);
+											}
+											else if (ojbID.indexOf('tbx_PAcMaterialID') >= 0)
+											{
+												tds.eq(2).children().val(ui.item.Name);
+											}												
+										}
 									}).bind('focus', function () { $(this).autocomplete("search"); });
 
 									//開啟autocomplete選單
@@ -556,6 +633,54 @@
 										//開啟autocomplete選單
 										obj.focus();
 									$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
+									}
+								})
+							
+						}
+					}
+				}
+			})
+		}
+
+		//Ajax用關鍵字查詢SQ人員
+		function SQPersonSearch() {
+			$(".SQPerson").unbind();
+
+			$(".SQPerson").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();						
+						if (keyword.length > 1) {
+							var obj = $(this);							
+
+							$.ajax({
+									url: '@Url.Action("AjaxfindSQPersonByKeyword", "ServiceRequest")',
+									type: 'post',
+									dataType: 'json',
+									data: { 
+										functionName: 'AjaxfindSQPersonByKeyword', keyword: keyword },
+										success: function (result) {
+										objects = [];
+										$.each(result, function (i, idata) {
+											objects[i] = {
+												label: idata.cFullKey + "\\" + idata.cFullName,
+												idx: i,
+												value: idata.cFullName,
+												KeyID: idata.cFullKey  //value這個值，一定要在label裡才能顯示出下拉
+											};
+										});
+
+										//綁定foucs事件
+										obj.autocomplete({
+											source: objects,
+											select: function (event, ui) {
+												$('#hid_cSQPersonID').val(ui.item.KeyID)
+											}
+										}).bind('focus', function () { obj.autocomplete("search"); });
+
+										//開啟autocomplete選單
+										obj.focus();									
 									}
 								})
 							
@@ -860,7 +985,7 @@
 							   alert("儲存失敗！" + result);
 							}
 							else {
-							alert("儲存成功");
+								//alert("儲存成功");
 								hid_cTeamID.val(result);
 								getpjTeam();                            
 							}
@@ -944,7 +1069,7 @@
                            alert("刪除失敗！");
                         }
                         else {
-							alert("刪除成功");
+							//alert("刪除成功");
 							hid_cTeamID.val(result);
                             getpjTeam();                            
                         }
@@ -979,7 +1104,7 @@
 							   alert("儲存失敗！" + result);
 							}
 							else {
-							alert("儲存成功");
+								//alert("儲存成功");
 								hid_cAssEngineerID.val(result);
 								getpjAssEngineer();                            
 							}
@@ -1068,7 +1193,7 @@
                            alert("刪除失敗！");
                         }
                         else {
-							alert("刪除成功");
+							//alert("刪除成功");
 							hid_cAssEngineerID.val(result);
                             getpjAssEngineer();                            
                         }
@@ -1241,7 +1366,17 @@
         function getShowCheck(objID, checked) {			
 			$.each($(".i-checks input[name='CheckUsed']"), function (i, cbx) {
 				if ($(this).attr("id") == objID) {
-                    //不做事
+                    if (checked)
+					{
+						//判斷若有勾選本次使用且有合約編號，要將維護服務種類設為Z03.合約
+						var tNumber = $(this).attr("id").replace('CheckThisID', '');
+						var ContractID = $("#hidcContractID" + tNumber).val(); //合約編號
+
+						if (ContractID != "")
+						{
+							$("#ddl_cMAServiceType").val("Z03");	//維護服務種類(Z03.合約)
+						}
+					}
                 }
                 else {
 					if (checked)
@@ -1256,6 +1391,7 @@
             })
         }
 
+		//查詢保固SLA明細Table
 		function QuerySRDetail_Warranty(tableName)
 		{
 			var cStatus = $("#ddl_cStatus").val();
@@ -1268,18 +1404,13 @@
 				var tds = $(itr).find('td');
 				var pQuantity = 0;
 				var pAtoBQuantity = 0;
+				var objSerial = tds.eq(0).children();	//序號					
 
-				if (cStatus == "E0001" || hid_NowStage == "E0014") //新建 or 駁回
-				{					
-					var objSerial = tds.eq(0).children();	//序號					
-
-					if (objSerial.val() != undefined) {
-						ArySERIAL.push(objSerial.val());
-					}
-				}				
+				if (objSerial.val() != undefined) {
+					ArySERIAL.push(objSerial.val());
+				}			
 			})
-
-			var countItem = 0;
+			
 			$("#dataDivWA").html('');
 			$("#img_waiting_Warranty").show();
 
@@ -1294,8 +1425,6 @@
 					var list = "";
 					$.each(result, function (i, bean) {
                         if (bean != null) {
-							countItem++;
-
 							var tIsCheck = "";
 
 							if (bean.cUsed == "Y")
@@ -1303,10 +1432,7 @@
 								tIsCheck="checked";
 							}
 
-							list += '<tr id="tr_WA' + bean.cID + '">'                                
-								+ "<td class='hidWAItemID' style='vertical-align: middle;'>" + countItem 
-								+ "    <input type='hidden' name='hidcID' value=" + countItem + ">"
-								+ "</td>"
+							list += '<tr id="tr_WA' + bean.cID + '">'								
 								+ "<td class='hidWASerialID' style='vertical-align: middle;'>" + bean.cSerialID
 								+ "    <input type='hidden' name='hidcSerialID' value=" + bean.cSerialID + ">"
 								+ "</td>"
@@ -1328,8 +1454,9 @@
 								+ "<td class='hidWASLASRV' style='vertical-align: middle;'>" + bean.cSLASRV
 								+ "    <input type='hidden' name='hidcSLASRV' value=" + bean.cSLASRV + ">"
 								+ "</td>"
-								+ "<td class='hidWAContractID' style='vertical-align: middle;'>" + bean.cContractID
-								+ "    <input type='hidden' name='hidcContractID' value=" + bean.cContractID + ">"
+								+ "<td>"
+								+ "    <a href=" + bean.cContractIDUrl + ">" + bean.cContractID + "</a>"
+								+ "    <input type='hidden' name='hidcContractID' id='hidcContractID" + bean.cID + "' value=" + bean.cContractID + ">"
 								+ "</td>"
 								+ "<td>"
 								+ "    <a href=" + bean.cBPMFormNoUrl + ">" + bean.cBPMFormNo + "</a>"
@@ -1346,9 +1473,8 @@
                     });
 
 					if (list != "") {
-						list = '<table id="tableWA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">'
-                                + "<thead>"                                							    
-                                + "<th>項次</th>"
+						list = '<table id="tableADDWA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">'
+                                + "<thead>"                                
                                 + "<th>序號</th>"
 								+ "<th>保固代號</th>"
                                 + "<th>保固說明</th>"
@@ -1372,97 +1498,100 @@
 					init_iChceck();
 				}
 			});
-		}
-
-		//查詢保固SLA
-		function AddDetailItem_Warranty(tableName) {
-			trWarrantyNoCount = $("input[name='hid_trWarrantyNo']").val();
-
-			if (trWarrantyNoCount == "") {
-				trWarrantyNoCount = 1;
-			}
-			else {
-				trWarrantyNoCount = parseInt(trWarrantyNoCount) + 1;
-			}
-
-			$("input[name='hid_trWarrantyNo']").val(trWarrantyNoCount);
-
-			var SerialID = SetWASerialID();
-			var WTYID = SetWAWTYID();
-			var WTYName = SetWAWTYName();
-			var WTYSDATE = SetWAWTYSDATE();
-			var WTYEDATE = SetWAWTYEDATE();
-			var SLARESP = SetWASLARESP();
-			var SLASRV = SetWASLASRV();
-			var ContractID = SetWAContractID();
-			var BPMFormNo = SetWABPMFormNo();
-			var Used = SetWAUsed();
-
-			var tAlltd = SerialID + WTYID + WTYName + WTYSDATE + WTYEDATE + SLARESP + SLASRV + ContractID + BPMFormNo + Used;
-
-			$("#" + tableName).append("<tr id='tr" + trWarrantyNoCount + "'>" + tAlltd + "</tr>");
-		}
-
-		//組序號
-		function SetWASerialID() {
-			var reValue = "<td><input type='text' name='tbx_WAcSerialID' id='tbx_WAcSerialID" + trWarrantyNoCount + "' class='form-control' style='width:150px;' placeholder='序號' readonly></td>";
-			return reValue;
 		}		
 
-		//組保固代號
-		function SetWAWTYID() {
-			var reValue = "<td><input type='text' name='tbx_WAcWTYID' id='tbx_WAcWTYID" + trWarrantyNoCount + "' class='form-control' style='width:100px;' placeholder='保固代號' readonly></td>";
-			return reValue;
-		}
+		//取得保固SLA明細Table(非新建或駁回狀態)
+		function getSRDetail_Warranty()
+		{	
+			var cSRID = $("input[name='hid_cSRID']").val();
+			var cStatus = $("#ddl_cStatus").val();
 
-		//組保固說明
-		function SetWAWTYName() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_WAcWTYName' readonly></textarea></td>";
-			return reValue;
-		}
+			if(cStatus != "E0001" && cSRID != "")
+			{
+				$("#dataDivWA").html('');			
 
-		//組保固起始日
-		function SetWAWTYSDATE() {
-			var reValue = "<td><input type='text' name='tbx_WAcWTYSDATE' id='tbx_WAcWTYSDATE" + trWarrantyNoCount + "' class='calendar form-control' style='width:100px;' placeholder='保固起始日' readonly></td>";
-			return reValue;
-		}
+				$.ajax({
+					url: '@Url.Action("getSRDetail_Warranty", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cSRID: cSRID
+					},
+					success: function (result) {
+						var list = "";
+						$.each(result, function (i, bean) {
+							if (bean != null) {
+								var tIsCheck = "";
 
-		//組保固到期日
-		function SetWAWTYEDATE() {
-			var reValue = "<td><input type='text' name='tbx_WAcWTYEDATE' id='tbx_WAcWTYEDATE" + trWarrantyNoCount + "' class='calendar form-control' style='width:100px;' placeholder='保固到期日' readonly></td>";
-			return reValue;
-		}
+								if (bean.cUsed == "Y")
+								{
+									tIsCheck="checked";
+								}
 
-		//組SLA回應條件
-		function SetWASLARESP() {
-			var reValue = "<td><input type='text' name='tbx_WAcSLARESP' id='tbx_WAcSLARESP" + trWarrantyNoCount + "' class='form-control' style='width:100px;' placeholder='SLA回應條件' readonly></td>";
-			return reValue;
-		}
+								list += '<tr id="tr_WA' + bean.cID + '">'								
+									+ "<td class='hidWASerialID' style='vertical-align: middle;'>" + bean.cSerialID
+									+ "    <input type='hidden' name='hidcSerialID' value=" + bean.cSerialID + ">"
+									+ "</td>"
+									+ "<td class='hidWAWTYID' style='vertical-align: middle;'>" + bean.cWTYID
+									+ "    <input type='hidden' name='hidcWTYID' value=" + bean.cWTYID + ">"
+									+ "</td>"
+									+ "<td class='hidWAWTYName' style='vertical-align: middle;'>" + bean.cWTYName
+									+ "    <input type='hidden' name='hidcWTYName' value=" + bean.cWTYName + ">"
+									+ "</td>"
+									+ "<td class='hidWAWTYSDATE' style='vertical-align: middle;'>" + bean.cWTYSDATE
+									+ "    <input type='hidden' name='hidcWTYSDATE' value=" + bean.cWTYSDATE + ">"
+									+ "</td>"
+									+ "<td class='hidWAWTYEDATE' style='vertical-align: middle;'>" + bean.cWTYEDATE
+									+ "    <input type='hidden' name='hidcWTYEDATE' value=" + bean.cWTYEDATE + ">"
+									+ "</td>"
+									+ "<td class='hidWASLARESP' style='vertical-align: middle;'>" + bean.cSLARESP
+									+ "    <input type='hidden' name='hidcSLARESP' value=" + bean.cSLARESP + ">"
+									+ "</td>"
+									+ "<td class='hidWASLASRV' style='vertical-align: middle;'>" + bean.cSLASRV
+									+ "    <input type='hidden' name='hidcSLASRV' value=" + bean.cSLASRV + ">"
+									+ "</td>"
+									+ "<td>"
+									+ "    <a href=" + bean.cContractIDUrl + ">" + bean.cContractID + "</a>"
+									+ "    <input type='hidden' name='hidcContractID' value=" + bean.cContractID + ">"
+									+ "</td>"
+									+ "<td>"
+									+ "    <a href=" + bean.cBPMFormNoUrl + ">" + bean.cBPMFormNo + "</a>"
+									+ "    <input type='hidden' name='hidcBPMFormNo' value=" + bean.cBPMFormNo + ">"
+									+ "</td>"
+									+ '<td>'
+									+ '    <label class="i-checks">'
+									+ "	       <input id='CheckThisID" + bean.cID + "' name='CheckUsed' class='AllCheck' type='checkbox' " + tIsCheck + ">"
+									+ '    </label>'
+									+ "    <input type='hidden' id='hid_CheckUsedID" + bean.cID + "' name='hid_CheckUsed' value='" + bean.cUsed + "'>"
+									+ '</td>'								
+									+ "</tr>";
+							}
+						});
 
-		//組SLA服務條件
-		function SetWASLASRV() {
-			var reValue = "<td><input type='text' name='tbx_WAcSLASRV' id='tbx_WAcSLASRV" + trWarrantyNoCount + "' class='form-control' style='width:100px;' placeholder='SLA服務條件' readonly></td>";
-			return reValue;
-		}
+						if (list != "") {
+							list = '<table id="tableADDWA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">'
+									+ "<thead>"                                
+									+ "<th>序號</th>"
+									+ "<th>保固代號</th>"
+									+ "<th>保固說明</th>"
+									+ "<th>保固起始日</th>"
+									+ "<th>保固到期日</th>"
+									+ "<th>SLA回應條件</th>"
+									+ "<th>SLA服務條件</th>"
+									+ "<th>合約編號</th>"
+									+ "<th>保固申請</th>"
+									+ "<th>本次使用</th>"							    
+									+ "</tr></thead><tbody>"
+									+ list
+									+ "</tbody></table>";
+						}                    
 
-		//組合約編號
-		function SetWAContractID() {
-			var reValue = "<td><input type='text' name='tbx_WAcContractID' id='tbx_WAcContractID" + trWarrantyNoCount + "' class='form-control' style='width:100px;' placeholder='合約編號' readonly></td>";
-			return reValue;
-		}
-
-		//組保固申請
-		function SetWABPMFormNo() {
-			var reValue = "<td><a href='javascript:void(0);'>保固申請</a></td>";
-			return reValue;
-		}
-
-		//組本次使用
-		function SetWAUsed()
-		{			
-			var reValue = "<td><button class='btn btn-danger' type='button' onclick=DelDetailItem_Warranty('tr" + tTrID + "');></td>";
-			return reValue;
-		}
+						$("#dataDivWA").html(list);					
+						init_iChceck();
+					}
+				});
+			}
+		}	
 		//-----↑↑↑↑↑保固SLA檔 ↑↑↑↑↑-----
 
 		//-----↓↓↓↓↓零件更換檔 ↓↓↓↓↓-----		
@@ -1481,35 +1610,46 @@
 			$("input[name='hid_trPartsNo']").val(trPartsNoCount);
 
 			var XCHP = SetXCHP();
-			var OldCT = SetOldCT();
-			var NewCT = SetNewCT();
-			var OldUEFI = SetOldUEFI();
-			var NewUEFI = SetNewUEFI();
-			var StandbySerialID = SetStandbySerialID();
-			var HPCT = SetHPCT();			
 			var MaterialID = SetMaterialID_Parts();
 			var MaterialName = SetMaterialName_Parts();
-			var ArriveDate = SetArriveDate();
-			var APM = SetAPM();
+			var OldCT = SetOldCT();
+			var NewCT = SetNewCT();			
+			var HPCT = SetHPCT();
+			var NewUEFI = SetNewUEFI();			
+			var StandbySerialID = SetStandbySerialID();
+			var HPCaseID = SetHPCaseID();
+			var ArriveDate = SetArriveDate();			
 			var ReturnDate = SetReturnDate();
-			var MaterialItem = SetMaterialItem();			
-			var HPOrderStatus = SetHPOrderStatus();
+			var MaterialItem = SetMaterialItem();
 			var Note = SetNote();
 			var tDelButton = SetPADelButton();
 
-			var tAlltd = XCHP + OldCT + NewCT + OldUEFI + NewUEFI + StandbySerialID + 
-			            HPCT + MaterialID + MaterialName + ArriveDate + APM +
-						ReturnDate + MaterialItem + HPOrderStatus + Note + tDelButton;
+			var tAlltd = XCHP +MaterialID + MaterialName + OldCT + NewCT + HPCT + NewUEFI + StandbySerialID + 
+			            HPCaseID + ArriveDate + ReturnDate + MaterialItem + Note + tDelButton;
 
 			$("#" + tableName).append("<tr id='tr" + trPartsNoCount + "'>" + tAlltd + "</tr>");
-			hidePopupInit();
+
+			hidePopupInit();			//初始日期元件
+			findMaterialByKeyword();	//用關鍵字查詢物料
 		}
 
 		//組XC HP申請零件
 		function SetXCHP() {
-			var reValue = "<td><input type='text' name='tbx_PAcXCHP' id='tbx_PAcXCHP" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='XC HP申請零件'></td>";
+			var reValue = "<td><input type='text' name='tbx_PAcXCHP' id='tbx_PAcXCHP" + trPartsNoCount + "' class='form-control' style='width:150px;' placeholder='XC HP申請零件'></td>";
 			return reValue;
-		}		
+		}	
+		
+		//組更換零件料號ID
+		function SetMaterialID_Parts() {
+			var reValue = "<td><input type='text' name='tbx_PAcMaterialID' id='tbx_PAcMaterialID" + trPartsNoCount + "' class='form-control material' style='width:200px;' placeholder='請輸入料號或料號說明的關鍵字'></td>";
+			return reValue;
+		}
+
+		//組料號說明
+		function SetMaterialName_Parts() {
+			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_PAcMaterialName' readonly></textarea></td>";
+			return reValue;
+		}
 
 		//組Old CT
 		function SetOldCT() {
@@ -1521,17 +1661,17 @@
 		function SetNewCT() {
 			var reValue = "<td><input type='text' name='tbx_PAcNewCT' id='tbx_PAcNewCT" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='New CT'></td>";
 			return reValue;
-		}
+		}		
 
-		//組Old UEFI
-		function SetOldUEFI() {
-			var reValue = "<td><input type='text' name='tbx_PAcOldUEFI' id='tbx_PAcOldUEFI" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='Old UEFI'></td>";
+		//組cHPCT
+		function SetHPCT() {
+			var reValue = "<td><input type='text' name='tbx_PAcHPCT' id='tbx_PAcHPCT" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='HP CT'></td>";
 			return reValue;
 		}
 
 		//組New UEFI 
 		function SetNewUEFI () {
-			var reValue = "<td><input type='text' name='tbx_PAcNewUEFI ' id='tbx_PAcNewUEFI " + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='New UEFI '></td>";
+			var reValue = "<td><input type='text' name='tbx_PAcNewUEFI' id='tbx_PAcNewUEFI" + trPartsNoCount + "' class='form-control' style='width:200px;' placeholder='New UEFI '></td>";
 			return reValue;
 		}
 
@@ -1541,21 +1681,9 @@
 			return reValue;
 		}
 
-		//組cHPCT
-		function SetHPCT() {
-			var reValue = "<td><input type='text' name='tbx_PAcHPCT' id='tbx_PAcHPCT" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='HP CT'></td>";
-			return reValue;
-		}
-
-		//組更換零件料號ID
-		function SetMaterialID_Parts() {
-			var reValue = "<td><input type='text' name='tbx_PAcMaterialID' id='tbx_PAcMaterialID" + trPartsNoCount + "' class='form-control material' style='width:100px;' placeholder='請輸入料號或料號說明的關鍵字'></td>";
-			return reValue;
-		}
-
-		//組料號說明
-		function SetMaterialName_Parts() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_PAcMaterialName' readonly></textarea></td>";
+		//組HP Case ID
+		function SetHPCaseID() {
+			var reValue = "<td><input type='text' name='tbx_PAcHPCaseID' id='tbx_PAcHPCaseID" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='HP Case ID'></td>";
 			return reValue;
 		}
 
@@ -1563,13 +1691,7 @@
 		function SetArriveDate() {
 			var reValue = "<td><input type='text' name='tbx_PAcArriveDate' id='tbx_PAcArriveDate" + trPartsNoCount + "' class='form-control calendar' style='width:100px;' placeholder='到貨日'></td>";
 			return reValue;
-		}
-
-		//組APM
-		function SetAPM() {
-			var reValue = "<td><input type='text' name='tbx_PAcAPM' id='tbx_PAcAPM" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='A.P.M'></td>";
-			return reValue;
-		}
+		}		
 
 		//組歸還日
 		function SetReturnDate() {
@@ -1581,13 +1703,7 @@
 		function SetMaterialItem() {
 			var reValue = "<td><input type='text' name='tbx_PAcMaterialItem' id='tbx_PAcMaterialItem" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='零件服務項目'></td>";
 			return reValue;
-		}
-
-		//組HP Order Status
-		function SetHPOrderStatus() {
-			var reValue = "<td><input type='text' name='tbx_PAcHPOrderStatus' id='tbx_PAcHPOrderStatus" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='HP Order Status'></td>";
-			return reValue;
-		}
+		}		
 
 		//組備註
 		function SetNote() {
@@ -1598,7 +1714,7 @@
 		//組刪除按鈕
 		function SetPADelButton() {
 			var tTrID = $("input[name='hid_trPartsNo']").val();
-			var reValue = "<td><button class='btn btn-danger' type='button' onclick=DelDetailItem_Parts('tr" + tTrID + "');><i class='fa fa-trash'></i></button><input type='hidden' id='hid_PRcID" + trPartsNoCount + "'></td>";
+			var reValue = "<td><button class='btn btn-danger' type='button' onclick=DelDetailItem_Parts('tr" + tTrID + "');><i class='fa fa-trash'></i></button><input type='hidden' id='hid_PAcID" + trPartsNoCount + "'></td>";
 			return reValue;
 		}		
 
@@ -1641,7 +1757,6 @@
 				</div>
 				<div class="ibox-content">
 					@model OneService.Controllers.ServiceRequestController.ViewModel //載入StatusViewModel
-
 					<form id="form1" name="form" action='@Url.Action("SaveGenerallySR", "ServiceRequest")' method="post">
 						@if (ViewBag.pStatus == "E0014")
 						{
@@ -1698,8 +1813,8 @@
 							</div>
 							<label class="col-lg-2 col-form-label">客戶報修人</label>
 							<div class="col-lg-4">
-								<input type="text" id="tbx_cRepairName" name="tbx_cRepairName" class="form-control RepairName" placeholder="客戶報修人" disabled>								
-								<button id="btn_showRepairInfo" class="btn btn-info showContactInfo" type="button" onclick="showContactInfo('tbx_cRepairName');" >
+							<input type="text" id="tbx_cRepairName" name="tbx_cRepairName" class="form-control RepairName" placeholder="客戶報修人" value="@ViewBag.cRepairName" disabled>
+							<button id="btn_showRepairInfo" class="btn btn-info showContactInfo" type="button" onclick="showContactInfo('tbx_cRepairName');" >
 									<i class="fa fa-user-circle-o" style="font-size: 16px;"></i>
 									<span style="font-weight: bold; margin: 5px;">選擇客戶報修人</span>									
 								</button>
@@ -1810,21 +1925,21 @@
 									<div class="form-group row">
 										<label class="col-lg-2 col-form-label">姓名</label>
 										<div class="col-lg-4">
-											<input type="text" id="tbx_cContacterName" name="tbx_cContacterName" class="form-control ContacterName" value="@ViewBag.cContacterName" placeholder="姓名" disabled>
+											<input type="text" id="tbx_cContacterName" name="tbx_cContacterName" class="form-control ContacterName" value="@ViewBag.cContacterName" placeholder="姓名" value="@ViewBag.cContacterName" title="@ViewBag.cContacterName" disabled>
 										</div>
 										<label class="col-lg-2 col-form-label">地址</label>
 										<div class="col-lg-4">
-											<input type="text" id="tbx_cContactAddress" name="tbx_cContactAddress" class="form-control ContactAddress" value="@ViewBag.cContactAddress" placeholder="地址" disabled>
+											<input type="text" id="tbx_cContactAddress" name="tbx_cContactAddress" class="form-control ContactAddress" value="@ViewBag.cContactAddress" placeholder="地址" value="@ViewBag.cContactAddress" title="@ViewBag.cContactAddress" disabled>
 										</div>
 									</div>
 									<div class="form-group row">
 										<label class="col-lg-2 col-form-label">電話</label>
 										<div class="col-lg-4">
-											<input type="text" id="tbx_cContactPhone" name="tbx_cContactPhone" class="form-control ContactPhone" value="@ViewBag.cContactPhone" placeholder="電話" disabled>
+											<input type="text" id="tbx_cContactPhone" name="tbx_cContactPhone" class="form-control ContactPhone" value="@ViewBag.cContactPhone" placeholder="電話" value="@ViewBag.cContactPhone" title="@ViewBag.cContactPhone" disabled>
 										</div>
 										<label class="col-lg-2 col-form-label">Email</label>
 										<div class="col-lg-4">
-											<input type="text" id="tbx_cContactEmail" name="tbx_cContactEmail" class="form-control ContactEmail" value="@ViewBag.cContactEmail" placeholder="Email" disabled>
+											<input type="text" id="tbx_cContactEmail" name="tbx_cContactEmail" class="form-control ContactEmail" value="@ViewBag.cContactEmail" placeholder="Email" value="@ViewBag.cContactEmail" title="@ViewBag.cContactEmail" disabled>
 										</div>
 									</div>									
 								</div>
@@ -1837,7 +1952,7 @@
 								<div class="ibox-title">
 									<h5>
 										產品序號資訊
-									<button type="button" class="btn btn-success" onclick="AddDetailItem_Product('tableAddPR');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+										<button type="button" class="btn btn-success" onclick="AddDetailItem_Product('tablePR');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
 									</h5>
 									<div class="ibox-tools">
 										<a class="collapse-link">
@@ -1848,101 +1963,80 @@
 								@{
 									if (ViewBag.pStatus == "E0001")
 									{
-																											<!--新建階段-->
-																											<div class="ibox-content" style="overflow: scroll">											
-																												<table id="tableAddPR" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-																													<thead>
-																														<tr>													
-																															<th>序號</th>														
-																															<th>料號</th>
-																															<th>料號說明</th>
-																															<th>Product Number</th>
-																															<th>BOM</th>
-																															<th>裝機資訊</th>
-																															<th width="130">刪除</th>
-																														</tr>
-																													</thead>
-																													<tbody>
-																													</tbody>
-																												</table>
-																											</div>
+										<!--新建階段-->
+										<div class="ibox-content" style="overflow: scroll">											
+											<table id="tablePR" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
+												<thead>
+													<tr>													
+														<th>序號</th>														
+														<th>料號</th>
+														<th>料號說明</th>
+														<th>Product Number</th>
+														<th>BOM</th>
+														<th>裝機資訊</th>
+														<th width="130">刪除</th>
+													</tr>
+												</thead>
+												<tbody>
+
+												</tbody>
+											</table>
+										</div>
 									}
 									else
 									{
-																											<!--審核階段-->
-																											<div class="ibox-content" style="overflow: scroll">
-																												@if (ViewBag.pStatus == "E0014") //駁回
-											{
-																													<div class="form-group row">
-																														<button type="button" class="btn btn-w-m btn-primary" onclick="AddDetailItem_Product('tableDispatchPR');">新增</button>
-																													</div>
-											}
-																												<table id="tableDispatchPR" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-																													<thead>
-																														<tr>
-																															@if (ViewBag.pStatus != "E0014")
-														{
-																																<th>項次</th>
-														}
-																															<th>序號</th>														
-																															<th>料號</th>
-																															<th>料號說明</th>
-																															<th>Product Number</th>
-																															<th>BOM</th>
-																															<th>裝機資訊</th>
-																															else if (ViewBag.pStatus == "E0014")
-																															{
-																																<th width="130">刪除</th>
-																															}														
-																														</tr>
-																													</thead>
-																													<tbody>
-																														@{
+										<!--審核、駁回階段-->
+										<div class="ibox-content" style="overflow: scroll">											
+											<table id="tablePR" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
+												<thead>
+													<tr>
+														<th>序號</th>														
+														<th>料號</th>
+														<th>料號說明</th>
+														<th>Product Number</th>
+														<th>BOM</th>
+														<th>裝機資訊</th>
+														<th width="130">刪除</th>
+													</tr>
+												</thead>
+												<tbody>
+													@{
 														if (ViewBag.pSRID != "")
 														{
 															int count = 0;
 															foreach (var bean in ViewBag.Detailbean_Product)
 															{
 																count++;
-																																																		<tr id='trProductNo@(count)'>
-																																																			@if (ViewBag.pStatus != "E0014")
-	{
-																																																				<td>
-																																																					<label class="col-form-label" @("id=lbl_PRcItemID" + count)>@bean.cItem</label>
-																																																				</td>
-	}
-																																																			<td>
-																																																				<input type='text' name='tbx_PRcSerialID' @("id=tbx_PRcSerialID" + count) class='form-control' style="width:150px;" placeholder='序號' value="@bean.cSerialID" title="@bean.cSerialID" readonly>
-																																																				<input type='hidden' name='hid_PRcID' @("id=hid_PRcID" + count) value=@bean.cID>																		
-																																																			</td>																	
-																																																			<td>
-																																																				<input type='text' name='tbx_PRcMaterialID' @("id=tbx_PRcMaterialID" + count) class='form-control material' style="width:150px;" placeholder='請輸入料號或料號說明的關鍵字' value="@bean.cMaterialID" title="@bean.cMaterialID" readonly>
-																																																			</td>																	
-																																																			<td>
-																																																				<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PRcMaterialName" title="@bean.cMaterialName" readonly>@bean.cMaterialName</textarea>
-																																																			</td>
-																																																			<td>
-																																																				<input type='text' name='tbx_PRcProductNumber' @("id=tbx_PRcProductNumber" + count) class='form-control' style='width:150px;' value="@bean.cProductNumber" title="@bean.cProductNumber" ) readonly>
-																																																			</td>
-																																																			<td>
-																																																				<a href="javascript:void(0);">BOM表</a>
-																																																			</td>
-																																																			<td>
-																																																				<input type='text' name='tbx_PRcInstallID' @("id=tbx_PRcInstallID" + count) class='form-control' style='width:150px;' value="@bean.cInstallID" title="@bean.cInstallID" ) readonly>
-																																																			</td>
-																																																			else if (ViewBag.pStatus == "E0014")
-																																																			{
-																																																				<td>
-																																																					<button class='btn btn-danger' type='button' onclick="DelDetailItem_Product('trProductNo@(count)')" ;><i class='fa fa-trash'></i></button>
-																																																				</td>
-																																																			}																							
-																																																		</tr>
+																<tr id='trProductNo@(count)'>																	
+																	<td>
+																		<input type='text' name='tbx_PRcSerialID' @("id=tbx_PRcSerialID" + count) class='form-control' style='width:200px;' placeholder='序號' value="@bean.CSerialId" title="@bean.CSerialId">
+																		<input type='hidden' name='hid_PRcID' @("id=hid_PRcID" + count) value=@bean.CId>																		
+																	</td>																	
+																	<td>
+																		<input type='text' name='tbx_PRcMaterialID' @("id=tbx_PRcMaterialID" + count) class='form-control material' style='width:200px;' placeholder='料號' value="@bean.CMaterialId" title="@bean.CMaterialId">
+																	</td>																	
+																	<td>
+																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PRcMaterialName" title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PRcProductNumber' @("id=tbx_PRcProductNumber" + count) class='form-control' style='width:150px;' value="@bean.CProductNumber" title="@bean.CProductNumber">
+																	</td>
+																	<td>
+																		<a href="javascript:void(0);showBOMDialog('tbx_PRcMaterialID@(count)')">BOM表</a>
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PRcInstallID' @("id=tbx_PRcInstallID" + count) class='form-control' style='width:150px;' value="@bean.CInstallId" title="@bean.CInstallId" )>
+																	</td>
+																	<td>
+																		<button class='btn btn-danger' type='button' onclick="DelDetailItem_Product('trProductNo@(count)')" ;><i class='fa fa-trash'></i></button>
+																	</td>																							
+																</tr>
 															}
 														}
-																														}
-																													</tbody>
-																												</table>
-																											</div>
+													}
+												</tbody>
+											</table>
+										</div>
 									}								
 								}
 							</div>
@@ -1954,20 +2048,19 @@
 								<div class="ibox-title">
 								<h5>
 									保固SLA資訊
-									<button type="button" class="btn btn-success" onclick="QuerySRDetail_Warranty('tableAddPR');"><i class="fa fa-plus" style="margin-right: 5px;"></i>查詢保固SLA</button>
-									<img id="img_waiting_Warranty" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+									<button type="button" class="btn btn-success" onclick="QuerySRDetail_Warranty('tablePR');"><i class="fa fa-plus" style="margin-right: 5px;"></i>查詢保固SLA</button>
+									<img id="img_waiting_Warranty" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">								
 								</h5>
 									<div class="ibox-tools">
 										<a class="collapse-link">
 											<i class="fa fa-chevron-up"></i>
 										</a>
 									</div>
-								</div>								
+								</div>	
 								<div class="ibox-content" id="dataDivWA" style="overflow: scroll">										
-									<table id="tableWA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
+									<table id="tableADDWA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
 										<thead>
-											<tr>
-												<th>項次</th>
+											<tr>												
 												<th>序號</th>
 												<th>保固代號</th>
 												<th>保固說明</th>
@@ -1981,10 +2074,10 @@
 											</tr>
 										</thead>
 										<tbody>
-																								
+
 										</tbody>
 									</table>
-								</div>
+								</div>							
 							</div>
 						</div>
 
@@ -2018,7 +2111,7 @@
 										<label class="col-lg-2 col-form-label">主要工程師</label>
 										<div class="col-lg-4">
 											<input type="text" id="tbx_cMainEngineerName" name="tbx_cMainEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMainEngineerName">
-											<input type="hidden" id="hid_cMainEngineerID" name="hid_cMainEngineerID" value="@ViewBag.cMainEngineerID" />											
+											<input type="hidden" id="hid_cMainEngineerID" name="hid_cMainEngineerID" value="@ViewBag.cMainEngineerID" />
 										</div>										
 									</div>
 									<div class="form-group row">
@@ -2036,7 +2129,8 @@
 									<div class="form-group row">
 										<label class="col-lg-2 col-form-label">SQ人員</label>
 										<div class="col-lg-4">
-											<input type="text" id="tbx_cSQPerson" name="tbx_cSQPerson" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSQPerson">											
+											<input type="text" id="tbx_cSQPersonName" name="tbx_cSQPersonName" class="form-control SQPerson" placeholder="請輸入人名或類別關鍵字搜尋" value="@ViewBag.cSQPersonName">
+											<input type="hidden" id="hid_cSQPersonID" name="hid_cSQPersonID" value="@ViewBag.cSQPersonID" />
 										</div>
 										<label class="col-lg-2 col-form-label">計費業務</label>
 										<div class="col-lg-4">
@@ -2054,164 +2148,36 @@
 								<div class="ibox-title">
 									<h5>
 										處理與工時紀錄
-										<button id="btn_add_pRecord" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_add_pRecordonclick();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+										@if (ViewBag.pStatus != "E0001" && ViewBag.pStatus != "E0014") //非新建或駁回
+										{
+											<button id="btn_add_pRecord" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_add_pRecordonclick();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+										}
 									</h5>
 									<div class="ibox-tools">
 										<a class="collapse-link">
 											<i class="fa fa-chevron-up"></i>
 										</a>
 									</div>
+								</div>								
+								<div class="ibox-content" style="overflow: scroll">
+									<table id="tableAddRE" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
+										<thead>
+											<tr>
+												<th>服務工程師</th>
+												<th>接單時間</th>
+												<th>出發時間</th>
+												<th>到場時間</th>
+												<th>完成時間</th>
+												<th>工時(分鐘)</th>
+												<th>處理紀錄</th>
+												<th>服務報告書</th>
+											</tr>
+										</thead>
+										<tbody>
+																							
+										</tbody>
+									</table>
 								</div>
-                            @{
-                                if (ViewBag.pStatus == "E0001")
-                                {
-																				<!--新建階段-->
-																				<div class="ibox-content" style="overflow: scroll">
-																					<table id="tableAddRE" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-																						<thead>
-																							<tr>
-																								<th>服務工程師</th>
-																								<th>接單時間</th>
-																								<th>出發時間</th>
-																								<th>到場時間</th>
-																								<th>完成時間</th>
-																								<th>工時(分鐘)</th>
-																								<th>處理紀錄</th>
-																								<th>服務報告書</th>
-																							</tr>
-																						</thead>
-																						<tbody>
-																							@{
-                                                    //int count = 0;
-                                                    //foreach (var bean in ViewBag.Detailbean_Warranty)
-                                                    //{
-                                                    //	count++;
-                                                    //	<tr id='trWarrantyNo@(count)'>
-                                                    //		@if (ViewBag.pStatus != "E0014")
-                                                    //		{
-                                                    //			<td>
-                                                    //				<label class="col-form-label" @("id=lbl_WAcItemID" + count)>@bean.cItem</label>
-                                                    //			</td>
-                                                    //		}
-                                                    //		<td>
-                                                    //			<input type='text' name='tbx_WAcSerialID' @("id=tbx_WAcSerialID" + count) class='form-control' style="width:150px;" placeholder='序號' value="@bean.cSerialID" title="@bean.cSerialID" readonly>
-                                                    //			<input type='hidden' name='hid_WAcID' @("id=hid_WAcID" + count) value=@bean.cID>
-                                                    //		</td>
-                                                    //		<td>
-                                                    //			<input type='text' name='tbx_WAcWTYID' @("id=tbx_WAcWTYID" + count) class='form-control' style="width:100px;" placeholder='保固代號' value="@bean.cWTYID" title="@bean.cWTYID" readonly>
-                                                    //		</td>
-                                                    //		<td>
-                                                    //			<textarea rows="3" class="form-control" style='width:200px;' placeholder="保固說明" name="tbx_WAcWTYName" title="@bean.cWTYName" readonly>@bean.cWTYName</textarea>
-                                                    //		</td>
-                                                    //		<td>
-                                                    //			<input type="text" name="tbx_WAcWTYSDATE" class="calendar form-control" placeholder="保固起始日" value="@bean.cWTYSDATE" readonly>
-                                                    //		</td>
-                                                    //		<td>
-                                                    //			<input type="text" name="tbx_WAcWTYEDATE" class="calendar form-control" placeholder="保固到期日" value="@bean.cWTYEDATE" readonly>
-                                                    //		</td>
-                                                    //		<td>
-                                                    //			@*@Html.DropDownList("ddl_WAcSLARESP", (IEnumerable<SelectListItem>)ViewBag.WAcSLARESP, new { @class = "form-control"})*@
-                                                    //		</td>
-                                                    //		<td>
-                                                    //			@*@Html.DropDownList("ddl_WAcSLASRV", (IEnumerable<SelectListItem>)ViewBag.WAcSLASRV, new { @class = "form-control"})*@
-                                                    //		</td>
-                                                    //		<td>
-                                                    //			<input type='text' name='tbx_WAcContractID' @("id=tbx_WAcContractID" + count) class='form-control' style="width:100px;" placeholder='合約編號' value="@bean.cContractID" title="@bean.cContractID" readonly>
-                                                    //		</td>
-                                                    //		<td>
-                                                    //			<a href="javascript:void(0);">保固申請</a>
-                                                    //		</td>
-                                                    //		<td>
-                                                    //			<input @("id=ckb_WAcUsed" + count) name="ckb_WAcUsed" type="checkbox" class="checkbox" onclick="SetIsUsed(this, @count)" checked='checked' />
-                                                    //			<input type="hidden" @("id=hid_WAcUsed" + count) name="hid_WAcUsed" value="Y">
-                                                    //		</td>
-                                                    //	</tr>
-                                                    //}
-																							}
-																						</tbody>
-																					</table>
-																				</div>
-                                }
-                                else
-                                {
-																				<!--審核階段-->
-																				<div class="ibox-content" style="overflow: scroll">
-																					@if (ViewBag.pStatus == "E0014") //駁回
-                                        {
-																						<div class="form-group row">
-																							<button id="btn_add_pRecord" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_add_pRecordonclick();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
-																						</div>
-                                        }
-																					<table id="tableDispatchRE" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-																						<thead>
-																							<tr>
-																								<th>項次</th>
-																								<th>服務工程師</th>
-																								<th>接單時間</th>
-																								<th>出發時間</th>
-																								<th>到場時間</th>
-																								<th>完成時間</th>
-																								<th>工時(分鐘)</th>
-																								<th>處理紀錄</th>
-																								<th>服務報告書</th>
-																							</tr>
-																						</thead>
-																						<tbody>
-																							@{
-                                                    if (ViewBag.pSRID != "")
-                                                    {
-                                                        int count = 0;
-                                                        foreach (var bean in ViewBag.Detailbean_Warranty)
-                                                        {
-                                                            count++;
-																																					<tr id='trWarrantyNo@(count)'>
-																																						@if (ViewBag.pStatus != "E0014")
-                                                                {
-																																							<td>
-																																								<label class="col-form-label" @("id=lbl_WAcItemID" + count)>@bean.cItem</label>
-																																							</td>
-                                                                }
-																																						<td>
-																																							<input type='text' name='tbx_WAcSerialID' @("id=tbx_WAcSerialID" + count) class='form-control' style="width:150px;" placeholder='序號' value="@bean.cSerialID" title="@bean.cSerialID" readonly>
-																																							<input type='hidden' name='hid_WAcID' @("id=hid_WAcID" + count) value=@bean.cID>
-																																						</td>
-																																						<td>
-																																							<input type='text' name='tbx_WAcWTYID' @("id=tbx_WAcWTYID" + count) class='form-control' style="width:100px;" placeholder='保固代號' value="@bean.cWTYID" title="@bean.cWTYID" readonly>
-																																						</td>
-																																						<td>
-																																							<textarea rows="3" class="form-control" style='width:200px;' placeholder="保固說明" name="tbx_WAcWTYName" title="@bean.cWTYName" readonly>@bean.cWTYName</textarea>
-																																						</td>
-																																						<td>
-																																							<input type="text" name="tbx_WAcWTYSDATE" class="calendar form-control" placeholder="保固起始日" value="@bean.cWTYSDATE" readonly>
-																																						</td>
-																																						<td>
-																																							<input type="text" name="tbx_WAcWTYEDATE" class="calendar form-control" placeholder="保固到期日" value="@bean.cWTYEDATE" readonly>
-																																						</td>
-																																						<td>
-																																							@*@Html.DropDownList("ddl_WAcSLARESP", (IEnumerable<SelectListItem>)ViewBag.WAcSLARESP, new { @class = "form-control"})*@
-																																						</td>
-																																						<td>
-																																							@*@Html.DropDownList("ddl_WAcSLASRV", (IEnumerable<SelectListItem>)ViewBag.WAcSLASRV, new { @class = "form-control"})*@
-																																						</td>
-																																						<td>
-																																							<input type='text' name='tbx_WAcContractID' @("id=tbx_WAcContractID" + count) class='form-control' style="width:100px;" placeholder='合約編號' value="@bean.cContractID" title="@bean.cContractID" readonly>
-																																						</td>
-																																						<td>
-																																							<a href="javascript:void(0);">保固申請</a>
-																																						</td>
-																																						<td>
-																																							<input @("id=ckb_WAcUsed" + count) name="ckb_WAcUsed" type="checkbox" class="checkbox" onclick="SetIsUsed(this, @count)" checked='checked' />
-																																							<input type="hidden" @("id=hid_WAcUsed" + count) name="hid_WAcUsed" value="Y">
-																																						</td>
-																																					</tr>
-                                                        }
-                                                    }
-																							}
-																						</tbody>
-																					</table>
-																				</div>
-                                }
-                            }
 							</div>
 						</div>
 
@@ -2220,143 +2186,136 @@
 							<div class="ibox ">
 								<div class="ibox-title">
 									<h5>
-									零件更換資訊
-										<button type="button" class="btn btn-success" onclick="AddDetailItem_Parts('tableAddPA');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+										零件更換資訊
+										@if (ViewBag.pStatus != "E0001" && ViewBag.pStatus != "E0014") //非新建或駁回
+										{
+											<button type="button" class="btn btn-success" onclick="AddDetailItem_Parts('tablePA');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+										}
 									</h5>
 									<div class="ibox-tools">
 										<a class="collapse-link">
 											<i class="fa fa-chevron-up"></i>
 										</a>
 									</div>
-								</div>
-								@{
+								</div>	
+								@{									
 									if (ViewBag.pStatus == "E0001")
 									{
-																																						<!--新建階段-->
-																																						<div class="ibox-content" style="overflow: scroll">
-																																							<table id="tableAddPA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-																																								<thead>
-																																									<tr>
-																																										<th>XC HP申請零件</th>
-																																										<th>更換零件料號ID</th>
-																																										<th>料號說明</th>
-																																										<th>Old CT</th>
-																																										<th>New CT</th>
-																																										<th>HP CT </th>
-																																										<th>New UEFI</th>
-																																										<th>備機序號</th>
-																																										<th>HP Case ID</th>
-																																										<th>到貨日</th>
-																																										<th>歸還日</th>
-																																										<th>零件服務項目</th>
-																																										<th>備註</th>
-																																										<th width="130">刪除</th>
-																																									</tr>
-																																								</thead>
-																																								<tbody>
-																																								</tbody>
-																																							</table>
-																																						</div>
+										<!--新建階段-->
+										<div class="ibox-content" style="overflow: scroll">
+											<table id="tablePA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
+												<thead>
+													<tr>
+														<th>XC HP申請零件</th>
+														<th>更換零件料號ID</th>
+														<th>料號說明</th>
+														<th>Old CT</th>
+														<th>New CT</th>
+														<th>HP CT </th>
+														<th>New UEFI</th>
+														<th>備機序號</th>
+														<th>HP Case ID</th>
+														<th>到貨日</th>
+														<th>歸還日</th>
+														<th>零件服務項目</th>
+														<th>備註</th>
+														<th width="130">刪除</th>
+													</tr>
+												</thead>
+												<tbody>
+
+												</tbody>
+											</table>
+										</div>
 									}
 									else
 									{
-																																						<!--審核階段-->
-																																						<div class="ibox-content" style="overflow: scroll">
-																																							@if (ViewBag.pStatus == "E0014") //駁回
-											{
-																																								<div class="form-group row">
-																																									<button type="button" class="btn btn-w-m btn-primary" onclick="AddDetailItem_Parts('tableDispatchPA');">新增</button>
-																																								</div>
-											}
-																																							<table id="tableDispatchPA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-																																								<thead>
-																																									<tr>
-																																										@if (ViewBag.pStatus != "E0014")
-														{
-																																											<th>項次</th>
-														}
-																																										<th>XC HP申請零件</th>
-																																										<th>更換零件料號ID</th>
-																																										<th>料號說明</th>
-																																										<th>Old CT</th>
-																																										<th>New CT</th>
-																																										<th>HP CT </th>
-																																										<th>New UEFI</th>
-																																										<th>備機序號</th>
-																																										<th>HP Case ID</th>
-																																										<th>到貨日</th>
-																																										<th>歸還日</th>
-																																										<th>零件服務項目</th>
-																																										<th>備註</th>														
-																																										else if (ViewBag.pStatus == "E0014")
-																																										{
-																																											<th width="130">刪除</th>
-																																										}
-																																									</tr>
-																																								</thead>
-																																								<tbody>
-																																									@{
+										<!--審核、駁回階段-->
+										<div class="ibox-content" style="overflow: scroll">											
+											<table id="tablePA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
+												<thead>
+													<tr>
+													<th>XC HP申請零件</th>
+													<th>更換零件料號ID</th>
+													<th>料號說明</th>
+													<th>Old CT</th>
+													<th>New CT</th>
+													<th>HP CT </th>
+													<th>New UEFI</th>
+													<th>備機序號</th>
+													<th>HP Case ID</th>
+													<th>到貨日</th>
+													<th>歸還日</th>
+													<th>零件服務項目</th>
+													<th>備註</th>
+													<th width="130">刪除</th>
+													</tr>
+												</thead>
+												<tbody>
+													@{
 														if (ViewBag.pSRID != "")
 														{
 															int count = 0;
 															foreach (var bean in ViewBag.Detailbean_Parts)
 															{
 																count++;
-																																																																								<tr id='trPartsNo@(count)'>
-																																																																									@if (ViewBag.pStatus != "E0014")
-																	{
-																																																																										<td>
-																																																																											<label class="col-form-label" @("id=lbl_PRcItemID" + count)>@bean.cItem</label>
-																																																																										</td>
-																	}
-																																																																									<td>
-																																																																										<input type='text' name='tbx_PRcSerialID' @("id=tbx_PRcSerialID" + count) class='form-control' style="width:150px;" placeholder='序號' value="@bean.cSerialID" title="@bean.cSerialID" readonly>
-																																																																										<input type='hidden' name='hid_PRcID' @("id=hid_PRcID" + count) value=@bean.cID>
-																																																																									</td>
-																																																																									<td>
-																																																																										<input type='text' name='tbx_PRcMaterialID' @("id=tbx_PRcMaterialID" + count) class='form-control material' style="width:150px;" placeholder='請輸入料號或料號說明的關鍵字' value="@bean.cMaterialID" title="@bean.cMaterialID" readonly>
-																																																																									</td>
-																																																																									<td>
-																																																																										<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PRcMaterialName" title="@bean.cMaterialName" readonly>@bean.cMaterialName</textarea>
-																																																																									</td>
-																																																																									<td>
-																																																																										<input type='text' name='tbx_PRcProductNumber' @("id=tbx_PRcProductNumber" + count) class='form-control' style='width:150px;' value="@bean.cProductNumber" title="@bean.cProductNumber" ) readonly>
-																																																																									</td>
-																																																																									<td>
-																																																																										<a href="javascript:void(0);">BOM表</a>
-																																																																									</td>
-																																																																									<td>
-																																																																										<input type='text' name='tbx_PRcInstallID' @("id=tbx_PRcInstallID" + count) class='form-control' style='width:150px;' value="@bean.cInstallID" title="@bean.cInstallID" ) readonly>
-																																																																									</td>
-																																																																									else if (ViewBag.pStatus == "E0014")
-																																																																									{
-																																																																									<td>
-																																																																										<button class='btn btn-danger' type='button' onclick="DelDetailItem_Parts('trPartsNo@(count)')" ;><i class='fa fa-trash'></i></button>
-																																																																									</td>
-																																																																									}
-																																																																								</tr>
+																<tr id='trPartsNo@(count)'>																	
+																	<td>
+																		<input type='text' name='tbx_PAcXCHP' @("id=tbx_PAcXCHP" + count) class='form-control' style='width:150px;' placeholder='XC HP申請零件' value="@bean.CXchp" title="@bean.CXchp">
+																		<input type='hidden' name='hid_PRcID' @("id=hid_PAcID" + count) value=@bean.CId>																		
+																	</td>																	
+																	<td>
+																		<input type='text' name='tbx_PAcMaterialID' @("id=tbx_PAcMaterialID" + count) class='form-control material' style='width:200px;' placeholder='更換零件料號ID' value="@bean.CMaterialId" title="@bean.CMaterialId">
+																	</td>																	
+																	<td>
+																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PAcMaterialName" title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcOldCT' @("id=tbx_PAcOldCT" + count) class='form-control' style='width:100px;' placeholder='Old CT' value="@bean.COldCt" title="@bean.COldCt">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcNewCT' @("id=tbx_PAcNewCT" + count) class='form-control' style='width:100px;' placeholder='New CT' value="@bean.CNewCt" title="@bean.CNewCt">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcHPCT' @("id=tbx_PAcHPCT" + count) class='form-control' style='width:100px;' placeholder='HP CT' value="@bean.CHpct" title="@bean.CHpct">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcNewUEFI' @("id=tbx_PAcNewUEFI" + count) class='form-control' style='width:200px;' placeholder='New UEFI' value="@bean.CNewUefi" title="@bean.CNewUefi">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcStandbySerialID' @("id=tbx_PAcStandbySerialID" + count) class='form-control' style='width:100px;' placeholder='備機序號' value="@bean.CStandbySerialId" title="@bean.CStandbySerialId">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcHPCaseID' @("id=tbx_PAcHPCaseID" + count) class='form-control' style='width:100px;' placeholder='HP Case ID' value="@bean.CHpcaseId" title="@bean.CHpcaseId">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcArriveDate' @("id=tbx_PAcArriveDate" + count) class='form-control calendar' style='width:100px;' placeholder='到貨日' value="@(TransDateFormat(bean.CArriveDate))" title="@(TransDateFormat(bean.CArriveDate))">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcReturnDate' @("id=tbx_PAcReturnDate" + count) class='form-control calendar' style='width:100px;' placeholder='歸還日' value="@(TransDateFormat(bean.CReturnDate))" title="@(TransDateFormat(bean.CReturnDate))">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcMaterialItem' @("id=tbx_PAcMaterialItem" + count) class='form-control' style='width:100px;' placeholder='零件服務項目' value="@bean.CMaterialItem" title="@bean.CMaterialItem">
+																	</td>																	
+																	<td>
+																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="備註" name="tbx_PAcNote" title="@bean.CNote" readonly>@bean.CNote</textarea>
+																	</td>
+																	<td>
+																		<button class='btn btn-danger' type='button' onclick="DelDetailItem_Parts('trPartsNo@(count)')" ;><i class='fa fa-trash'></i></button>
+																	</td>																							
+																</tr>
 															}
 														}
-																																									}
-																																								</tbody>
-																																							</table>
-																																						</div>
+													}
+												</tbody>
+											</table>
+										</div>
 									}
-								}
+								}								
 							</div>
 						</div>
-
 						<div class="form-group row">
-						@{
-							if (ViewBag.pStatus == "E0001" || ViewBag.pStatus == "E0014") //新建 or 駁回
-							{
-																											<button id="btn_submit" class="btn btn-primary btn-lg" type="button" onclick="ShowSRConfirmDialogMsg('確認', '您是否確認提交？');" @(ViewBag.pActionType == "History" ? " style =display:none" : "")>提 交 </button>							
-							}
-							else
-							{
-																											<button id="btn_Approve" class="btn btn-primary btn-lg" type="button" onclick="ShowSRConfirmDialogMsg('確認', '您是否確認提交？');" @(ViewBag.pActionType == "History" ? " style =display:none" : "")>提 交 </button>
-							}
-						}
+							<button id="btn_submit" class="btn btn-primary btn-lg" type="button" onclick="ShowSRConfirmDialogMsg('確認', '您是否確認提交？');" @(ViewBag.pActionType == "History" ? " style =display:none" : "")>提 交 </button>
 							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
 						</div>
 					</form>

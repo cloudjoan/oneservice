@@ -4,6 +4,14 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 80
 
+RUN apt-get update \
+    &&  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+    
+RUN TZ=Asia/Taipei \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone \
+    && dpkg-reconfigure -f noninteractive tzdata
+
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["OneService/OneService.csproj", "OneService/"]

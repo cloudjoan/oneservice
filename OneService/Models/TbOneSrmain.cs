@@ -29,7 +29,8 @@ namespace OneService.Models
         public string? CMainEngineerId { get; set; }
         public string? CMainEngineerName { get; set; }
         public string? CAssEngineerId { get; set; }
-        public string? CSqperson { get; set; }
+        public string? CSqpersonId { get; set; }
+        public string? CSqpersonName { get; set; }
         public string? CSalesId { get; set; }
         public string? CSalesName { get; set; }
         public Guid? CSystemGuid { get; set; }

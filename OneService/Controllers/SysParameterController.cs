@@ -36,7 +36,7 @@ namespace OneService.Controllers
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
             #region 組待查詢清單
-            var beans = psipDb.TbOneOperationParameters.OrderBy(x => x.CModuleId).OrderBy(x => x.COperationId).Where(x => x.Disabled == 0 &&
+            var beans = psipDb.TbOneOperationParameters.OrderBy(x => x.CModuleId).ThenBy(x => x.COperationId).Where(x => x.Disabled == 0 &&
                                                            (string.IsNullOrEmpty(cModuleID) ? true : x.CModuleId == cModuleID) &&
                                                            (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.Contains(cOperationID.Trim())) &&
                                                            (string.IsNullOrEmpty(cOperationName) ? true : x.COperationName.Contains(cOperationName.Trim())));
@@ -249,7 +249,7 @@ namespace OneService.Controllers
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
             #region 組待查詢清單
-            var beans = psipDb.TbOneSysParameters.OrderBy(x => x.COperationId).OrderBy(x => x.CFunctionId).OrderBy(x => x.CCompanyId).OrderBy(x => x.CNo)
+            var beans = psipDb.TbOneSysParameters.OrderBy(x => x.COperationId).ThenBy(x => x.CFunctionId).ThenBy(x => x.CCompanyId).ThenBy(x => x.CNo)
                                               .Where(x => x.Disabled == 0 && 
                                                             (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.ToString() == cOperationID) &&
                                                             (string.IsNullOrEmpty(cCompanyID) ? true : x.CCompanyId == cCompanyID) &&
@@ -566,7 +566,7 @@ namespace OneService.Controllers
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
             #region 組待查詢清單
-            var beans = psipDb.TbOneRoleParameters.OrderBy(x => x.COperationId).OrderBy(x => x.CFunctionId).OrderBy(x => x.CCompanyId).OrderBy(x => x.CValue)
+            var beans = psipDb.TbOneRoleParameters.OrderBy(x => x.COperationId).ThenBy(x => x.CFunctionId).ThenBy(x => x.CCompanyId).ThenBy(x => x.CValue)
                                                .Where(x => x.Disabled == 0 &&
                                                             (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.ToString() == cOperationID) &&
                                                             (string.IsNullOrEmpty(cCompanyID) ? true : x.CCompanyId == cCompanyID) &&                                                            

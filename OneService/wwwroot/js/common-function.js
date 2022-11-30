@@ -447,3 +447,29 @@ function selectPostalaAddress(Code, City, Township, Road, No) {
     $("#div_PostAddress").modal('hide');
 }
 //-----↑↑↑↑↑客戶聯絡人 ↑↑↑↑↑-----
+
+//日期格式檢查(yyyy-MM-dd)
+function dateValidationCheck(str) {
+    let re = new RegExp("^([0-9]{4})[.-]{1}([0-9]{1,2})[.-]{1}([0-9]{1,2})$");
+    let strDataValue;
+    let infoValidation = true;
+    if ((strDataValue = re.exec(str)) != null) {
+        let i;
+        i = parseFloat(strDataValue[1]);
+        if (i <= 0 || i > 9999) {
+            infoValidation = false;
+        }
+        i = parseFloat(strDataValue[2]);
+        if (i <= 0 || i > 12) {
+            infoValidation = false;
+        }
+        i = parseFloat(strDataValue[3]);
+        if (i <= 0 || i > 31) {
+            infoValidation = false;
+        }
+    } else {
+        infoValidation = false;
+    }
+    
+    return infoValidation;
+}
