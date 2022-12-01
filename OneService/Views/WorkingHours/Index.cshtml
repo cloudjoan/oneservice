@@ -23,11 +23,12 @@
 								objects = [];
 								$.each(result, function (i, idata) {
 									objects[i] = {
-										label: idata.CEmployeeEname + "\\" + idata.CEmployeeCName,
+										label: idata.EmpEname + "\\" + idata.EmpName,
 										idx: i,
-										value: idata.CEmployeeCName,
-										account: idata.CEmployeeAccount,
-										erpId: idata.CEmployeeErpid
+										value: idata.EmpName,
+										account: idata.Account,
+										erpId: idata.ErpId,
+										deptName: idata.DeptName
 									};
 								});
 
@@ -36,6 +37,7 @@
 									source: objects,
 									select: function (event, ui) {
 										$("#hie_ErpId").val(ui.item.erpId);
+										$("#lb_DeptName").html(ui.item.deptName);
 									}
 								}).bind('focus', function () { $(this).autocomplete("search"); });
 
@@ -105,7 +107,7 @@
 								<input type="text" id="tbx_EmpName" name="tbx_EmpName" class="form-control" placeholder="姓名" required>
 								<input type="hidden" id="hie_ErpId" name="hie_ErpId">
 							</div>
-							<label class="col-lg-6 col-form-label">系統服務事業群 客戶服務處</label>
+							<label id="lb_DeptName" class="col-lg-6 col-form-label"></label>
 						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">工時類型：</label>

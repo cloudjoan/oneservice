@@ -25,7 +25,7 @@ namespace OneService.Controllers
             {
                 #region -- findEmployeeByKeyword --
                 case "findEmployeeByKeyword":
-                    contentObj = bpmDB.TblEmployees.Where(x => (x.CEmployeeAccount.Contains(keyword) || x.CEmployeeCName.Contains(keyword)) && (x.CEmployeeLeaveReason == null && x.CEmployeeLeaveDay == null)).Take(5);
+                    contentObj = dbEIP.ViewEmpInfoWithoutLeaves.Where(x => x.EmpName.Contains(keyword) || x.Account.Contains(keyword)).Take(5);
                     break;
                 #endregion
 

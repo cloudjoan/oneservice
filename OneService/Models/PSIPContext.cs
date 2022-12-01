@@ -22,6 +22,7 @@ namespace OneService.Models
         public virtual DbSet<TbOneSysParameter> TbOneSysParameters { get; set; } = null!;
         public virtual DbSet<TbProMilestone> TbProMilestones { get; set; } = null!;
         public virtual DbSet<TbProPjRecord> TbProPjRecords { get; set; } = null!;
+        public virtual DbSet<TbProPjinfo> TbProPjinfos { get; set; } = null!;
         public virtual DbSet<TbProTask> TbProTasks { get; set; } = null!;
         public virtual DbSet<TbWorkingHoursMain> TbWorkingHoursMains { get; set; } = null!;
         public virtual DbSet<ViewWorkingHour> ViewWorkingHours { get; set; } = null!;
@@ -331,6 +332,45 @@ namespace OneService.Models
                 entity.Property(e => e.WorkHours).HasColumnType("numeric(6, 1)");
             });
 
+            modelBuilder.Entity<TbProPjinfo>(entity =>
+            {
+                entity.ToTable("TB_PRO_PJINFO");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.CrmOppNo).HasMaxLength(10);
+
+                entity.Property(e => e.EndDate).HasMaxLength(22);
+
+                entity.Property(e => e.EndDateUpdateTime).HasMaxLength(22);
+
+                entity.Property(e => e.ExpEndDate).HasMaxLength(22);
+
+                entity.Property(e => e.ExpEndDateUpdateTime).HasMaxLength(22);
+
+                entity.Property(e => e.InsertTime).HasMaxLength(22);
+
+                entity.Property(e => e.KickOffDate).HasMaxLength(22);
+
+                entity.Property(e => e.KickOffDateUpdateTime).HasMaxLength(22);
+
+                entity.Property(e => e.Pmacc)
+                    .HasMaxLength(300)
+                    .HasColumnName("PMAcc");
+
+                entity.Property(e => e.PmaccUpdateTime)
+                    .HasMaxLength(22)
+                    .HasColumnName("PMAccUpdateTime");
+
+                entity.Property(e => e.StartDate).HasMaxLength(22);
+
+                entity.Property(e => e.StartDateUpdateTime).HasMaxLength(22);
+
+                entity.Property(e => e.State).HasMaxLength(20);
+
+                entity.Property(e => e.StateUpdateTime).HasMaxLength(22);
+            });
+
             modelBuilder.Entity<TbProTask>(entity =>
             {
                 entity.ToTable("TB_PRO_TASK");
@@ -400,6 +440,8 @@ namespace OneService.Models
 
                 entity.Property(e => e.ActType).HasMaxLength(10);
 
+                entity.Property(e => e.CrmOppName).HasMaxLength(200);
+
                 entity.Property(e => e.CrmOppNo).HasMaxLength(10);
 
                 entity.Property(e => e.Disabled).HasDefaultValueSql("((0))");
@@ -429,10 +471,12 @@ namespace OneService.Models
 
                 entity.ToView("VIEW_WORKING_HOURS");
 
+                entity.Property(e => e.ActType).HasMaxLength(40);
+
                 entity.Property(e => e.FinishTime).HasMaxLength(22);
 
                 entity.Property(e => e.SourceFrom)
-                    .HasMaxLength(5)
+                    .HasMaxLength(11)
                     .IsUnicode(false);
 
                 entity.Property(e => e.SrId).HasMaxLength(10);

@@ -14,7 +14,9 @@ namespace OneService.Models
         public string? EndTime { get; set; }
         public int? Labor { get; set; }
         public string? CrmOppNo { get; set; }
+        public string? CrmOppName { get; set; }
         public string? WhDescript { get; set; }
+        public int? PrId { get; set; }
         public string? InsertTime { get; set; }
         public string? UpdateTime { get; set; }
         public int? Disabled { get; set; }

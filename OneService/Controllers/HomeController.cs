@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using OneService.Models;
+using OneService.Utils;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.DirectoryServices.Protocols;
@@ -29,6 +31,31 @@ namespace OneService.Controllers
         public IActionResult Login()
         {
             return View();
+        }
+
+        public IActionResult DoLogin(IFormCollection formCollection)
+        {
+            if (IsAuthenticated(formCollection["account"], formCollection["password"]))
+            {
+                MCSWorkflowContext eipDB = new MCSWorkflowContext();
+                var empBean = eipDB.ViewEmpInfoWithoutLeaves.FirstOrDefault(x => x.Account.ToUpper() == @"etatung\" + formCollection["account"]);
+
+                HttpContext.Session.SetString(SessionKey.LOGIN_STATUS, "true");
+                HttpContext.Session.SetString(SessionKey.USER_ACCOUNT, @"etatung\" + formCollection["account"]);
+                HttpContext.Session.SetString(SessionKey.USER_NAME, empBean.EmpName);
+                HttpContext.Session.SetString(SessionKey.DEPT_ID, empBean.DeptId);
+                HttpContext.Session.SetString(SessionKey.DEPT_NAME, empBean.DeptName);
+                HttpContext.Session.SetString(SessionKey.LOGIN_MESSAGE, "");
+
+                return RedirectToAction("CreateWH", "WorkingHours");
+            }
+            else
+            {
+                HttpContext.Session.SetString(SessionKey.LOGIN_STATUS, "false");
+                HttpContext.Session.SetString(SessionKey.LOGIN_MESSAGE, "帳號或密碼錯誤？");
+                return RedirectToAction("Login");
+            }
+
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Signing;
+using OneService.Utils;
 
 namespace OneService.Controllers
 {
@@ -57,12 +58,13 @@ namespace OneService.Controllers
         public IActionResult CreateWH()
         {
             ViewBag.now = string.Format("{0:yyyy-MM-dd}", DateTime.Now);
+            ViewBag.deptName = HttpContext.Session.GetString(SessionKey.DEPT_NAME);
 
             var beans = psipDB.TbWorkingHoursMains.Where(x => x.Disabled != 1).OrderByDescending(x => x.Id);
 
             List<TbWorkingHoursMain> list2 = new List<TbWorkingHoursMain>();
 
-            
+
             ViewBag.beans = beans;
 
             return View();
@@ -71,16 +73,19 @@ namespace OneService.Controllers
         public IActionResult SaveWH(IFormCollection formCollection)
         {
             TbWorkingHoursMain bean;
+            int prId = 0;
             if (!string.IsNullOrEmpty(formCollection["Id"]))
             {
                 bean = psipDB.TbWorkingHoursMains.Find(int.Parse(formCollection["Id"]));
                 bean.Whtype = formCollection["ddl_WHType"].ToString();
                 bean.ActType = formCollection["ddl_ActType"].ToString();
                 bean.CrmOppNo = formCollection["tbx_CrmOppNo"].ToString();
+                bean.CrmOppName = formCollection["hid_CrmOppName"].ToString();
                 bean.WhDescript = formCollection["tbx_WhDescript"].ToString();
                 bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();
                 bean.EndTime = formCollection["tbx_EndDate"].ToString() + " " + formCollection["hid_EndTime"].ToString();
                 bean.UpdateTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+                prId = bean.PrId ?? 0;
 
                 //計算工時分鐘數
                 DateTime startTime = Convert.ToDateTime(bean.StartTime);
@@ -96,6 +101,7 @@ namespace OneService.Controllers
                 bean.Whtype = formCollection["ddl_WHType"].ToString();
                 bean.ActType = formCollection["ddl_ActType"].ToString();
                 bean.CrmOppNo = formCollection["tbx_CrmOppNo"].ToString();
+                bean.CrmOppName = formCollection["hid_CrmOppName"].ToString();
                 bean.WhDescript = formCollection["tbx_WhDescript"].ToString();
                 bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();
                 bean.EndTime = formCollection["tbx_EndDate"].ToString() + " " + formCollection["hid_EndTime"].ToString();
@@ -113,12 +119,17 @@ namespace OneService.Controllers
             //如果有商機跟專案管理的話，就需加入專案管理的工時計算
             if (!string.IsNullOrEmpty(bean.CrmOppNo))
             {
+                var pjInfoBean = psipDB.TbProPjinfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
+
                 //取得MileStone
                 string ms = GetMileStone(bean.CrmOppNo, bean.StartTime, bean.EndTime);
-                //int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
+
                 var workHours = Math.Ceiling((decimal)bean.Labor / 60);
 
-                SavePjRecord(null, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours.ToString(), "", "", bean.WhDescript, "");
+                //int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
+                var _prId = SavePjRecord(prId, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours.ToString(), "", "", bean.WhDescript, "");
+                
+                bean.PrId = _prId;
             }
 
 
@@ -139,6 +150,13 @@ namespace OneService.Controllers
             var bean = psipDB.TbWorkingHoursMains.Find(id);
             bean.Disabled = 1;
 
+            //如果有prId的話，也要刪掉PMO的工時
+            if(bean.PrId != null)
+            {
+                var pjRecordBean = psipDB.TbProPjRecords.Find(bean.PrId);
+                pjRecordBean.Disabled = 1;
+            }
+
             psipDB.SaveChanges();
 
             return Json("OK");
@@ -147,11 +165,11 @@ namespace OneService.Controllers
 
         #region -- 儲存專案執行紀錄 --
         /// <summary>儲存專案執行紀錄</summary>
-        public ActionResult SavePjRecord(int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
+        public int? SavePjRecord(int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
         {
             #region -- 取得登入者資訊 --
 
-            string userAccount = @"etatung\leon.huang";
+            string userAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT);
             //取得登入者資訊            
             Person empBean = eipDB.People.FirstOrDefault(x => x.Account == userAccount && string.IsNullOrEmpty(x.LeaveReason));
             ViewEmpInfo empInfoBean = eipDB.ViewEmpInfos.FirstOrDefault(x => x.Account == userAccount);
@@ -161,7 +179,7 @@ namespace OneService.Controllers
             try
             {
                 int result = 0;
-                if (prId == null) //新增
+                if (prId == 0) //新增
                 {
                     #region -- 儲存專案執行紀錄 --
                     TbProPjRecord prBean = new TbProPjRecord();
@@ -193,7 +211,9 @@ namespace OneService.Controllers
                     prBean.UpdateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
                     psipDB.TbProPjRecords.Add(prBean);
-                    result = psipDB.SaveChanges();
+                    psipDB.SaveChanges();
+
+                    result = psipDB.TbProPjRecords.Max(x => x.Id);
 
                     //有設定任務編號，則要將執行紀錄的合計總工時，更新到任務統計的實際工時
                     if (!string.IsNullOrEmpty(prBean.BundleTask))
@@ -253,7 +273,9 @@ namespace OneService.Controllers
                         prBean.Attachment = attach;
 
                         prBean.UpdateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                        result = psipDB.SaveChanges();
+                        psipDB.SaveChanges();
+
+                        result = (int)prId;
 
                         //有設定任務編號，則要將執行紀錄的合計總工時，更新到任務統計的實際工時
                         if (!string.IsNullOrEmpty(prBean.BundleTask))
@@ -291,12 +313,12 @@ namespace OneService.Controllers
                     }
                     #endregion
                 }
-                return Json(true);
+                return result;
             }
             catch (Exception e)
             {
                 //SendMailByAPI("PMO儲存專案執行紀錄", null, "Elvis.Chang@etatung.com", "", "", "PMO儲存專案執行紀錄_錯誤", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "<br>prId: " + prId + "<br>" + e.ToString(), null, null);
-                return Json(false);
+                return null;
             }
         }
         #endregion
