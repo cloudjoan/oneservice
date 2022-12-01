@@ -115,7 +115,10 @@ namespace OneService.Controllers
             {
                 //取得MileStone
                 string ms = GetMileStone(bean.CrmOppNo, bean.StartTime, bean.EndTime);
+                //int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
+                var workHours = Math.Ceiling((decimal)bean.Labor / 60);
 
+                SavePjRecord(null, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours.ToString(), "", "", bean.WhDescript, "");
             }
 
 
@@ -150,7 +153,7 @@ namespace OneService.Controllers
 
             string userAccount = @"etatung\leon.huang";
             //取得登入者資訊            
-            Person empBean = eipDB.People.FirstOrDefault(x => x.Account == userAccount &&string.IsNullOrEmpty(x.LeaveReason));
+            Person empBean = eipDB.People.FirstOrDefault(x => x.Account == userAccount && string.IsNullOrEmpty(x.LeaveReason));
             ViewEmpInfo empInfoBean = eipDB.ViewEmpInfos.FirstOrDefault(x => x.Account == userAccount);
             
             #endregion
@@ -165,7 +168,7 @@ namespace OneService.Controllers
                     prBean.CrmOppNo = OppNoFormat(oppNo);
                     prBean.BundleMs = bundleMs;
                     prBean.BundleTask = !string.IsNullOrEmpty(bundleTask) ? bundleTask : "";
-                    prBean.Implementers = impBy;
+                    prBean.Implementers = empBean.Account;
                     prBean.ImplementersCount = Convert.ToInt32(ImplementersCount);
                     prBean.Attendees = Attendees;   //edit by elvis 2022/07/18
                     prBean.Place = place;

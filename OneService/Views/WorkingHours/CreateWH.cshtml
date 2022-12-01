@@ -73,8 +73,7 @@
 					data: { "id": id },
 					success: function(result) {
 						if(result == 'OK'){
-							var temp =  $(obj).parent().parent();
-							console.log(temp);
+							$(obj).parent().parent().remove();
 						}
 					}
 				});
@@ -100,6 +99,18 @@
 			$(disabledClassName).removeClass("active");
 			$("#" + targetId).val($(obj).val());
 			$(obj).addClass("active");
+		}
+
+		function checkForm() {
+			var startTime = new Date($("#tbx_StartDate").val() + ' ' + $("#hid_StartTime").val());
+			var endTime = new Date($("#tbx_EndDate").val() + ' ' + $("#hid_EndTime").val());
+			console.log(startTime);
+			console.log(endTime);
+			if(startTime > endTime){
+				showDialog('錯誤!', '開始時間不得晚於結束時間！');
+				return false;
+			}
+
 		}
 
 	</script>
@@ -132,7 +143,7 @@
 					</div>
 				</div>
 				<div class="ibox-content">
-					<form id="form" name="form" action='@Url.Action("SaveWH", "WorkingHours")' method="post">
+					<form id="form" name="form" action='@Url.Action("SaveWH", "WorkingHours")' onsubmit="return checkForm();" method="post">
 						<input type="hidden" id="Id" name="Id" />
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">同仁姓名：</label>
@@ -180,7 +191,7 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label"> 工作說明：</label>
 							<div class="col-lg-5">
-								<textarea rows="3" id="tbx_WhDescript" name="tbx_WhDescript" class="form-control" placeholder="工作說明"></textarea>
+								<textarea rows="3" id="tbx_WhDescript" name="tbx_WhDescript" class="form-control" placeholder="工作說明" required></textarea>
 							</div>
 						</div>
 						
@@ -192,8 +203,8 @@
 							<div class="col-lg-8">
 								@while (dt <= Convert.ToDateTime("2022-01-01 23:45"))
 								{
-								<button type="button" class="btn btn-outline btn-primary startTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt))" onclick="ActiveBtn('hid_StartTime', '.startTime', this)">@(string.Format("{0:HH:mm}", dt))</button>
-									dt = dt.AddMinutes(15);
+								<button type="button" class="btn btn-outline btn-lg btn-primary startTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt))" onclick="ActiveBtn('hid_StartTime', '.startTime', this)">@(string.Format("{0:HH:mm}", dt))</button>
+									dt = dt.AddMinutes(30);
 								}
 							<input type="hidden" id="hid_StartTime" name="hid_startTime" />
 							</div>
@@ -206,8 +217,8 @@
 						<div class="col-lg-8">
 							@while (dt2 <= Convert.ToDateTime("2022-01-01 23:45"))
 							{
-								<button type="button" class="btn btn-outline btn-success endTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt2))" onclick="ActiveBtn('hid_EndTime', '.endTime', this)">@(string.Format("{0:HH:mm}", dt2))</button>
-								dt2 = dt2.AddMinutes(15);
+								<button type="button" class="btn btn-outline btn-lg btn-success endTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt2))" onclick="ActiveBtn('hid_EndTime', '.endTime', this)">@(string.Format("{0:HH:mm}", dt2))</button>
+								dt2 = dt2.AddMinutes(30);
 							}
 							<input type="hidden" id="hid_EndTime" name="hid_EndTime" />
 						</div>

@@ -429,8 +429,6 @@ namespace OneService.Models
 
                 entity.ToView("VIEW_WORKING_HOURS");
 
-                entity.Property(e => e.CrmOppNo).HasMaxLength(10);
-
                 entity.Property(e => e.FinishTime).HasMaxLength(22);
 
                 entity.Property(e => e.SourceFrom)

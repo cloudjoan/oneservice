@@ -8,7 +8,6 @@ namespace OneService.Models
         public string? SrId { get; set; }
         public string? WhDescript { get; set; }
         public string? Whtype { get; set; }
-        public string? CrmOppNo { get; set; }
         public string? UserErpId { get; set; }
         public string? UserName { get; set; }
         public string? FinishTime { get; set; }
