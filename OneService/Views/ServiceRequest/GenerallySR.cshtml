@@ -29,14 +29,16 @@
 
 		$(document).ready(function () {
 			openPostAddress();			
-			CustSearch('Comp-1');				//取得客戶資料	
-			SerialSearch();						//產品序號資訊查詢
-			findMaterialByKeyword();			//用關鍵字查詢物料
-			PeopleSearch();						//Ajax用中文或英文姓名查詢人員帳號
-			SQPersonSearch();					//Ajax用關鍵字查詢SQ人員
-			getpjTeam();						//取得服務團隊
-			getpjAssEngineer();					//取得協助工程師	
-			getSRDetail_Warranty();				//取得保固SLA明細Table(非新建或駁回狀態)			
+			CustSearch();				//取得客戶資料	
+			SerialSearch();				//產品序號資訊查詢
+			findMaterialByKeyword();	//用關鍵字查詢物料
+			PeopleSearch();				//Ajax用中文或英文姓名查詢人員帳號
+			SQPersonSearch();			//Ajax用關鍵字查詢SQ人員
+			getpjTeam();				//取得服務團隊
+			getpjAssEngineer();			//取得協助工程師	
+			getSRDetail_Warranty();		//取得保固SLA明細Table(非新建或駁回狀態)			
+			getpjRecord();				//Ajax取得處理與工時紀錄
+			initdatetimepicker();
 
 			//顯示協助工程師設定popup
             $('#btn_pjAssEngineer').click(function () {
@@ -47,7 +49,26 @@
             $('#btn_pjTeam').click(function () {
                 $('#dialog_pjTeam').modal('show');
             })
-		});
+
+			
+		});		
+
+		function initdatetimepicker()
+		{
+			 $('.calendarTime').datetimepicker({
+				locale: 'zh-tw',		  //使用繁體中文界面
+				format: 'HH:mm',		  //日期時間格式
+				ignoreReadonly: true  //禁止使用者輸入 啟用唯讀
+			});
+
+			 $('.datetimepicker').datetimepicker({
+				minView: "hour", //只顯示到每日的小時(含每小時5分鐘顯示)
+                format: "yyyy-mm-dd hh:ii",
+                autoclose: true, //當選擇一個日期之後是否立即關閉此日期時間選擇器。
+                todayBtn: "linked", //如果此值為true或"linked"，則在日期時間選擇器組件的底部顯示一個today按鈕用以選擇當前日期。如果是true，today按鈕僅僅將視圖轉到當天的日期，如果是linked，當天日期將會被選中。
+                todayHighlight: true, //如果為true，閃亮當前日期。
+            });
+		}
 
 		function hidePopupInit() {
             setTimeout(function () {
@@ -64,8 +85,26 @@
 				calendarWeeks: false,
 				autoclose: true,
 				format: "yyyy-mm-dd"
-			});
+			});			
 		}	
+
+		//顯示剩餘字數
+        function showRemainWords(obj, maxLength, remainWord) {
+            $(remainWord).show();
+            var len = obj.value.length;
+            if (len > 0) {
+                $(remainWord).html("剩餘字數: " + (maxLength - len));
+            }
+            if (len > maxLength) {
+                $(remainWord).html("已超過字數上限: " + (len - maxLength));
+            }
+        }
+
+        //隱藏剩餘字數
+        function hideRemainWords(obj) {
+            $(obj).html('');
+            $(obj).hide();
+        }
 		
 		//確認提交事件
 		function onclickBtnSave() {
@@ -382,7 +421,9 @@
 
 		//SAP客戶代號/客戶名稱查詢
 		//compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
-		function CustSearch(compcde) {
+		function CustSearch() {
+			var compcde = $("#hid_cLoginUser_CompCode").val();
+			
 			$(".CustName").unbind();
 
 			$(".CustName").koala({
@@ -623,9 +664,13 @@
 												{
 													$('#hid_cSalesID').val(ui.item.ERPID)
 												}
-												else if (ojbID.indexOf('txt_pjAssEngineerName') >= 0)
+												else if (ojbID.indexOf('tbx_pjAssEngineerName') >= 0)
 												{
 													$('#hid_pjAssEngineerAcc').val(ui.item.ERPID)
+												}
+												else if (ojbID.indexOf('tbx_pjRecordEngineerName') >= 0)
+												{
+													$('#hid_pjRecordEngineerID').val(ui.item.ERPID)
 												}
 											}
 										}).bind('focus', function () { obj.autocomplete("search"); });
@@ -712,7 +757,7 @@
 		//顯示選擇客戶聯絡人popup
 		function showContactInfo(tIDName) {			
 			var CustomerID = $('#hid_cCustomerID').val();
-			var cBUKRS = "T012";
+			var cBUKRS = $("#hid_cLoginUser_BUKRS").val();
 
 			if (CustomerID == "")
 			{
@@ -859,7 +904,7 @@
 		function btn_AddContactInfo_onclick() {
 			var OperationID = $('#hid_OperationID').val();
 			var CustomerID = $('#hid_cCustomerID').val();
-			var cBUKRS = "T012";
+			var cBUKRS = $("#hid_cLoginUser_BUKRS").val();
 
 			if (CustomerID == "")
 			{
@@ -1119,7 +1164,7 @@
         //取得協助工程師
         function getpjAssEngineer() {
             $("#hid_pjAssEngineerAcc").val("");
-            $("#txt_pjAssEngineerName").val("");
+            $("#tbx_pjAssEngineerName").val("");
 			
 			var hid_cAssEngineerID = $("#hid_cAssEngineerID");
             
@@ -1335,6 +1380,7 @@
 
 		//-----↓↓↓↓↓保固SLA檔 ↓↓↓↓↓-----
 
+		//保固SLA產生時，要初始本次使用的chang事件
 		function init_iChceck()
 		{
 			$('.i-checks').iCheck({
@@ -1594,6 +1640,297 @@
 		}	
 		//-----↑↑↑↑↑保固SLA檔 ↑↑↑↑↑-----
 
+		//-----↓↓↓↓↓處理與工時紀錄 ↓↓↓↓↓-----		
+
+		//儲存處理與工時紀錄
+        function savepjRecord(prId) {
+            var strMsg = "";
+            if ($("#ddl_bundleMs").val() == "-1") strMsg += "請選擇對應里程碑\n";
+			if ($("#ddl_bundleTask").val() == "-1") strMsg += "請選擇對應任務，若沒有對應任務請至【任務說明】新增里程碑相關任務\n";
+            if ($("#tbx_prStartDate").val() == "" || $("#tbx_prEndDate").val() == "") strMsg += "請選擇執行日期時間\n";
+            if ($("#tbx_prImp").val() == "") strMsg += "請輸入執行人員\n";
+            if ($("#tbx_prDesc").val() == "") strMsg += "請輸入執行內容\n";
+            if ($("#tbx_prWorkHours").val() == "") strMsg += "請輸入工時\n";
+
+			if (strMsg != "") {
+				alert(strMsg);
+			}
+            else {
+                $("#btn_savepjRecord").hide();
+                $("#img_waiting_savePR").show();
+				$.ajax({
+					url: '@Url.Action("SavepjRecord", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+                    data: {
+                        prId: parseInt($("#hid_pRecordCId").val()),
+                        oppNo: $("#hid_oppNo").val(),
+                        bundleMs: $("#ddl_bundleMs").val(),
+                        bundleTask: $("#ddl_bundleTask").val(),
+                        impBy: $("#tbx_prImp").val(),
+                        ImplementersCount: $("#tbx_ImplementersCount").val(),
+						Attendees: $("#tbx_prAttImp").val(),
+                        place: $("#tbx_prPlace").val(),
+                        startDate: $("#tbx_prStartDate").val(),
+                        endDate: $("#tbx_prEndDate").val(),
+                        workHours: $("#tbx_prWorkHours").val(),
+                        withPpl: $("#tbx_prWithPpl").val(),
+                        withPplPhone: $("#tbx_prWithPplPhone").val(),
+                        desc: $("#tbx_prDesc").val(),
+                        attach: $("#hid_filezone_pjRecord").val(),
+                    },
+                    success: function (result) {
+                        if (result) {
+                            getpjRecord(); //取得處理與工時紀錄
+                            ajaxGetMilestone(); //總工時可能會改變，要重抓一次里程碑
+							ajaxGetTask(pMilestone); //實際工時可能會改變，要重抓一次WBS
+                            hidePopupInit();
+                            alert("儲存成功");
+							$("#ddl_contact").val('').trigger('change'); //清空執行人員
+                            $("#dialog_pRecord").modal('hide');
+                        }
+                        else {
+                            alert("儲存失敗");
+                        }
+                        $("#img_waiting_savePR").hide();
+                        $("#btn_savepjRecord").show();
+                    },                   
+				});
+			}
+        }
+
+        //刪除處理與工時紀錄
+        function deletepjRecord(obj) {
+            var prId = parseInt($(obj).closest("tr").find(".hidPrId").val());
+
+            if (confirm("確認刪除此筆處理與工時紀錄？")) {
+                $.ajax({
+					url: '@Url.Action("DeletepjRecord", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+                    data: {
+                        prId: prId,
+                    },
+                    success: function (result) {
+                        if (result > 0) {
+							ajaxGetTask(pMilestone); //ajax取得任務說明
+							hidePopupInit();
+                            alert("刪除成功");
+                            $(obj).parent().parent().remove();
+                        }
+                        else {
+                            alert("刪除失敗");
+                        }
+                    },                    
+				});
+            }
+        }
+
+		//顯示執行處理與工時紀錄明細的服務報告書popup
+	    function showPjRecReport(obj, IsCanEdit) {
+			getpjRecordReport($(obj).parent().parent().find("td input[class='hidPrId']").val(), IsCanEdit);
+            $('#dialog_pRecordReport').modal('show');
+        }
+
+	    //顯示所有執行處理與工時紀錄明細的服務報告書popup
+	    function showALLPjRecReport(IsCanEdit) {
+			getpjRecordReport(null, IsCanEdit);
+		    $('#dialog_pRecordReport').modal('show');
+	    }
+
+		//顯示執行處理與工時紀錄設定popup(新增)
+	    function btn_add_pRecordonclick() {
+		    var strMsg = "";
+
+		    if (strMsg == "") {
+				resetPopup("#dialog_pRecord"); //執行處理與工時紀錄popup各欄位reset
+			    $("#dialog_pRecord .dropzone").show();
+			    $("#dialog_pRecord").modal('show');
+		    }
+        }
+
+        //ajax取得處理與工時紀錄明細
+        function getpjRecord() {            
+			var cSRID = $("input[name='hid_cSRID']").val();
+			var ERPID = $("input[name='hid_cLoginUser_ERPID']").val();
+
+			$.ajax({
+				url: '@Url.Action("getpjRecord", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+                data: {
+                    cSRID: cSRID,
+					ERPID: ERPID,
+                },
+                success: function (result) {
+                    var list = "";
+                    var arrBundleTask = [];
+					$.each(result, function (i, bean) {
+                        if (bean != null) {
+                            //是否有編輯權限
+                            var IsCanEdit = bean.IsCrUser;
+
+                            //如果有服務報告書要顯示圖示icon
+                            var btnFile = "";
+                            if (bean.Pr.CSrreport != null && bean.Pr.CSrreport != "") {
+								btnFile = '<button class="btn btn-light btn-sm btnPrFile" type="button" onclick="showPjRecReport(this,' + IsCanEdit + ');" style="margin: 2px; border-color: lightgray;">'
+                                        + '<i class="fa fa-file-text"></i>'
+                                        + '</button>'
+								        + '<input type="hidden" class="prCSReport" value="' + bean.Pr.CSrreport + '" />';
+                            }
+
+                            //只能編輯自己填的處理與工時紀錄
+                            var btnEdit = "";
+							if (IsCanEdit) {
+                                btnEdit = ""
+                                    + '<button id="prBtnEdit' + bean.Pr.CId + '" class="btn btn-info btn-sm btnPrEdit btnPreventDefault" type="button" style="margin: 2px;">'
+                                        + '<i class="glyphicon glyphicon-pencil"></i>'
+                                    + '</button>'                                    
+                                    + '<button class="btn btn-danger btn-sm btnPrDelete btnPreventDefault" type="button" onclick="deletepjRecord(this);" style="margin: 2px;">'
+                                        + '<i class="fa fa-trash"></i>'
+                                    + '</button>';
+                            }                          
+
+                            list += ""
+                                + '<tr id="pr_tr_' + bean.Pr.CId + '" style="word-break: keep-all; white-space: nowrap;">'                                
+                                + '<td class="prEngineerID" style="vertical-align: middle; background-color: cornsilk;"><input type="hidden" value="' + bean.Pr.CId + '" class="hidPrId" />' + bean.Pr.CEngineerId + '</td>'
+                                + '<td class="prEngineerName" style="vertical-align: middle; background-color: cornsilk;">' + bean.Pr.CEngineerName + '</td>'
+                                + '<td class="prReceiveTime" style="vertical-align: middle;">' + bean.Pr.CReceiveTime + '</td>'
+                                + '<td class="prStartTime" style="vertical-align: middle;">' + bean.Pr.CStartTime + '</td>'
+                                + '<td class="prArriveTime" style="vertical-align: middle;">' + bean.Pr.CArriveTime + '</td>'
+								+ '<td class="prFinishTime" style="vertical-align: middle;">' + bean.Pr.CFinishTime + '</td>'
+                                + '<td class="prWorkHours" style="vertical-align: middle;">' + bean.Pr.CWorkHours + '</td>'
+                                + '<td class="prDesc" style="vertical-align: middle;">' + bean.Pr.CDesc + '</td>'								
+                                + '<td>' + btnFile + '</td>'
+								+ '<td>' + btnEdit + '</td>'
+                                + "</tr>";
+                            
+						}
+					});
+
+					if (list != "") {
+                        list = '<table id="tb_pRecord" class="table table-striple table-bordered table-hover dataTables-example" style="text-align: center;">'
+                            + "<thead>"
+                                + '<tr style="word-break: keep-all; white-space: nowrap;">'
+                                    + "<th>服務工程師ERPID</th>"
+									+ "<th>服務工程師姓名</th>"
+                                    + "<th>接單時間</th>"
+                                    + "<th>出發時間</th>"
+                                    + "<th>到場時間</th>"
+                                    + "<th>完成時間</th>"
+                                    + "<th>工時(分鐘)</th>"
+							        + "<th>處理紀錄</th>"                                    
+                                    + "<th>服務報告書</th>"
+									+ '<th style="width: 65px;">編輯/刪除</th>'
+                                + "</tr>"
+                            + "</thead>"
+                            + "<tbody>"
+                            + list
+                            + "</tbody></table>";
+					}
+
+                    $("#img_waiting_savePR").hide();
+                    $("#btn_savepjRecord").show();
+                    $(".tb_pRecord").html(list);
+                },               
+			});
+        }        
+
+        //取得處理與工時紀錄明細的服務報告書
+	    function getpjRecordReport(prId) {
+           var cSRID = $("input[name='hid_cSRID']").val();
+
+			$.ajax({
+				url: '@Url.Action("getpjRecordReport", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+                data: {
+                    cSRID: cSRID,
+					prId: prId,
+                },
+                success: function (result) {
+					var list = "";
+					$.each(result, function (i, bean) {
+                        if (bean != null) {
+                            //點擊icon要將那筆處理與工時紀錄的服務報告書閃亮
+                            var trBgColor = "";
+                            if (prId == bean.pjRecordId) {
+                                trBgColor = ' style="background-color: lightyellow;"';
+                            }
+
+                            var tdDisplay = "";
+							if (IsCanEdit && !bean.IsClosed) {
+                                tdDisplay = "style='vertical-align: middle;'";
+                            }
+                            else {
+								tdDisplay = "style='vertical-align: middle; display:none;'";
+							}
+
+                            list += "<tbody>"
+                                + "<tr" + trBgColor + ">"
+                                + "<td style='vertical-align: middle;'>"
+                                    + '<a id="' + bean.Id + '" href="http://' + window.location.host + "/files/" + bean.GuidName + '" download="' + bean.OrgName + '" target="_blank">' + bean.OrgName + '</a>'
+                                    //+ '<div class="dropzone" id="zone_' + bean.Id + '" style="width: 200px; min-height: 100px !important; padding: 0px;">'
+                                    //+ '<div class="fallback"><input name="file" type="file" multiple /></div></div>'
+                                    //+ '<div class="attachment" id="filezone_' + bean.Id + '"></div>'
+                                    //+ '<input type="hidden" class="fileids prCSReport" name="hid_filezone" id="hid_filezone_' + bean.Id + '" value' + bean.Id + '" />'
+                                + "</td>"
+                                + "<td style='vertical-align: middle;'>" + bean.CrName + "</td>"
+                                + "<td style='vertical-align: middle;'>" + bean.InsertTime + "</td>"
+								+ "<td " + tdDisplay + ">"
+                                    + '<input type="hidden" class="hid_prId" value="' + bean.pjRecordId + '" />'
+                                    + '<button class="btn btn-danger btn-sm" type="button" onclick="delPjRecReport(this);" style="margin: 2px;"><i class="fa fa-trash"></i></button>'
+                                + '</td>'
+                                + "</tr>"
+                                + "</tbody>";
+						}
+                    });
+
+					if (list != "") {
+                        list = "<table class='table table-striple table-bordered table-hover dataTables-example' style='text-align: center;'>"
+                            + "<thead><tr>"
+                                + "<th>檔案名稱</th>"
+                                + "<th>建立人</th>"
+                                + "<th>建立時間</th>"
+                                + "<th>刪除</th>"
+                            + "</tr></thead>"
+                            + list
+                            + "</table>";
+					}
+                    else {
+                        list = "查無專案文件!";
+                    }
+
+                    $("#tb_pRecordReport").html(list);
+                },                
+			});
+        }
+
+        //刪除處理與工時紀錄明細的服務報告書
+        function delPjRecReport(obj) {
+            if (confirm("確認刪除此筆的服務報告書？")) {
+                $.ajax({
+					url: '@Url.Action("DelPjRecReport", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+                    data: {
+                        prId: parseInt($(obj).parent().find(".hid_prId").val()),
+                        docId: $(obj).parent().parent().find("td a").attr("id"),
+                    },
+                    success: function (result) {
+                        if (result > 0) {
+                            alert("刪除成功");
+                            $(obj).parent().parent().remove();
+                        }
+                        else {
+                            alert("刪除失敗");
+                        }
+                    },                   
+				});
+            }
+        }
+		//-----↑↑↑↑↑處理與工時紀錄 ↑↑↑↑↑-----
+
 		//-----↓↓↓↓↓零件更換檔 ↓↓↓↓↓-----		
 
 		//新增明細
@@ -1803,7 +2140,7 @@
 							<div class="col-lg-4">
 								<select asp-for="ddl_cStatus" asp-items="Model.ListStatus" class="form-control"></select>
 							</div>
-						</div>
+						</div>						
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">客戶</label>
 							<div class="col-lg-4">
@@ -2163,7 +2500,8 @@
 									<table id="tableAddRE" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
 										<thead>
 											<tr>
-												<th>服務工程師</th>
+												<th>服務工程師ERPID</th>
+												<th>服務工程師姓名</th>
 												<th>接單時間</th>
 												<th>出發時間</th>
 												<th>到場時間</th>
@@ -2461,7 +2799,7 @@
 						<label class="col-lg-2 col-form-label">協助工程師姓名</label>
 						<div class="input-group col-sm-10 col-lg-6" style="height: 36px;">
 							<input type="hidden" id="hid_pjAssEngineerAcc" />
-							<input type="text" id="txt_pjAssEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+							<input type="text" id="tbx_pjAssEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
 						</div>
 						<div class="col-lg-2">
 							<button id="btn_savepjAssEngineer" class="btn btn-primary col-lg-12 col-xs-12" type="button" onclick="savepjAssEngineer();">
@@ -2505,6 +2843,98 @@
 				</div>
 				<hr style="border: 1px solid lightgray; width: 98%;" />
 				<div class="modal-body" id="tb_pjTeam" style="overflow: scroll;">
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--執行處理與工時紀錄彈出視窗-->
+	<div class="modal fade" id="dialog_pRecord" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i> 執行處理與工時紀錄</label>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<!--執行工時紀錄Id-->
+					<input type="hidden" id="hid_pjRecordCId" runat="server" />					
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">服務工程師*</label>
+						<div class="col-lg-4" style="padding: 0px;">
+							<input id="tbx_pjRecordEngineerName" type="text" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" style="padding-left: 15px;">
+							<input type="hidden" id="hid_pjRecordEngineerID" runat="server" />
+						</div>						
+					</div>
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">接單時間*</label>
+						<div class="col-lg-4" style="padding: 0px;">
+							<input id="tbx_pjRecordReceiveTime" type="text" class="form-control datetimepicker" placeholder="請選擇接單時間" style="padding-left: 15px;">	
+							
+						</div>
+						<label class="col-lg-2 col-form-label">出發時間*</label>
+						<div class="col-lg-4" style="padding: 0px;">
+							<input id="tbx_pjRecordStartTime" type="text" class="form-control datetimepicker" placeholder="請選擇出發時間" style="padding-left: 15px;">							
+						</div>
+					</div>					
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">到場時間*</label>
+						<div class="col-lg-4" style="padding: 0px;">
+							<input id="tbx_pjRecordArriveTime" type="text" class="form-control datetimepicker" placeholder="請選擇到場時間" style="padding-left: 15px;">	
+							
+						</div>
+						<label class="col-lg-2 col-form-label">完成時間*</label>
+						<div class="col-lg-4" style="padding: 0px;">
+							<input id="tbx_pjRecordFinishTime" type="text" class="form-control datetimepicker" placeholder="請選擇完成時間" style="padding-left: 15px;">							
+						</div>
+					</div>					
+					<div class="form-group row">						
+						<label class="col-lg-2 col-form-label">工時(分鐘)*</label>						
+						<div class="col-lg-4" style="padding: 0px;">
+							<input id="tbx_pjRecordWorkHours" type="text" class="form-control" placeholder="工時(分鐘)" disabled/>
+						</div>	
+					</div>
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">處理紀錄*</label>
+						<textarea id="tbx_pjRecordDesc" rows="3" class="col-lg-10 form-control" placeholder="請輸入處理紀錄" onkeyup="showRemainWords(this, 255, '#remainPrDesc');" onfocusout="hideRemainWords('#remainPrDesc');"></textarea>
+						<div class="col-lg-2"></div>
+						<span id='remainPrDesc' style="font-size: 10px; color: red;"></span>
+					</div>
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">附件</label>
+						<div class="dropzone popupDropzone" id="zone_pr" style="width: 200px; min-height: 100px !important; padding: 0px;">
+							<div class="fallback">
+								<input name="file" type="file" multiple />
+							</div>
+						</div>
+						<div class="attachment" id="filezone_pjRecord"></div>
+						<input type="hidden" class="fileids" name="hid_filezone" id="hid_filezone_pjRecord" value="" />
+					</div>
+				</div>
+				<div class="modal-footer">
+					<div class="col-lg-5"></div>
+					<button id="btn_savepjRecord" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="savepjRecord($('#hid_pRecordCId').val());"> <i class="fa fa-save"></i> 儲 存</button>
+					<img id="img_waiting_savePR" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+					<div class="col-lg-5"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--執行處理與工時紀錄的服務報告書彈出視窗-->
+	<div class="modal fade" id="dialog_pRecordReport" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<label class="col-form-label">執行處理與工時紀錄的服務報告書</label>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="tb_pRecordReport">
 
 				</div>
 			</div>

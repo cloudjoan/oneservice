@@ -523,6 +523,28 @@
                 "Asset": null,
                 "Patterns": null
               },
+              "datetimepicker": {
+                "Children": {
+                  "bootstrap-datetimepicker.css": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "css/plugins/datetimepicker/bootstrap-datetimepicker.css"
+                    },
+                    "Patterns": null
+                  },
+                  "bootstrap-datetimepicker.min.css": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "css/plugins/datetimepicker/bootstrap-datetimepicker.min.css"
+                    },
+                    "Patterns": null
+                  }
+                },
+                "Asset": null,
+                "Patterns": null
+              },
               "dropzone": {
                 "Children": {
                   "basic.css": {
@@ -709,6 +731,14 @@
                       }
                     },
                     "Asset": null,
+                    "Patterns": null
+                  },
+                  "clock-bg-sm.png": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "css/plugins/images/clock-bg-sm.png"
+                    },
                     "Patterns": null
                   },
                   "sort.png": {
@@ -11864,6 +11894,36 @@
                     "Asset": {
                       "ContentRootIndex": 0,
                       "SubPath": "js/plugins/daterangepicker/daterangepicker.js"
+                    },
+                    "Patterns": null
+                  }
+                },
+                "Asset": null,
+                "Patterns": null
+              },
+              "datetimepicker": {
+                "Children": {
+                  "bootstrap-datetimepicker.js": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "js/plugins/datetimepicker/bootstrap-datetimepicker.js"
+                    },
+                    "Patterns": null
+                  },
+                  "bootstrap-datetimepicker.min.js": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "js/plugins/datetimepicker/bootstrap-datetimepicker.min.js"
+                    },
+                    "Patterns": null
+                  },
+                  "moment-with-locales.min.js": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "js/plugins/datetimepicker/moment-with-locales.min.js"
                     },
                     "Patterns": null
                   }

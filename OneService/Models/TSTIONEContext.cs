@@ -16,9 +16,11 @@ namespace OneService.Models
         {
         }
 
+        public virtual DbSet<TbOneDocument> TbOneDocuments { get; set; } = null!;
         public virtual DbSet<TbOneLog> TbOneLogs { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailPartsReplace> TbOneSrdetailPartsReplaces { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailProduct> TbOneSrdetailProducts { get; set; } = null!;
+        public virtual DbSet<TbOneSrdetailRecord> TbOneSrdetailRecords { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailWarranty> TbOneSrdetailWarranties { get; set; } = null!;
         public virtual DbSet<TbOneSridformat> TbOneSridformats { get; set; } = null!;
         public virtual DbSet<TbOneSrmain> TbOneSrmains { get; set; } = null!;
@@ -37,6 +39,37 @@ namespace OneService.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<TbOneDocument>(entity =>
+            {
+                entity.ToTable("TB_ONE_DOCUMENT");
+
+                entity.Property(e => e.Id)
+                    .ValueGeneratedNever()
+                    .HasColumnName("ID");
+
+                entity.Property(e => e.FileExt)
+                    .HasMaxLength(5)
+                    .IsUnicode(false)
+                    .HasColumnName("FILE_EXT");
+
+                entity.Property(e => e.FileName)
+                    .HasMaxLength(50)
+                    .HasColumnName("FILE_NAME");
+
+                entity.Property(e => e.FileOrgName)
+                    .HasMaxLength(100)
+                    .HasColumnName("FILE_ORG_NAME");
+
+                entity.Property(e => e.InsertTime)
+                    .HasMaxLength(22)
+                    .IsUnicode(false)
+                    .HasColumnName("INSERT_TIME");
+
+                entity.Property(e => e.RefObjId)
+                    .HasMaxLength(50)
+                    .HasColumnName("REF_OBJ_ID");
+            });
+
             modelBuilder.Entity<TbOneLog>(entity =>
             {
                 entity.HasKey(e => e.CId)
@@ -167,6 +200,63 @@ namespace OneService.Models
                 entity.Property(e => e.CSrid)
                     .HasMaxLength(20)
                     .HasColumnName("cSRID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneSrdetailRecord>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRDetail_Record");
+
+                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20221108-160558");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CArriveTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cArriveTime");
+
+                entity.Property(e => e.CDesc)
+                    .HasMaxLength(255)
+                    .HasColumnName("cDesc");
+
+                entity.Property(e => e.CEngineerId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cEngineerID");
+
+                entity.Property(e => e.CEngineerName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cEngineerName");
+
+                entity.Property(e => e.CFinishTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cFinishTime");
+
+                entity.Property(e => e.CReceiveTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cReceiveTime");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
+
+                entity.Property(e => e.CSrreport).HasColumnName("cSRReport");
+
+                entity.Property(e => e.CStartTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cStartTime");
+
+                entity.Property(e => e.CWorkHours)
+                    .HasColumnType("numeric(6, 0)")
+                    .HasColumnName("cWorkHours");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 

@@ -613,7 +613,7 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="ArySERIAL">序號(可多筆)</param>
         /// <returns></returns>
-        public ActionResult QuerySRDetail_Warranty(string[] ArySERIAL)
+        public IActionResult QuerySRDetail_Warranty(string[] ArySERIAL)
         {
             getLoginAccount();
 
@@ -733,7 +733,7 @@ namespace OneService.Controllers
         /// </summary>        
         /// <param name="cSRID">SRID</param>
         /// <returns></returns>
-        public ActionResult getSRDetail_Warranty(string cSRID)
+        public IActionResult getSRDetail_Warranty(string cSRID)
         {
             getLoginAccount();
 
@@ -778,6 +778,102 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得處理與工時紀錄明細
+        /// <summary>
+        /// 取得處理與工時紀錄明細
+        /// </summary>
+        /// <param name="cSRID">SRID</param>
+        /// <param name="ERPID">登入人員ERPID</param>
+        /// <returns></returns>
+        public IActionResult getpjRecord(string cSRID, string ERPID)
+        {
+            #region -- 管理者(也可編輯工時紀錄)，先暫時預設false --
+            bool isManager = false;           
+            #endregion
+            
+            List<PjRecord> liPjRec = new List<PjRecord>();
+            var result = dbOne.TbOneSrdetailRecords.Where(x => x.CSrid == cSRID).OrderBy(x => x.CEngineerId).ThenByDescending(x => x.CFinishTime).ToList();
+            
+            if (result != null && result.Count > 0)
+            {
+                foreach (var pjRec in result)
+                {
+                    PjRecord prBean = new PjRecord();
+
+                    prBean.Pr = pjRec;
+
+                    if (pjRec.CEngineerId == ERPID || isManager)
+                    {
+                        prBean.IsCrUser = true;
+                    }
+                    else
+                    {
+                        prBean.IsCrUser = false;
+                    }
+
+                    liPjRec.Add(prBean);
+                }
+            }
+
+            return Json(liPjRec);
+        }        
+        #endregion
+
+        #region 取得處理與工時紀錄明細的服務報告書
+        /// <summary>
+        /// 取得處理與工時紀錄明細的服務報告書
+        /// </summary>
+        /// <param name="cSRID">SRID</param>
+        /// <param name="prId">項次ID</param>
+        /// <returns></returns>
+        public IActionResult getpjRecordReport(string cSRID, int? prId)
+        {
+            List<TbOneSrdetailRecord> qPjRec = new List<TbOneSrdetailRecord>();
+
+            if (prId != null)
+            {
+                qPjRec = dbOne.TbOneSrdetailRecords.Where(x => x.CSrid == cSRID && x.CId == prId).ToList();
+            }
+            else
+            {
+                qPjRec = dbOne.TbOneSrdetailRecords.Where(x => x.CSrid == cSRID).ToList();
+            }
+
+            List<PjRecordReport> liPjRecReport = new List<PjRecordReport>();
+
+            if (qPjRec != null && qPjRec.Count() > 0)
+            {
+                foreach (var prBean in qPjRec)
+                {
+                    if (!string.IsNullOrEmpty(prBean.CSrreport))
+                    {
+                        string[] arrReportId = prBean.CSrreport.Split(','); //每筆SRID的附件(一筆工時紀錄可能有多個附件)
+                        foreach (var ReportId in arrReportId)
+                        {
+                            var qReport = dbOne.TbOneDocuments.FirstOrDefault(x => x.Id.ToString().ToUpper() == ReportId.ToUpper());
+                            if (qReport != null)
+                            {
+                                PjRecordReport prReportBean = new PjRecordReport();
+                                prReportBean.Id = qReport.Id.ToString().ToUpper();
+                                prReportBean.OrgName = qReport.FileOrgName;                                
+                                prReportBean.Ext = qReport.FileExt;                                
+                                prReportBean.GuidName = qReport.FileName;
+                                prReportBean.InsertTime = qReport.InsertTime;
+                                prReportBean.SRID = cSRID;
+                                prReportBean.PjRecordId = prBean.CId.ToString();                                
+                                prReportBean.CrName = prBean.CreatedUserName;                                
+
+                                liPjRecReport.Add(prReportBean);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return Json(liPjRecReport);            
+        }
+        #endregion
+
         #region 取得系統參數清單
         /// <summary>
         /// 取得系統參數清單
@@ -802,7 +898,7 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="keyword">第一階(大類)代碼</param>
         /// <returns></returns>
-        public ActionResult findSRTypeSecList(string keyword)
+        public IActionResult findSRTypeSecList(string keyword)
         {
             var tList = new List<SelectListItem>();
 
@@ -819,7 +915,7 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="keyword">第二階(中類)代碼</param>
         /// <returns></returns>
-        public ActionResult findSRTypeThrList(string keyword)
+        public IActionResult findSRTypeThrList(string keyword)
         {
             var tList = new List<SelectListItem>();
 
@@ -837,7 +933,7 @@ namespace OneService.Controllers
         /// <param name="cAssEngineerID">目前的服務團隊ERPID(;號隔開)</param>
         /// <param name="cAssEngineerAcc">欲修改的服務團隊ERPID</param>
         /// <returns></returns>
-        public ActionResult SavepjTeam(string cTeamID, string cTeamAcc)
+        public IActionResult SavepjTeam(string cTeamID, string cTeamAcc)
         {
             getLoginAccount();
 
@@ -900,7 +996,7 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="cTeamID">服務團隊ERPID(;號隔開)</param>
         /// <returns></returns>
-        public ActionResult GetpjTeam(string cTeamID)
+        public IActionResult GetpjTeam(string cTeamID)
         {
             List<SRTeamInfo> liSRTeamInfo = new List<SRTeamInfo>();
 
@@ -937,7 +1033,7 @@ namespace OneService.Controllers
         /// <param name="cTeamID">目前的服務團隊ERPID(;號隔開)</param>
         /// <param name="cTeamAcc">欲刪除的服務團隊ERPID</param>
         /// <returns></returns>
-        public ActionResult DeletepjTeam(string cTeamID, string cTeamAcc)
+        public IActionResult DeletepjTeam(string cTeamID, string cTeamAcc)
         {
             getLoginAccount();
 
@@ -1003,7 +1099,7 @@ namespace OneService.Controllers
         /// <param name="cAssEngineerID">目前的協助工程師ERPID(;號隔開)</param>
         /// <param name="cAssEngineerAcc">欲修改的協助工程師ERPID</param>
         /// <returns></returns>
-        public ActionResult SavepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
+        public IActionResult SavepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
         {
             getLoginAccount();
 
@@ -1066,7 +1162,7 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="cAssEngineerID">協助工程師ERPID(;號隔開)</param>
         /// <returns></returns>
-        public ActionResult GetpjAssEngineer(string cAssEngineerID)
+        public IActionResult GetpjAssEngineer(string cAssEngineerID)
         {            
             List<AssEngineerInfo> liAssEngineerInfo = new List<AssEngineerInfo>();
 
@@ -1112,7 +1208,7 @@ namespace OneService.Controllers
         /// <param name="cAssEngineerID">目前的協助工程師ERPID(;號隔開)</param>
         /// <param name="cAssEngineerAcc">欲刪除的協助工程師ERPID</param>
         /// <returns></returns>
-        public ActionResult DeletepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
+        public IActionResult DeletepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
         {
             getLoginAccount();
 
@@ -1500,7 +1596,7 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="ProdID">物料編號</param>        
         /// <returns></returns>
-        public ActionResult SpareBOM(string ProdID)
+        public IActionResult SpareBOM(string ProdID)
         {
             string reValue = string.Empty;
 
@@ -1523,7 +1619,7 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="keyword">關鍵字</param>        
         /// <returns></returns>
-        public ActionResult findMaterial(string keyword)
+        public IActionResult findMaterial(string keyword)
         {
             Object contentObj = CMF.findMaterialByKeyWords(keyword);
 
@@ -1665,6 +1761,7 @@ namespace OneService.Controllers
         #endregion
 
         #region 服務團隊資訊
+        /// <summary>服務團隊資訊</summary>
         public class SRTeamInfo
         {
             public int ID { get; private set; }
@@ -1685,6 +1782,7 @@ namespace OneService.Controllers
         #endregion
 
         #region 協助工程師資訊
+        /// <summary>協助工程師資訊</summary>
         public class AssEngineerInfo
         {
             public int ID { get; private set; }
@@ -1707,6 +1805,42 @@ namespace OneService.Controllers
                 DeptId = deptId;
                 DeptName = deptName;
             }
+        }
+        #endregion
+
+        #region 處理與工時紀錄資訊
+        /// <summary>處理與工時紀錄資訊</summary>
+        public class PjRecord
+        {
+            /// <summary>工時紀錄檔</summary>
+            public TbOneSrdetailRecord Pr { get; set; }
+            /// <summary>是否可以編輯</summary>
+            public bool IsCrUser { get; set; }
+        }
+        #endregion
+
+        #region 服務報告書內容(檔案)
+        /// <summary>服務報告書內容(檔案)</summary>
+        public struct PjRecordReport
+        {
+            /// <summary>附件ID(GUID)</summary>
+            public string Id { get; set; }
+            /// <summary>原始檔名</summary>
+            public string OrgName { get; set; }
+            /// <summary>GUID檔名</summary>
+            public string GuidName { get; set; }
+            /// <summary>副檔名</summary>
+            public string Ext { get; set; }
+            /// <summary>Url連結</summary>
+            public string Url { get; set; }
+            /// <summary>上傳時間</summary>
+            public string InsertTime { get; set; }
+            /// <summary>SRID</summary>
+            public string SRID { get; set; }
+            /// <summary>工時紀錄檔系統ID</summary>
+            public string PjRecordId { get; set; }
+            /// <summary>建立人姓名</summary>
+            public string CrName { get; set; }            
         }
         #endregion
 

@@ -11,7 +11,7 @@
 	<link href="~/css/animate.css" rel="stylesheet">
 	<link href="~/css/style.css" rel="stylesheet">
 
-	<link href="~/css/plugins/datapicker/datepicker3.css" rel="stylesheet">
+	<link href="~/css/plugins/datapicker/datepicker3.css" rel="stylesheet">	
 
 	<link href="~/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
 
@@ -20,7 +20,6 @@
 
 	<link href="~/js/jquery-ui-1.12.1.custom/jquery-ui.css" rel="stylesheet">
 	<link href="~/js/jquery-ui-1.12.1.custom/jquery-ui.theme.css" rel="stylesheet">
-
 </head>
 <body>
 
@@ -300,6 +299,11 @@
 	<!-- iCheck -->
 	<script src="~/js/plugins/iCheck/icheck.min.js"></script>
 	<script src="~/js/common-function.js?2022113003"></script>
+
+	<!--datetimepicker設定參考網址 https://www.bootcss.com/p/bootstrap-datetimepicker/-->
+    <script type="text/javascript" src="~/js/plugins/datetimepicker/bootstrap-datetimepicker.js"></script>
+    <link rel="Stylesheet" href="~/css/plugins/datetimepicker/bootstrap-datetimepicker.css" />
+
 	<script>
 		$(document).ready(function () {
 			$('.i-checks').iCheck({
@@ -315,6 +319,7 @@
 				autoclose: true,
 				format: "yyyy-mm-dd"
 			});
+			
 
 			$('#table1').DataTable({
 				language: {
