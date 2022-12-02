@@ -42,6 +42,7 @@ namespace OneService.Controllers
 
                 HttpContext.Session.SetString(SessionKey.LOGIN_STATUS, "true");
                 HttpContext.Session.SetString(SessionKey.USER_ACCOUNT, @"etatung\" + formCollection["account"]);
+                HttpContext.Session.SetString(SessionKey.USER_ERP_ID, empBean.ErpId);
                 HttpContext.Session.SetString(SessionKey.USER_NAME, empBean.EmpName);
                 HttpContext.Session.SetString(SessionKey.DEPT_ID, empBean.DeptId);
                 HttpContext.Session.SetString(SessionKey.DEPT_NAME, empBean.DeptName);

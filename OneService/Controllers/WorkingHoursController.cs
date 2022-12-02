@@ -45,6 +45,10 @@ namespace OneService.Controllers
 
             System.Diagnostics.Debug.WriteLine(data["ET_REQUEST"]["SyncRoot"][0]["cNAMEField"]);
 
+            ViewBag.deptName = HttpContext.Session.GetString(SessionKey.DEPT_NAME);
+            ViewBag.userName = HttpContext.Session.GetString(SessionKey.USER_NAME);
+            ViewBag.userErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
+
             return View();
         }
 
@@ -59,6 +63,8 @@ namespace OneService.Controllers
         {
             ViewBag.now = string.Format("{0:yyyy-MM-dd}", DateTime.Now);
             ViewBag.deptName = HttpContext.Session.GetString(SessionKey.DEPT_NAME);
+            ViewBag.userName = HttpContext.Session.GetString(SessionKey.USER_NAME);
+            ViewBag.userErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
 
             var beans = psipDB.TbWorkingHoursMains.Where(x => x.Disabled != 1).OrderByDescending(x => x.Id);
 

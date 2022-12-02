@@ -5,6 +5,7 @@ namespace OneService.Models
 {
     public partial class ViewWorkingHour
     {
+        public int Id { get; set; }
         public string? SrId { get; set; }
         public string? WhDescript { get; set; }
         public string? Whtype { get; set; }

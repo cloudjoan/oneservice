@@ -69,6 +69,12 @@
 			});
 		}
 
+		function clear(){
+			$.each($(":text"), function (i, obj) {
+				$(obj).val('');
+			});
+		}
+
 	</script>
 }
 
@@ -104,27 +110,29 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">同仁姓名： </label>
 							<div class="col-lg-3">
-								<input type="text" id="tbx_EmpName" name="tbx_EmpName" class="form-control" placeholder="姓名" required>
-								<input type="hidden" id="hie_ErpId" name="hie_ErpId">
+								<input type="text" id="tbx_EmpName" name="tbx_EmpName" class="form-control" placeholder="姓名" value="@ViewBag.userName" required>
+								<input type="hidden" id="hie_ErpId" name="hie_ErpId" value="@ViewBag.userErpId">
 							</div>
-							<label id="lb_DeptName" class="col-lg-6 col-form-label"></label>
+							<label id="lb_DeptName" class="col-lg-6 col-form-label">@ViewBag.deptName</label>
 						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">工時類型：</label>
 							<div class="col-lg-3">
-								<select class="form-control">
+								<select class="form-control" id="ddl_WHType" name="ddl_WHType">
+									<option value="ALL">全部</option>
 									<option value="A">A.客戶服務</option>
 									<option value="B">B.專案導入</option>
 									<option value="C">C.內部作業</option>
+									<option value="D">D.專業服務</option>
 								</select>
 							</div>
 							<label class="col-lg-2 col-form-label">時間起訖：</label>
 							<div class="input-group m-b col-lg-5">
-								<input type="text" class="form-control calendar" placeholder="開始日期">
+								<input type="text" id="tbx_StartDate" name="tbx_StartDate" class="form-control calendar" placeholder="開始日期">
 								<div class="input-group-append">
 									<span class="input-group-addon"> ~ </span>
 								</div>
-								<input type="text" class="form-control calendar" placeholder="結束日期">
+								<input type="text" id="tbx_EndDate" name="tbx_EndDate" class="form-control calendar" placeholder="結束日期">
 							</div>
 						</div>
 						<!-- 檔案上傳start-->
@@ -142,7 +150,7 @@
 						<!-- 檔案上傳end-->
 						<div class="hr-line-dashed"></div>
 						<button class="btn btn-primary btn-lg" type="button" onclick="SearchSRLabor()"><i class="fa fa-search"></i> 查 詢 </button>
-						<button class="btn btn-default btn-lg" type="button" onclick="searchCust()"><i class="fa fa-eraser"></i> 清 除 </button>
+						<button class="btn btn-default btn-lg" type="button" onclick="clear()"><i class="fa fa-eraser"></i> 清 除 </button>
 					</form>
 				</div>
 			</div>

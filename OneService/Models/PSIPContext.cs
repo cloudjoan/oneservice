@@ -475,6 +475,8 @@ namespace OneService.Models
 
                 entity.Property(e => e.FinishTime).HasMaxLength(22);
 
+                entity.Property(e => e.Id).HasColumnName("ID");
+
                 entity.Property(e => e.SourceFrom)
                     .HasMaxLength(11)
                     .IsUnicode(false);
