@@ -16,6 +16,7 @@ namespace OneService.Models
         public decimal? CWorkHours { get; set; }
         public string? CDesc { get; set; }
         public string? CSrreport { get; set; }
+        public int? Disabled { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }
         public DateTime? ModifiedDate { get; set; }

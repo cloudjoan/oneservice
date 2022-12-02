@@ -817,7 +817,7 @@ namespace OneService.Controllers
         /// <returns></returns>
         public string checkSRIDIsChang(string cSRID, string tGUID)
         {
-            string reValue = cSRID;
+            string reValue = cSRID;            
 
             var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == cSRID);
 

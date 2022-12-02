@@ -72,7 +72,7 @@ namespace OneService.Controllers
         /// </summary>
         static string pCompanyCode = string.Empty;
 
-        static CommonFunction CMF = new CommonFunction();
+        CommonFunction CMF = new CommonFunction();
 
         PSIPContext psipDb = new PSIPContext();
         TSTIONEContext dbOne = new TSTIONEContext();
@@ -192,12 +192,12 @@ namespace OneService.Controllers
                 ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
 
                 #region 取得產品序號資訊(明細)
-                var beansProduct = dbOne.TbOneSrdetailProducts.OrderBy(x => x.CSerialId).Where(x => x.CSrid == pSRID);
+                var beansProduct = dbOne.TbOneSrdetailProducts.OrderBy(x => x.CSerialId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
                 ViewBag.Detailbean_Product = beansProduct;
                 #endregion
 
                 #region 取得零件更換資訊(明細)
-                var beansParts = dbOne.TbOneSrdetailPartsReplaces.OrderBy(x => x.CMaterialId).Where(x => x.CSrid == pSRID);
+                var beansParts = dbOne.TbOneSrdetailPartsReplaces.OrderBy(x => x.CMaterialId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
                 ViewBag.Detailbean_Parts = beansParts;
                 #endregion
             }
@@ -283,7 +283,7 @@ namespace OneService.Controllers
 
                     //主表資料
                     beanM.CSrid = pSRID;
-                    beanM.CStatus = CStatus;
+                    beanM.CStatus = "E0005";    //新增時先預設為L3.處理中
                     beanM.CCustomerName = CCustomerName;
                     beanM.CCustomerId = CCustomerId;
                     beanM.CRepairName = CRepairName;
@@ -334,6 +334,7 @@ namespace OneService.Controllers
                         beanD.CMaterialName = PRcMaterialName[i];
                         beanD.CProductNumber = PRcProductNumber[i];
                         beanD.CInstallId = PRcInstallID[i];
+                        beanD.Disabled = 0;
 
                         beanD.CreatedDate = DateTime.Now;
                         beanD.CreatedUserName = LoginUser_Name;
@@ -364,8 +365,17 @@ namespace OneService.Controllers
                         beanD.CSerialId = WAcSerialID[i];
                         beanD.CWtyid = WAcWTYID[i];
                         beanD.CWtyname = WAcWTYName[i];
-                        beanD.CWtysdate = Convert.ToDateTime(WAcWTYSDATE[i]);
-                        beanD.CWtyedate = Convert.ToDateTime(WAcWTYEDATE[i]);
+
+                        if (WAcWTYSDATE[i] != "")
+                        {
+                            beanD.CWtysdate = Convert.ToDateTime(WAcWTYSDATE[i]);
+                        }
+
+                        if (WAcWTYEDATE[i] != "")
+                        {
+                            beanD.CWtyedate = Convert.ToDateTime(WAcWTYEDATE[i]);
+                        }
+
                         beanD.CSlaresp = WAcSLARESP[i];
                         beanD.CSlasrv = WAcSLASRV[i];
                         beanD.CContractId = WAcContractID[i];
@@ -442,7 +452,7 @@ namespace OneService.Controllers
                     #region -----↓↓↓↓↓產品序號資訊↓↓↓↓↓-----
 
                     #region 刪除明細                    
-                    dbOne.TbOneSrdetailProducts.RemoveRange(dbOne.TbOneSrdetailProducts.Where(x => x.CSrid == pSRID));
+                    dbOne.TbOneSrdetailProducts.RemoveRange(dbOne.TbOneSrdetailProducts.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
                     #endregion
 
                     #region 新增明細
@@ -451,6 +461,7 @@ namespace OneService.Controllers
                     string[] PRcMaterialName = formCollection["tbx_PRcMaterialName"];
                     string[] PRcProductNumber = formCollection["tbx_PRcProductNumber"];
                     string[] PRcInstallID = formCollection["tbx_PRcInstallID"];
+                    string[] PRcDisabled = formCollection["hid_PRcDisabled"];
 
                     int countPR = PRcSerialID.Length;
 
@@ -464,6 +475,7 @@ namespace OneService.Controllers
                         beanD.CMaterialName = PRcMaterialName[i];
                         beanD.CProductNumber = PRcProductNumber[i];
                         beanD.CInstallId = PRcInstallID[i];
+                        beanD.Disabled = int.Parse(PRcDisabled[i]);
 
                         beanD.CreatedDate = DateTime.Now;
                         beanD.CreatedUserName = LoginUser_Name;
@@ -502,8 +514,17 @@ namespace OneService.Controllers
                         beanD.CSerialId = WAcSerialID[i];
                         beanD.CWtyid = WAcWTYID[i];
                         beanD.CWtyname = WAcWTYName[i];
-                        beanD.CWtysdate = Convert.ToDateTime(WAcWTYSDATE[i]);
-                        beanD.CWtyedate = Convert.ToDateTime(WAcWTYEDATE[i]);
+
+                        if (WAcWTYSDATE[i] != "")
+                        {
+                            beanD.CWtysdate = Convert.ToDateTime(WAcWTYSDATE[i]);
+                        }
+
+                        if (WAcWTYEDATE[i] != "")
+                        {
+                            beanD.CWtyedate = Convert.ToDateTime(WAcWTYEDATE[i]);
+                        }
+
                         beanD.CSlaresp = WAcSLARESP[i];
                         beanD.CSlasrv = WAcSLASRV[i];
                         beanD.CContractId = WAcContractID[i];
@@ -522,7 +543,7 @@ namespace OneService.Controllers
                     #region -----↓↓↓↓↓零件更換資訊↓↓↓↓↓-----
 
                     #region 刪除明細                   
-                    dbOne.TbOneSrdetailPartsReplaces.RemoveRange(dbOne.TbOneSrdetailPartsReplaces.Where(x => x.CSrid == pSRID));
+                    dbOne.TbOneSrdetailPartsReplaces.RemoveRange(dbOne.TbOneSrdetailPartsReplaces.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
                     #endregion
 
                     #region 新增明細
@@ -538,7 +559,8 @@ namespace OneService.Controllers
                     string[] PAcArriveDate = formCollection["tbx_PAcArriveDate"];
                     string[] PAcReturnDate = formCollection["tbx_PAcReturnDate"];
                     string[] PAcMaterialItem = formCollection["tbx_PAcMaterialItem"];
-                    string[] PAcNote = formCollection["tbx_PAcNote"];                    
+                    string[] PAcNote = formCollection["tbx_PAcNote"];
+                    string[] PAcDisabled = formCollection["hid_PAcDisabled"];
 
                     int countPA = PAcMaterialID.Length;
 
@@ -556,10 +578,20 @@ namespace OneService.Controllers
                         beanD.CNewUefi = PAcNewUEFI[i];
                         beanD.CStandbySerialId = PAcStandbySerialID[i];
                         beanD.CHpcaseId = PAcHPCaseID[i];
-                        beanD.CArriveDate = Convert.ToDateTime(PAcArriveDate[i]);
-                        beanD.CReturnDate = Convert.ToDateTime(PAcReturnDate[i]);
+
+                        if (PAcArriveDate[i] != "")
+                        {
+                            beanD.CArriveDate = Convert.ToDateTime(PAcArriveDate[i]);
+                        }
+
+                        if (PAcReturnDate[i] != "")
+                        {
+                            beanD.CReturnDate = Convert.ToDateTime(PAcReturnDate[i]);
+                        }
+
                         beanD.CMaterialItem = PAcMaterialItem[i];
                         beanD.CNote = PAcNote[i];
+                        beanD.Disabled = int.Parse(PAcDisabled[i]);
 
                         beanD.CreatedDate = DateTime.Now;
                         beanD.CreatedUserName = LoginUser_Name;
@@ -886,6 +918,8 @@ namespace OneService.Controllers
         /// <returns></returns>
         static public List<SelectListItem> findSysParameterList(string cOperationID, string cFunctionID, string cCompanyID, string cNo, bool cEmptyOption)
         {
+            CommonFunction CMF = new CommonFunction();
+
             var tList = CMF.findSysParameterListItem(cOperationID, cFunctionID, cCompanyID, cNo, cEmptyOption);
 
             return tList;

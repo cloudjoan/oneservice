@@ -12,6 +12,7 @@ namespace OneService.Models
         public string? CMaterialName { get; set; }
         public string? CProductNumber { get; set; }
         public string? CInstallId { get; set; }
+        public int? Disabled { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }
         public DateTime? ModifiedDate { get; set; }

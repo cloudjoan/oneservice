@@ -20,6 +20,7 @@ namespace OneService.Models
         public DateTime? CReturnDate { get; set; }
         public string? CMaterialItem { get; set; }
         public string? CNote { get; set; }
+        public int? Disabled { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }
         public DateTime? ModifiedDate { get; set; }

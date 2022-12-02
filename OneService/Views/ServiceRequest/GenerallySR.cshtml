@@ -23,12 +23,15 @@
 <!--Java Script寫在js_section裡面-->
 @section js_section{
 	<script>
-		var trProductNoCount = 0;		//記錄目前明細列(產品序號資訊檔)的ID數
-		var trWarrantyNoCount = 0;		//記錄目前明細列(保固SLA檔)的ID數
-		var trPartsNoCount = 0;		//記錄目前明細列(零件更換檔)的ID數
+		var trProductNoCount = 0;				//記錄目前明細列(產品序號資訊檔)的ID數
+		var trWarrantyNoCount = 0;				//記錄目前明細列(保固SLA檔)的ID數
+		var trPartsNoCount = 0;				//記錄目前明細列(零件更換檔)的ID數
+		var AryPNowPrSERIAL = new Array();		//記錄目前產品的序號
+		var AryPNowWASERIAL = new Array();		//記錄目前保固的序號
 
 		$(document).ready(function () {
-			openPostAddress();			
+			initPage();					//初始頁面			
+			openPostAddress();			//開啟郵遞區號和地址查詢視窗
 			CustSearch();				//取得客戶資料	
 			SerialSearch();				//產品序號資訊查詢
 			findMaterialByKeyword();	//用關鍵字查詢物料
@@ -38,22 +41,10 @@
 			getpjAssEngineer();			//取得協助工程師	
 			getSRDetail_Warranty();		//取得保固SLA明細Table(非新建或駁回狀態)			
 			getpjRecord();				//Ajax取得處理與工時紀錄
-			initdatetimepicker();
-
-			//顯示協助工程師設定popup
-            $('#btn_pjAssEngineer').click(function () {
-                $('#dialog_pjAssEngineer').modal('show');
-            })
-
-			//顯示服務團隊設定popup
-            $('#btn_pjTeam').click(function () {
-                $('#dialog_pjTeam').modal('show');
-            })
-
-			
 		});		
 
-		function initdatetimepicker()
+		//初始頁面
+		function initPage()
 		{
 			 $('.calendarTime').datetimepicker({
 				locale: 'zh-tw',		  //使用繁體中文界面
@@ -68,6 +59,24 @@
                 todayBtn: "linked", //如果此值為true或"linked"，則在日期時間選擇器組件的底部顯示一個today按鈕用以選擇當前日期。如果是true，today按鈕僅僅將視圖轉到當天的日期，如果是linked，當天日期將會被選中。
                 todayHighlight: true, //如果為true，閃亮當前日期。
             });
+
+			//顯示協助工程師設定popup
+            $('#btn_pjAssEngineer').click(function () {
+                $('#dialog_pjAssEngineer').modal('show');
+            })
+
+			//顯示服務團隊設定popup
+            $('#btn_pjTeam').click(function () {
+                $('#dialog_pjTeam').modal('show');
+            })
+
+			var cSRID = $("input[name='hid_cSRID']").val();
+			var ddl_cStatus = $("#ddl_cStatus");
+
+			if (cSRID == "") //若沒有SRID，則不准許調整【狀態】
+			{			
+				ddl_cStatus.prop('disabled', true);
+			}
 		}
 
 		function hidePopupInit() {
@@ -266,6 +275,9 @@
 			//【零件更換資訊】明細檢查
 			Msg += checkDetail_PA();
 
+			//提交前【保固SLA資訊】的序號，是否都有含在【產品序號資訊】
+			Msg += checkDetail_WA();
+
 			if (Msg != "") {
 				alert(Msg);
 				
@@ -289,11 +301,14 @@
 			var tableName = "tablePR";
 			var trs = $("#" + tableName + " tr");
 
+			AryPNowPrSERIAL = new Array();	//初始目前產品的序號
+
 			$.each(trs, function (i, itr) {
 				var tds = $(itr).find('td');
-				var objSerialID = tds.eq(0).children();		//序號
-				var objMaterialID = tds.eq(1).children();		//料號
-				var objMaterialName = tds.eq(2).children();	//料號說明					
+				var objSerialID = tds.eq(0).children().eq(0);		//序號
+				var objDisabled = tds.eq(0).children().eq(1);		//是否停用(0.啟用 1.停用)
+				var objMaterialID = tds.eq(1).children();			//料號
+				var objMaterialName = tds.eq(2).children();		//料號說明					
 
 				if (objSerialID.val() != undefined) {
                     if (objSerialID.val() == "") {
@@ -309,6 +324,10 @@
 							Msg += "明細【產品序號資訊-序號】「" + objSerialID.val() + "」的【料號說明】不得為空！\n";
 						}							
 							
+						if (Msg == "" && objDisabled.val() == "0")
+						{
+							AryPNowPrSERIAL.push(objSerialID.val());
+						}
 					}
                 }				
 			})			
@@ -323,7 +342,7 @@
             var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
 
 			var tableName = "tablePA";
-			var trs = $("#" + tableName + " tr");
+			var trs = $("#" + tableName + " tr");			
 
 			$.each(trs, function (i, itr) {
 				var tds = $(itr).find('td');				
@@ -348,6 +367,79 @@
 			})			
 
 			return Msg;
+		}
+
+		//提交前【保固SLA資訊】的序號，是否都有含在【產品序號資訊】
+		function checkDetail_WA() {
+			var Msg = "";
+			var cStatus = $("#ddl_cStatus").val();			
+            var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
+
+			var tableName = "tableADDWA";
+			var trs = $("#" + tableName + " tr");
+
+			var AryTemp = new Array();			
+
+			$.each(trs, function (i, itr) {
+				var tds = $(itr).find('td');				
+				var objSerialID = tds.eq(0).children();	//序號				
+
+				if (objSerialID.val() != undefined) {
+                    AryTemp.push(objSerialID.val());					
+                }					
+			})
+
+			AryPNowWASERIAL = MergeArrayString(AryTemp);	//合併Array字串並去除重覆，再回傳Array
+			
+			var WALen = AryPNowWASERIAL.length;
+			var PrLen = AryPNowPrSERIAL.length;			
+			var tCount = 0 ;
+
+			//比對序號
+			 for(var i = 0; i < WALen; i++) 
+			 {
+				var tIsMatch = false;
+
+				for(var j = 0; j < PrLen; j++) 
+				{
+					if (AryPNowWASERIAL[i] == AryPNowPrSERIAL[j]) {
+						tIsMatch = true;
+						tCount++;
+						break;
+					}
+				}
+			 }			
+
+			if (WALen != tCount)
+			{
+				Msg += "明細【保固SLA資訊】【產品序號資訊】對應的序號不批配，請重新按下【查詢保固SLA】按鈕！\n";
+			}			
+
+			return Msg;
+		}
+
+		//合併Array字串並去除重覆，再回傳Array
+		function MergeArrayString(strArr)
+		{			
+			strArr.sort();				//排序
+
+			var result = new Array();		//建立出一個結果陣列
+		    var tempStr = "";
+
+			for(var i in strArr)
+			{
+				 if(strArr[i] != tempStr)
+				{
+					result.push(strArr[i]);
+					tempStr=strArr[i];
+				}
+				else
+				{
+					continue;
+				}
+			}
+
+			return result;
 		}
 
 		//檢查日期區間(true.ok false.不ok)
@@ -1330,7 +1422,8 @@
 
 		//組序號
 		function SetSerialID() {
-			var reValue = "<td><input type='text' name='tbx_PRcSerialID' id='tbx_PRcSerialID" + trProductNoCount + "' class='form-control Serial' style='width:200px;' placeholder='請輸入序號關鍵字查詢'></td>";
+			var reValue = "<td><input type='text' name='tbx_PRcSerialID' id='tbx_PRcSerialID" + trProductNoCount + "' class='form-control Serial' style='width:200px;' placeholder='請輸入序號關鍵字查詢'>";			    
+				reValue += "<input type='hidden' name='hid_PRcDisabled' id='hid_PRcDisabled" + trProductNoCount + "' value='0'></td>";
 			return reValue;
 		}		
 
@@ -1368,13 +1461,15 @@
 		function SetPRDelButton()
 		{
 			var tTrID = $("input[name='hid_trProductNo']").val();
-			var reValue = "<td><button class='btn btn-danger' type='button' onclick=DelDetailItem_Product('tr" + tTrID + "');><i class='fa fa-trash'></i></button><input type='hidden' id='hid_PRcID" + trProductNoCount + "'></td>";
+			var reValue = "<td><button class='btn btn-danger' type='button' onclick=DelDetailItem_Product('tr" + tTrID + "','" + trProductNoCount + "');><i class='fa fa-trash'></i></button></td>";
 			return reValue;
 		}		
 
 		//刪除明細(For借料狀態)
-		function DelDetailItem_Product(rowId) {
-			$('#' + rowId).remove();
+		function DelDetailItem_Product(rowId, tNo) {
+			//$('#' + rowId).remove();
+			$('#' + rowId).hide();
+			$('#hid_PRcDisabled' + tNo).val("1");
 		}
 		//-----↑↑↑↑↑產品序號資訊檔 ↑↑↑↑↑-----
 
@@ -1450,10 +1545,14 @@
 				var tds = $(itr).find('td');
 				var pQuantity = 0;
 				var pAtoBQuantity = 0;
-				var objSerial = tds.eq(0).children();	//序號					
+				var objSerial = tds.eq(0).children().eq(0);	//序號					
+				var objDisabled = tds.eq(0).children().eq(1);	//是否停用(0.啟用 1.停用)
 
 				if (objSerial.val() != undefined) {
-					ArySERIAL.push(objSerial.val());
+					if (objDisabled.val() == "0")
+					{
+						ArySERIAL.push(objSerial.val());
+					}
 				}			
 			})
 			
@@ -1972,7 +2071,8 @@
 
 		//組XC HP申請零件
 		function SetXCHP() {
-			var reValue = "<td><input type='text' name='tbx_PAcXCHP' id='tbx_PAcXCHP" + trPartsNoCount + "' class='form-control' style='width:150px;' placeholder='XC HP申請零件'></td>";
+			var reValue = "<td><input type='text' name='tbx_PAcXCHP' id='tbx_PAcXCHP" + trPartsNoCount + "' class='form-control' style='width:150px;' placeholder='XC HP申請零件'>";
+			    reValue += "<input type='hidden' name='hid_PAcDisabled' id='hid_PAcDisabled" + trPartsNoCount + "' value='0'></td>";
 			return reValue;
 		}	
 		
@@ -2051,13 +2151,15 @@
 		//組刪除按鈕
 		function SetPADelButton() {
 			var tTrID = $("input[name='hid_trPartsNo']").val();
-			var reValue = "<td><button class='btn btn-danger' type='button' onclick=DelDetailItem_Parts('tr" + tTrID + "');><i class='fa fa-trash'></i></button><input type='hidden' id='hid_PAcID" + trPartsNoCount + "'></td>";
+			var reValue = "<td><button class='btn btn-danger' type='button' onclick=DelDetailItem_Parts('tr" + tTrID + "','" + trPartsNoCount + "');><i class='fa fa-trash'></i></td>";
 			return reValue;
 		}		
 
 		//刪除明細(For借料狀態)
-		function DelDetailItem_Parts(rowId) {
-			$('#' + rowId).remove();
+		function DelDetailItem_Parts(rowId, tNo) {
+			//$('#' + rowId).remove();
+			$('#' + rowId).hide();
+			$('#hid_PAcDisabled' + tNo).val("1");
 		}
 		//-----↑↑↑↑↑零件更換檔 ↑↑↑↑↑-----
 		
@@ -2138,7 +2240,7 @@
 							<input type="hidden" id="hid_OperationID" name="hid_OperationID" value="@ViewBag.pOperationID">
 							<label class="col-lg-2 col-form-label">狀態</label>
 							<div class="col-lg-4">
-								<select asp-for="ddl_cStatus" asp-items="Model.ListStatus" class="form-control"></select>
+								<select asp-for="ddl_cStatus" asp-items="Model.ListStatus" class="form-control Status"></select>
 							</div>
 						</div>						
 						<div class="form-group row">
@@ -2346,8 +2448,8 @@
 																count++;
 																<tr id='trProductNo@(count)'>																	
 																	<td>
-																		<input type='text' name='tbx_PRcSerialID' @("id=tbx_PRcSerialID" + count) class='form-control' style='width:200px;' placeholder='序號' value="@bean.CSerialId" title="@bean.CSerialId">
-																		<input type='hidden' name='hid_PRcID' @("id=hid_PRcID" + count) value=@bean.CId>																		
+																		<input type='text' name='tbx_PRcSerialID' @("id=tbx_PRcSerialID" + count) class='form-control' style='width:200px;' placeholder='序號' value="@bean.CSerialId" title="@bean.CSerialId">																		
+																		<input type='hidden' name='hid_PRcDisabled' @("id=hid_PRcDisabled" + count) value=@bean.Disabled>
 																	</td>																	
 																	<td>
 																		<input type='text' name='tbx_PRcMaterialID' @("id=tbx_PRcMaterialID" + count) class='form-control material' style='width:200px;' placeholder='料號' value="@bean.CMaterialId" title="@bean.CMaterialId">
@@ -2365,7 +2467,7 @@
 																		<input type='text' name='tbx_PRcInstallID' @("id=tbx_PRcInstallID" + count) class='form-control' style='width:150px;' value="@bean.CInstallId" title="@bean.CInstallId" )>
 																	</td>
 																	<td>
-																		<button class='btn btn-danger' type='button' onclick="DelDetailItem_Product('trProductNo@(count)')" ;><i class='fa fa-trash'></i></button>
+																		<button class='btn btn-danger' type='button' onclick="DelDetailItem_Product('trProductNo@(count)', '@(count)')" ;><i class='fa fa-trash'></i></button>																		
 																	</td>																							
 																</tr>
 															}
@@ -2600,7 +2702,7 @@
 																<tr id='trPartsNo@(count)'>																	
 																	<td>
 																		<input type='text' name='tbx_PAcXCHP' @("id=tbx_PAcXCHP" + count) class='form-control' style='width:150px;' placeholder='XC HP申請零件' value="@bean.CXchp" title="@bean.CXchp">
-																		<input type='hidden' name='hid_PRcID' @("id=hid_PAcID" + count) value=@bean.CId>																		
+																		<input type='hidden' name='hid_PAcDisabled' @("id=hid_PAcDisabled" + count) value=@bean.Disabled>																		
 																	</td>																	
 																	<td>
 																		<input type='text' name='tbx_PAcMaterialID' @("id=tbx_PAcMaterialID" + count) class='form-control material' style='width:200px;' placeholder='更換零件料號ID' value="@bean.CMaterialId" title="@bean.CMaterialId">
@@ -2636,10 +2738,10 @@
 																		<input type='text' name='tbx_PAcMaterialItem' @("id=tbx_PAcMaterialItem" + count) class='form-control' style='width:100px;' placeholder='零件服務項目' value="@bean.CMaterialItem" title="@bean.CMaterialItem">
 																	</td>																	
 																	<td>
-																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="備註" name="tbx_PAcNote" title="@bean.CNote" readonly>@bean.CNote</textarea>
+																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="備註" name="tbx_PAcNote" title="@bean.CNote">@bean.CNote</textarea>
 																	</td>
 																	<td>
-																		<button class='btn btn-danger' type='button' onclick="DelDetailItem_Parts('trPartsNo@(count)')" ;><i class='fa fa-trash'></i></button>
+																		<button class='btn btn-danger' type='button' onclick="DelDetailItem_Parts('trPartsNo@(count)', '@(count)')" ;><i class='fa fa-trash'></i></button>
 																	</td>																							
 																</tr>
 															}
