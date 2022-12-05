@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using OneService.Models;
+using OneService.Utils;
 
 namespace OneService.Controllers
 {
@@ -34,6 +35,23 @@ namespace OneService.Controllers
                     contentObj = bpmDB.TblEmployees.Where(x => (x.CEmployeeAccount.Contains(keyword) || x.CEmployeeCName.Contains(keyword))).Take(5);
                     break;
                 #endregion
+
+                case "findEmployeeByKeywordAndPrivilege":
+
+                    //只能找到自己or下屬的資料
+                    var erpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
+                    //erpId = "10000479";
+                    var deptMgrBean = dbEIP.ViewDeptMgrs.FirstOrDefault(x => x.ErpId == erpId);
+                    if (deptMgrBean != null)
+                    {
+                        var deptCodeList = GetAllChildDept(deptMgrBean.DeptCode);
+                        contentObj = dbEIP.ViewEmpInfoWithoutLeaves.Where(x => deptCodeList.Contains(x.DeptId) && (x.EmpName.Contains(keyword) || x.Account.Contains(keyword))).Take(5);
+                    }
+                    else
+                    {
+                        contentObj = dbEIP.ViewEmpInfoWithoutLeaves.Where(x => x.ErpId == erpId);
+                    }
+                    break;
 
                 //#region -- findEmployeeInfo --
                 //case "findEmployeeInfo":
@@ -151,6 +169,56 @@ namespace OneService.Controllers
             var _oppNo = "0000000000" + oppNo;
             var oppNoFormat = _oppNo.Substring(_oppNo.Length - 10);
             return oppNoFormat;
+        }
+
+        /// <summary>
+        /// 取得所有的子單位代碼清單
+        /// </summary>
+        /// <param name="parentDeptId"></param>
+        /// <returns></returns>
+        public List<string> GetAllChildDept(string parentDeptId)
+        {
+            List<string> deptIds = new List<string>();
+            Dictionary<string, string> parentDict = new Dictionary<string, string>();
+
+            parentDict.Add(parentDeptId, parentDeptId);
+
+            bool noneChildAnyMore = true;
+
+            while (noneChildAnyMore)
+            {
+                if (parentDict.Keys.Count() == 0)
+                {
+                    noneChildAnyMore = false;
+                    break;
+                }
+                else
+                {
+                    var parentIds = new List<string>(parentDict.Keys);
+
+                    foreach (var parentId in parentIds)
+                    {
+
+                        var deptBeans = dbEIP.Departments.Where(x => x.ParentId == parentId);
+
+                        //加入單位id後，就從parentDict移除
+                        deptIds.Add(parentId);
+                        parentDict.Remove(parentId);
+
+                        if (deptBeans.Count() > 0)
+                        {
+                            foreach (var deptBean in deptBeans)
+                            {
+                                parentDict.Add(deptBean.Id, deptBean.Id);
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+            return deptIds;
         }
 
 

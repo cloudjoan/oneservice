@@ -23,8 +23,10 @@ namespace OneService.Models
         public virtual DbSet<TbProMilestone> TbProMilestones { get; set; } = null!;
         public virtual DbSet<TbProPjRecord> TbProPjRecords { get; set; } = null!;
         public virtual DbSet<TbProPjinfo> TbProPjinfos { get; set; } = null!;
+        public virtual DbSet<TbProSupportEmp> TbProSupportEmps { get; set; } = null!;
         public virtual DbSet<TbProTask> TbProTasks { get; set; } = null!;
         public virtual DbSet<TbWorkingHoursMain> TbWorkingHoursMains { get; set; } = null!;
+        public virtual DbSet<ViewProSupportEmp> ViewProSupportEmps { get; set; } = null!;
         public virtual DbSet<ViewWorkingHour> ViewWorkingHours { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -371,6 +373,51 @@ namespace OneService.Models
                 entity.Property(e => e.StateUpdateTime).HasMaxLength(22);
             });
 
+            modelBuilder.Entity<TbProSupportEmp>(entity =>
+            {
+                entity.ToTable("TB_PRO_SUPPORT_EMP");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.CrCompCode).HasMaxLength(10);
+
+                entity.Property(e => e.CrDeptId).HasMaxLength(10);
+
+                entity.Property(e => e.CrDeptName).HasMaxLength(50);
+
+                entity.Property(e => e.CrEmail).HasMaxLength(100);
+
+                entity.Property(e => e.CrErpId).HasMaxLength(8);
+
+                entity.Property(e => e.CrName).HasMaxLength(50);
+
+                entity.Property(e => e.CrmOppNo).HasMaxLength(10);
+
+                entity.Property(e => e.InsertTime).HasMaxLength(22);
+
+                entity.Property(e => e.PartnerId)
+                    .HasMaxLength(10)
+                    .HasColumnName("PARTNER_ID");
+
+                entity.Property(e => e.SupCompCode).HasMaxLength(10);
+
+                entity.Property(e => e.SupDeptId).HasMaxLength(10);
+
+                entity.Property(e => e.SupDeptName).HasMaxLength(50);
+
+                entity.Property(e => e.SupEmail).HasMaxLength(100);
+
+                entity.Property(e => e.SupErpId).HasMaxLength(8);
+
+                entity.Property(e => e.SupExt).HasMaxLength(20);
+
+                entity.Property(e => e.SupMobile).HasMaxLength(20);
+
+                entity.Property(e => e.SupName).HasMaxLength(50);
+
+                entity.Property(e => e.UpdateTime).HasMaxLength(22);
+            });
+
             modelBuilder.Entity<TbProTask>(entity =>
             {
                 entity.ToTable("TB_PRO_TASK");
@@ -463,6 +510,19 @@ namespace OneService.Models
                 entity.Property(e => e.Whtype)
                     .HasMaxLength(10)
                     .HasColumnName("WHType");
+            });
+
+            modelBuilder.Entity<ViewProSupportEmp>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_PRO_SUPPORT_EMP");
+
+                entity.Property(e => e.CrmOppNo).HasMaxLength(10);
+
+                entity.Property(e => e.Description).HasMaxLength(200);
+
+                entity.Property(e => e.SupErpId).HasMaxLength(8);
             });
 
             modelBuilder.Entity<ViewWorkingHour>(entity =>

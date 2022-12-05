@@ -1,5 +1,5 @@
 ﻿#PSIP 
-dotnet ef dbcontext scaffold "Server=172.31.7.66;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -t TB_PRO_PJINFO -t VIEW_WORKING_HOURS -f
+dotnet ef dbcontext scaffold "Server=172.31.7.66;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -t TB_PRO_PJINFO -t TB_PRO_SUPPORT_EMP -t VIEW_WORKING_HOURS -t VIEW_PRO_SUPPORT_EMP -f
 
 #BI TSTI-WD
 dotnet ef dbcontext scaffold "Server=TSTI-DW;Database=BI;User=biread;Password=!QAZ2wsx" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MART_AnalyseServiceRequestLabor -f
@@ -8,7 +8,7 @@ dotnet ef dbcontext scaffold "Server=TSTI-DW;Database=BI;User=biread;Password=!Q
 dotnet ef dbcontext scaffold "Server=TSTI-BPMDB;Database=TAIF;User=bpm;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t tblEmployee -f
 
 #EIPDB
-dotnet ef dbcontext scaffold "Server=TSTI-EIPDB;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -t VIEW_EMP_INFO -t VIEW_EMP_INFO_WITHOUT_LEAVE -f
+dotnet ef dbcontext scaffold "Server=TSTI-EIPDB;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -t VIEW_EMP_INFO -t VIEW_EMP_INFO_WITHOUT_LEAVE -t VIEW_DEPT_MGR -f
 
 #PROXY DB
 dotnet ef dbcontext scaffold "Server=TSTI-SAP-PROXY;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_CRM_OPP_HEAD  -f

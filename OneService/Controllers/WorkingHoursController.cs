@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Signing;
 using OneService.Utils;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace OneService.Controllers
 {
@@ -65,14 +66,15 @@ namespace OneService.Controllers
             ViewBag.deptName = HttpContext.Session.GetString(SessionKey.DEPT_NAME);
             ViewBag.userName = HttpContext.Session.GetString(SessionKey.USER_NAME);
             ViewBag.userErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
+            ViewBag.session = HttpContext.Session;
 
             var beans = psipDB.TbWorkingHoursMains.Where(x => x.Disabled != 1).OrderByDescending(x => x.Id);
-
-            List<TbWorkingHoursMain> list2 = new List<TbWorkingHoursMain>();
-
-
             ViewBag.beans = beans;
 
+            //查詢自己有被assign的商機
+            //var supportCrmBeans = psipDB.ViewProSupportEmps.Where(x => x.SupErpId == "10000542").Select(x => new SelectListItem { Value = x.CrmOppNo,  Text = x.CrmOppNo + "-" + x.Description, Selected = true }).ToList();
+            ViewBag.supportCrmBeans = psipDB.ViewProSupportEmps.Where(x => x.SupErpId == "10000542");
+            
             return View();
         }
 
@@ -85,7 +87,7 @@ namespace OneService.Controllers
                 bean = psipDB.TbWorkingHoursMains.Find(int.Parse(formCollection["Id"]));
                 bean.Whtype = formCollection["ddl_WHType"].ToString();
                 bean.ActType = formCollection["ddl_ActType"].ToString();
-                bean.CrmOppNo = formCollection["tbx_CrmOppNo"].ToString();
+                bean.CrmOppNo = formCollection["ddl_CrmOppNo"].ToString();
                 bean.CrmOppName = formCollection["hid_CrmOppName"].ToString();
                 bean.WhDescript = formCollection["tbx_WhDescript"].ToString();
                 bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();
@@ -106,7 +108,7 @@ namespace OneService.Controllers
                 bean.UserErpId = formCollection["hid_UserErpId"].ToString();
                 bean.Whtype = formCollection["ddl_WHType"].ToString();
                 bean.ActType = formCollection["ddl_ActType"].ToString();
-                bean.CrmOppNo = formCollection["tbx_CrmOppNo"].ToString();
+                bean.CrmOppNo = formCollection["ddl_CrmOppNo"].ToString();
                 bean.CrmOppName = formCollection["hid_CrmOppName"].ToString();
                 bean.WhDescript = formCollection["tbx_WhDescript"].ToString();
                 bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();

@@ -40,8 +40,8 @@
 					$("#Id").val(result.id);
 					$("#ddl_WHType").val(result.whtype);
 					$("#ddl_ActType").val(result.actType);
-					$("#tbx_CrmOppNo").val(result.crmOppNo);
-					$("#lb_CrmOppName").html(result.CrmOppName);
+					$("#ddl_CrmOppNo").val(result.crmOppNo);
+					//$("#lb_CrmOppName").html(result.CrmOppName);
 					$("#hid_CrmOppName").val(result.CrmOppName);
 					$("#tbx_WhDescript").val(result.whDescript);
 					$("#tbx_StartDate").val(result.startTime.split(' ')[0]);
@@ -96,6 +96,10 @@
 					$("#lb_CrmOppName").html(result.OppDescription);
 				}
 			})
+		}
+
+		function setCrmOppName(){
+			$("#hid_CrmOppName").val($("#ddl_CrmOppNo").find(":selected").text());
 		}
 
 		function ActiveBtn(targetId, disabledClassName, obj){
@@ -165,18 +169,18 @@
 							<label class="col-lg-2 col-form-label">工時類型：</label>
 							<div class="col-lg-4">
 								<select class="form-control" id="ddl_WHType" name="ddl_WHType">
-									<option value="A">A.客戶服務</option>
-									<option value="B">B.專案導入</option>
-									<option value="C">C.內部作業</option>
-									<option value="D">D.專業服務</option>
+									@*<option value="A">A.客戶服務</option>*@
+									<option value="B">專案導入</option>
+									<option value="C">內部作業</option>
+									<option value="D">專業服務</option>
 								</select>
 							</div>
 							<label class="col-lg-2 col-form-label">任務活動：</label>
 							<div class="col-lg-4">
 								<select class="form-control" id="ddl_ActType" name="ddl_ActType">
-									<option value="A">維修</option>
+@*									<option value="A">維修</option>
 									<option value="B">定維</option>
-									<option value="C">裝機</option>
+									<option value="C">裝機</option>*@
 									<option value="D">會議</option>
 									<option value="E">需求訪談</option>
 									<option value="F">分析/設計</option>
@@ -191,7 +195,15 @@
 						
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label"> 專案（商機）：</label>
-							<div class="col-lg-2"><input type="text" id="tbx_CrmOppNo" name="tbx_CrmOppNo" class="form-control" placeholder="專案（商機）" onblur="findCrmOppByOppNo()"></div>
+							<div class="col-lg-4">
+								<select id="ddl_CrmOppNo" name="ddl_CrmOppNo" class="form-control" onchange="setCrmOppName()">
+									<option value="">選擇商機/專案</option>
+									@foreach (var bean in ViewBag.supportCrmBeans)
+									{
+										<option value="@bean.CrmOppNo">@bean.CrmOppNo - @bean.Description</option>
+									}
+								</select>
+							</div>
 							<label class="col-lg-2 col-form-label" id="lb_CrmOppName" ></label>
 							<input type="hidden" id="hid_CrmOppName" name="hid_CrmOppName" />
 						</div>
