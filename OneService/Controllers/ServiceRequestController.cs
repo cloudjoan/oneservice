@@ -810,6 +810,94 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 儲存處理與工時紀錄明細
+        /// <summary>
+        /// 儲存處理與工時紀錄明細
+        /// </summary>
+        /// <param name="prId">系統ID</param>
+        /// <param name="cSRID">SRID</param>
+        /// <param name="cEngineerID">服務工程師ERPID</param>
+        /// <param name="cEngineerName">服務工程師姓名</param>
+        /// <param name="cStartTime">出發時間</param>
+        /// <param name="cReceiveTime">接單時間</param>
+        /// <param name="cArriveTime">到場時間</param>
+        /// <param name="cFinishTime">完成時間</param>
+        /// <param name="cDesc">處理紀錄</param>
+        /// <param name="cReport">服務報告書</param>
+        /// <returns></returns>
+        public ActionResult SavepjRecord(int? prId, string cSRID, string cEngineerID, string cEngineerName, string cStartTime, string cReceiveTime, string cArriveTime, string cFinishTime, string cDesc, string cReport)
+        {
+            getLoginAccount();
+
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+            
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+
+            bool reValue = false;
+
+            try
+            {
+                int result = 0;
+                if (prId == null) //新增
+                {
+                    #region -- 儲存處理與工時紀錄明細 --
+                    TbOneSrdetailRecord prBean = new TbOneSrdetailRecord();
+
+                    prBean.CSrid = cSRID;
+                    prBean.CEngineerId = cEngineerID;
+                    prBean.CEngineerName = cEngineerName;
+                    prBean.CStartTime = Convert.ToDateTime(cStartTime);
+                    prBean.CReceiveTime = Convert.ToDateTime(cReceiveTime);
+                    prBean.CArriveTime = Convert.ToDateTime(cArriveTime);
+                    prBean.CFinishTime = Convert.ToDateTime(cFinishTime);
+                    prBean.CDesc = cDesc;
+                    prBean.CSrreport = string.IsNullOrEmpty(cReport) ? "" : cReport;
+                    prBean.Disabled = 0;
+                    prBean.CreatedUserName = EmpBean.EmployeeCName;
+                    prBean.CreatedDate = DateTime.Now;
+
+                    dbOne.TbOneSrdetailRecords.Add(prBean);
+                    result = dbOne.SaveChanges();
+                    #endregion
+                }
+                else //編輯
+                {
+                    #region -- 編輯處理與工時紀錄明細 --
+                    var prBean = dbOne.TbOneSrdetailRecords.FirstOrDefault(x => x.CId == prId);
+                    if (prBean != null)
+                    {                        
+                        prBean.CStartTime = Convert.ToDateTime(cStartTime);
+                        prBean.CReceiveTime = Convert.ToDateTime(cReceiveTime);
+                        prBean.CArriveTime = Convert.ToDateTime(cArriveTime);
+                        prBean.CFinishTime = Convert.ToDateTime(cFinishTime);
+                        prBean.CDesc = cDesc;
+                        prBean.CSrreport = string.IsNullOrEmpty(cReport) ? "" : cReport;
+                        prBean.Disabled = 1;
+
+                        prBean.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean.ModifiedDate = DateTime.Now;
+                        
+                        result = dbOne.SaveChanges();                        
+                    }
+                    #endregion
+                }
+
+                if (result > 0)
+                {
+                    reValue = true;
+                }
+
+                return Json(reValue);
+            }
+            catch (Exception e)
+            {
+                //SendMailByAPI("ONESERVICE處理與工時紀錄明細", null, "Elvis.Chang@etatung.com", "", "", "ONESERVICE處理與工時紀錄明細_錯誤", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "<br>prId: " + prId + "<br>" + e.ToString(), null, null);
+                return Json(false);
+            }
+        }
+        #endregion
+
         #region 取得處理與工時紀錄明細
         /// <summary>
         /// 取得處理與工時紀錄明細

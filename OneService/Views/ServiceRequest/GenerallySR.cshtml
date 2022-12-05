@@ -1744,12 +1744,28 @@
 		//儲存處理與工時紀錄
         function savepjRecord(prId) {
             var strMsg = "";
-            if ($("#ddl_bundleMs").val() == "-1") strMsg += "請選擇對應里程碑\n";
-			if ($("#ddl_bundleTask").val() == "-1") strMsg += "請選擇對應任務，若沒有對應任務請至【任務說明】新增里程碑相關任務\n";
-            if ($("#tbx_prStartDate").val() == "" || $("#tbx_prEndDate").val() == "") strMsg += "請選擇執行日期時間\n";
-            if ($("#tbx_prImp").val() == "") strMsg += "請輸入執行人員\n";
-            if ($("#tbx_prDesc").val() == "") strMsg += "請輸入執行內容\n";
-            if ($("#tbx_prWorkHours").val() == "") strMsg += "請輸入工時\n";
+			
+			var cSRID = $("input[name='hid_cSRID']").val();
+			var hid_pRecordCId = $("#hid_pRecordCId");
+			var tbx_pjRecordEngineerName = $("#tbx_pjRecordEngineerName");
+			var hid_pjRecordEngineerID = $("#hid_pjRecordEngineerID");
+			var tbx_pjRecordStartTime = $("#tbx_pjRecordStartTime");
+			var tbx_pjRecordReceiveTime = $("#tbx_pjRecordReceiveTime");
+			var tbx_pjRecordArriveTime = $("#tbx_pjRecordArriveTime");
+			var tbx_pjRecordFinishTime = $("#tbx_pjRecordFinishTime");
+			var tbx_pjRecordDesc = $("#tbx_pjRecordDesc");
+			var hid_filezone_pjRecord = $("#hid_filezone_pjRecord");
+            
+            if (tbx_pjRecordEngineerName.val() == "") strMsg += "請輸入服務工程師\n";
+			if (hid_pjRecordEngineerID.val() == "") {
+				Msg += "您未下拉選取【服務工程師】，請輸入關鍵字後再重新選取！\n";
+			}
+            if (tbx_pjRecordStartTime.val() == "") strMsg += "請輸入出發時間\n";
+			if (tbx_pjRecordReceiveTime.val() == "") strMsg += "請輸入接單時間\n";
+			if (tbx_pjRecordArriveTime.val() == "") strMsg += "請輸入到場時間\n";
+			if (tbx_pjRecordFinishTime.val() == "") strMsg += "請輸入完成時間\n";
+            if (tbx_pjRecordDesc.val() == "") strMsg += "請輸入處理紀錄\n";
+			//if (hid_filezone_pjRecord.val() == "") strMsg += "請上傳服務報告書\n";			
 
 			if (strMsg != "") {
 				alert(strMsg);
@@ -1762,30 +1778,22 @@
 					type: 'post',
 					dataType: 'json',
                     data: {
-                        prId: parseInt($("#hid_pRecordCId").val()),
-                        oppNo: $("#hid_oppNo").val(),
-                        bundleMs: $("#ddl_bundleMs").val(),
-                        bundleTask: $("#ddl_bundleTask").val(),
-                        impBy: $("#tbx_prImp").val(),
-                        ImplementersCount: $("#tbx_ImplementersCount").val(),
-						Attendees: $("#tbx_prAttImp").val(),
-                        place: $("#tbx_prPlace").val(),
-                        startDate: $("#tbx_prStartDate").val(),
-                        endDate: $("#tbx_prEndDate").val(),
-                        workHours: $("#tbx_prWorkHours").val(),
-                        withPpl: $("#tbx_prWithPpl").val(),
-                        withPplPhone: $("#tbx_prWithPplPhone").val(),
-                        desc: $("#tbx_prDesc").val(),
-                        attach: $("#hid_filezone_pjRecord").val(),
+                        prId: parseInt(hid_pRecordCId.val()),
+						cSRID: cSRID,
+                        cEngineerID: hid_pjRecordEngineerID.val(),
+						cEngineerName: tbx_pjRecordEngineerName.val(),                        
+                        cStartTime: tbx_pjRecordStartTime.val(),
+                        cReceiveTime: tbx_pjRecordReceiveTime.val(),
+                        cArriveTime: tbx_pjRecordArriveTime.val(),
+						cFinishTime: tbx_pjRecordFinishTime.val(),
+                        cDesc: tbx_pjRecordDesc.val(),
+                        attach: hid_filezone_pjRecord.val(),
                     },
                     success: function (result) {
                         if (result) {
-                            getpjRecord(); //取得處理與工時紀錄
-                            ajaxGetMilestone(); //總工時可能會改變，要重抓一次里程碑
-							ajaxGetTask(pMilestone); //實際工時可能會改變，要重抓一次WBS
+                            getpjRecord(); //取得處理與工時紀錄                            
                             hidePopupInit();
-                            alert("儲存成功");
-							$("#ddl_contact").val('').trigger('change'); //清空執行人員
+                            alert("儲存成功");							
                             $("#dialog_pRecord").modal('hide');
                         }
                         else {
@@ -1920,7 +1928,7 @@
                                     + "<th>工時(分鐘)</th>"
 							        + "<th>處理紀錄</th>"                                    
                                     + "<th>服務報告書</th>"
-									+ '<th style="width: 65px;">編輯/刪除</th>'
+									+ '<th width="130">編輯/刪除</th>'
                                 + "</tr>"
                             + "</thead>"
                             + "<tbody>"
@@ -2611,6 +2619,7 @@
 												<th>工時(分鐘)</th>
 												<th>處理紀錄</th>
 												<th>服務報告書</th>
+												<th width="130">編輯/刪除</th>
 											</tr>
 										</thead>
 										<tbody>
@@ -2963,7 +2972,7 @@
 				</div>
 				<div class="modal-body">
 					<!--執行工時紀錄Id-->
-					<input type="hidden" id="hid_pjRecordCId" runat="server" />					
+					<input type="hidden" id="hid_pRecordCId" runat="server" />					
 					<div class="form-group row">
 						<label class="col-lg-2 col-form-label">服務工程師*</label>
 						<div class="col-lg-4" style="padding: 0px;">
@@ -3006,7 +3015,7 @@
 						<span id='remainPrDesc' style="font-size: 10px; color: red;"></span>
 					</div>
 					<div class="form-group row">
-						<label class="col-lg-2 col-form-label">附件</label>
+						<label class="col-lg-2 col-form-label">服務報告書*</label>
 						<div class="dropzone popupDropzone" id="zone_pr" style="width: 200px; min-height: 100px !important; padding: 0px;">
 							<div class="fallback">
 								<input name="file" type="file" multiple />
