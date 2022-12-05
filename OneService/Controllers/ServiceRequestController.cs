@@ -193,12 +193,23 @@ namespace OneService.Controllers
 
                 #region 取得產品序號資訊(明細)
                 var beansProduct = dbOne.TbOneSrdetailProducts.OrderBy(x => x.CSerialId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+                
                 ViewBag.Detailbean_Product = beansProduct;
+                ViewBag.trProductNo = beansProduct.Count();
+                #endregion
+
+                #region 取得工時紀錄檔資訊(明細)
+                var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CEngineerId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+                
+                ViewBag.Detailbean_Record = beansRecord;
+                ViewBag.trRecordNo = beansRecord.Count();
                 #endregion
 
                 #region 取得零件更換資訊(明細)
                 var beansParts = dbOne.TbOneSrdetailPartsReplaces.OrderBy(x => x.CMaterialId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+                
                 ViewBag.Detailbean_Parts = beansParts;
+                ViewBag.trPartsNo = beansParts.Count();
                 #endregion
             }
             else
@@ -539,6 +550,69 @@ namespace OneService.Controllers
                     #endregion
 
                     #endregion -----↑↑↑↑↑保固SLA資訊 ↑↑↑↑↑-----
+
+
+                    #region -----↓↓↓↓↓處理與工時紀錄↓↓↓↓↓-----
+
+                    #region 刪除明細
+                    dbOne.TbOneSrdetailRecords.RemoveRange(dbOne.TbOneSrdetailRecords.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+                    #endregion
+
+                    #region 新增明細
+                    string[] REcEngineerName = formCollection["tbx_REcEngineerName"];
+                    string[] REcEngineerID = formCollection["hid_REcEngineerID"];
+                    string[] REcReceiveTime = formCollection["tbx_REcReceiveTime"];
+                    string[] REcStartTime = formCollection["tbx_REcStartTime"];
+                    string[] REcArriveTime = formCollection["tbx_REcArriveTime"];
+                    string[] REcFinishTime = formCollection["tbx_REcFinishTime"];
+                    string[] REcWorkHours = formCollection["tbx_REcWorkHours"];
+                    string[] REcDesc = formCollection["tbx_REcDesc"];
+                    string[] REcSRReport = formCollection["hid_filezoneRE"];                    
+                    string[] REcDisabled = formCollection["hid_REcDisabled"];
+
+                    int countRE = REcEngineerName.Length;
+
+                    for (int i = 0; i < countWA; i++)
+                    {
+                        TbOneSrdetailRecord beanD = new TbOneSrdetailRecord();
+
+                        beanD.CSrid = pSRID;
+                        beanD.CEngineerName = REcEngineerName[i];
+                        beanD.CEngineerId = REcEngineerID[i];                        
+
+                        if (REcReceiveTime[i] != "")
+                        {
+                            beanD.CReceiveTime = Convert.ToDateTime(REcReceiveTime[i]);
+                        }
+
+                        if (REcStartTime[i] != "")
+                        {
+                            beanD.CStartTime = Convert.ToDateTime(REcStartTime[i]);
+                        }
+
+                        if (REcArriveTime[i] != "")
+                        {
+                            beanD.CArriveTime = Convert.ToDateTime(REcArriveTime[i]);
+                        }
+
+                        if (REcFinishTime[i] != "")
+                        {
+                            beanD.CFinishTime = Convert.ToDateTime(REcFinishTime[i]);
+                        }
+
+                        beanD.CWorkHours = decimal.Parse(REcWorkHours[i]);
+                        beanD.CDesc = REcDesc[i];
+                        beanD.CSrreport = REcSRReport[i];
+                        beanD.Disabled = int.Parse(REcDisabled[i]);
+
+                        beanD.ModifiedDate = DateTime.Now;
+                        beanD.ModifiedUserName = LoginUser_Name;
+
+                        dbOne.TbOneSrdetailRecords.Add(beanD);
+                    }
+                    #endregion
+
+                    #endregion -----↑↑↑↑↑處理與工時紀錄 ↑↑↑↑↑-----
 
                     #region -----↓↓↓↓↓零件更換資訊↓↓↓↓↓-----
 
@@ -895,102 +969,6 @@ namespace OneService.Controllers
                 //SendMailByAPI("ONESERVICE處理與工時紀錄明細", null, "Elvis.Chang@etatung.com", "", "", "ONESERVICE處理與工時紀錄明細_錯誤", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "<br>prId: " + prId + "<br>" + e.ToString(), null, null);
                 return Json(false);
             }
-        }
-        #endregion
-
-        #region 取得處理與工時紀錄明細
-        /// <summary>
-        /// 取得處理與工時紀錄明細
-        /// </summary>
-        /// <param name="cSRID">SRID</param>
-        /// <param name="ERPID">登入人員ERPID</param>
-        /// <returns></returns>
-        public IActionResult getpjRecord(string cSRID, string ERPID)
-        {
-            #region -- 管理者(也可編輯工時紀錄)，先暫時預設false --
-            bool isManager = false;           
-            #endregion
-            
-            List<PjRecord> liPjRec = new List<PjRecord>();
-            var result = dbOne.TbOneSrdetailRecords.Where(x => x.CSrid == cSRID).OrderBy(x => x.CEngineerId).ThenByDescending(x => x.CFinishTime).ToList();
-            
-            if (result != null && result.Count > 0)
-            {
-                foreach (var pjRec in result)
-                {
-                    PjRecord prBean = new PjRecord();
-
-                    prBean.Pr = pjRec;
-
-                    if (pjRec.CEngineerId == ERPID || isManager)
-                    {
-                        prBean.IsCrUser = true;
-                    }
-                    else
-                    {
-                        prBean.IsCrUser = false;
-                    }
-
-                    liPjRec.Add(prBean);
-                }
-            }
-
-            return Json(liPjRec);
-        }        
-        #endregion
-
-        #region 取得處理與工時紀錄明細的服務報告書
-        /// <summary>
-        /// 取得處理與工時紀錄明細的服務報告書
-        /// </summary>
-        /// <param name="cSRID">SRID</param>
-        /// <param name="prId">項次ID</param>
-        /// <returns></returns>
-        public IActionResult getpjRecordReport(string cSRID, int? prId)
-        {
-            List<TbOneSrdetailRecord> qPjRec = new List<TbOneSrdetailRecord>();
-
-            if (prId != null)
-            {
-                qPjRec = dbOne.TbOneSrdetailRecords.Where(x => x.CSrid == cSRID && x.CId == prId).ToList();
-            }
-            else
-            {
-                qPjRec = dbOne.TbOneSrdetailRecords.Where(x => x.CSrid == cSRID).ToList();
-            }
-
-            List<PjRecordReport> liPjRecReport = new List<PjRecordReport>();
-
-            if (qPjRec != null && qPjRec.Count() > 0)
-            {
-                foreach (var prBean in qPjRec)
-                {
-                    if (!string.IsNullOrEmpty(prBean.CSrreport))
-                    {
-                        string[] arrReportId = prBean.CSrreport.Split(','); //每筆SRID的附件(一筆工時紀錄可能有多個附件)
-                        foreach (var ReportId in arrReportId)
-                        {
-                            var qReport = dbOne.TbOneDocuments.FirstOrDefault(x => x.Id.ToString().ToUpper() == ReportId.ToUpper());
-                            if (qReport != null)
-                            {
-                                PjRecordReport prReportBean = new PjRecordReport();
-                                prReportBean.Id = qReport.Id.ToString().ToUpper();
-                                prReportBean.OrgName = qReport.FileOrgName;                                
-                                prReportBean.Ext = qReport.FileExt;                                
-                                prReportBean.GuidName = qReport.FileName;
-                                prReportBean.InsertTime = qReport.InsertTime;
-                                prReportBean.SRID = cSRID;
-                                prReportBean.PjRecordId = prBean.CId.ToString();                                
-                                prReportBean.CrName = prBean.CreatedUserName;                                
-
-                                liPjRecReport.Add(prReportBean);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return Json(liPjRecReport);            
         }
         #endregion
 
