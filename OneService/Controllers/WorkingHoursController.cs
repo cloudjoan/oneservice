@@ -73,7 +73,7 @@ namespace OneService.Controllers
 
             //查詢自己有被assign的商機
             //var supportCrmBeans = psipDB.ViewProSupportEmps.Where(x => x.SupErpId == "10000542").Select(x => new SelectListItem { Value = x.CrmOppNo,  Text = x.CrmOppNo + "-" + x.Description, Selected = true }).ToList();
-            ViewBag.supportCrmBeans = psipDB.ViewProSupportEmps.Where(x => x.SupErpId == "10000542");
+            ViewBag.supportCrmBeans = psipDB.ViewProSupportEmps.Where(x => x.SupErpId == HttpContext.Session.GetString(SessionKey.USER_ERP_ID));
             
             return View();
         }
