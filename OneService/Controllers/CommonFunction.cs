@@ -14,6 +14,7 @@ using static OneService.Controllers.ServiceRequestController;
 using System.Diagnostics.Metrics;
 using System.Security.Policy;
 using static System.Net.WebRequestMethods;
+using System.Net.NetworkInformation;
 
 namespace OneService.Controllers
 {
@@ -988,25 +989,31 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion       
+        #endregion
 
         #region 寫log 
         /// <summary>
         /// 寫log
         /// </summary>
-        /// <param name="tContent">內容</param>
+        /// <param name="pSRID">目前SRID</param>
         /// <param name="tMethodName">方法目錄</param>
-        public void writeToLog(string tContent, string tMethodName)
+        /// <param name="tContent">內容</param>
+        /// <param name="LoginUser_Name">登入人員姓名</param>
+        public void writeToLog(string? pSRID,  string tMethodName, string tContent, string LoginUser_Name)
         {
-            string filePath = "C://ONEServiceLogs//" + tMethodName + "//";
-            if (!(Directory.Exists(filePath)))
+            #region 紀錄log
+            TbOneLog logBean = new TbOneLog
             {
-                Directory.CreateDirectory(filePath);
-            }
-            // Write the string to a file.
-            System.IO.StreamWriter file = new System.IO.StreamWriter(filePath + DateTime.Now.ToString("yyyyMMddHH") + ".txt", true);
-            file.WriteLine(tContent);
-            file.Close();
+                CSrid = pSRID,
+                EventName = tMethodName,
+                Log = tContent,
+                CreatedUserName = LoginUser_Name,
+                CreatedDate = DateTime.Now
+            };
+
+            dbOne.TbOneLogs.Add(logBean);
+            dbOne.SaveChanges();
+            #endregion
         }
         #endregion
 

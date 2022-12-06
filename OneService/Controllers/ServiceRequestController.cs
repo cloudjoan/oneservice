@@ -404,8 +404,8 @@ namespace OneService.Controllers
 
                     if (result <= 0)
                     {
-                        pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗" + Environment.NewLine;
-                        CMF.writeToLog("SaveGenerallySR:" + Environment.NewLine + pMsg, "SaveGenerallySR");
+                        pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(新建)" + Environment.NewLine;
+                        CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, LoginUser_Name);
                     }
                     else
                     {
@@ -572,7 +572,7 @@ namespace OneService.Controllers
 
                     int countRE = REcEngineerName.Length;
 
-                    for (int i = 0; i < countWA; i++)
+                    for (int i = 0; i < countRE; i++)
                     {
                         TbOneSrdetailRecord beanD = new TbOneSrdetailRecord();
 
@@ -605,8 +605,8 @@ namespace OneService.Controllers
                         beanD.CSrreport = REcSRReport[i];
                         beanD.Disabled = int.Parse(REcDisabled[i]);
 
-                        beanD.ModifiedDate = DateTime.Now;
-                        beanD.ModifiedUserName = LoginUser_Name;
+                        beanD.CreatedDate = DateTime.Now;
+                        beanD.CreatedUserName = LoginUser_Name;
 
                         dbOne.TbOneSrdetailRecords.Add(beanD);
                     }
@@ -680,8 +680,8 @@ namespace OneService.Controllers
 
                     if (result <= 0)
                     {
-                        pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗" + Environment.NewLine;
-                        CMF.writeToLog("SaveGenerallySR:" + Environment.NewLine + pMsg, "SaveGenerallySR");
+                        pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(編輯)" + Environment.NewLine;
+                        CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, LoginUser_Name);
                     }
                     else
                     {
@@ -706,7 +706,7 @@ namespace OneService.Controllers
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
                 
-                CMF.writeToLog("SaveGenerallySR:" + Environment.NewLine + pMsg, "SaveGenerallySR");
+                CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, LoginUser_Name);
             }
 
             return RedirectToAction("finishForm");
@@ -826,7 +826,7 @@ namespace OneService.Controllers
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
 
-                CMF.writeToLog("QuerySRDetail_Warranty:" + Environment.NewLine + pMsg, "QuerySRDetail_Warranty");
+                CMF.writeToLog("", "QuerySRDetail_Warranty", pMsg, EmpBean.EmployeeCName);
             }
 
             return Json(QueryToList);
@@ -876,8 +876,8 @@ namespace OneService.Controllers
             {
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
-
-                CMF.writeToLog("getSRDetail_Warranty:" + Environment.NewLine + pMsg, "getSRDetail_Warranty");
+                
+                CMF.writeToLog(cSRID, "getSRDetail_Warranty", pMsg, EmpBean.EmployeeCName);
             }
 
             return Json(QueryToList);

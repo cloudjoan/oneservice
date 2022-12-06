@@ -1,0 +1,12 @@
+SaveGenerallySR:
+2022/12/06 09:07:23失敗原因:Index was outside the bounds of the array.
+ 失敗行數：System.IndexOutOfRangeException: Index was outside the bounds of the array.
+   at OneService.Controllers.ServiceRequestController.SaveGenerallySR(IFormCollection formCollection) in D:\GIT\oneservice\OneService\Controllers\ServiceRequestController.cs:line 580
+SaveGenerallySR:
+2022/12/06 09:17:07失敗原因:Index was outside the bounds of the array.
+ 失敗行數：System.IndexOutOfRangeException: Index was outside the bounds of the array.
+   at OneService.Controllers.ServiceRequestController.SaveGenerallySR(IFormCollection formCollection) in D:\GIT\oneservice\OneService\Controllers\ServiceRequestController.cs:line 580
+SaveGenerallySR:
+2022/12/06 09:20:05失敗原因:Index was outside the bounds of the array.
+ 失敗行數：System.IndexOutOfRangeException: Index was outside the bounds of the array.
+   at OneService.Controllers.ServiceRequestController.SaveGenerallySR(IFormCollection formCollection) in D:\GIT\oneservice\OneService\Controllers\ServiceRequestController.cs:line 580
