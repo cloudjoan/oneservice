@@ -53,9 +53,10 @@ namespace OneService.Controllers
             return View();
         }
 
-        public IActionResult GetSRLabor(string erpId)
+        public IActionResult GetSRLabor(string erpId, string whType, string startDate, string endDate)
         {
-            var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId);
+
+            var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId && );
             ViewBag.viewWHBeans = viewWHBeans;
             return View();
         }
@@ -68,7 +69,7 @@ namespace OneService.Controllers
             ViewBag.userErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
             ViewBag.session = HttpContext.Session;
 
-            var beans = psipDB.TbWorkingHoursMains.Where(x => x.Disabled != 1).OrderByDescending(x => x.Id);
+            var beans = psipDB.TbWorkingHoursMains.Where(x => x.UserErpId == HttpContext.Session.GetString(SessionKey.USER_ERP_ID) && x.Disabled != 1).OrderByDescending(x => x.Id);
             ViewBag.beans = beans;
 
             //查詢自己有被assign的商機
