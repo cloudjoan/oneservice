@@ -1,5 +1,0 @@
-SaveGenerallySR:
-2022/12/02 14:26:35失敗原因:String '' was not recognized as a valid DateTime.
- 失敗行數：System.FormatException: String '' was not recognized as a valid DateTime.
-   at System.Convert.ToDateTime(String value)
-   at OneService.Controllers.ServiceRequestController.SaveGenerallySR(IFormCollection formCollection) in D:\GIT\oneservice\OneService\Controllers\ServiceRequestController.cs:line 563
