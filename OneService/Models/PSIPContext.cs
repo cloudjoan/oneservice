@@ -531,7 +531,9 @@ namespace OneService.Models
 
                 entity.ToView("VIEW_WORKING_HOURS");
 
-                entity.Property(e => e.ActType).HasMaxLength(40);
+                entity.Property(e => e.ActType).HasMaxLength(10);
+
+                entity.Property(e => e.ActTypeName).HasMaxLength(40);
 
                 entity.Property(e => e.FinishTime).HasMaxLength(22);
 
@@ -548,8 +550,13 @@ namespace OneService.Models
                 entity.Property(e => e.UserName).HasMaxLength(40);
 
                 entity.Property(e => e.Whtype)
-                    .HasMaxLength(40)
+                    .HasMaxLength(10)
                     .HasColumnName("WHType");
+
+                entity.Property(e => e.WhtypeName)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasColumnName("WHTypeName");
             });
 
             OnModelCreatingPartial(modelBuilder);

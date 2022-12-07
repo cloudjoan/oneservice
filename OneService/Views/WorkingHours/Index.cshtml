@@ -60,6 +60,7 @@
 				dataType: 'json',
 				data: {
 					erpId: $("#hie_ErpId").val(),
+					whType: $("#ddl_WHType").val()
 				},
 				success: function (result) {
 				},
@@ -119,7 +120,7 @@
 							<label class="col-lg-2 col-form-label">工時類型：</label>
 							<div class="col-lg-3">
 								<select class="form-control" id="ddl_WHType" name="ddl_WHType">
-									<option value="ALL">全部</option>
+									<option value="">全部</option>
 									<option value="A">A.客戶服務</option>
 									<option value="B">B.專案導入</option>
 									<option value="C">C.內部作業</option>

@@ -56,7 +56,7 @@ namespace OneService.Controllers
         public IActionResult GetSRLabor(string erpId, string whType, string startDate, string endDate)
         {
 
-            var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId && );
+            var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId && (string.IsNullOrEmpty(whType)?true: x.Whtype == whType));
             ViewBag.viewWHBeans = viewWHBeans;
             return View();
         }
