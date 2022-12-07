@@ -893,11 +893,11 @@
 											var tds = tr.find("td");
 											if (ojbID.indexOf('tbx_PRcMaterialID') >= 0)
 											{
-												tds.eq(2).children().val(ui.item.Name);
+												tds.eq(3).children().val(ui.item.Name);
 											}
 											else if (ojbID.indexOf('tbx_PAcMaterialID') >= 0)
 											{
-												tds.eq(2).children().val(ui.item.Name);
+												tds.eq(3).children().val(ui.item.Name);
 											}												
 										}
 									}).bind('focus', function () { $(this).autocomplete("search"); });
@@ -1624,7 +1624,7 @@
 
 		//組料號說明
 		function SetMaterialName() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_PRcMaterialName' readonly></textarea></td>";
+			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_PRcMaterialName' id='tbx_PRcMaterialName" + trProductNoCount + "' readonly></textarea></td>";
 			return reValue;
 		}
 
@@ -2282,7 +2282,7 @@
 
 		//組料號說明
 		function SetMaterialName_Parts() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_PAcMaterialName' readonly></textarea></td>";
+			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_PAcMaterialName' id='tbx_PAcMaterialName" + trPartsNoCount + "' readonly></textarea></td>";
 			return reValue;
 		}
 
@@ -2681,7 +2681,7 @@
 																														<input type='text' name='tbx_PRcMaterialID' @("id=tbx_PRcMaterialID" + count) class='form-control material' style='width:200px;' placeholder='料號' value="@bean.CMaterialId" title="@bean.CMaterialId">
 																													</td>																	
 																													<td>
-																														<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PRcMaterialName" title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
+																														<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PRcMaterialName" @("id=tbx_PRcMaterialName" + count) title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
 																													</td>
 																													<td>
 																														<input type='text' name='tbx_PRcProductNumber' @("id=tbx_PRcProductNumber" + count) class='form-control' style='width:150px;' value="@bean.CProductNumber" title="@bean.CProductNumber">
@@ -3020,7 +3020,7 @@
 																														<input type='text' name='tbx_PAcMaterialID' @("id=tbx_PAcMaterialID" + count) class='form-control material' style='width:200px;' placeholder='更換零件料號ID' value="@bean.CMaterialId" title="@bean.CMaterialId">
 																													</td>																	
 																													<td>
-																														<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PAcMaterialName" title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
+																														<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PAcMaterialName" @("id=tbx_PAcMaterialName" + count) title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
 																													</td>
 																													<td>
 																														<input type='text' name='tbx_PAcOldCT' @("id=tbx_PAcOldCT" + count) class='form-control' style='width:100px;' placeholder='Old CT' value="@bean.COldCt" title="@bean.COldCt">
