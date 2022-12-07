@@ -284,6 +284,7 @@
 			$("#waitingImg").show();
 
 			var Msg = "";
+			var cSRID = $("input[name='hid_cSRID']").val();			//SRID
 			var ddl_cStatus = $("#ddl_cStatus");					//狀態
 			var tbx_cCustomerName = $("#tbx_cCustomerName");			//客戶名稱	
 			var hid_cCustomerID = $("#hid_cCustomerID");			//客戶ID				
@@ -308,6 +309,15 @@
 
 			if (ddl_cStatus.val() == "") {
 				Msg += "請選擇【狀態】！\n";
+			}
+			else
+			{
+				if (cSRID != "")
+				{
+					if (ddl_cStatus.val() == "E0001") {
+						Msg += "【狀態】不得為新建，請重新選擇！\n";
+					}
+				}
 			}
 
 			if (tbx_cCustomerName.val() == "") {
