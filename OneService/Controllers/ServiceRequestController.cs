@@ -214,6 +214,7 @@ namespace OneService.Controllers
             }
             else
             {
+                ViewBag.cSRID = "";
                 ViewBag.cSRPathWay = "Z05";     //手動建立
                 ViewBag.pStatus = "E0001";      //新建
                 ViewBag.cMAServiceType = "";    //請選擇
