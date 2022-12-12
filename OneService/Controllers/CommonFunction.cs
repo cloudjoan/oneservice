@@ -15,6 +15,9 @@ using System.Diagnostics.Metrics;
 using System.Security.Policy;
 using static System.Net.WebRequestMethods;
 using System.Net.NetworkInformation;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace OneService.Controllers
 {
@@ -35,6 +38,184 @@ namespace OneService.Controllers
         {
             
         }
+
+        #region -----↓↓↓↓↓待辦清單 ↓↓↓↓↓-----
+
+        #region 取得登入人員所有要負責的SRID
+        /// <summary>
+        /// 取得登入人員所有要負責的SRID
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cCompanyID">公司別</param>
+        /// <param name="IsManager">true.管理員 false.非管理員</param>
+        /// <param name="tERPID">登入人員ERPID</param>
+        /// <param name="tTeamList">可觀看服務團隊清單</param>
+        /// <param name="tType">61.一般服務請求 63.裝機服務請求...</param>
+        /// <returns></returns>
+        public List<string[]> findSRIDList(string cOperationID, string cCompanyID, bool IsManager, string tERPID, List<string> tTeamList, string tType)
+        {            
+
+            List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
+
+            switch(tType)
+            {
+                case "61":  //一般服務請求
+                    SRIDUserToList = getSRIDLis_Generally(cOperationID, cCompanyID, IsManager, tERPID, tTeamList);
+                    break;
+
+                case "63":  //裝機服務請求
+
+                    break;
+            }
+
+            return SRIDUserToList;
+        }
+        #endregion
+
+        #region 取得一般服務請求SRID負責清單
+        /// <summary>
+        /// 取得一般服務請求SRID負責清單
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cCompanyID">公司別</param>
+        /// <param name="IsManager">true.管理員 false.非管理員</param>
+        /// <param name="tERPID">登入人員ERPID</param>
+        /// <param name="tTeamList">可觀看服務團隊清單</param>
+        /// <returns></returns>
+        private List<string[]> getSRIDLis_Generally(string cOperationID, string cCompanyID, bool IsManager, string tERPID, List<string> tTeamList)
+        {
+            List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
+
+            string tSRPathWay = string.Empty;   //報修管理
+            string tSRType = string.Empty;      //報修類別
+            string tStatus = string.Empty;      //狀態
+
+            List<TbOneSrmain> beans = new List<TbOneSrmain>();
+
+            if (IsManager)
+            {
+                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006") && tTeamList.Contains(x.CTeamId) || x.CMainEngineerId == tERPID).ToList();               
+            }
+            else
+            {
+                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006") && x.CMainEngineerId == tERPID || x.CAssEngineerId.Contains(tERPID)).ToList();               
+            }
+
+            foreach (var bean in beans)
+            {
+                tSRPathWay = TransSRPATH(cOperationID, cCompanyID, bean.CSrpathWay);
+                tSRType = TransSRType(bean.CSrtypeOne, bean.CSrtypeSec, bean.CSrtypeThr);
+                tStatus = TransSRSTATUS(cOperationID, cCompanyID, bean.CStatus);
+
+                #region 組待處理服務請求
+                string[] ProcessInfo = new string[8];
+
+                ProcessInfo[0] = bean.CSrid;                                                           //SRID
+                ProcessInfo[1] = bean.CCustomerName;                                                    //客戶
+                ProcessInfo[2] = bean.CRepairName;                                                      //客戶報修人
+                ProcessInfo[3] = bean.CDesc;                                                           //說明
+                ProcessInfo[4] = tSRPathWay;                                                          //報修管道
+                ProcessInfo[5] = tSRType;                                                             //報修類別
+                ProcessInfo[6] = Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");     //最後編輯日期
+                ProcessInfo[7] = tStatus;                                                             //狀態
+
+                SRIDUserToList.Add(ProcessInfo);
+                #endregion
+            }
+
+            return SRIDUserToList;
+        }
+        #endregion
+
+        #region 取得該人員所負責的服務團隊
+        /// <summary>
+        /// 取得該人員所負責的服務團隊
+        /// </summary>
+        /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
+        /// <param name="tDeptID">登入人員部門ID</param>
+        /// <returns></returns>
+        public List<string> findSRTeamMappingList(string tCostCenterID, string tDeptID)
+        {
+            List<string> tList = new List<string>();
+
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID);
+
+            foreach (var beansItem in beans)
+            {
+                if (!tList.Contains(beansItem.CTeamOldId))
+                {
+                    tList.Add(beansItem.CTeamOldId);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
+        #region 取得報修管道參數值說明
+        /// <summary>
+        /// 取得報修管道參數值說明
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cCompanyID">公司別</param>
+        /// <param name="cSRPathWay">報修管道ID</param>
+        /// <returns></returns>
+        public string TransSRPATH(string cOperationID, string cCompanyID, string cSRPathWay)
+        {
+            string tValue = findSysParameterDescription(cOperationID, "OTHER", cCompanyID, "SRPATH", cSRPathWay);
+
+            return tValue;
+        }
+        #endregion
+
+        #region 取得狀態值說明
+        /// <summary>
+        /// 取得報修管道參數值說明
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cCompanyID">公司別</param>
+        /// <param name="cSTATUS">狀態ID</param>
+        /// <returns></returns>
+        public string TransSRSTATUS(string cOperationID, string cCompanyID, string cSTATUS)
+        {
+            string tValue = findSysParameterDescription(cOperationID, "OTHER", cCompanyID, "SRSTATUS", cSTATUS);
+
+            return tValue;
+        }
+        #endregion
+
+        #region 取得報修類別說明
+        /// <summary>
+        /// 取得報修類別說明
+        /// </summary>
+        /// <param name="cSRTypeOne">大類</param>
+        /// <param name="cSRTypeSec">中類</param>
+        /// <param name="cSRTypeThr">小類</param>
+        /// <returns></returns>
+        public string TransSRType(string cSRTypeOne, string cSRTypeSec, string cSRTypeThr)
+        {
+            string reValue = string.Empty;
+
+            if (cSRTypeOne != null)
+            {
+                reValue += findSRRepairTypeName(cSRTypeOne) + "<br/>";
+            }
+
+            if (cSRTypeSec != null)
+            {
+                reValue += findSRRepairTypeName(cSRTypeSec) + "<br/>";
+            }
+
+            if (cSRTypeThr != null)
+            {
+                reValue += findSRRepairTypeName(cSRTypeThr);
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑待辦清單 ↑↑↑↑↑-----   
 
         #region -----↓↓↓↓↓一般服務請求 ↓↓↓↓↓-----        
 
@@ -510,6 +691,27 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得一般服務請求(報修類別說明)
+        /// <summary>
+        /// 取得一般服務請求(報修類別說明)
+        /// </summary>
+        /// <param name="cKindKey">報修類別ID</param>
+        /// <returns></returns>
+        public string findSRRepairTypeName(string cKindKey)
+        {
+            string reValue = string.Empty;
+
+            var bean = dbOne.TbOneSrrepairTypes.FirstOrDefault(x => x.CKindKey == cKindKey);
+
+            if (bean != null)
+            {
+                reValue = bean.CKindName;
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑一般服務請求 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
@@ -518,6 +720,8 @@ namespace OneService.Controllers
         public EmployeeBean findEmployeeInfo(string keyword)
         {
             EmployeeBean empBean = new EmployeeBean();
+
+            bool tIsManager = false;
 
             var beanE = dbEIP.People.FirstOrDefault(x => x.Account.ToLower() == keyword.ToLower() && (x.LeaveDate == null && x.LeaveReason == null));
 
@@ -534,13 +738,28 @@ namespace OneService.Controllers
                 empBean.EmployeeEmail = beanE.Email.Trim();
                 empBean.EmployeePersonID = beanE.Id.Trim();
 
+                #region 取得部門資訊
                 var beanD = dbEIP.Departments.FirstOrDefault(x => x.Id == beanE.DeptId);
 
                 if (beanD != null)
                 {
                     empBean.DepartmentNO = beanD.Id.Trim();
                     empBean.DepartmentName = beanD.Name2.Trim();
+                    empBean.ProfitCenterID = beanD.ProfitCenterId.Trim();
+                    empBean.CostCenterID = beanD.CostCenterId.Trim();
                 }
+                #endregion
+
+                #region 取得是否為主管
+                var beansManager = dbEIP.Departments.Where(x => x.ManagerId == beanE.Id && x.Status == 0);
+
+                if (beansManager.Count() > 0)
+                {
+                    tIsManager = true;
+                }
+
+                empBean.IsManager = tIsManager;
+                #endregion
             }
 
             return empBean;
@@ -599,10 +818,16 @@ namespace OneService.Controllers
             public string DepartmentNO { get; set; }
             /// <summary>部門名稱</summary>
             public string DepartmentName { get; set; }
+            /// <summary>利潤中心</summary>
+            public string ProfitCenterID { get; set; }
+            /// <summary>成本中心</summary>
+            public string CostCenterID { get; set; }
             /// <summary>人員Email</summary>
             public string EmployeeEmail { get; set; }
             /// <summary>人員ID(Person資料表ID)</summary>
             public string EmployeePersonID { get; set; }
+            /// <summary>是否為主管(true.是 false.否)</summary>
+            public bool IsManager { get; set; }
         }
         #endregion
 
@@ -988,6 +1213,81 @@ namespace OneService.Controllers
             }
 
             return reValue;
+        }
+        #endregion
+
+        #region 取得【資訊系統參數設定檔】的參數值說明
+        /// <summary>
+        /// 取得【資訊系統參數設定檔】的參數值
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cFunctionID">功能別(SENDMAIL.寄送Mail、ACCOUNT.取得人員帳號、OTHER.其他自定義)</param>
+        /// <param name="cCompanyID">公司別(ALL.全集團、T012.大世科、T016.群輝、C069.大世科技上海、T022.協志科)</param>
+        /// <param name="cNo">參數No</param>
+        /// <param name="cValue">參數值</param>
+        /// <returns></returns>
+        public string findSysParameterDescription(string cOperationID, string cFunctionID, string cCompanyID, string cNo, string cValue)
+        {
+            string reValue = string.Empty;
+
+            var bean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                 x.COperationId.ToString() == cOperationID &&
+                                                                 x.CFunctionId == cFunctionID.Trim() &&
+                                                                 x.CCompanyId == cCompanyID.Trim() &&
+                                                                 x.CNo == cNo.Trim() &&
+                                                                 x.CValue == cValue.Trim());
+
+            if (bean != null)
+            {
+                reValue = bean.CDescription;
+            }
+
+            return reValue;
+        }
+        #endregion        
+
+        #region 傳入語法回傳DataTable(根據資料庫名稱)
+        /// <summary>
+        /// 傳入語法回傳DataTable(根據資料庫名稱)
+        /// </summary>
+        /// <param name="tSQL">SQL語法</param>
+        /// <param name="dbName">資料庫名稱(db(備品); dbBPM; dbEIP; dbProxy)</param>
+        /// <returns></returns>
+        public DataTable getDataTableByDb(string tSQL, string dbName)
+        {
+            DataTable dt = new DataTable();
+
+            string tConnectionString = string.Empty;
+
+            SqlConnection con = null;
+
+            switch (dbName)
+            {               
+                case "dbBPM":
+                    tConnectionString = bpmDB.Database.GetConnectionString();
+                    break;
+                case "dbEIP":                    
+                    tConnectionString = dbEIP.Database.GetConnectionString();
+                    break;
+                case "dbProxy":                    
+                    tConnectionString = dbProxy.Database.GetConnectionString();
+                    break;
+                case "dbPSIP":                    
+                    tConnectionString = psipDb.Database.GetConnectionString();
+                    break;
+                case "dbOne":                    
+                    tConnectionString = dbOne.Database.GetConnectionString();
+                    break;
+            }
+
+            SqlCommand cmd = new SqlCommand(tSQL);
+            con = new SqlConnection(tConnectionString);
+            cmd.Connection = con;
+            SqlDataAdapter sda = new SqlDataAdapter(cmd);
+            sda.SelectCommand.CommandTimeout = 600; //設定timeout為600秒
+            sda.Fill(dt);
+
+            return dt;
         }
         #endregion
 

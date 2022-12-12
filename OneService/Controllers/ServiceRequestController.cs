@@ -53,6 +53,16 @@ namespace OneService.Controllers
         bool pIsMIS = false;
 
         /// <summary>
+        /// 登入者是否為管理者(true.是 false.否)
+        /// </summary>
+        bool pIsManager = false;
+
+        /// <summary>
+        /// 登入者是否為負責工程師(含主要和協助)
+        /// </summary>
+        bool pIsExeEngineer = false;
+
+        /// <summary>
         /// 服務請求ID
         /// </summary>
         string pSRID = string.Empty;
@@ -80,6 +90,50 @@ namespace OneService.Controllers
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
 
+        #region -----↓↓↓↓↓待辦清單 ↓↓↓↓↓-----
+        public IActionResult ToDoList()
+        {
+            try
+            {
+                getLoginAccount();
+
+                #region 取得登入人員資訊
+                CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+                EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+                ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+                ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
+                ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
+                ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
+                ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
+                ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
+                ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
+                ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
+                ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+                ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+                ViewBag.cLoginUser_IsManager = EmpBean.IsManager;
+                ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+
+                pCompanyCode = EmpBean.BUKRS;
+                pIsManager = EmpBean.IsManager;
+                #endregion
+
+                List<string> tSRIDList = new List<string>(); //記錄目前登入者的所有表單編號
+                //tSRIDList = CMF.getSRIDList(pIsManager, EmpBean.EmployeeERPID);
+
+            }
+            catch (Exception ex)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
+                pMsg += " 失敗行數：" + ex.ToString();
+
+                CMF.writeToLog(pSRID, "ToDoList", pMsg, ViewBag.cLoginUser_Name);
+            }
+
+            return View();
+        }
+        #endregion -----↑↑↑↑↑待辦清單 ↑↑↑↑↑-----   
+
         #region -----↓↓↓↓↓一般服務請求 ↓↓↓↓↓-----
 
         #region 一般服務請求index
@@ -97,8 +151,11 @@ namespace OneService.Controllers
             ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
             ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
             ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
+            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
+            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
             ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
             ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+            ViewBag.cLoginUser_IsManager = EmpBean.IsManager;
             ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
 
             pCompanyCode = EmpBean.BUKRS;
