@@ -22,17 +22,12 @@ namespace OneService.Controllers
         /// 登入者帳號
         /// </summary>
         //string pLoginAccount = string.Empty;
-        string pLoginAccount = @"etatung\elvis.chang";  //工程師
-        //string pLoginAccount = @"etatung\Jordan.Chang"; //備品主管(電腦)
-        //string pLoginAccount = @"etatung\danny.hu";     //備品主管(系統)
-        //string pLoginAccount = @"etatung\Dale.Wu";      //台北1區管理員        
-        //string pLoginAccount = @"etatung\along.chou";   //台北2區管理員
-        //string pLoginAccount = @"etatung\Debby.Liu";    //台北1、2區檢測員
-        //string pLoginAccount = @"etatung\Angel.Fang";   //台中備品管理員
-        //string pLoginAccount = @"etatung\Aniki.Huang";  //台中備品檢測員
-
-        //string pLoginAccount = @"etatung\Vic.Chen";  //群輝工程師
-        //string pLoginAccount = @"etatung\Lun.Hsu";     //群輝高雄備品檢測員(管理員)
+        //string pLoginAccount = @"etatung\elvis.chang";  //工程師
+        //string pLoginAccount = @"etatung\Allen.Chen";    //陳勁嘉(主管)
+        string pLoginAccount = @"etatung\Boyen.Chen";    //陳建良(主管)
+        //string pLoginAccount = @"etatung\Aniki.Huang";    //黃志豪(主管)
+        //string pLoginAccount = @"etatung\jack.hung";      //洪佑典(主管)
+        //string pLoginAccount = @"etatung\Wenjui.Chan";    //詹文瑞
 
         /// <summary>全域變數</summary>
         string pMsg = "";
@@ -111,16 +106,23 @@ namespace OneService.Controllers
                 ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
                 ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
                 ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
-                ViewBag.cLoginUser_IsManager = EmpBean.IsManager;
+                ViewBag.pIsManager = EmpBean.IsManager;
                 ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
 
                 pCompanyCode = EmpBean.BUKRS;
                 pIsManager = EmpBean.IsManager;
                 #endregion
 
-                List<string> tSRIDList = new List<string>(); //記錄目前登入者的所有表單編號
-                //tSRIDList = CMF.getSRIDList(pIsManager, EmpBean.EmployeeERPID);
+                #region 一般服務請求
 
+                //取得登入人員所負責的服務團隊
+                List<string> tSRTeamList = CMF.findSRTeamMappingList(EmpBean.CostCenterID, EmpBean.DepartmentNO);
+
+                //取得登入人員所有要負責的SRID                
+                List<string[]> SRIDList_GenerallySR = CMF.findSRIDList(pOperationID_GenerallySR, pCompanyCode, pIsManager, EmpBean.EmployeeERPID, tSRTeamList, "61");
+
+                ViewBag.SRIDList_GenerallySR = SRIDList_GenerallySR;
+                #endregion
             }
             catch (Exception ex)
             {

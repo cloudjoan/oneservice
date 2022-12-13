@@ -18,6 +18,7 @@ using System.Net.NetworkInformation;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using NuGet.Packaging.Signing;
 
 namespace OneService.Controllers
 {
@@ -86,50 +87,114 @@ namespace OneService.Controllers
         {
             List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
 
-            string tSRPathWay = string.Empty;   //報修管理
-            string tSRType = string.Empty;      //報修類別
-            string tStatus = string.Empty;      //狀態
+            string tSRPathWay = string.Empty;       //報修管理
+            string tSRType = string.Empty;          //報修類別
+            string tModifiedDate = string.Empty;    //修改日期
 
             List<TbOneSrmain> beans = new List<TbOneSrmain>();
 
             if (IsManager)
             {
-                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006") && tTeamList.Contains(x.CTeamId) || x.CMainEngineerId == tERPID).ToList();               
+                string tWhere = TrnasTeamListToWhere(tTeamList);
+
+                string tSQL = @"select * from TB_ONE_SRMain
+                                   where 
+                                   (cStatus <> 'E0015' and cStatus <> 'E0006') and 
+                                   (
+                                        CMainEngineerId = '{0}' {1}
+                                   )";
+
+                tSQL = string.Format(tSQL, tERPID, tWhere);
+
+                DataTable dt = getDataTableByDb(tSQL, "dbOne");
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    tSRPathWay = TransSRPATH(cOperationID, cCompanyID, dr["cSRPathWay"].ToString());
+                    tSRType = TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
+                    tModifiedDate = dr["ModifiedDate"].ToString() != "" ? Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss") : "";
+
+                    #region 組待處理服務請求
+                    string[] ProcessInfo = new string[8];
+
+                    ProcessInfo[0] = dr["cSRID"].ToString();             //SRID
+                    ProcessInfo[1] = dr["cCustomerName"].ToString();      //客戶
+                    ProcessInfo[2] = dr["cRepairName"].ToString();        //客戶報修人
+                    ProcessInfo[3] = dr["cDesc"].ToString();             //說明
+                    ProcessInfo[4] = tSRPathWay;                        //報修管道
+                    ProcessInfo[5] = tSRType;                           //報修類別
+                    ProcessInfo[6] = tModifiedDate;                     //最後編輯日期
+                    ProcessInfo[7] = dr["cStatus"].ToString();           //狀態
+
+                    SRIDUserToList.Add(ProcessInfo);
+                    #endregion
+                }
             }
             else
             {
-                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006") && x.CMainEngineerId == tERPID || x.CAssEngineerId.Contains(tERPID)).ToList();               
-            }
+                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006") && (x.CMainEngineerId == tERPID || x.CAssEngineerId.Contains(tERPID))).ToList();
 
-            foreach (var bean in beans)
-            {
-                tSRPathWay = TransSRPATH(cOperationID, cCompanyID, bean.CSrpathWay);
-                tSRType = TransSRType(bean.CSrtypeOne, bean.CSrtypeSec, bean.CSrtypeThr);
-                tStatus = TransSRSTATUS(cOperationID, cCompanyID, bean.CStatus);
+                foreach (var bean in beans)
+                {
+                    tSRPathWay = TransSRPATH(cOperationID, cCompanyID, bean.CSrpathWay);
+                    tSRType = TransSRType(bean.CSrtypeOne, bean.CSrtypeSec, bean.CSrtypeThr);
+                    tModifiedDate = bean.ModifiedDate == DateTime.MinValue ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
 
-                #region 組待處理服務請求
-                string[] ProcessInfo = new string[8];
+                    #region 組待處理服務請求
+                    string[] ProcessInfo = new string[8];
 
-                ProcessInfo[0] = bean.CSrid;                                                           //SRID
-                ProcessInfo[1] = bean.CCustomerName;                                                    //客戶
-                ProcessInfo[2] = bean.CRepairName;                                                      //客戶報修人
-                ProcessInfo[3] = bean.CDesc;                                                           //說明
-                ProcessInfo[4] = tSRPathWay;                                                          //報修管道
-                ProcessInfo[5] = tSRType;                                                             //報修類別
-                ProcessInfo[6] = Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");     //最後編輯日期
-                ProcessInfo[7] = tStatus;                                                             //狀態
+                    ProcessInfo[0] = bean.CSrid;            //SRID
+                    ProcessInfo[1] = bean.CCustomerName;     //客戶
+                    ProcessInfo[2] = bean.CRepairName;       //客戶報修人
+                    ProcessInfo[3] = bean.CDesc;            //說明
+                    ProcessInfo[4] = tSRPathWay;           //報修管道
+                    ProcessInfo[5] = tSRType;              //報修類別
+                    ProcessInfo[6] = tModifiedDate;        //最後編輯日期
+                    ProcessInfo[7] = bean.CStatus;          //狀態
 
-                SRIDUserToList.Add(ProcessInfo);
-                #endregion
-            }
+                    SRIDUserToList.Add(ProcessInfo);
+                    #endregion
+                }
+            }            
 
             return SRIDUserToList;
         }
         #endregion
 
-        #region 取得該人員所負責的服務團隊
+        #region 將服務團隊清單轉成where條件
+        private string TrnasTeamListToWhere(List<string> tTeamList)
+        {
+            string reValue = string.Empty;
+
+            int count = tTeamList.Count;
+            int i = 0;
+
+            foreach (var tTeam in tTeamList)
+            {
+                if (i == count - 1)
+                {
+                    reValue += "cTeamID like '%" + tTeam + "%'";
+                }
+                else
+                {
+                    reValue += "cTeamID like '%" + tTeam + "%' or ";
+                }
+
+                i++;
+            }
+
+            if (reValue != "")
+            {
+                reValue = " or (" + reValue + ")";
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得登入人員所負責的服務團隊
         /// <summary>
-        /// 取得該人員所負責的服務團隊
+        /// 取得登入人員所負責的服務團隊
         /// </summary>
         /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
         /// <param name="tDeptID">登入人員部門ID</param>
@@ -138,7 +203,7 @@ namespace OneService.Controllers
         {
             List<string> tList = new List<string>();
 
-            var beans = dbOne.TbOneSrteamMappings.Where(x => x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID);
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID));
 
             foreach (var beansItem in beans)
             {
@@ -196,17 +261,17 @@ namespace OneService.Controllers
         {
             string reValue = string.Empty;
 
-            if (cSRTypeOne != null)
+            if (!string.IsNullOrEmpty(cSRTypeOne))
             {
                 reValue += findSRRepairTypeName(cSRTypeOne) + "<br/>";
             }
 
-            if (cSRTypeSec != null)
+            if (!string.IsNullOrEmpty(cSRTypeSec))
             {
                 reValue += findSRRepairTypeName(cSRTypeSec) + "<br/>";
             }
 
-            if (cSRTypeThr != null)
+            if (!string.IsNullOrEmpty(cSRTypeThr))
             {
                 reValue += findSRRepairTypeName(cSRTypeThr);
             }
