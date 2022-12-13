@@ -43,7 +43,7 @@
 							if (column === 5) {
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 							}
-							else if (column === 7) {
+							else if (column === 8) {
 								return data.split("</button>")[0].split(">").pop(); //pop()代表取最後一個
                             }
 							else return data;
@@ -78,6 +78,7 @@
 							$('row c[r^="F"]', sheet).attr('s', '0');
 							$('row c[r^="G"]', sheet).attr('s', '0');
 							$('row c[r^="H"]', sheet).attr('s', '0');
+							$('row c[r^="I"]', sheet).attr('s', '0');
 						}
 					}),
 				],
@@ -90,8 +91,9 @@
 					{ "width": "100px", "targets": 3 },   //說明
 					{ "width": "32px", "targets": 4 },   //報修管道
 					{ "width": "32px", "targets": 5 },  //報修類別
-					{ "width": "60px", "targets": 6 },   //最後編輯日期
-					{ "width": "32px", "targets": 7 },   //狀態
+					{ "width": "32px", "targets": 6 },  //主要工程師
+					{ "width": "60px", "targets": 7 },   //最後編輯日期
+					{ "width": "32px", "targets": 8 },   //狀態
 				],
 			});
 
@@ -126,6 +128,28 @@
 					</div>
 				</div>
 				<div class="ibox-content">
+					<!--登人者姓名-->
+					<input type="hidden" id="hid_cLoginUser_Name" name="hid_cLoginUser_Name" value="@ViewBag.cLoginUser_Name">
+					<!--登人者帳號-->
+					<input type="hidden" id="hid_cLoginUser_EmployeeNO" name="hid_cLoginUser_EmployeeNO" value="@ViewBag.cLoginUser_EmployeeNO">
+					<!--登人者ERPID-->
+					<input type="hidden" id="hid_cLoginUser_ERPID" name="hid_cLoginUser_ERPID" value="@ViewBag.cLoginUser_ERPID">
+					<!--登人者工作地點-->
+					<input type="hidden" id="hid_cLoginUser_WorkPlace" name="hid_cLoginUser_WorkPlace" value="@ViewBag.cLoginUser_WorkPlace">
+					<!--登人者公司別-->
+					<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+					<!--登人者工廠別-->
+					<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+					<!--登人者單位-->
+					<input type="hidden" id="hid_cLoginUser_DepartmentName" name="hid_cLoginUser_DepartmentName" value="@ViewBag.cLoginUser_DepartmentName">
+					<!--登人者單位NO-->
+					<input type="hidden" id="hid_cLoginUser_DepartmentNO" name="hid_cLoginUser_DepartmentNO" value="@ViewBag.cLoginUser_DepartmentNO">
+					<!--登人者利潤中心ID-->
+					<input type="hidden" id="hid_cLoginUser_ProfitCenterID" name="hid_cLoginUser_ProfitCenterID" value="@ViewBag.cLoginUser_ProfitCenterID">
+					<!--登人者成本中心ID-->
+					<input type="hidden" id="hid_cLoginUser_CostCenterID" name="hid_cLoginUser_CostCenterID" value="@ViewBag.cLoginUser_CostCenterID">
+					<!--登人者是否為主管-->
+					<input type="hidden" id="hid_cLoginUser_IsManager" name="hid_cLoginUser_IsManager" value="@ViewBag.pIsManager">
 					<div>
 						<select class='form-control' name='ddl_ProcessOption' onchange="$('#tableGenerallySRList_filter').children().children().val($(this).val()); $('#tableGenerallySRList_filter').children().children().trigger('keyup');">
 							<option value='' selected="selected">全部</option>
@@ -149,6 +173,7 @@
 								<th>說明</th>
 								<th>報修管道</th>
 								<th>報修類別</th>
+								<th>主要工程師</th>
 								<th>最後編輯日期</th>
 								<th>狀態</th>
 							</tr>
@@ -160,6 +185,16 @@
 							{
 								foreach (string[] CheckInfo in ViewBag.SRIDList_GenerallySR)
 								{
+									//判斷是主管且狀態非【新建】
+									if (ViewBag.pIsManager && CheckInfo[9] != "E0001")
+									{
+										//判斷是主管且不為主要工程師才跳過
+										if (ViewBag.cLoginUser_ERPID != CheckInfo[6]) 
+										{
+											continue;
+										}
+									}
+
 									count++;
 									<tr id='trManager@(count)'>
 										<td>@CheckInfo[0]</td>
@@ -168,48 +203,49 @@
 										<td>@CheckInfo[3]</td>
 										<td>@CheckInfo[4]</td>
 										<td>@Html.Raw(CheckInfo[5])</td>
-										<td>@CheckInfo[6]</td>
+										<td>@CheckInfo[7]</td>
+										<td>@CheckInfo[8]</td>
 										<td>
 											@{
 												string tTypeName = string.Empty;
 												string tClass = string.Empty;
 
-												if (CheckInfo[7] == "E0001")
+												if (CheckInfo[9] == "E0001")
 												{
 													tClass = "btn btn-info";
 													tTypeName = "新建";
 												}
-												else if (CheckInfo[7] == "E0002")
+												else if (CheckInfo[9] == "E0002")
 												{
 													tClass = "btn btn-primary";
 													tTypeName = "L2處理中";
 												}
-												else if (CheckInfo[7] == "E0003")
+												else if (CheckInfo[9] == "E0003")
 												{
 													tClass = "btn btn-primary";
 													tTypeName = "報價中";
 												}
-												else if (CheckInfo[7] == "E0004")
+												else if (CheckInfo[9] == "E0004")
 												{
 													tClass = "btn btn-primary";
 													tTypeName = "3rd Party處理中";
 												}
-												else if (CheckInfo[7] == "E0005")
+												else if (CheckInfo[9] == "E0005")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "L3處理中";
 												}
-												else if (CheckInfo[7] == "E0012")
+												else if (CheckInfo[9] == "E0012")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "HPGCSN 申請";
 												}
-												else if (CheckInfo[7] == "E0013")
+												else if (CheckInfo[9] == "E0013")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "HPGCSN 完成";
 												}
-												else if (CheckInfo[7] == "E0014")
+												else if (CheckInfo[9] == "E0014")
 												{
 													tClass = "btn btn-info";
 													tTypeName = "駁回";

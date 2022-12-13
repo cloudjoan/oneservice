@@ -22,7 +22,7 @@ namespace OneService.Controllers
         /// 登入者帳號
         /// </summary>
         //string pLoginAccount = string.Empty;
-        //string pLoginAccount = @"etatung\elvis.chang";  //工程師
+        //string pLoginAccount = @"etatung\elvis.chang";  //MIS
         //string pLoginAccount = @"etatung\Allen.Chen";    //陳勁嘉(主管)
         string pLoginAccount = @"etatung\Boyen.Chen";    //陳建良(主管)
         //string pLoginAccount = @"etatung\Aniki.Huang";    //黃志豪(主管)
@@ -1917,6 +1917,8 @@ namespace OneService.Controllers
             public string cBPMFormNoUrl { get; set; }
             /// <summary>本次使用</summary>
             public string cUsed { get; set; }
+            /// <summary>tr背景顏色Class</summary>
+            public string cBGColor { get; set; }
         }
         #endregion
 

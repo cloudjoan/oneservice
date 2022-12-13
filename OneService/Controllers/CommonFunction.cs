@@ -87,9 +87,11 @@ namespace OneService.Controllers
         {
             List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
 
-            string tSRPathWay = string.Empty;       //報修管理
-            string tSRType = string.Empty;          //報修類別
-            string tModifiedDate = string.Empty;    //修改日期
+            string tSRPathWay = string.Empty;           //報修管理
+            string tSRType = string.Empty;              //報修類別
+            string tMainEngineerID = string.Empty;      //主要工程師ERPID
+            string tMainEngineerName = string.Empty;    //主要工程師姓名            
+            string tModifiedDate = string.Empty;        //修改日期
 
             List<TbOneSrmain> beans = new List<TbOneSrmain>();
 
@@ -112,10 +114,12 @@ namespace OneService.Controllers
                 {
                     tSRPathWay = TransSRPATH(cOperationID, cCompanyID, dr["cSRPathWay"].ToString());
                     tSRType = TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
+                    tMainEngineerID = dr["cMainEngineerID"].ToString();
+                    tMainEngineerName = dr["cMainEngineerName"].ToString();
                     tModifiedDate = dr["ModifiedDate"].ToString() != "" ? Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss") : "";
 
                     #region 組待處理服務請求
-                    string[] ProcessInfo = new string[8];
+                    string[] ProcessInfo = new string[10];
 
                     ProcessInfo[0] = dr["cSRID"].ToString();             //SRID
                     ProcessInfo[1] = dr["cCustomerName"].ToString();      //客戶
@@ -123,8 +127,10 @@ namespace OneService.Controllers
                     ProcessInfo[3] = dr["cDesc"].ToString();             //說明
                     ProcessInfo[4] = tSRPathWay;                        //報修管道
                     ProcessInfo[5] = tSRType;                           //報修類別
-                    ProcessInfo[6] = tModifiedDate;                     //最後編輯日期
-                    ProcessInfo[7] = dr["cStatus"].ToString();           //狀態
+                    ProcessInfo[6] = tMainEngineerID;                   //主要工程師ERPID
+                    ProcessInfo[7] = tMainEngineerName;                 //主要工程師姓名
+                    ProcessInfo[8] = tModifiedDate;                     //最後編輯日期
+                    ProcessInfo[9] = dr["cStatus"].ToString();           //狀態
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -138,10 +144,12 @@ namespace OneService.Controllers
                 {
                     tSRPathWay = TransSRPATH(cOperationID, cCompanyID, bean.CSrpathWay);
                     tSRType = TransSRType(bean.CSrtypeOne, bean.CSrtypeSec, bean.CSrtypeThr);
+                    tMainEngineerID = string.IsNullOrEmpty(bean.CMainEngineerId) ? "" : bean.CMainEngineerId;
+                    tMainEngineerName = string.IsNullOrEmpty(bean.CMainEngineerName) ? "" : bean.CMainEngineerName;
                     tModifiedDate = bean.ModifiedDate == DateTime.MinValue ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
 
                     #region 組待處理服務請求
-                    string[] ProcessInfo = new string[8];
+                    string[] ProcessInfo = new string[10];
 
                     ProcessInfo[0] = bean.CSrid;            //SRID
                     ProcessInfo[1] = bean.CCustomerName;     //客戶
@@ -149,8 +157,10 @@ namespace OneService.Controllers
                     ProcessInfo[3] = bean.CDesc;            //說明
                     ProcessInfo[4] = tSRPathWay;           //報修管道
                     ProcessInfo[5] = tSRType;              //報修類別
-                    ProcessInfo[6] = tModifiedDate;        //最後編輯日期
-                    ProcessInfo[7] = bean.CStatus;          //狀態
+                    ProcessInfo[6] = tMainEngineerID;      //主要工程師ERPID
+                    ProcessInfo[7] = tMainEngineerName;    //主要工程師姓名
+                    ProcessInfo[8] = tModifiedDate;        //最後編輯日期
+                    ProcessInfo[9] = bean.CStatus;          //狀態
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -477,9 +487,11 @@ namespace OneService.Controllers
             string cContractID = string.Empty;
             string cContractIDURL = string.Empty;
             string tBPMNO = string.Empty;            
-            string tURL = string.Empty;            
+            string tURL = string.Empty;
+            string tBGColor = "table-success";
 
             int tLength = 0;
+            int pCount = 0;
 
             try
             {
@@ -487,6 +499,15 @@ namespace OneService.Controllers
 
                 foreach (string IV_SERIAL in ArySERIAL)
                 {
+                    if (pCount % 2 == 0 )
+                    {
+                        tBGColor = "";
+                    }
+                    else
+                    {
+                        tBGColor = "table-success";
+                    }
+
                     if (IV_SERIAL != null)
                     {
                         var request = new RestRequest();
@@ -578,12 +599,15 @@ namespace OneService.Controllers
                             QueryInfo.cBPMFormNo = tBPMNO;              //BPM表單編號                        
                             QueryInfo.cBPMFormNoUrl = tURL;             //BPM URL                    
                             QueryInfo.cUsed = "N";
+                            QueryInfo.cBGColor = tBGColor;             //tr背景顏色Class
 
                             QueryToList.Add(QueryInfo);
                             #endregion
                         }
                     }
-                }                
+
+                    pCount++;
+                }
             }
             catch(Exception ex)
             {
@@ -619,6 +643,10 @@ namespace OneService.Controllers
             string tBPMNO = string.Empty;
             string tURL = string.Empty;
             string cUsed = string.Empty;
+            string tBGColor = "table-success";
+            string TempSERIAL = string.Empty;
+
+            int pCount = 0;
 
             try
             {
@@ -626,6 +654,24 @@ namespace OneService.Controllers
 
                 foreach (var bean in beans)
                 {
+                    #region 判斷背景顏色class
+                    if (TempSERIAL != "" && TempSERIAL != bean.CSerialId)
+                    {
+                        pCount++;
+                    }
+
+                    TempSERIAL = bean.CSerialId;
+
+                    if (pCount % 2 == 0)
+                    {
+                        tBGColor = "";
+                    }
+                    else
+                    {
+                        tBGColor = "table-success";
+                    }
+                    #endregion
+
                     NowCount++;
 
                     cContractIDURL = "";
@@ -699,6 +745,7 @@ namespace OneService.Controllers
                     QueryInfo.cBPMFormNo = tBPMNO;              //BPM表單編號                        
                     QueryInfo.cBPMFormNoUrl = tURL;             //BPM URL                    
                     QueryInfo.cUsed = cUsed;                   //本次使用
+                    QueryInfo.cBGColor = tBGColor;             //tr背景顏色Class
 
                     QueryToList.Add(QueryInfo);
                     #endregion
