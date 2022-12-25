@@ -116,7 +116,7 @@ function dropzoneInit() {
         $(this).dropzone({
             url: "/Ajax/AjaxFileUpload",
             method:'post',
-            dictDefaultMessage: "把檔案拉進來或點我選檔案(可多檔案) <br/>※不支援.msg檔上傳, 請<a href='http://tsti-bpm01/files/msg_to_mht.png' target='_blank'> 轉換成MHT</a>或圖檔。",
+            dictDefaultMessage: "把檔案拉進來或點我選檔案!(可多檔案) <br/>※不支援.msg檔上傳, 請<a href='http://tsti-bpm01/files/msg_to_mht.png' target='_blank'> 轉換成MHT</a>或圖檔。",
             accept: function (file, done) {
                 console.log($(zone).data("namerule"));
                 if ($(zone).data("namerule") != null) {

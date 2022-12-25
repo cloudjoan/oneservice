@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "HpBKcUwCOyXGSJ61bIX/lLcF5Md7UreQBW7F2fIRIP7b7J8JiUyBpFbdFthB+uvQ4Mt64OrgWEO7ST4el/5CtQ==",
+  "dgSpecHash": "x6e/gKxYGGMirbF9pKHMNifNYpjoUk/SsXQlvjB2VMLmmfIuBwG4G2c4+HQY+n3TaborFHpGEY5VR/XP54IQ6g==",
   "success": true,
-  "projectFilePath": "D:\\VSProject\\OneService\\OneService\\OneService.csproj",
+  "projectFilePath": "D:\\VSProject\\oneservice\\OneService\\OneService.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\leon.huang.ETATUNG\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\leon.huang.ETATUNG\\.nuget\\packages\\messagepack\\2.1.152\\messagepack.2.1.152.nupkg.sha512",
