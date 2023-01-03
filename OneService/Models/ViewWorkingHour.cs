@@ -7,6 +7,7 @@ namespace OneService.Models
     {
         public int Id { get; set; }
         public string? SrId { get; set; }
+        public string? CrmOppName { get; set; }
         public string? WhDescript { get; set; }
         public string? Whtype { get; set; }
         public string WhtypeName { get; set; } = null!;

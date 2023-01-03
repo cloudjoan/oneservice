@@ -535,6 +535,8 @@ namespace OneService.Models
 
                 entity.Property(e => e.ActTypeName).HasMaxLength(40);
 
+                entity.Property(e => e.CrmOppName).HasMaxLength(200);
+
                 entity.Property(e => e.FinishTime).HasMaxLength(22);
 
                 entity.Property(e => e.Id).HasColumnName("ID");

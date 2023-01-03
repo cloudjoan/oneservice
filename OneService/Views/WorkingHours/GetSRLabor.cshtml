@@ -21,22 +21,7 @@
 		});
 	});
 
-		function DeleteWHById(id, obj){
-			if(confirm("確定刪除？")){
-				$.ajax({
-					url: '@Url.Action("DeleteWHById", "WorkingHours")',
-					type: 'post',
-					dataType: 'Json',
-					data: { "id": id },
-					success: function(result) {
-						if(result == 'OK'){
-							$(obj).parent().parent().hide();
-						}
-					}
-				});
-			}
 
-		}
 
 </script>
 
@@ -68,7 +53,9 @@
 				<td>@bean.Labor</td>
 				<td>@bean.WhtypeName</td>
 				<td>@bean.ActTypeName</td>
-				<td>@bean.SrId</td>
+				<td>
+					@(bean.SourceFrom != "CRM" ? bean.CrmOppName : bean.SrId)
+				</td>
 				<td>@bean.WhDescript</td>
 				
 			</tr>
