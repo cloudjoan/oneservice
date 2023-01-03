@@ -207,6 +207,7 @@ namespace OneService.Controllers
                 ViewBag.cSRPathWay = beanM.CSrpathWay;
                 ViewBag.cMAServiceType = beanM.CMaserviceType;
                 ViewBag.cSRProcessWay = beanM.CSrprocessWay;
+                ViewBag.cIsSecondFix = beanM.CIsSecondFix;
 
                 ViewBag.pStatus = beanM.CStatus;
                 #endregion
@@ -278,6 +279,7 @@ namespace OneService.Controllers
                 ViewBag.pStatus = "E0001";      //新建
                 ViewBag.cMAServiceType = "";    //請選擇
                 ViewBag.cSRProcessWay = "";     //請選擇
+                ViewBag.cIsSecondFix = "";     //請選擇
             }
             #endregion
 
@@ -286,6 +288,7 @@ namespace OneService.Controllers
             model.ddl_cSRPathWay = ViewBag.cSRPathWay;          //設定報修管道
             model.ddl_cMAServiceType = ViewBag.cMAServiceType;   //設定維護服務種類
             model.ddl_cSRProcessWay = ViewBag.cSRProcessWay;    //設定處理方式
+            model.ddl_cIsSecondFix = ViewBag.cIsSecondFix;      //是否為二修
             #endregion
 
             ViewBag.SRTypeOneList = SRTypeOneList;
@@ -329,6 +332,7 @@ namespace OneService.Controllers
             string CSrtypeThr = formCollection["ddl_cSRTypeThr"].FirstOrDefault();
             string CSrpathWay = formCollection["ddl_cSRPathWay"].FirstOrDefault();
             string CSrprocessWay = formCollection["ddl_cSRProcessWay"].FirstOrDefault();
+            string CIsSecondFix = formCollection["ddl_cIsSecondFix"].FirstOrDefault();
             string CContacterName = formCollection["tbx_cContacterName"].FirstOrDefault();
             string CContactAddress = formCollection["tbx_cContactAddress"].FirstOrDefault();
             string CContactPhone = formCollection["tbx_cContactPhone"].FirstOrDefault();
@@ -366,6 +370,7 @@ namespace OneService.Controllers
                     beanM.CSrtypeThr = CSrtypeThr;
                     beanM.CSrpathWay = CSrpathWay;
                     beanM.CSrprocessWay = CSrprocessWay;
+                    beanM.CIsSecondFix = CIsSecondFix;
                     beanM.CContacterName = CContacterName;
                     beanM.CContactAddress = CContactAddress;
                     beanM.CContactPhone = CContactPhone;
@@ -502,6 +507,7 @@ namespace OneService.Controllers
                     beanNowM.CSrtypeThr = CSrtypeThr;
                     beanNowM.CSrpathWay = CSrpathWay;
                     beanNowM.CSrprocessWay = CSrprocessWay;
+                    beanNowM.CIsSecondFix = CIsSecondFix;
                     beanNowM.CContacterName = CContacterName;
                     beanNowM.CContactAddress = CContactAddress;
                     beanNowM.CContactPhone = CContactPhone;
@@ -1866,6 +1872,11 @@ namespace OneService.Controllers
             #region 處理方式
             public string ddl_cSRProcessWay { get; set; }            
             public List<SelectListItem> ListSRProcessWay = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPROCESS", true);
+            #endregion
+
+            #region 是否為二修
+            public string ddl_cIsSecondFix { get; set; }
+            public List<SelectListItem> ListIsSecondFix = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "ISSECONDFIX", true);
             #endregion
         }
         #endregion

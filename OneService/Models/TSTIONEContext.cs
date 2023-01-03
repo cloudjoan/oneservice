@@ -416,6 +416,11 @@ namespace OneService.Models
                     .HasMaxLength(255)
                     .HasColumnName("cDesc");
 
+                entity.Property(e => e.CIsSecondFix)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cIsSecondFix");
+
                 entity.Property(e => e.CMainEngineerId)
                     .HasMaxLength(20)
                     .HasColumnName("cMainEngineerID");

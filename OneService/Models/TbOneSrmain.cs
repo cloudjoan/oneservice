@@ -20,6 +20,7 @@ namespace OneService.Models
         public string? CSrtypeThr { get; set; }
         public string? CSrpathWay { get; set; }
         public string? CSrprocessWay { get; set; }
+        public string? CIsSecondFix { get; set; }
         public string? CRepairName { get; set; }
         public string? CContacterName { get; set; }
         public string? CContactAddress { get; set; }
