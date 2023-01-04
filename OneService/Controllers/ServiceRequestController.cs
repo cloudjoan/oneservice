@@ -58,7 +58,7 @@ namespace OneService.Controllers
         bool pIsExeEngineer = false;
 
         /// <summary>
-        /// 服務請求ID
+        /// 服務ID
         /// </summary>
         string pSRID = string.Empty;
 
@@ -68,7 +68,7 @@ namespace OneService.Controllers
         string pSysOperationID = "F8EFC55F-FA77-4731-BB45-2F2147244A2D";
 
         /// <summary>
-        /// 程式作業編號檔系統ID(一般服務請求)
+        /// 程式作業編號檔系統ID(一般服務)
         /// </summary>
         static string pOperationID_GenerallySR = "869FC989-1049-4266-ABDE-69A9B07BCD0A";
 
@@ -113,7 +113,7 @@ namespace OneService.Controllers
                 pIsManager = EmpBean.IsManager;
                 #endregion
 
-                #region 一般服務請求
+                #region 一般服務
 
                 //取得登入人員所負責的服務團隊
                 List<string> tSRTeamList = CMF.findSRTeamMappingList(EmpBean.CostCenterID, EmpBean.DepartmentNO);
@@ -136,9 +136,9 @@ namespace OneService.Controllers
         }
         #endregion -----↑↑↑↑↑待辦清單 ↑↑↑↑↑-----   
 
-        #region -----↓↓↓↓↓一般服務請求 ↓↓↓↓↓-----
+        #region -----↓↓↓↓↓一般服務 ↓↓↓↓↓-----
 
-        #region 一般服務請求index
+        #region 一般服務index
         public IActionResult GenerallySR()
         {
             getLoginAccount();
@@ -302,9 +302,9 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 儲存一般服務請求
+        #region 儲存一般服務
         /// <summary>
-        /// 儲存一般服務請求
+        /// 儲存一般服務
         /// </summary>
         /// <returns></returns>
         [HttpPost]
@@ -1433,7 +1433,7 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #endregion -----↑↑↑↑↑一般服務請求 ↑↑↑↑↑-----    
+        #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----    
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 

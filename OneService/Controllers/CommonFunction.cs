@@ -51,7 +51,7 @@ namespace OneService.Controllers
         /// <param name="IsManager">true.管理員 false.非管理員</param>
         /// <param name="tERPID">登入人員ERPID</param>
         /// <param name="tTeamList">可觀看服務團隊清單</param>
-        /// <param name="tType">61.一般服務請求 63.裝機服務請求...</param>
+        /// <param name="tType">61.一般服務 63.裝機服務...</param>
         /// <returns></returns>
         public List<string[]> findSRIDList(string cOperationID, string cCompanyID, bool IsManager, string tERPID, List<string> tTeamList, string tType)
         {            
@@ -60,11 +60,11 @@ namespace OneService.Controllers
 
             switch(tType)
             {
-                case "61":  //一般服務請求
+                case "61":  //一般服務
                     SRIDUserToList = getSRIDLis_Generally(cOperationID, cCompanyID, IsManager, tERPID, tTeamList);
                     break;
 
-                case "63":  //裝機服務請求
+                case "63":  //裝機服務
 
                     break;
             }
@@ -73,9 +73,9 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 取得一般服務請求SRID負責清單
+        #region 取得一般服務SRID負責清單
         /// <summary>
-        /// 取得一般服務請求SRID負責清單
+        /// 取得一般服務SRID負責清單
         /// </summary>
         /// <param name="cOperationID">程式作業編號檔系統ID</param>
         /// <param name="cCompanyID">公司別</param>
@@ -118,7 +118,7 @@ namespace OneService.Controllers
                     tMainEngineerName = dr["cMainEngineerName"].ToString();
                     tModifiedDate = dr["ModifiedDate"].ToString() != "" ? Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss") : "";
 
-                    #region 組待處理服務請求
+                    #region 組待處理服務
                     string[] ProcessInfo = new string[10];
 
                     ProcessInfo[0] = dr["cSRID"].ToString();             //SRID
@@ -148,7 +148,7 @@ namespace OneService.Controllers
                     tMainEngineerName = string.IsNullOrEmpty(bean.CMainEngineerName) ? "" : bean.CMainEngineerName;
                     tModifiedDate = bean.ModifiedDate == DateTime.MinValue ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
 
-                    #region 組待處理服務請求
+                    #region 組待處理服務
                     string[] ProcessInfo = new string[10];
 
                     ProcessInfo[0] = bean.CSrid;            //SRID
@@ -292,7 +292,7 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑待辦清單 ↑↑↑↑↑-----   
 
-        #region -----↓↓↓↓↓一般服務請求 ↓↓↓↓↓-----        
+        #region -----↓↓↓↓↓一般服務 ↓↓↓↓↓-----        
 
         #region 取得所有第一階List清單(報修類別)
         /// <summary>
@@ -803,9 +803,9 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 取得一般服務請求(報修類別說明)
+        #region 取得一般服務(報修類別說明)
         /// <summary>
-        /// 取得一般服務請求(報修類別說明)
+        /// 取得一般服務(報修類別說明)
         /// </summary>
         /// <param name="cKindKey">報修類別ID</param>
         /// <returns></returns>
@@ -824,7 +824,7 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #endregion -----↑↑↑↑↑一般服務請求 ↑↑↑↑↑-----
+        #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 

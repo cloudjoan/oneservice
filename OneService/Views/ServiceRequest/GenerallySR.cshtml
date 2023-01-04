@@ -237,7 +237,7 @@
 
 		//產生SRID
 		function getSRID() {
-			var cTitle = "61";	//SRID開頭編號(一般服務請求)
+			var cTitle = "61";	//SRID開頭編號(一般服務)
 			var cSRID = $("input[name='hid_cSRID']").val();
 			var cGUID = $("input[name='hid_cSystemGUID']").val();
 
@@ -2409,13 +2409,13 @@
 
 	@section breadcrumb_section{
 	<div class="col-lg-10">
-		<h2>一般服務請求</h2>
+		<h2>一般服務</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
-				<a href="#">服務請求管理</a>
+				<a href="#">服務管理</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>一般服務請求</strong>
+				<strong>一般服務</strong>
 			</li>
 		</ol>
 	</div>
@@ -2487,7 +2487,7 @@
 							<input type="hidden" id="hid_cLoginUser_CostCenterID" name="hid_cLoginUser_CostCenterID" value="@ViewBag.cLoginUser_CostCenterID">
 							<!--登人者是否為主管-->
 							<input type="hidden" id="hid_cLoginUser_IsManager" name="hid_cLoginUser_IsManager" value="@ViewBag.pIsManager">
-							<!--程式作業編號檔系統ID(一般服務請求)-->
+							<!--程式作業編號檔系統ID(一般服務)-->
 							<input type="hidden" id="hid_OperationID" name="hid_OperationID" value="@ViewBag.pOperationID">
 							<label class="col-lg-2 col-form-label">狀態</label>
 							<div class="col-lg-4">
