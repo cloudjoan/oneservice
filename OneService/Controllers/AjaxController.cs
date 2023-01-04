@@ -13,6 +13,7 @@ namespace OneService.Controllers
         TAIFContext bpmDB = new TAIFContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
         ERP_PROXY_DBContext proxyDB = new ERP_PROXY_DBContext();
+        PSIPContext psipDB = new PSIPContext();
         public IActionResult Index()
 		{
 			return View();
@@ -169,6 +170,77 @@ namespace OneService.Controllers
             var _oppNo = "0000000000" + oppNo;
             var oppNoFormat = _oppNo.Substring(_oppNo.Length - 10);
             return oppNoFormat;
+        }
+
+        public IActionResult SaveWH(IFormCollection formCollection)
+        {
+            TbWorkingHoursMain bean;
+            int prId = 0;
+            if (!string.IsNullOrEmpty(formCollection["Id"]))
+            {
+                bean = psipDB.TbWorkingHoursMains.Find(int.Parse(formCollection["Id"]));
+                bean.Whtype = formCollection["ddl_WHType"].ToString();
+                bean.ActType = formCollection["ddl_ActType"].ToString();
+                bean.CrmOppNo = formCollection["ddl_CrmOppNo"].ToString();
+                bean.CrmOppName = formCollection["hid_CrmOppName"].ToString();
+                bean.WhDescript = formCollection["tbx_WhDescript"].ToString();
+                bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();
+                bean.EndTime = formCollection["tbx_EndDate"].ToString() + " " + formCollection["hid_EndTime"].ToString();
+                bean.UpdateTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+                prId = bean.PrId ?? 0;
+
+                //計算工時分鐘數
+                DateTime startTime = Convert.ToDateTime(bean.StartTime);
+                DateTime endTime = Convert.ToDateTime(bean.EndTime);
+                TimeSpan ts = endTime - startTime;
+                bean.Labor = Convert.ToInt32(ts.TotalMinutes);
+            }
+            else
+            {
+                bean = new TbWorkingHoursMain();
+                bean.UserName = formCollection["tbx_UserName"].ToString();
+                bean.UserErpId = formCollection["hid_UserErpId"].ToString();
+                bean.Whtype = formCollection["ddl_WHType"].ToString();
+                bean.ActType = formCollection["ddl_ActType"].ToString();
+                bean.CrmOppNo = formCollection["ddl_CrmOppNo"].ToString();
+                bean.CrmOppName = formCollection["hid_CrmOppName"].ToString();
+                bean.WhDescript = formCollection["tbx_WhDescript"].ToString();
+                bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();
+                bean.EndTime = formCollection["tbx_EndDate"].ToString() + " " + formCollection["hid_EndTime"].ToString();
+                bean.InsertTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+
+                //計算工時分鐘數
+                DateTime startTime = Convert.ToDateTime(bean.StartTime);
+                DateTime endTime = Convert.ToDateTime(bean.EndTime);
+                TimeSpan ts = endTime - startTime;
+                bean.Labor = Convert.ToInt32(ts.TotalMinutes);
+
+                psipDB.TbWorkingHoursMains.Add(bean);
+            }
+
+            //如果有商機跟專案管理的話，就需加入專案管理的工時計算
+            if (!string.IsNullOrEmpty(bean.CrmOppNo))
+            {
+                var pjInfoBean = psipDB.TbProPjinfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
+
+                WorkingHoursController workingHoursController = new WorkingHoursController();
+
+                //取得MileStone
+                string ms = workingHoursController.GetMileStone(bean.CrmOppNo, bean.StartTime, bean.EndTime);
+
+                var workHours = Math.Ceiling((decimal)bean.Labor / 60);
+
+                //int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
+                var _prId = workingHoursController.SavePjRecord(prId, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours.ToString(), "", "", bean.WhDescript, "");
+
+                bean.PrId = _prId;
+            }
+
+
+
+            psipDB.SaveChanges();
+
+            return RedirectToAction("CreateWH");
         }
 
         /// <summary>

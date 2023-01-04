@@ -97,6 +97,22 @@
 			});
 		}
 
+		function SaveWH(){
+			$.ajax({
+				url:'@Url.Action("SaveWH", "WorkingHours")',
+				type:'post',
+				dataType:'Json',
+				data:{
+					"id":$("#Id").val(),
+					"ddl_WHType": $("#ddl_WHType2").val(),
+					"ddl_ActType": $("#ddl_ActType2").val(),
+					},
+				success:function(result){
+					console.log(result);
+				}
+			});
+		}
+
 		function GetWHById(id) {
 			$.ajax({
 				url: '@Url.Action("GetWHById", "WorkingHours")',

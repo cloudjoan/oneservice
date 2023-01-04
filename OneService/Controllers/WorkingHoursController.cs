@@ -141,9 +141,14 @@ namespace OneService.Controllers
                 bean.PrId = _prId;
             }
 
-
-
             psipDB.SaveChanges();
+
+            var actionType = formCollection["actionType"].ToString() ?? "NONE";
+
+            if(actionType == "AJAX")
+            {
+                return Json("Finish");
+            }
 
             return RedirectToAction("CreateWH");
         }
