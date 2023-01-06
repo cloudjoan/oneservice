@@ -24,9 +24,9 @@ namespace OneService.Controllers
         //string pLoginAccount = string.Empty;
         //string pLoginAccount = @"etatung\elvis.chang";  //MIS
         //string pLoginAccount = @"etatung\Allen.Chen";    //陳勁嘉(主管)
-        string pLoginAccount = @"etatung\Boyen.Chen";    //陳建良(主管)
+        //string pLoginAccount = @"etatung\Boyen.Chen";    //陳建良(主管)
         //string pLoginAccount = @"etatung\Aniki.Huang";    //黃志豪(主管)
-        //string pLoginAccount = @"etatung\jack.hung";      //洪佑典(主管)
+        string pLoginAccount = @"etatung\jack.hung";      //洪佑典(主管)
         //string pLoginAccount = @"etatung\Wenjui.Chan";    //詹文瑞
 
         /// <summary>全域變數</summary>
@@ -936,7 +936,8 @@ namespace OneService.Controllers
 
             try
             {                
-                QueryToList = CMF.SEARCHWTYList(cSRID, ref NowCount, tURLName, tSeverName);             
+                QueryToList = CMF.SEARCHWTYList(cSRID, ref NowCount, tURLName, tSeverName);
+                QueryToList = QueryToList.OrderBy(x => x.cSerialID).ThenByDescending(x => x.cWTYEDATE).ToList();
             }
             catch (Exception ex)
             {
