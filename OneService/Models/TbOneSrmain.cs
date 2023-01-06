@@ -12,7 +12,6 @@ namespace OneService.Models
         public string? CNotes { get; set; }
         public string? CAttatchement { get; set; }
         public string? CStatus { get; set; }
-        public string? CMaunit { get; set; }
         public string? CMaserviceType { get; set; }
         public string? CDelayReason { get; set; }
         public string? CSrtypeOne { get; set; }

@@ -433,10 +433,6 @@ namespace OneService.Models
                     .HasMaxLength(3)
                     .HasColumnName("cMAServiceType");
 
-                entity.Property(e => e.CMaunit)
-                    .HasMaxLength(4)
-                    .HasColumnName("cMAUnit");
-
                 entity.Property(e => e.CNotes)
                     .HasMaxLength(2000)
                     .HasColumnName("cNotes");
