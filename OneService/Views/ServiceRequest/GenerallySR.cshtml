@@ -1156,6 +1156,7 @@
 			var tbx_cContactEmail	= $("#tbx_cContactEmail");		//客戶聯絡人Email
 
 			Name = Name.replace(/\’/g, "'");					//單引號，全型->半型
+			City = City.replace(/\’/g, "'");					//單引號，全型->半型
 			Address = Address.replace(/\’/g, "'");			//單引號，全型->半型
 			phone = phone.replace(/\’/g, "'");				//單引號，全型->半型
 			
@@ -1165,7 +1166,7 @@
 			else
 			{
 				tbx_cContacterName.val(Name);
-				tbx_cContactAddress.val(Address);
+				tbx_cContactAddress.val(City + Address);
 				tbx_cContactPhone.val(phone);
 				tbx_cContactEmail.val(Email);
 			}
