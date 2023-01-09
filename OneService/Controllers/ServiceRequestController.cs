@@ -1671,7 +1671,8 @@ namespace OneService.Controllers
         {
             string tBpmNo = "GenerallySR";
 
-            var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
+            var bean = dbProxy.CustomerContacts.FirstOrDefault(x => (x.Disabled == null || x.Disabled != 1) && 
+                                                                 x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
 
             if (bean != null) //修改
             {
