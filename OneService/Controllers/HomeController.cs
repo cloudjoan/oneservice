@@ -35,7 +35,15 @@ namespace OneService.Controllers
 
         public IActionResult Login()
         {
-            return View();
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == "true")
+            {
+                return RedirectToAction("Index", "WorkingHours");
+            }
+            else
+            {
+                return View();
+            }
+            
         }
 
         public IActionResult DoLogin(IFormCollection formCollection)

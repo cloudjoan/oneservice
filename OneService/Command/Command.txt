@@ -4,7 +4,7 @@ dotnet ef dbcontext scaffold "Server=172.31.7.66;Database=PSIP;User=psip;Passwor
 #PSIP-QAS
 dotnet ef dbcontext scaffold "Server=172.31.7.67;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -t TB_PRO_PJINFO -t TB_PRO_SUPPORT_EMP -t VIEW_WORKING_HOURS -t VIEW_PRO_SUPPORT_EMP -f
 
-#BI TSTI-WD
+#BI TSTI-DW
 dotnet ef dbcontext scaffold "Server=172.31.7.94;Database=BI;User=biread;Password=!QAZ2wsx" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MART_AnalyseServiceRequestLabor -f
 
 #BPMDB
