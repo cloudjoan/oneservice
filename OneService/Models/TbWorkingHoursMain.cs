@@ -20,5 +20,6 @@ namespace OneService.Models
         public string? InsertTime { get; set; }
         public string? UpdateTime { get; set; }
         public int? Disabled { get; set; }
+        public string? ModifyUser { get; set; }
     }
 }

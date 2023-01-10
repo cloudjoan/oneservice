@@ -23,6 +23,11 @@ namespace OneService.Controllers
 
         public IActionResult Index()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) ==null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             var userAccount = User.Identity.Name;
             System.Diagnostics.Debug.WriteLine(userAccount);
 
@@ -56,13 +61,22 @@ namespace OneService.Controllers
         public IActionResult GetSRLabor(string erpId, string whType, string startDate, string endDate)
         {
 
-            var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId && (string.IsNullOrEmpty(whType)?true: x.Whtype == whType));
+            var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId && (string.IsNullOrEmpty(whType)?true: x.Whtype == whType)).ToList();
+
+            viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(startDate) ? true : Convert.ToDateTime(x.FinishTime) >= Convert.ToDateTime(startDate)).ToList();
+            viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(endDate) ? true : Convert.ToDateTime(x.FinishTime) <= Convert.ToDateTime(endDate)).ToList();
+
             ViewBag.viewWHBeans = viewWHBeans;
             return View();
         }
 
         public IActionResult CreateWH()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             ViewBag.now = string.Format("{0:yyyy-MM-dd}", DateTime.Now);
             ViewBag.deptName = HttpContext.Session.GetString(SessionKey.DEPT_NAME);
             ViewBag.userName = HttpContext.Session.GetString(SessionKey.USER_NAME);
@@ -94,6 +108,7 @@ namespace OneService.Controllers
                 bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();
                 bean.EndTime = formCollection["tbx_EndDate"].ToString() + " " + formCollection["hid_EndTime"].ToString();
                 bean.UpdateTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+                bean.ModifyUser = HttpContext.Session.GetString(SessionKey.USER_NAME);
                 prId = bean.PrId ?? 0;
 
                 //計算工時分鐘數
@@ -115,6 +130,7 @@ namespace OneService.Controllers
                 bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();
                 bean.EndTime = formCollection["tbx_EndDate"].ToString() + " " + formCollection["hid_EndTime"].ToString();
                 bean.InsertTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+                bean.ModifyUser = HttpContext.Session.GetString(SessionKey.USER_NAME);
 
                 //計算工時分鐘數
                 DateTime startTime = Convert.ToDateTime(bean.StartTime);

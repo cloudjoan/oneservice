@@ -118,8 +118,8 @@
 			var endTime = new Date($("#tbx_EndDate").val() + ' ' + $("#hid_EndTime").val());
 			console.log(startTime);
 			console.log(endTime);
-			if(startTime > endTime){
-				showDialog('錯誤!', '開始時間不得晚於結束時間！');
+			if(startTime >= endTime){
+				showDialog('錯誤!', '開始時間不得等於或晚於結束時間！');
 				return false;
 			}
 
@@ -133,7 +133,7 @@
 		<h2>工時登錄</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
-				<a href="#">工時登錄</a>
+				<a href="#">工時管理</a>
 			</li>
 			<li class="breadcrumb-item active">
 				<strong>工時登錄</strong>
@@ -299,8 +299,8 @@
 									</td>
 									<td>@bean.StartTime ~ @bean.EndTime</td>
 									<td>@bean.Labor</td>
-									<td>@whTypeDict[@bean.Whtype]</td>
-									<td>@actTypeDict[@bean.ActType]</td>
+									<td>@(whTypeDict[@bean.Whtype]??"")</td>
+									<td>@(actTypeDict[@bean.ActType]??"")</td>
 									<td>@bean.CrmOppName </td>
 									<td>@bean.WhDescript</td>
 								</tr>

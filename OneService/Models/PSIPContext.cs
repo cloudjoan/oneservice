@@ -497,6 +497,8 @@ namespace OneService.Models
 
                 entity.Property(e => e.InsertTime).HasMaxLength(22);
 
+                entity.Property(e => e.ModifyUser).HasMaxLength(30);
+
                 entity.Property(e => e.StartTime).HasMaxLength(22);
 
                 entity.Property(e => e.UpdateTime)

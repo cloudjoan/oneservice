@@ -81,7 +81,9 @@
 				dataType: 'json',
 				data: {
 					erpId: $("#hie_ErpId").val(),
-					whType: $("#ddl_WHType").val()
+					whType: $("#ddl_WHType").val(),
+					startDate: $("#tbx_StartDate").val(),
+					endDate: $("#tbx_EndDate").val()
 				},
 				success: function (result) {
 				},
@@ -91,26 +93,46 @@
 			});
 		}
 
-		function clear(){
-			$.each($(":text"), function (i, obj) {
-				$(obj).val('');
-			});
+		function clearWidget(){
+			//$.each($(":text"), function (i, obj) {
+			//	$(obj).val('');
+			//});
+			$("#ddl_WHType").val('');
+			$("#tbx_StartDate").val('');
+			$("#tbx_EndDate").val('');
+			$("#dataDiv").html('');
 		}
 
 		function SaveWH(){
-			$.ajax({
-				url:'@Url.Action("SaveWH", "WorkingHours")',
-				type:'post',
-				dataType:'Json',
-				data:{
-					"id":$("#Id").val(),
-					"ddl_WHType": $("#ddl_WHType2").val(),
-					"ddl_ActType": $("#ddl_ActType2").val(),
+			if(checkForm()){
+				$.ajax({
+					url: '@Url.Action("SaveWH", "WorkingHours")',
+					type: 'post',
+					dataType: 'Json',
+					data: {
+						"id": $("#Id").val(),
+						"ddl_WHType": $("#ddl_WHType2").val(),
+						"ddl_ActType": $("#ddl_ActType2").val(),
+						"ddl_CrmOppNo": $("#ddl_CrmOppNo").val(),
+						"hid_CrmOppName": $("#hid_CrmOppName").val(),
+						"tbx_WhDescript": $("#tbx_WhDescript").val(),
+						"tbx_StartDate": $("#tbx_StartDate2").val(),
+						"hid_StartTime": $("#hid_StartTime").val(),
+						"tbx_EndDate": $("#tbx_EndDate2").val(),
+						"hid_EndTime": $("#hid_EndTime").val(),
+						"actionType": "AJAX"
 					},
-				success:function(result){
-					console.log(result);
-				}
-			});
+					success: function (result) {
+						console.log(result);
+						if (result == "Finish") {
+							showDialog("完成", "儲存完成！");
+							$("#modifyDialog").modal("hide");
+							SearchSRLabor();
+						}
+					}
+				});
+			}
+
 		}
 
 		function GetWHById(id) {
@@ -164,10 +186,34 @@
 						if (result == 'OK') {
 							$(obj).parent().parent().hide();
 						}
+						SearchSRLabor();
 					}
 				});
 			}
 
+		}
+
+		function ActiveBtn(targetId, disabledClassName, obj) {
+			$(disabledClassName).removeClass("active");
+			$("#" + targetId).val($(obj).val());
+			$(obj).addClass("active");
+
+			//預估工時
+			var startTime = new Date($("#tbx_StartDate2").val() + ' ' + $("#hid_StartTime").val());
+			var endTime = new Date($("#tbx_EndDate2").val() + ' ' + $("#hid_EndTime").val());
+			$("#lb_CalLabor").html("預估工時(分)：" + (endTime - startTime) / (1000 * 60));
+		}
+
+		function checkForm() {
+			var startTime = new Date($("#tbx_StartDate2").val() + ' ' + $("#hid_StartTime").val());
+			var endTime = new Date($("#tbx_EndDate2").val() + ' ' + $("#hid_EndTime").val());
+			console.log(startTime);
+			console.log(endTime);
+			if(startTime >= endTime){
+				alert('開始時間不得等於或晚於結束時間！');
+				return false;
+			}
+			return true;
 		}
 
 	</script>
@@ -176,13 +222,13 @@
 
 @section breadcrumb_section{
 	<div class="col-lg-10">
-		<h2>工作管理</h2>
+		<h2>工時管理</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
 				<a href="#">工時管理</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>工時管理</strong>
+				<strong>工時查詢</strong>
 			</li>
 		</ol>
 	</div>
@@ -245,7 +291,7 @@
 						<!-- 檔案上傳end-->
 						<div class="hr-line-dashed"></div>
 						<button class="btn btn-primary btn-lg" type="button" onclick="SearchSRLabor()"><i class="fa fa-search"></i> 查 詢 </button>
-						<button class="btn btn-default btn-lg" type="button" onclick="clear()"><i class="fa fa-eraser"></i> 清 除 </button>
+						<button class="btn btn-default btn-lg" type="button" onclick="clearWidget()"><i class="fa fa-eraser"></i> 清 除 </button>
 					</form>
 				</div>
 			</div>
@@ -254,7 +300,7 @@
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>DataTable列表</h5>
+					<h5>工時列表</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
@@ -273,12 +319,12 @@
 		<div class="modal-dialog modal-lg" role="document" style="max-width:70%">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="dialogTitle">修改工時</h5>
+					<h5 class="modal-title">修改工時</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="modal-body" id="dialogContent">
+				<div class="modal-body" id="WHContent">
 					<input type="hidden" id="Id" name="Id" />
 					<div class="form-group row">
 						<label class="col-lg-2 col-form-label">同仁姓名：</label>
@@ -363,8 +409,10 @@
 						<input type="hidden" id="hid_EndTime" name="hid_EndTime" />
 					</div>
 				</div>
+				<label id="lb_CalLabor" class="col-form-label"></label>
 				</div>
 				<div class="modal-footer">
+					<button type="button" class="btn btn-success btn-lg" onclick="SaveWH()"><i class="fa fa-"></i> 儲存 </button>
 					<button id="Button2" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">關閉</button>
 				</div>
 			</div>
