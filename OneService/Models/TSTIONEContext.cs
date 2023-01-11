@@ -277,6 +277,10 @@ namespace OneService.Models
 
                 entity.Property(e => e.CId).HasColumnName("cID");
 
+                entity.Property(e => e.CAdvice)
+                    .HasMaxLength(2000)
+                    .HasColumnName("cAdvice");
+
                 entity.Property(e => e.CBpmformNo)
                     .HasMaxLength(50)
                     .IsUnicode(false)

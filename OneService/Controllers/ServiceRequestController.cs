@@ -429,6 +429,7 @@ namespace OneService.Controllers
                     string[] WAcSLASRV = formCollection["hidcSLASRV"];
                     string[] WAcContractID = formCollection["hidcContractID"];
                     string[] WAcBPMFormNo = formCollection["hidcBPMFormNo"];
+                    string[] WAcAdvice = formCollection["hidcAdvice"];
                     string[] WACheckUsed = formCollection["hid_CheckUsed"];
 
                     int countWA = WAcSerialID.Length;
@@ -456,6 +457,7 @@ namespace OneService.Controllers
                         beanD.CSlasrv = WAcSLASRV[i];
                         beanD.CContractId = WAcContractID[i];
                         beanD.CBpmformNo = WAcBPMFormNo[i];
+                        beanD.CAdvice = WAcAdvice[i];
                         beanD.CUsed = WACheckUsed[i];
 
                         beanD.CreatedDate = DateTime.Now;
@@ -579,6 +581,7 @@ namespace OneService.Controllers
                     string[] WAcSLASRV = formCollection["hidcSLASRV"];
                     string[] WAcContractID = formCollection["hidcContractID"];
                     string[] WAcBPMFormNo = formCollection["hidcBPMFormNo"];
+                    string[] WAcAdvice = formCollection["hidcAdvice"];
                     string[] WACheckUsed = formCollection["hid_CheckUsed"];
 
                     int countWA = WAcSerialID.Length;
@@ -606,6 +609,7 @@ namespace OneService.Controllers
                         beanD.CSlasrv = WAcSLASRV[i];
                         beanD.CContractId = WAcContractID[i];
                         beanD.CBpmformNo = WAcBPMFormNo[i];
+                        beanD.CAdvice = WAcAdvice[i];
                         beanD.CUsed = WACheckUsed[i];
 
                         beanD.CreatedDate = DateTime.Now;
@@ -1928,6 +1932,8 @@ namespace OneService.Controllers
             public string cBPMFormNo { get; set; }
             /// <summary>保固申請Url(BPM表單編號Url)</summary>
             public string cBPMFormNoUrl { get; set; }
+            /// <summary>客服主管建議</summary>
+            public string cAdvice { get; set; }
             /// <summary>本次使用</summary>
             public string cUsed { get; set; }
             /// <summary>tr背景顏色Class</summary>

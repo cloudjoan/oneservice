@@ -486,7 +486,8 @@ namespace OneService.Controllers
             string cSLASRV = string.Empty;
             string cContractID = string.Empty;
             string cContractIDURL = string.Empty;
-            string tBPMNO = string.Empty;            
+            string tBPMNO = string.Empty;
+            string tAdvice = string.Empty;
             string tURL = string.Empty;
             string tBGColor = "table-success";
 
@@ -542,6 +543,7 @@ namespace OneService.Controllers
                             cSLASRV = data["ET_WARRANTY"]["SyncRoot"][i]["sLARESPField"].ToString().Trim();      //服務條件
                             cContractID = data["ET_WARRANTY"]["SyncRoot"][i]["cONTRACTField"].ToString().Trim(); //合約編號
                             tBPMNO = data["ET_WARRANTY"]["SyncRoot"][i]["bPM_NOField"].ToString().Trim();        //BPM表單編號
+                            tAdvice = data["ET_WARRANTY"]["SyncRoot"][i]["aDVICEField"].ToString().Trim();       //客服主管建議
 
                             #region 取得BPM Url
                             if (cContractID != "")
@@ -597,7 +599,8 @@ namespace OneService.Controllers
                             QueryInfo.cContractID = cContractID;        //合約編號
                             QueryInfo.cContractIDUrl = cContractIDURL;  //合約編號Url
                             QueryInfo.cBPMFormNo = tBPMNO;              //BPM表單編號                        
-                            QueryInfo.cBPMFormNoUrl = tURL;             //BPM URL                    
+                            QueryInfo.cBPMFormNoUrl = tURL;             //BPM URL
+                            QueryInfo.cAdvice = tAdvice;               //客服主管建議
                             QueryInfo.cUsed = "N";
                             QueryInfo.cBGColor = tBGColor;             //tr背景顏色Class
 
@@ -642,6 +645,7 @@ namespace OneService.Controllers
             string cContractIDURL = string.Empty;
             string tBPMNO = string.Empty;
             string tURL = string.Empty;
+            string tAdvice = string.Empty;
             string cUsed = string.Empty;
             string tBGColor = "table-success";
             string TempSERIAL = string.Empty;
@@ -687,6 +691,7 @@ namespace OneService.Controllers
                     cSLASRV = bean.CSlasrv;                                             //服務條件
                     cContractID = bean.CContractId;                                     //合約編號
                     tBPMNO = bean.CBpmformNo;                                           //BPM表單編號
+                    tAdvice = bean.CAdvice;                                             //客服主管建議
                     cUsed = bean.CUsed;                                                 //本次使用
 
                     #region 取得BPM Url
@@ -743,7 +748,8 @@ namespace OneService.Controllers
                     QueryInfo.cContractID = cContractID;        //合約編號
                     QueryInfo.cContractIDUrl = cContractIDURL;  //合約編號Url
                     QueryInfo.cBPMFormNo = tBPMNO;              //BPM表單編號                        
-                    QueryInfo.cBPMFormNoUrl = tURL;             //BPM URL                    
+                    QueryInfo.cBPMFormNoUrl = tURL;             //BPM URL
+                    QueryInfo.cAdvice = tAdvice;               //客服主管建議                                           
                     QueryInfo.cUsed = cUsed;                   //本次使用
                     QueryInfo.cBGColor = tBGColor;             //tr背景顏色Class
 

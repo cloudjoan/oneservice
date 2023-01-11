@@ -16,6 +16,7 @@ namespace OneService.Models
         public string? CSlasrv { get; set; }
         public string? CContractId { get; set; }
         public string? CBpmformNo { get; set; }
+        public string? CAdvice { get; set; }
         public string? CUsed { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }

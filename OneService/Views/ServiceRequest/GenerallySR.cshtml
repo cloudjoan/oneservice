@@ -1812,6 +1812,9 @@
 								+ "    <a href=" + bean.cBPMFormNoUrl + ">" + bean.cBPMFormNo + "</a>"
 								+ "    <input type='hidden' name='hidcBPMFormNo' value=" + bean.cBPMFormNo + ">"
 								+ "</td>"
+								+ "<td class='hidWAAdvice' style='vertical-align: middle;'>" + bean.cAdvice
+								+ "    <input type='hidden' name='hidcAdvice' value=" + bean.cAdvice + ">"
+								+ "</td>"
 								+ '<td>'
 								+ '    <label class="i-checks">'
 								+ "	       <input id='CheckThisID" + bean.cID + "' name='CheckUsed' class='AllCheck' type='checkbox' " + tIsCheck + ">"
@@ -1834,6 +1837,7 @@
 								+ "<th>SLA服務條件</th>"
 								+ "<th>合約編號</th>"
 								+ "<th>保固申請</th>"
+								+ "<th>客服主管建議</th>"
 								+ "<th>本次使用</th>"							    
                                 + "</tr></thead><tbody>"
                                 + list
@@ -1909,6 +1913,9 @@
 									+ "    <a href=" + bean.cBPMFormNoUrl + ">" + bean.cBPMFormNo + "</a>"
 									+ "    <input type='hidden' name='hidcBPMFormNo' value=" + bean.cBPMFormNo + ">"
 									+ "</td>"
+									+ "<td class='hidWAAdvice' style='vertical-align: middle;'>" + bean.cAdvice
+									+ "    <input type='hidden' name='hidcAdvice' value=" + bean.cAdvice + ">"
+									+ "</td>"
 									+ '<td>'
 									+ '    <label class="i-checks">'
 									+ "	       <input id='CheckThisID" + bean.cID + "' name='CheckUsed' class='AllCheck' type='checkbox' " + tIsCheck + ">"
@@ -1931,6 +1938,7 @@
 									+ "<th>SLA服務條件</th>"
 									+ "<th>合約編號</th>"
 									+ "<th>保固申請</th>"
+									+ "<th>客服主管建議</th>"
 									+ "<th>本次使用</th>"							    
 									+ "</tr></thead><tbody>"
 									+ list
