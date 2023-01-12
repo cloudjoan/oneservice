@@ -404,7 +404,7 @@ namespace OneService.Controllers
             string tKEY = string.Empty;
             string tNAME = string.Empty;
 
-            var beans = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0);
+            var beans = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && !(x.CTeamOldId.Contains("SRV.1217") || x.CTeamOldId.Contains("SRV.1227") || x.CTeamOldId.Contains("SRV.1237")));
 
             var tList = new List<SelectListItem>();
             tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
