@@ -63,8 +63,8 @@ namespace OneService.Controllers
 
             var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId && (string.IsNullOrEmpty(whType)?true: x.Whtype == whType)).ToList();
 
-            viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(startDate) ? true : Convert.ToDateTime(x.FinishTime) >= Convert.ToDateTime(startDate)).ToList();
-            viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(endDate) ? true : Convert.ToDateTime(x.FinishTime) <= Convert.ToDateTime(endDate)).ToList();
+            viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(startDate) ? true : Convert.ToDateTime(x.FinishTime) >= Convert.ToDateTime(startDate + " 00:00")).ToList();
+            viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(endDate) ? true : Convert.ToDateTime(x.FinishTime) <= Convert.ToDateTime(endDate + " 23:59")).ToList();
 
             ViewBag.viewWHBeans = viewWHBeans;
             return View();

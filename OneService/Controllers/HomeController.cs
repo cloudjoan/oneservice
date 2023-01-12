@@ -35,15 +35,22 @@ namespace OneService.Controllers
 
         public IActionResult Login()
         {
-            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == "true")
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != null && HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == "true")
             {
                 return RedirectToAction("Index", "WorkingHours");
             }
             else
             {
+                ViewBag.errorMsg = HttpContext.Session.GetString(SessionKey.LOGIN_MESSAGE);
                 return View();
             }
             
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
         }
 
         public IActionResult DoLogin(IFormCollection formCollection)
@@ -67,6 +74,7 @@ namespace OneService.Controllers
             {
                 HttpContext.Session.SetString(SessionKey.LOGIN_STATUS, "false");
                 HttpContext.Session.SetString(SessionKey.LOGIN_MESSAGE, "帳號或密碼錯誤？");
+                
                 return RedirectToAction("Login");
             }
 

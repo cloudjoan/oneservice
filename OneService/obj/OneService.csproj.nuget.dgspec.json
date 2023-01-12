@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\VSProject\\oneservice\\OneService\\OneService.csproj": {}
+    "D:\\VSProject\\OneService\\OneService\\OneService.csproj": {}
   },
   "projects": {
-    "D:\\VSProject\\oneservice\\OneService\\OneService.csproj": {
+    "D:\\VSProject\\OneService\\OneService\\OneService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\VSProject\\oneservice\\OneService\\OneService.csproj",
+        "projectUniqueName": "D:\\VSProject\\OneService\\OneService\\OneService.csproj",
         "projectName": "OneService",
-        "projectPath": "D:\\VSProject\\oneservice\\OneService\\OneService.csproj",
+        "projectPath": "D:\\VSProject\\OneService\\OneService\\OneService.csproj",
         "packagesPath": "C:\\Users\\leon.huang.ETATUNG\\.nuget\\packages\\",
-        "outputPath": "D:\\VSProject\\oneservice\\OneService\\obj\\",
+        "outputPath": "D:\\VSProject\\OneService\\OneService\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\leon.huang.ETATUNG\\AppData\\Roaming\\NuGet\\NuGet.Config",

@@ -160,7 +160,7 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">同仁姓名：</label>
 							<div class="col-lg-4">
-								<input type="text" id="tbx_UserName" name="tbx_UserName" class="form-control" placeholder="姓名" value="@ViewBag.userName" required>
+								<input type="text" id="tbx_UserName" name="tbx_UserName" class="form-control" placeholder="姓名" value="@ViewBag.userName" onfocus="this.blur()" required>
 								<input type="hidden" id="hid_UserErpId" name="hid_UserErpId" value="@ViewBag.userErpId" />
 							</div>
 							<label class="col-lg-6 col-form-label">@ViewBag.deptName </label>
@@ -257,9 +257,10 @@
 							</div>
 						</div>
 						<!-- 檔案上傳end-->
+
 						<div class="hr-line-dashed"></div>
 						<button class="btn btn-success btn-lg" type="submit"><i class="fa fa-plus"></i> 儲 存 </button>
-						<button class="btn btn-primary btn-lg" type="button" onclick="searchCust()">
+						<button class="btn btn-primary btn-lg" type="button" onclick="searchCust()" hidden="hidden">
 							<i class="fa fa-search"></i> 查 詢
 						</button>
 					</form>

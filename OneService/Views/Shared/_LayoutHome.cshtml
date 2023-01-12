@@ -1,4 +1,42 @@
-﻿<!DOCTYPE html>
+﻿@using OneService.Utils
+
+<!DOCTYPE html
+@{
+	//根據時間顯示不同問候及icon
+	var greeting = "";
+	var greetingIcon = "";
+	@*var empName = HttpContextAccessor.HttpContext.Session.GetString(SessionKey.USER_NAME);*@
+
+	if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 05:00:00}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-bed'></i>";
+		greeting = "晚安！";
+	}
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 11:00:00}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-sun-o'></i>";
+		greeting = "早安！";
+	}
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 17:30:00}", DateTime.Now)))
+	{
+		//greetingIcon = "<i class='fa fa-line-chart'></i>";
+		greetingIcon = "<i class='fa fa-coffee'></i>";
+		greeting = "午安！";
+	}
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 23:00:00}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-moon-o'></i>";
+		greeting = "晚安！";
+	}
+	@*時間如果寫24:00:00會錯誤，因為跟00:00:00重疊*@
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 23:59:59}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-bed'></i>";
+		greeting = "晚安！";
+	}
+
+
+}>
 
 <html>
 <head>
@@ -135,7 +173,9 @@
 						</form>
 					</div>
 					<ul class="nav navbar-top-links navbar-right">
-						<img src="~/img/logo.gif" />
+						<label style="margin-top: auto; margin-bottom: auto; margin-right: 15px; font-size: 20px; font-family: 'Microsoft JhengHei';">@Html.Raw(greetingIcon)&nbsp;&nbsp;@greeting <a href="javascript:logout()">  登 出</a></label>
+						
+						@*<img src="~/img/logo.gif" />*@
 						<!--
 							<li>
 								<span class="m-r-sm text-muted welcome-message">Welcome .</span>
@@ -353,6 +393,12 @@
 			$("#dialogTitle").html(title);
 			$("#dialogContent").html(message);
 			$("#bulletinDialog").modal("show");
+		}
+
+		function logout(){
+			if(confirm("確定登出?")){
+				window.location.href = "@Url.Action("Logout", "Home")";
+			}
 		}
 
 
