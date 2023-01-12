@@ -186,7 +186,7 @@ namespace OneService.Controllers
             #endregion
 
             #region 取得服務團隊清單
-            var SRTeamIDList = CMF.findSRTeamIDList();           
+            var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode);           
             #endregion
 
             #region 取得SRID

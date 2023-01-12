@@ -396,20 +396,30 @@ namespace OneService.Controllers
         /// <summary>
         /// 取得服務團隊清單
         /// </summary>
+        /// <param name="pCompanyCode">公司別(T012、T016、C069、T022)</param>
         /// <returns></returns>
-        public List<SelectListItem> findSRTeamIDList()
+        public List<SelectListItem> findSRTeamIDList(string pCompanyCode)
         {
             List<string> tTempList = new List<string>();
 
             string tKEY = string.Empty;
             string tNAME = string.Empty;
 
-            var beans = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && !(x.CTeamOldId.Contains("SRV.1217") || x.CTeamOldId.Contains("SRV.1227") || x.CTeamOldId.Contains("SRV.1237")));
+            List<TbOneSrteamMapping> TeamList = new List<TbOneSrteamMapping>();
+            
+            if (pCompanyCode == "T016")
+            {
+                TeamList = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && (x.CTeamOldId.Contains("SRV.1217") || x.CTeamOldId.Contains("SRV.1227") || x.CTeamOldId.Contains("SRV.1237"))).ToList();
+            }
+            else
+            {
+                TeamList = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && !(x.CTeamOldId.Contains("SRV.1217") || x.CTeamOldId.Contains("SRV.1227") || x.CTeamOldId.Contains("SRV.1237"))).ToList();
+            }
 
             var tList = new List<SelectListItem>();
             tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
 
-            foreach (var bean in beans)
+            foreach (var bean in TeamList)
             {
                 if (!tTempList.Contains(bean.CTeamOldId))
                 {
