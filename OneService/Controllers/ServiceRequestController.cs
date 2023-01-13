@@ -1438,6 +1438,61 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 刪除聯絡人
+        /// <summary>
+        /// 刪除聯絡人
+        /// </summary>        
+        /// <param name="cContactID">客戶聯絡人GUID</param>
+        /// <returns></returns>
+        public IActionResult DeletepjContact(string cContactID)
+        {
+            string reValue = string.Empty;
+                
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion            
+
+            try
+            {
+                #region 刪除聯絡人
+                var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.ContactId.ToString() == cContactID);
+
+                if (bean != null)
+                {
+                    bean.Disabled = 1;
+                    dbProxy.SaveChanges();
+                }
+                #endregion
+
+                #region 紀錄刪除log
+                TbOneLog logBean = new TbOneLog
+                {
+                    CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
+                    EventName = "DeletepjContact",
+                    Log = "刪除聯絡人_舊值: " + cContactID + "; 新值: " + cContactID,
+                    CreatedUserName = ViewBag.cLoginUser_Name,
+                    CreatedDate = DateTime.Now
+                };
+
+                dbOne.TbOneLogs.Add(logBean);
+                dbOne.SaveChanges();
+                #endregion
+            }
+            catch (Exception e)
+            {
+                return Json("DeletepjContact Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----    
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
@@ -1655,7 +1710,44 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region Ajax儲存客戶聯絡人
+        #region Ajax儲存客戶聯絡人(for編輯)
+        /// <summary>
+        /// /Ajax儲存客戶聯絡人
+        /// </summary>        
+        /// <param name="cEditContactID">程式作業編號檔系統ID</param>
+        /// <param name="cBUKRS">工廠別(T012、T016、C069、T022)</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cCustomerName">客戶名稱</param>
+        /// <param name="cEditContactName">客戶聯絡人姓名</param>
+        /// <param name="cEditContactCity">客戶聯絡人城市</param>
+        /// <param name="cEditContactAddress">客戶聯絡人地址</param>
+        /// <param name="cEditContactPhone">客戶聯絡人電話</param>
+        /// <param name="cEditContactEmail">客戶聯絡人Email</param>
+        /// <param name="ModifiedUserName">修改人姓名</param>        
+        /// <returns></returns>
+        public IActionResult SaveEditContactInfo(string cEditContactID, string cBUKRS, string cCustomerID, string cCustomerName, string cEditContactName,
+                                               string cEditContactCity, string cEditContactAddress, string cEditContactPhone, string cEditContactEmail, string ModifiedUserName)
+        {
+            var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.ContactId.ToString() == cEditContactID);
+
+            if (bean != null) //修改
+            {
+                bean.ContactCity = cEditContactCity;
+                bean.ContactAddress = cEditContactAddress;
+                bean.ContactPhone = cEditContactPhone;
+                bean.ContactEmail = cEditContactEmail;
+
+                bean.ModifiedUserName = ModifiedUserName;
+                bean.ModifiedDate = DateTime.Now;
+            }           
+
+            var result = dbProxy.SaveChanges();
+
+            return Json(result);
+        }
+        #endregion
+
+        #region Ajax儲存客戶聯絡人(for新增)
         /// <summary>
         /// /Ajax儲存客戶聯絡人
         /// </summary>        
@@ -1832,7 +1924,28 @@ namespace OneService.Controllers
             
             return Json(contentObj);
         }
-        #endregion       
+        #endregion
+
+        #region Ajax用關鍵字查詢聯絡人資訊
+        /// <summary>
+        /// Ajax用關鍵字查詢聯絡人資訊
+        /// </summary>
+        /// <param name="cBUKRS">工廠別(T012、T016、C069、T022)</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="keyword">姓名關鍵字</param>        
+        /// <returns></returns>
+        public IActionResult AjaxfindContactByKeyword(string cBUKRS, string cCustomerID,  string keyword)
+        {
+            object contentObj = null;
+
+            string tBpmNo = "GenerallySR";
+
+            contentObj = dbProxy.CustomerContacts.Where(x => (x.Disabled == null || x.Disabled != 1) &&
+                                                           x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName.Contains(keyword));
+
+            return Json(contentObj);
+        }
+        #endregion  
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----    
 
