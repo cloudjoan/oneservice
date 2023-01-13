@@ -108,6 +108,8 @@ function delFile(fileId, fileZoneObjId) {
         $("#" + fileZoneObjId).val($("#" + fileZoneObjId).val().replace(fileId + ",", ""));
     }
 }
+//jquery3要用dropzone加這一行才行
+Dropzone.autoDiscover = false;
 
 //初始化dropzone
 function dropzoneInit() {
