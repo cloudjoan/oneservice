@@ -1271,6 +1271,42 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得服務團隊清單(回傳SelectListItem)
+        /// <summary>
+        /// 取得服務團隊清單(回傳SelectListItem)
+        /// </summary>        
+        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
+        /// <returns></returns>
+        public List<SelectListItem> findSRTeamMappingListItem(bool cEmptyOption)
+        {
+            var tList = new List<SelectListItem>();
+            List<string> tTempList = new List<string>();
+
+            string tKEY = string.Empty;
+            string tNAME = string.Empty;
+
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0);
+
+            if (cEmptyOption)
+            {
+                tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
+            }
+
+            foreach (var bean in beans)
+            {
+                if (!tTempList.Contains(bean.CTeamOldId))
+                {
+                    tNAME = bean.CTeamOldId + "_" + bean.CTeamOldName;
+
+                    tList.Add(new SelectListItem { Text = tNAME, Value = bean.CTeamOldId });
+                    tTempList.Add(bean.CTeamOldId);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
         #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
         /// <summary>
         /// 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)

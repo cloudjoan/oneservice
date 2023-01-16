@@ -1,0 +1,532 @@
+﻿@{
+	ViewData["Title"] = "SRCustomerEmailMapping";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>
+		$(document).ready(function () {
+			initTable();
+			SRCustomerSearch();
+			CustSearch();
+		});
+
+		function initTable() {
+			var buttonCommon = {
+				exportOptions: {
+					format: {
+						body: function (data, row, column, node) {
+							//替換&符號
+							var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+								translate = {
+									'nbsp': String.fromCharCode(160),
+									'amp': '&',
+									'quot': '"',
+									'lt': '<',
+									'gt': '>'
+								},
+								translator = function ($0, $1) {
+									return translate[$1];
+								};
+
+							if (typeof data === 'string')
+								data = data.replace(translate_re, translator);
+
+							return data;
+						}
+					}
+				}
+			};
+
+			$('#tableAll').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				order: [[0, "desc"]],
+				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+				buttons: [
+					$.extend(true, {}, buttonCommon, {
+						extend: 'excelHtml5',
+						title: '客戶Email對照設定檔作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						text: '匯出Excel',
+						sheetName: '客戶Email對照設定檔作業',
+						exportOptions: {
+							columns: [1, 2, 3, 4] //要顯示的欄位
+						},
+						customize: function (xlsx) {
+							var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+							$('row c[r^="A"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
+						}
+					}),
+				],
+			});
+
+			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+		}
+
+		//Ajax用關鍵字查詢客戶Email對照的客戶代號
+		function SRCustomerSearch() {
+			$(".QuerycCustomerID").unbind();
+
+			$(".QuerycCustomerID").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+
+							$.ajax({
+								url: '@Url.Action("AjaxfindSRCustomerEmailByKeyword", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: {
+									functionName: 'AjaxfindSRCustomerEmailByKeyword', keyword: keyword
+								},
+								success: function (result) {
+									objects = [];
+									$.each(result, function (i, idata) {
+										objects[i] = {
+											label: idata.cCustomerId + "\\" + idata.cCustomerName,
+											idx: i,
+											value: idata.cCustomerId   //value這個值，一定要在label裡才能顯示出下拉
+										};
+									});
+
+									//綁定foucs事件
+									obj.autocomplete({
+										source: objects,
+										select: function (event, ui) {
+										}
+									}).bind('focus', function () { obj.autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();
+								}
+							})
+
+						}
+					}
+				}
+			})
+		}
+
+		//SAP客戶代號/客戶名稱查詢
+		//compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
+		function CustSearch() {
+			var compcde = $("#hid_cLoginUser_CompCode").val();
+
+			$(".CustName").unbind();
+
+			$(".CustName").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+							$.ajax({
+								url: '@Url.Action("findCustByKeywordAndComp", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: { functionName: 'findCustByKeywordAndComp', keyword: keyword, compcde: compcde },
+								success: function (result) {
+									Customers = [];
+									$.each(result, function (i, idata) {
+										Customers[i] = {
+											label: idata.Kna1Kunnr + "\\" + idata.Kna1Name1, //顯示在清單的東西
+											idx: i,
+											value: idata.Kna1Kunnr,
+											Name: idata.Kna1Name1 //這個是要填入textbox的值
+										};
+									});
+
+									//綁定foucs事件
+									obj.autocomplete({
+										source: Customers,
+										select: function (event, ui) {
+											$("#tbx_cCustomerName").html(ui.item.Name);
+										}
+									}).bind('focus', function () { $(this).autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();
+								}
+							})
+						}
+					}
+
+				}
+			})
+		}
+
+		
+
+		//儲存明細
+		function saveCustomerEmail() {
+			var strMsg = "";
+			var cType = $("#hid_cType").val();					//目前狀態
+			var IsDo = $("#hid_IsDoADD");						//是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			var hid_cID = $("#hid_cID");						//系統ID
+			var tbx_cTeamOldID = $("#tbx_cTeamOldID");			//CRM服務團隊ID(舊)
+			var tbx_cTeamOldName = $("#tbx_cTeamOldName");		//CRM服務團隊名稱(舊)
+			var tbx_cTeamNewID = $("#tbx_cTeamNewID");			//對應部門ID
+			var tbx_cTeamNewName = $("#tbx_cTeamNewName");		//服務團隊部門名稱(新)
+
+			if (tbx_cTeamOldID.val() == "") {
+				strMsg += "CRM服務團隊ID(舊)不得為空！\n";
+			}
+
+			if (tbx_cTeamOldName.val() == "") {
+				strMsg += "CRM服務團隊名稱(舊)不得為空！\n";
+			}
+
+			if (tbx_cTeamNewID.val() == "-1") {
+				strMsg += "對應部門ID不得為空！\n";
+			}
+
+			if (tbx_cTeamNewName.val() == "") {
+				strMsg += "服務團隊部門名稱(新)不得為空！\n";
+			}
+
+			if (strMsg != "") {
+				alert(strMsg);
+			}
+			else {
+				$("#btn_saveCustomerEmail").hide();
+				$("#img_waiting_saveCustomerEmail").show();
+				$.ajax({
+					url: '@Url.Action("saveCustomerEmail", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: hid_cID.val(),
+						cTeamOldID: tbx_cTeamOldID.val(),
+						cTeamOldName: tbx_cTeamOldName.val(),
+						cTeamNewID: tbx_cTeamNewID.val(),
+						cTeamNewName: tbx_cTeamNewName.val()
+					},
+					success: function (result) {
+						if (result == "") {
+							alert("儲存成功");
+							$("#dialog_pCustomerEmail").modal('hide');
+
+							if (cType == "ADD") {
+								IsDo.val("Y");
+							}
+							else {
+								IsDo.val("");
+							}
+
+							Query();
+						}
+						else {
+							alert(result);
+						}
+						$("#img_waiting_saveCustomerEmail").hide();
+						$("#btn_saveCustomerEmail").show();
+					},
+				});
+			}
+		}
+
+		//刪除
+		function deleteCustomerEmail(rowId, cID) {
+			if (confirm("確定刪除？")) {
+				$.ajax({
+					url: '@Url.Action("DeleteSRCustomerEmailMapping", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: { cID: cID },
+					success: function (result) {
+						if (result > 0) {
+							$('#' + rowId).remove();
+						}
+					}
+				})
+			}
+		}
+
+		//新增
+		function btn_add_pCustomerEmailonclick() {
+			$("#hid_cType").val("ADD");	//目前狀態
+			$("#hid_cID").val("");		//清空系統ID
+
+			resetPopup("#dialog_pCustomerEmail"); //popup各欄位reset
+
+			$("#tbx_cTeamOldID").removeAttr("disabled");	//CRM服務團隊ID(舊)
+			$("#tbx_cTeamOldName").removeAttr("disabled");	//CRM服務團隊名稱(舊)
+
+			$("#dialog_pCustomerEmail .dropzone").show();
+			$("#dialog_pCustomerEmail").modal('show');
+		}
+
+		//修改
+		function EditCustomerEmailDialog(obj, cID) {
+			$("#hid_cType").val("EDIT");	//目前狀態
+			$("#hid_IsDoADD").val("");	//清空是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			resetPopup("#dialog_pCustomerEmail"); //popup各欄位reset
+
+			var ddl_cModuleID = $("#ddl_cModuleID");
+			var ddl_cOperationID = $("#ddl_cOperationID");
+
+			var hid_cID = $("#hid_cID");						//系統ID
+			var tbx_cTeamOldID = $("#tbx_cTeamOldID");			//CRM服務團隊ID(舊)
+			var tbx_cTeamOldName = $("#tbx_cTeamOldName");		//CRM服務團隊名稱(舊)
+			var tbx_cTeamNewID = $("#tbx_cTeamNewID");			//對應部門ID
+			var tbx_cTeamNewName = $("#tbx_cTeamNewName");		//服務團隊部門名稱(新)
+
+			tbx_cTeamOldID.attr('disabled', true);
+			tbx_cTeamOldName.attr('disabled', true);
+
+			//設定各欄位資料
+			hid_cID.val(cID);
+			tbx_cTeamOldID.val($(obj).parent().parent().find('.tdcTeamOldID').text());
+			tbx_cTeamOldName.val($(obj).parent().parent().find('.tdcTeamOldName').text());
+			tbx_cTeamNewID.val($(obj).parent().parent().find('.tdcTeamNewID').text());
+			tbx_cTeamNewName.val($(obj).parent().parent().find('.tdcTeamNewName').text());
+
+			$("#dialog_pCustomerEmail .dropzone").show();
+			$("#dialog_pCustomerEmail").modal('show');
+		}
+
+		//popup各欄位reset
+		function resetPopup(popupId) {
+			var cType = $("#hid_cType").val();		//ADD.新增 EDIT.編輯
+			var cIsDo = $("#hid_IsDoADD").val();	//是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			if (cType == "ADD" && cIsDo == "Y") {
+				//不做事
+			}
+			else {
+				$(popupId).find("input").each(function (index, value) {
+					$(this).val("");
+				});
+				$(popupId).find("select").each(function (index, value) {
+					$(this).val("-1");
+				});
+			}
+
+			$(popupId).find("textarea").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find(".file-box").each(function (index, value) {
+				$(this).remove();
+			});
+		}
+
+		//查詢
+		function Query() {
+			$("#waitingImg").show();
+
+			var tMsg = "";
+			var tbx_QuerycTeamNew = $("#tbx_QuerycTeamNew");		//對應部門ID
+			var tbx_QuerycTeamOld = $("#tbx_QuerycTeamOld");		//服務團隊ID(舊)
+
+			if (tMsg != "") {
+				alert(tMsg);
+				$("#waitingImg").hide();
+				return false;
+			}
+			else {
+				searchTeam(tbx_QuerycTeamNew.val(), tbx_QuerycTeamOld.val());
+			}
+
+			return true;
+		}
+
+		//查詢結果
+		function searchCustomerEmail(cTeamNew, cTeamOld) {
+			$("#dataDiv").html('');
+			$.ajax({
+				url: '@Url.Action("SRCustomerEmailMappingResult", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cTeamNew: cTeamNew,
+					cTeamOld: cTeamOld
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#dataDiv").html(result.responseText);
+					$("#waitingImg").hide();
+				}
+			});
+		}
+
+		//清除
+		function clearCustomerEmail() {
+			$("#tbx_QuerycTeamNew").val("");
+			$('#tbx_QuerycTeamOld').val("");
+		}
+	</script>
+}
+
+	@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>客戶Email對照設定作業</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">服務管理系統參數設定</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>客戶Email對照設定作業</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+	<div class="row">
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>
+						客戶Email對照設定作業
+						<button id="btn_add_pNA" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_add_pCustomerEmailonclick();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+					</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content">
+					@model OneService.Controllers.ServiceRequestController.ViewModel //載入StatusViewModel
+					<form id="form1" name="form" action='#' method="post">
+						<!--目前狀態 ADD.新增 or EDIT.編輯-->
+						<input type="hidden" id="hid_cType" />
+						<!--是否已經執行過新增存檔，用來判斷下次新增的時候，會預設帶上一次的值-->
+						<input type="hidden" id="hid_IsDoADD" />
+						<!--登人者公司別-->
+						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">客戶代號</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerycCustomerID" name="tbx_QuerycCustomerID" class="form-control QuerycCustomerID" placeholder="請輸入客戶ID或名稱關鍵字">
+							</div>
+							<label class="col-lg-2 col-form-label">服務團隊ID</label>
+							<div class="col-lg-4">
+								<select asp-for="ddl_cQueryTeamID" asp-items="Model.ListTeamID" class="form-control"></select>
+							</div>
+						</div>
+						<div class="form-group row">
+							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+							<button class="btn btn-default btn-lg" type="button" onclick="clearCustomerEmail();"><i class="fa fa-trash"></i> 清 除 </button>
+							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>客戶Email對照設定作業查詢結果</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+					<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+						<thead>
+							<tr>
+								<th></th>
+								<th>客戶代號</th>
+								<th>客戶名稱</th>
+								<th>服務團隊ID</th>
+								<th>服務團隊名稱</th>
+								<th>Email網域名稱</th>
+							</tr>
+						</thead>
+						<tbody>
+							@{
+							if (ViewBag.QueryToListBean != null)
+							{
+								int count = 0;
+								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								{
+									count++;
+										<tr id='tr@(count)'>
+											<td style="width:100px;">
+												<button class="btn btn-info" type="button" onclick="EditCustomerEmailDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+												<button class="btn btn-danger" type="button" onclick="deleteCustomerEmail('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+											</td>
+											<td class="tdcCustomerID">@Html.Raw(QueryInfo[1])</td>
+											<td class="tdcCustomerName">@Html.Raw(QueryInfo[2])</td>
+											<td class="tdcTeamID">@Html.Raw(QueryInfo[3])</td>
+											<td class="tdcTeamName">@Html.Raw(QueryInfo[4])</td>
+											<td class="tdcEmailID">@Html.Raw(QueryInfo[5])</td>
+										</tr>
+								}
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--新增/修改彈出視窗-->
+<div class="modal fade" id="dialog_pCustomerEmail" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i>客戶Email對照設定作業</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<!--系統ID-->
+				<input type="hidden" id="hid_cID" />
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">客戶代號*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cCustomerID" name="tbx_cCustomerID" class="form-control CustName" placeholder="請輸入客戶統編或名稱關鍵字" disabled>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">客戶名稱*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cCustomerName" name="tbx_cCustomerName" class="form-control" placeholder="客戶名稱" disabled>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">服務團隊ID*</label>
+					<div class="col-lg-10">
+						
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">Email網域名稱*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cEmailID" name="tbx_cEmailID" class="form-control" placeholder="Email網域名稱">
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="col-lg-5"></div>
+				<button id="btn_saveCustomerEmail" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveCustomerEmail();"> <i class="fa fa-save"></i> 儲 存</button>
+				<img id="img_waiting_saveCustomerEmail" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<div class="col-lg-5"></div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -74,7 +74,7 @@
 			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
 		}
 
-		//Ajax用關鍵字查詢服務團隊部門(新)
+		//Ajax用關鍵字查詢對應部門ID
 		function TeamNewSearch() {
 			$(".QuerycTeamNew").unbind();
 
@@ -121,7 +121,7 @@
 			})
 		}
 
-		//Ajax用關鍵字查詢服務團隊部門(新)
+		//Ajax用關鍵字查詢服務團隊ID
 		function TeamOldSearch() {
 			$(".QuerycTeamOld").unbind();
 
@@ -225,25 +225,25 @@
 			var IsDo = $("#hid_IsDoADD");						//是否已執行新增存檔過(Y.已執行 空白.未執行)
 
 			var hid_cID = $("#hid_cID");						//系統ID
-			var tbx_cTeamOldID = $("#tbx_cTeamOldID");			//CRM服務團隊ID(舊)
-			var tbx_cTeamOldName = $("#tbx_cTeamOldName");		//CRM服務團隊名稱(舊)
-			var tbx_cTeamNewID = $("#tbx_cTeamNewID");			//服務團隊部門ID(新)
-			var tbx_cTeamNewName = $("#tbx_cTeamNewName");		//服務團隊部門名稱(新)
+			var tbx_cTeamOldID = $("#tbx_cTeamOldID");			//服務團隊ID
+			var tbx_cTeamOldName = $("#tbx_cTeamOldName");		//服務團隊名稱
+			var tbx_cTeamNewID = $("#tbx_cTeamNewID");			//對應部門ID
+			var tbx_cTeamNewName = $("#tbx_cTeamNewName");		//對應部門名稱
 
 			if (tbx_cTeamOldID.val() == "") {
-				strMsg += "CRM服務團隊ID(舊)不得為空！\n";
+				strMsg += "服務團隊ID不得為空！\n";
 			}
 
 			if (tbx_cTeamOldName.val() == "") {
-				strMsg += "CRM服務團隊名稱(舊)不得為空！\n";
+				strMsg += "服務團隊名稱不得為空！\n";
 			}
 
 			if (tbx_cTeamNewID.val() == "-1") {
-				strMsg += "服務團隊部門ID(新)不得為空！\n";
+				strMsg += "對應部門ID不得為空！\n";
 			}
 
 			if (tbx_cTeamNewName.val() == "") {
-				strMsg += "服務團隊部門名稱(新)不得為空！\n";
+				strMsg += "對應部門名稱不得為空！\n";
 			}
 
 			if (strMsg != "") {
@@ -311,8 +311,8 @@
 
 			resetPopup("#dialog_pTeam"); //popup各欄位reset
 			
-			$("#tbx_cTeamOldID").removeAttr("disabled");	//CRM服務團隊ID(舊)
-			$("#tbx_cTeamOldName").removeAttr("disabled");	//CRM服務團隊名稱(舊)
+			$("#tbx_cTeamOldID").removeAttr("disabled");	//服務團隊ID
+			$("#tbx_cTeamOldName").removeAttr("disabled");	//服務團隊名稱
 
 			$("#dialog_pTeam .dropzone").show();
 			$("#dialog_pTeam").modal('show');
@@ -329,10 +329,10 @@
 			var ddl_cOperationID = $("#ddl_cOperationID");
 
 			var hid_cID = $("#hid_cID");						//系統ID
-			var tbx_cTeamOldID = $("#tbx_cTeamOldID");			//CRM服務團隊ID(舊)
-			var tbx_cTeamOldName = $("#tbx_cTeamOldName");		//CRM服務團隊名稱(舊)
-			var tbx_cTeamNewID = $("#tbx_cTeamNewID");			//服務團隊部門ID(新)
-			var tbx_cTeamNewName = $("#tbx_cTeamNewName");		//服務團隊部門名稱(新)		
+			var tbx_cTeamOldID = $("#tbx_cTeamOldID");			//服務團隊ID
+			var tbx_cTeamOldName = $("#tbx_cTeamOldName");		//服務團隊名稱
+			var tbx_cTeamNewID = $("#tbx_cTeamNewID");			//對應部門ID
+			var tbx_cTeamNewName = $("#tbx_cTeamNewName");		//對應部門名稱		
 
 			tbx_cTeamOldID.attr('disabled', true);
 			tbx_cTeamOldName.attr('disabled', true);			
@@ -377,9 +377,9 @@
 		function Query() {
 			$("#waitingImg").show();
 
-			var tMsg = "";
-			var tbx_QuerycTeamNew = $("#tbx_QuerycTeamNew");		//服務團隊部門ID(新)
-			var tbx_QuerycTeamOld = $("#tbx_QuerycTeamOld");		//服務團隊ID(舊)
+			var tMsg = "";			
+			var tbx_QuerycTeamOld = $("#tbx_QuerycTeamOld");		//服務團隊ID
+			var tbx_QuerycTeamNew = $("#tbx_QuerycTeamNew");		//對應部門ID
 
 			if (tMsg != "") {
 				alert(tMsg);
@@ -457,11 +457,11 @@
 						<!--是否已經執行過新增存檔，用來判斷下次新增的時候，會預設帶上一次的值-->
 						<input type="hidden" id="hid_IsDoADD" />							
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">CRM服務團隊ID(舊)</label>
+							<label class="col-lg-2 col-form-label">服務團隊ID</label>
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QuerycTeamOld" name="tbx_QuerycTeamOld" class="form-control QuerycTeamOld" placeholder="請輸入團隊ID或團隊名稱關鍵字">
 							</div>
-							<label class="col-lg-2 col-form-label">服務團隊部門ID(新)</label>
+							<label class="col-lg-2 col-form-label">對應部門ID</label>
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QuerycTeamNew" name="tbx_QuerycTeamNew" class="form-control QuerycTeamNew" placeholder="請輸入部門ID或部門名稱關鍵字">
 							</div>							
@@ -491,10 +491,10 @@
 						<thead>
 							<tr>
 								<th></th>
-								<th>CRM服務團隊ID(舊)</th>
-								<th>CRM服務團隊名稱(舊)</th>
-								<th>服務團隊部門ID(新)</th>
-								<th>服務團隊部門名稱(新)</th>								
+								<th>服務團隊ID</th>
+								<th>服務團隊名稱</th>
+								<th>對應部門ID</th>
+								<th>對應部門名稱</th>								
 							</tr>
 						</thead>
 						<tbody>
@@ -539,27 +539,27 @@
 				<!--系統ID-->
 				<input type="hidden" id="hid_cID" />		
 				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">CRM服務團隊ID(舊)*</label>
+					<label class="col-lg-2 col-form-label">服務團隊ID*</label>
 					<div class="col-lg-10">
-						<input type="text" id="tbx_cTeamOldID" name="tbx_cTeamOldID" class="form-control" placeholder="CRM服務團隊ID(舊)" disabled>
+						<input type="text" id="tbx_cTeamOldID" name="tbx_cTeamOldID" class="form-control" placeholder="服務團隊ID" disabled>
 					</div>					
 				</div>
 				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">CRM服務團隊名稱(舊)*</label>
+					<label class="col-lg-2 col-form-label">服務團隊名稱*</label>
 					<div class="col-lg-10">
-						<input type="text" id="tbx_cTeamOldName" name="tbx_cTeamOldName" class="form-control" placeholder="CRM服務團隊名稱(舊)" disabled>
+						<input type="text" id="tbx_cTeamOldName" name="tbx_cTeamOldName" class="form-control" placeholder="服務團隊名稱" disabled>
 					</div>
 				</div>
 				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">服務團隊部門ID(新)*</label>
+					<label class="col-lg-2 col-form-label">對應部門ID*</label>
 					<div class="col-lg-10">
 						<input type="text" id="tbx_cTeamNewID" name="tbx_cTeamNewID" class="form-control DeptID" placeholder="請輸入部門ID或部門名稱關鍵字">
 					</div>					
 				</div>
 				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">服務團隊部門名稱(新)*</label>
+					<label class="col-lg-2 col-form-label">對應部門名稱*</label>
 					<div class="col-lg-10">
-						<input type="text" id="tbx_cTeamNewName" name="tbx_cTeamNewName" class="form-control" placeholder="服務團隊部門名稱(新)" disabled>
+						<input type="text" id="tbx_cTeamNewName" name="tbx_cTeamNewName" class="form-control" placeholder="對應部門名稱" disabled>
 					</div>
 				</div>
 			</div>

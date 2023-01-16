@@ -18,6 +18,7 @@ namespace OneService.Models
 
         public virtual DbSet<TbOneDocument> TbOneDocuments { get; set; } = null!;
         public virtual DbSet<TbOneLog> TbOneLogs { get; set; } = null!;
+        public virtual DbSet<TbOneSrcustomerEmailMapping> TbOneSrcustomerEmailMappings { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailPartsReplace> TbOneSrdetailPartsReplaces { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailProduct> TbOneSrdetailProducts { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailRecord> TbOneSrdetailRecords { get; set; } = null!;
@@ -90,6 +91,40 @@ namespace OneService.Models
                 entity.Property(e => e.CreatedUserName).HasMaxLength(50);
 
                 entity.Property(e => e.EventName).HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<TbOneSrcustomerEmailMapping>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRCustomerEmailMapping");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CCustomerId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cCustomerID");
+
+                entity.Property(e => e.CCustomerName)
+                    .HasMaxLength(35)
+                    .HasColumnName("cCustomerName");
+
+                entity.Property(e => e.CEmailId)
+                    .HasMaxLength(50)
+                    .HasColumnName("cEmailID");
+
+                entity.Property(e => e.CTeamId)
+                    .HasMaxLength(36)
+                    .IsUnicode(false)
+                    .HasColumnName("cTeamID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
             });
 
             modelBuilder.Entity<TbOneSrdetailPartsReplace>(entity =>
