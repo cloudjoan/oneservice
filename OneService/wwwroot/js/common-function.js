@@ -113,6 +113,9 @@ Dropzone.autoDiscover = false;
 
 ///初始化dropzone
 function dropzoneInit(uploadUrl) {
+    var prdReportUrl = "http://tsticrmmbgw.etatung.com:8081/CSreport/";
+    var qasReportUrl = "http://tsticrmmbgw.etatung.com:8082/CSreport/";
+
     $.each($(".dropzone"), function () {
         var zone = $(this);
         $(this).dropzone({
@@ -147,7 +150,7 @@ function dropzoneInit(uploadUrl) {
 
                     var doc = "<div class=\"file-box\" id='" + obj.id + "'>";
                     doc += "<div class=\"file\">";
-                    doc += "<a href='http://" + window.location.host + "/files/" + obj.fileName + "'" + ((".jpg .jpeg .png .bmp .gif".indexOf(obj.fileExt) != -1) ? "" : "download='" + obj.fileOrgName + "'") + " target='_blank'>";
+                    doc += "<a href='" + qasReportUrl + obj.fileName + "'" + ((".jpg .jpeg .png .bmp .gif".indexOf(obj.fileExt) != -1) ? "" : "download='" + obj.fileOrgName + "'") + " target='_blank'>";
                     doc += "<span class=\"corner\"></span>";
                     if (".jpg .jpeg .png .bmp .gif".indexOf(obj.fileExt) != -1) {
                         doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + obj.fileName + "\"></div>";
