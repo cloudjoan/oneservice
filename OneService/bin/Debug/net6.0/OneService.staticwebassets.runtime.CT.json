@@ -1337,36 +1337,6 @@
         },
         "Patterns": null
       },
-      "files": {
-        "Children": {
-          "0d206bab-ea57-4e9a-b183-222688608a2b.jpg": {
-            "Children": null,
-            "Asset": {
-              "ContentRootIndex": 0,
-              "SubPath": "files/0d206bab-ea57-4e9a-b183-222688608a2b.jpg"
-            },
-            "Patterns": null
-          },
-          "47535e8a-4f80-43d4-9101-391152077927.jpg": {
-            "Children": null,
-            "Asset": {
-              "ContentRootIndex": 0,
-              "SubPath": "files/47535e8a-4f80-43d4-9101-391152077927.jpg"
-            },
-            "Patterns": null
-          },
-          "e8614947-337f-4679-bde9-ccb5ef4ddeca.jpg": {
-            "Children": null,
-            "Asset": {
-              "ContentRootIndex": 0,
-              "SubPath": "files/e8614947-337f-4679-bde9-ccb5ef4ddeca.jpg"
-            },
-            "Patterns": null
-          }
-        },
-        "Asset": null,
-        "Patterns": null
-      },
       "font-awesome": {
         "Children": {
           "css": {

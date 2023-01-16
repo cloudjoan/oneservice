@@ -172,7 +172,7 @@ namespace OneService.Controllers
         //}
 
         [HttpPost]
-        public ActionResult AjaxFileUpload ()
+        public async Task<ActionResult> AjaxFileUploadAsync ()
         {
             TbOneDocument docBean = new TbOneDocument();
             string webRootPath = _HostEnvironment.WebRootPath + "/files";
@@ -199,7 +199,7 @@ namespace OneService.Controllers
 
                     using (Stream fileStream = new FileStream(path, FileMode.Create))
                     {
-                        file.CopyToAsync(fileStream);
+                        await file.CopyToAsync(fileStream);
                     }
                 }
             }

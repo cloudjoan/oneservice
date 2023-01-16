@@ -145,39 +145,39 @@ function dropzoneInit(uploadUrl) {
                 this.on("success", function (result) {
                     var obj = $.parseJSON(result.xhr.responseText);
 
-                    var doc = "<div class=\"file-box\" id='" + obj.Id + "'>";
+                    var doc = "<div class=\"file-box\" id='" + obj.id + "'>";
                     doc += "<div class=\"file\">";
-                    doc += "<a href='http://" + window.location.host + "/files/" + obj.FileName + "'" + ((".jpg .jpeg .png .bmp .gif".indexOf(obj.FileExt) != -1) ? "" : "download='" + obj.FileOrgName + "'") + " target='_blank'>";
+                    doc += "<a href='http://" + window.location.host + "/files/" + obj.fileName + "'" + ((".jpg .jpeg .png .bmp .gif".indexOf(obj.fileExt) != -1) ? "" : "download='" + obj.fileOrgName + "'") + " target='_blank'>";
                     doc += "<span class=\"corner\"></span>";
-                    if (".jpg .jpeg .png .bmp .gif".indexOf(obj.FileExt) != -1) {
-                        doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + obj.FileName + "\"></div>";
+                    if (".jpg .jpeg .png .bmp .gif".indexOf(obj.fileExt) != -1) {
+                        doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + obj.fileName + "\"></div>";
                     } else {
                         doc += "<div class=\"icon\"><i class=\"fa fa-file\"></i></div>";
                     }
 
 
                     if ($(zone).data("type") == null) {
-                        doc += "<div class=\"file-name\">" + obj.FileOrgName;
-                        doc += "<a href=\"javascript:delFile('" + obj.ID + "', 'hid_file' + '" + zone.prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+                        doc += "<div class=\"file-name\">" + obj.fileOrgName;
+                        doc += "<a href=\"javascript:delFile('" + obj.id + "', 'hid_file' + '" + zone.prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
                         doc += " </div></div>";
 
                         var fileZoneObj = $("#file" + zone.prop("id"))
                         fileZoneObj.append(doc);
 
                         var hidFiles = $("#hid_file" + zone.prop("id"))
-                        hidFiles.val(hidFiles.val() + obj.ID + ",");
+                        hidFiles.val(hidFiles.val() + obj.Id + ",");
                         console.log(hidFiles.val());
 
                     } else if ($(zone).data("type") == "type2") { //動態產生上傳區塊使用
-                        doc += "<div class=\"file-name\">" + obj.FileOrgName;
-                        doc += "<a href=\"javascript:delFile('" + obj.ID + "', '" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')) + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+                        doc += "<div class=\"file-name\">" + obj.fileOrgName;
+                        doc += "<a href=\"javascript:delFile('" + obj.id + "', '" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')) + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
                         doc += " </div></div>";
 
                         var fileZoneObj = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
                         fileZoneObj.append(doc);
 
                         var hidFiles = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
-                        hidFiles.val(hidFiles.val() + obj.ID + ",");
+                        hidFiles.val(hidFiles.val() + obj.Id + ",");
                         console.log(hidFiles.val());
                     }
 
@@ -204,21 +204,21 @@ function generatorFileDiv(functionUrl) {
                     dataType: 'json',
                     data: { fileId: fileids[i] },
                     success: function (result) {
-                        var doc = "<div class=\"file-box\" id='" + result.ID + "'>";
+                        var doc = "<div class=\"file-box\" id='" + result.id + "'>";
                         doc += "<div class=\"file\">";
-                        doc += "<a href='http://" + window.location.host + "/files/" + result.FileName + "' " + ((".jpg .jpeg .png .bmp .gif".indexOf(result.FileExt) != -1) ? "" : "download='" + result.FileOrgName + "'") + " target='_blank'>";
+                        doc += "<a href='http://" + window.location.host + "/files/" + result.fileName + "' " + ((".jpg .jpeg .png .bmp .gif".indexOf(result.fileExt) != -1) ? "" : "download='" + result.fileOrgName + "'") + " target='_blank'>";
                         doc += "<span class=\"corner\"></span>";
-                        if (".jpg .jpeg .png .bmp .gif".indexOf(result.FileExt) != -1) {
-                            doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + result.FileName + "\"></div>";
+                        if (".jpg .jpeg .png .bmp .gif".indexOf(result.fileExt) != -1) {
+                            doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + result.fileName + "\"></div>";
                         } else {
                             doc += "<div class=\"icon\"><i class=\"fa fa-file\"></i></div>";
                         }
 
-                        doc += "<div class=\"file-name\">" + result.FileOrgName;
+                        doc += "<div class=\"file-name\">" + result.fileOrgName;
                         doc += "<a href=\"javascript:delFile('" + result.ID + "', '" + $(hidFiles).prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
                         doc += " </div></div>";
                         fileZoneObj.append(doc);
-                        console.log(result.FileOrgName);
+                        console.log(result.fileOrgName);
                     }
                 })
                 console.log(fileids[i]);

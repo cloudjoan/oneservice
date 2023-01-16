@@ -5,6 +5,9 @@ WORKDIR /app
 EXPOSE 80
 
 RUN apt-get update \
+&&  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata cifs-utils
+
+RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libldap-2.4-2 \
         realmd \
@@ -35,3 +38,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "OneService.dll"]
+
+# mount如果遇到 Unable to apply new capability set. 錯誤時，就要在docker run的時候，加上 --privileged=true
+#RUN mount -t cifs -o user=bpmadmin,password=Bpm@dmin '//172.31.7.188/checkout_doc' /app/wwwroot/files
+RUN mount -t cifs  -o user=bpmadmin,password=Bpm@dmin '//172.31.7.60/csreport_test' /app/wwwroot/files
