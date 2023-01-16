@@ -1,0 +1,106 @@
+﻿@{
+	Layout = null;
+}
+
+<script>
+	$(document).ready(function () {
+		initTable();
+	});
+
+	function initTable() {
+		var buttonCommon = {
+			exportOptions: {
+				format: {
+					body: function (data, row, column, node) {
+						//替換&符號
+						var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+							translate = {
+								'nbsp': String.fromCharCode(160),
+								'amp': '&',
+								'quot': '"',
+								'lt': '<',
+								'gt': '>'
+							},
+							translator = function ($0, $1) {
+								return translate[$1];
+							};
+
+						if (typeof data === 'string')
+							data = data.replace(translate_re, translator);
+
+						return data;
+					}
+				}
+			}
+		};
+
+		$('#tableAll').DataTable({
+			language: {
+				"lengthMenu": "每頁顯示筆數 _MENU_ ",
+				"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+				"search": " 關鍵字篩選"
+			},
+			pageLength: 25,
+			responsive: true,
+			order: [[0, "desc"]],
+			dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+			buttons: [
+				$.extend(true, {}, buttonCommon, {
+					extend: 'excelHtml5',
+					title: '服務團隊對照設定檔作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+					text: '匯出Excel',
+					sheetName: '服務團隊對照設定檔作業',
+					exportOptions: {
+						columns: [1, 2, 3, 4] //要顯示的欄位
+					},
+					customize: function (xlsx) {
+						var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+						$('row c[r^="A"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式						
+					}
+				}),
+			],
+		});
+
+		$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+	}
+</script>
+
+<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+	<
+	<thead>
+		<tr>
+			<th></th>
+			<th>CRM服務團隊ID(舊)</th>
+			<th>CRM服務團隊名稱(舊)</th>
+			<th>服務團隊部門ID(新)</th>
+			<th>服務團隊部門名稱(新)</th>
+		</tr>
+	</thead>
+	<tbody>
+		@{
+			if (ViewBag.QueryToListBean != null)
+			{
+				int count = 0;
+				foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+				{
+					count++;
+					<tr id='tr@(count)'>
+						<td style="width:100px;">
+							<button class="btn btn-info" type="button" onclick="EditTeamDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+							<button class="btn btn-danger" type="button" onclick="deleteTeam('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+						</td>
+						<td class="tdcTeamOldID">@Html.Raw(QueryInfo[1])</td>
+						<td class="tdcTeamOldName">@Html.Raw(QueryInfo[2])</td>
+						<td class="tdcTeamNewID">@Html.Raw(QueryInfo[3])</td>
+						<td class="tdcTeamNewName">@Html.Raw(QueryInfo[4])</td>
+					</tr>
+				}
+			}
+		}
+	</tbody>
+</table>
+

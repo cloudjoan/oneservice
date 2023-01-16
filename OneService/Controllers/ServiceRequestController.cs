@@ -8,9 +8,11 @@ using OneService.Models;
 using RestSharp;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 
@@ -1495,6 +1497,184 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----    
 
+        #region -----↓↓↓↓↓服務團隊對照設定作業 ↓↓↓↓↓-----
+        /// <summary>
+        /// 服務團隊對照設定作業
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult SRTeamMapping()
+        {
+            try
+            {
+                getLoginAccount();
+
+                #region 取得登入人員資訊
+                CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+                EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+                ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+                ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
+                ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
+                ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
+                ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
+                ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
+                ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
+                ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
+                ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+                ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+                ViewBag.pIsManager = EmpBean.IsManager;
+                ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+
+                pCompanyCode = EmpBean.BUKRS;
+                pIsManager = EmpBean.IsManager;
+                #endregion
+              
+            }
+            catch (Exception ex)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
+                pMsg += " 失敗行數：" + ex.ToString();
+
+                CMF.writeToLog(pSRID, "SRTeamMapping", pMsg, ViewBag.cLoginUser_Name);
+            }
+
+            return View();
+        }
+
+        #region 服務團隊對照設定作業查詢結果
+        /// <summary>
+        /// 服務團隊對照設定作業查詢結果
+        /// </summary>        
+        /// <param name="cTeamNew">服務團隊部門ID(新)</param>
+        /// <param name="cTeamOld">服務團隊ID(舊)</param>
+        /// <returns></returns>
+        public IActionResult SRTeamMappingResult(string cTeamNew, string cTeamOld)
+        {
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            #region 組待查詢清單
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 &&
+                                                         (string.IsNullOrEmpty(cTeamNew) ? true : x.CTeamNewId == cTeamNew) &&
+                                                         (string.IsNullOrEmpty(cTeamOld) ? true : x.CTeamOldId == cTeamOld));
+
+            foreach (var bean in beans)
+            {
+                string[] QueryInfo = new string[8];
+
+                QueryInfo[0] = bean.CId.ToString(); //系統ID
+                QueryInfo[1] = bean.CTeamOldId;     //CRM服務團隊ID(舊)
+                QueryInfo[2] = bean.CTeamOldName;   //CRM服務團隊名稱(舊)               
+                QueryInfo[3] = bean.CTeamNewId;     //服務團隊部門ID(新)
+                QueryInfo[4] = bean.CTeamNewName;   //服務團隊部門名稱(新)                
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion
+
+        #region 儲存服務團隊對照設定檔
+        /// <summary>
+        /// 儲存服務團隊對照設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cTeamOldID">程式作業編號檔系統ID</param>
+        /// <param name="cTeamOldName">功能別</param>
+        /// <param name="cTeamNewID">公司別</param>
+        /// <param name="cTeamNewName">參數No</param>        
+        /// <returns></returns>
+        public ActionResult saveTeam(string cID, string cTeamOldID, string cTeamOldName, string cTeamNewID, string cTeamNewName)
+        {
+            string tMsg = string.Empty;
+
+            try
+            {
+                int result = 0;
+                if (cID == null)
+                {
+                    #region -- 新增 --
+                    var prBean = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                           x.CTeamOldId == cTeamOldID &&
+                                                                           x.CTeamNewId == cTeamNewID);
+                    if (prBean == null)
+                    {
+                        TbOneSrteamMapping prBean1 = new TbOneSrteamMapping();
+                        
+                        prBean1.CTeamOldId = cTeamOldID.Trim();
+                        prBean1.CTeamOldName = cTeamOldName.Trim();
+                        prBean1.CTeamNewId = cTeamNewID.Trim();
+                        prBean1.CTeamNewName = cTeamNewName.Trim();                        
+                        prBean1.Disabled = 0;
+
+                        prBean1.CreatedUserName = "SYS";
+                        prBean1.CreatedDate = DateTime.Now;
+
+                        dbOne.TbOneSrteamMappings.Add(prBean1);
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此服務團隊已存在，請重新輸入！";
+                    }
+                    #endregion                
+                }
+                else
+                {
+                    #region -- 編輯 --
+                    var prBean = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                            x.CId.ToString() != cID &&
+                                                                            x.CTeamOldId == cTeamOldID &&
+                                                                            x.CTeamNewId == cTeamNewID);
+                    if (prBean == null)
+                    {
+                        var prBean1 = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.CId.ToString() == cID);
+                        prBean1.CTeamNewId = cTeamNewID.Trim();
+                        prBean1.CTeamNewName = cTeamNewName.Trim();
+
+                        prBean1.ModifiedUserName = "SYS";
+                        prBean1.ModifiedDate = DateTime.Now;
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此服務團隊已存在，請重新輸入！";
+                    }
+                    #endregion
+                }
+                return Json(tMsg);
+            }
+            catch (Exception e)
+            {
+                return Json(e.Message);
+            }
+        }
+        #endregion
+
+        #region 刪除服務團隊對照設定檔
+        /// <summary>
+        /// 刪除服務團隊對照設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public ActionResult DeleteSRTeamMapping(string cID)
+        {
+            var ctBean = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.CId.ToString() == cID);
+            ctBean.Disabled = 1;
+            ctBean.ModifiedUserName = "SYS"; //EmpBean.EmployeeCName;
+            ctBean.ModifiedDate = DateTime.Now;
+
+            var result = dbOne.SaveChanges();
+
+            return Json(result);
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑服務團隊對照設定作業 ↑↑↑↑↑-----   
+
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
         #region 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
@@ -1945,7 +2125,87 @@ namespace OneService.Controllers
 
             return Json(contentObj);
         }
-        #endregion  
+        #endregion
+
+        #region Ajax用關鍵字查詢服務團隊部門(新)
+        /// <summary>
+        /// Ajax用關鍵字查詢服務團隊部門(新)
+        /// </summary>
+        /// <param name="keyword">部門ID或部門名稱</param>        
+        /// <returns></returns>
+        public IActionResult AjaxfindTeamNewByKeyword(string keyword)
+        {
+            int count = 0;
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 & (x.CTeamNewId.Contains(keyword.Trim()) || x.CTeamNewName.Contains(keyword.Trim())))
+                                              .Select(o => new { CTeamNewId = o.CTeamNewId, CTeamNewName = o.CTeamNewName }).Distinct();
+
+            List<TbOneSrteamMapping> ProList = new List<TbOneSrteamMapping>();
+
+            foreach (var bean in beans)
+            {
+                if (count < 10)
+                {
+                    TbOneSrteamMapping ProBean = new TbOneSrteamMapping();
+
+                    ProBean.CTeamNewId = bean.CTeamNewId;
+                    ProBean.CTeamNewName = bean.CTeamNewName;
+
+                    count++;
+                    ProList.Add(ProBean);
+                }
+            }
+
+            return Json(ProList);
+        }
+        #endregion
+
+        #region Ajax用關鍵字查詢服務團隊部門(舊)
+        /// <summary>
+        /// Ajax用關鍵字查詢服務團隊部門(舊)
+        /// </summary>
+        /// <param name="keyword">團隊ID或團隊名稱</param>        
+        /// <returns></returns>
+        public IActionResult AjaxfindTeamOldByKeyword(string keyword)
+        {
+            int count = 0;
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 & (x.CTeamOldId.Contains(keyword.Trim()) || x.CTeamOldName.Contains(keyword.Trim())))
+                                              .Select(o => new { CTeamOldId = o.CTeamOldId, CTeamOldName = o.CTeamOldName }).Distinct();
+
+            List<TbOneSrteamMapping> ProList = new List<TbOneSrteamMapping>();
+
+            foreach (var bean in beans)
+            {
+                if (count < 10)
+                {
+                    TbOneSrteamMapping ProBean = new TbOneSrteamMapping();
+
+                    ProBean.CTeamOldId = bean.CTeamOldId;
+                    ProBean.CTeamOldName = bean.CTeamOldName;
+
+                    count++;
+                    ProList.Add(ProBean);
+                }
+            }
+
+            return Json(ProList);
+        }
+        #endregion
+
+        #region Ajax用關鍵字查詢部門相關資訊
+        /// <summary>
+        /// Ajax用關鍵字查詢部門相關資訊
+        /// </summary>        
+        /// <param name="keyword">部門ID/部門名稱關鍵字</param>        
+        /// <returns></returns>
+        public IActionResult AjaxfindDeptInfoByKeyword(string keyword)
+        {
+            object contentObj = null;
+
+            contentObj = dbEIP.Departments.Where(x => x.Status == 0 && (x.Id.Contains(keyword.Trim()) || x.Name2.Contains(keyword.Trim()))).Take(10);
+
+            return Json(contentObj);
+        }
+        #endregion
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----    
 
