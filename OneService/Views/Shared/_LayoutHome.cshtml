@@ -331,9 +331,12 @@
 
 	<!-- iCheck -->
 	<script src="~/js/plugins/iCheck/icheck.min.js"></script>
-	<script src="~/js/common-function.js?2022102401"></script>
+	<script src="~/js/common-function.js?2023011601"></script>
 	<script>
 		$(document).ready(function () {
+
+			dropzoneInit("@Url.Action("AjaxFileUpload", "Ajax")");
+
 			$('.i-checks').iCheck({
 				checkboxClass: 'icheckbox_square-green',
 				radioClass: 'iradio_square-green',
@@ -387,6 +390,7 @@
 				]
 
 			});
+
 		});
 
 		function showDialog(title, message){

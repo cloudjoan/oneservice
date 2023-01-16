@@ -1,6 +1,6 @@
 ﻿
 $(document).ready(function () {
-    dropzoneInit();
+    //dropzoneInit();
     //generatorFileDiv();
 });
 
@@ -111,19 +111,19 @@ function delFile(fileId, fileZoneObjId) {
 //jquery3要用dropzone加這一行才行
 Dropzone.autoDiscover = false;
 
-//初始化dropzone
-function dropzoneInit() {
+///初始化dropzone
+function dropzoneInit(uploadUrl) {
     $.each($(".dropzone"), function () {
         var zone = $(this);
         $(this).dropzone({
-            url: "/Ajax/AjaxFileUpload",
-            method:'post',
-            dictDefaultMessage: "把檔案拉進來或點我選檔案!(可多檔案) <br/>※不支援.msg檔上傳, 請<a href='http://tsti-bpm01/files/msg_to_mht.png' target='_blank'> 轉換成MHT</a>或圖檔。",
+            url: uploadUrl,
+            method: 'post',
+            dictDefaultMessage: "把檔案拉進來或點我選檔案(可選多檔) <br/>※不支援.msg檔上傳, 請<a href='http://tsti-bpm01/files/msg_to_mht.png' target='_blank'> 轉換成MHT</a>或圖檔。",
             accept: function (file, done) {
                 console.log($(zone).data("namerule"));
                 if ($(zone).data("namerule") != null) {
                     //檔名規則檢核
-                    //file.name  上傳檔案的檔名（含副檔名）                    
+                    //file.name  上傳檔案的檔名（含副檔名）
                     var namerule = $(zone).data("namerule");
                     var pArray = namerule.split(",");
                     var tIsExits = false; //檔案是否合法
@@ -134,56 +134,50 @@ function dropzoneInit() {
                         }
                     });
 
-                    if (!tIsExits) {
-                        done("you don't.");
-                        alert("檔名不合法！請依照此格式：\n ①請款通知: 請款單號(必要)+_+文件敘述，例如. 3000700991_客戶訂單 \n ②預開發票: 銷售訂單(必要)+_+文件敘述，例如. 1230015555_預開證明");
-                    } else {
-                        done();
-                    }
-
                 } else {
                     done();
                 }
             },
             acceptedFiles: ".jpg,.png,.jpge,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx,.zip,.rar,.7z,.csv,.mht",
+            maxFilesize: 20,
             createImageThumbnails: false,
             init: function () {
                 this.on("success", function (result) {
                     var obj = $.parseJSON(result.xhr.responseText);
 
-                    var doc = "<div class=\"file-box\" id='" + obj.cFile_ID + "'>";
+                    var doc = "<div class=\"file-box\" id='" + obj.Id + "'>";
                     doc += "<div class=\"file\">";
-                    doc += "<a href='http://" + window.location.host + "/files/" + obj.cFile_NewName + "'" + (("jpg png bpmp".indexOf(obj.cFile_FileType) != -1) ? "" : "download='" + obj.cFile_OriginalName + "'") + " target='_blank'>";
+                    doc += "<a href='http://" + window.location.host + "/files/" + obj.FileName + "'" + ((".jpg .jpeg .png .bmp .gif".indexOf(obj.FileExt) != -1) ? "" : "download='" + obj.FileOrgName + "'") + " target='_blank'>";
                     doc += "<span class=\"corner\"></span>";
-                    if ("jpg png bpmp".indexOf(obj.cFile_FileType) != -1) {
-                        doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + obj.cFile_NewName + "\"></div>";
+                    if (".jpg .jpeg .png .bmp .gif".indexOf(obj.FileExt) != -1) {
+                        doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + obj.FileName + "\"></div>";
                     } else {
                         doc += "<div class=\"icon\"><i class=\"fa fa-file\"></i></div>";
                     }
 
 
                     if ($(zone).data("type") == null) {
-                        doc += "<div class=\"file-name\">" + obj.cFile_OriginalName;
-                        doc += "<a href=\"javascript:delFile('" + obj.cFile_ID + "', 'ctl00_MainContent_hid_file' + '" + zone.prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+                        doc += "<div class=\"file-name\">" + obj.FileOrgName;
+                        doc += "<a href=\"javascript:delFile('" + obj.ID + "', 'hid_file' + '" + zone.prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
                         doc += " </div></div>";
 
-                        var fileZoneObj = $("#ctl00_MainContent_file" + zone.prop("id"))
+                        var fileZoneObj = $("#file" + zone.prop("id"))
                         fileZoneObj.append(doc);
 
-                        var hidFiles = $("#ctl00_MainContent_hid_file" + zone.prop("id"))
-                        hidFiles.val(hidFiles.val() + obj.cFile_ID + ",");
+                        var hidFiles = $("#hid_file" + zone.prop("id"))
+                        hidFiles.val(hidFiles.val() + obj.ID + ",");
                         console.log(hidFiles.val());
 
                     } else if ($(zone).data("type") == "type2") { //動態產生上傳區塊使用
-                        doc += "<div class=\"file-name\">" + obj.cFile_OriginalName;
-                        doc += "<a href=\"javascript:delFile('" + obj.cFile_ID + "', '" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')) + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+                        doc += "<div class=\"file-name\">" + obj.FileOrgName;
+                        doc += "<a href=\"javascript:delFile('" + obj.ID + "', '" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')) + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
                         doc += " </div></div>";
 
                         var fileZoneObj = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
                         fileZoneObj.append(doc);
 
                         var hidFiles = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
-                        hidFiles.val(hidFiles.val() + obj.cFile_ID + ",");
+                        hidFiles.val(hidFiles.val() + obj.ID + ",");
                         console.log(hidFiles.val());
                     }
 
@@ -198,33 +192,33 @@ function dropzoneInit() {
 }
 
 //產生檔案區塊
-function generatorFileDiv() {
+function generatorFileDiv(functionUrl) {
     $.each($(".fileids"), function (i, hidFiles) {
         if ($(hidFiles).val().length > 1) {
             var fileZoneObj = $("#" + $(hidFiles).prop("id").replace("hid_", ""));
             var fileids = $(hidFiles).val().split(",");
             for (var i in fileids) {
                 $.ajax({
-                    url: "../AjaxHandler.ashx",
+                    url: functionUrl,
                     type: 'post',
                     dataType: 'json',
-                    data: { functionName: "findFileById", fileId: fileids[i] },
+                    data: { fileId: fileids[i] },
                     success: function (result) {
-                        var doc = "<div class=\"file-box\" id='" + result.cFile_ID + "'>";
+                        var doc = "<div class=\"file-box\" id='" + result.ID + "'>";
                         doc += "<div class=\"file\">";
-                        doc += "<a href='http://" + window.location.host + "/files/" + result.cFile_NewName + "' " + (("jpg png bpmp".indexOf(result.cFile_FileType) != -1) ? "" : "download='" + result.cFile_OriginalName + "'") + " target='_blank'>";
+                        doc += "<a href='http://" + window.location.host + "/files/" + result.FileName + "' " + ((".jpg .jpeg .png .bmp .gif".indexOf(result.FileExt) != -1) ? "" : "download='" + result.FileOrgName + "'") + " target='_blank'>";
                         doc += "<span class=\"corner\"></span>";
-                        if ("jpg png bpmp".indexOf(result.cFile_FileType) != -1) {
-                            doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + result.cFile_NewName + "\"></div>";
+                        if (".jpg .jpeg .png .bmp .gif".indexOf(result.FileExt) != -1) {
+                            doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + result.FileName + "\"></div>";
                         } else {
                             doc += "<div class=\"icon\"><i class=\"fa fa-file\"></i></div>";
                         }
 
-                        doc += "<div class=\"file-name\">" + result.cFile_OriginalName;
-                        doc += "<a href=\"javascript:delFile('" + result.cFile_ID + "', '" + $(hidFiles).prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+                        doc += "<div class=\"file-name\">" + result.FileOrgName;
+                        doc += "<a href=\"javascript:delFile('" + result.ID + "', '" + $(hidFiles).prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
                         doc += " </div></div>";
                         fileZoneObj.append(doc);
-                        console.log(result.cFile_OriginalName);
+                        console.log(result.FileOrgName);
                     }
                 })
                 console.log(fileids[i]);

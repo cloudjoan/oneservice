@@ -213,6 +213,15 @@
 				alert('開始時間不得等於或晚於結束時間！');
 				return false;
 			}
+			if ($("#tbx_WhDescript").val() == ""){
+				alert('工作說明不得為空！');
+				$("#tbx_WhDescript").focus();
+				return false;
+			}
+			if ($("#tbx_StartDate2").val() == "" || $("#tbx_EndDate2").val() == ""){
+				alert('開始或結束日期未填？');
+				return false;
+			}
 			return true;
 		}
 

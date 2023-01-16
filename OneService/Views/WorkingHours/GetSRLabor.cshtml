@@ -38,28 +38,31 @@
 		</tr>
 	</thead>
 	<tbody>
-		@foreach (var bean in ViewBag.viewWHBeans)
-		{
-			<tr>
-				<td>
-					@if (bean.SourceFrom != "CRM")
-					{
-						<a class="btn btn-warning" href="javascript:GetWHById(@bean.Id)"><i class="fa fa-pencil"></i></a>
-						<a class="btn btn-danger" href="javascript:DeleteWHById(@bean.Id, this)"><i class="fa fa-trash"></i></a>
-					}
+		@if (ViewBag.viewWHBeans != null){
+			@foreach (var bean in ViewBag.viewWHBeans)
+			{
+				<tr>
+					<td>
+						@if (bean.SourceFrom != "CRM")
+						{
+							<a class="btn btn-warning" href="javascript:GetWHById(@bean.Id)"><i class="fa fa-pencil"></i></a>
+							<a class="btn btn-danger" href="javascript:DeleteWHById(@bean.Id, this)"><i class="fa fa-trash"></i></a>
+						}
 
-				</td>
-				<td>@bean.FinishTime</td>
-				<td>@bean.Labor</td>
-				<td>@bean.WhtypeName</td>
-				<td>@bean.ActTypeName</td>
-				<td>
-					@(bean.SourceFrom != "CRM" ? bean.CrmOppName : bean.SrId)
-				</td>
-				<td>@bean.WhDescript</td>
-				
-			</tr>
+					</td>
+					<td>@bean.FinishTime</td>
+					<td>@bean.Labor</td>
+					<td>@bean.WhtypeName</td>
+					<td>@bean.ActTypeName</td>
+					<td>
+						@(bean.SourceFrom != "CRM" ? bean.CrmOppName : bean.SrId)
+					</td>
+					<td>@bean.WhDescript</td>
+
+				</tr>
+			}
 		}
+
 	</tbody>
 	<tfoot>
 		<tr>

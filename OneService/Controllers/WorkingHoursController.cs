@@ -61,13 +61,23 @@ namespace OneService.Controllers
         public IActionResult GetSRLabor(string erpId, string whType, string startDate, string endDate)
         {
 
-            var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId && (string.IsNullOrEmpty(whType)?true: x.Whtype == whType)).ToList();
+            try
+            {
+                var viewWHBeans = psipDB.ViewWorkingHours.Where(x => x.UserErpId == erpId && (string.IsNullOrEmpty(whType) ? true : x.Whtype == whType)).ToList();
 
-            viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(startDate) ? true : Convert.ToDateTime(x.FinishTime) >= Convert.ToDateTime(startDate + " 00:00")).ToList();
-            viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(endDate) ? true : Convert.ToDateTime(x.FinishTime) <= Convert.ToDateTime(endDate + " 23:59")).ToList();
+                viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(startDate) ? true : Convert.ToDateTime(x.FinishTime) >= Convert.ToDateTime(startDate + " 00:00")).ToList();
+                viewWHBeans = viewWHBeans.Where(x => string.IsNullOrEmpty(endDate) ? true : Convert.ToDateTime(x.FinishTime) <= Convert.ToDateTime(endDate + " 23:59")).ToList();
 
-            ViewBag.viewWHBeans = viewWHBeans;
+                ViewBag.viewWHBeans = viewWHBeans;
+
+            }
+            catch(Exception e)
+            {
+                ViewBag.viewWHBeans = null;
+            }
+
             return View();
+
         }
 
         public IActionResult CreateWH()
