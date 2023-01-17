@@ -1,9 +1,47 @@
-﻿<!DOCTYPE html>
+﻿@using OneService.Utils
+
+<!DOCTYPE html
+@{
+	//根據時間顯示不同問候及icon
+	var greeting = "";
+	var greetingIcon = "";
+	@*var empName = HttpContextAccessor.HttpContext.Session.GetString(SessionKey.USER_NAME);*@
+
+	if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 05:00:00}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-bed'></i>";
+		greeting = "晚安！";
+	}
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 11:00:00}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-sun-o'></i>";
+		greeting = "早安！";
+	}
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 17:30:00}", DateTime.Now)))
+	{
+		//greetingIcon = "<i class='fa fa-line-chart'></i>";
+		greetingIcon = "<i class='fa fa-coffee'></i>";
+		greeting = "午安！";
+	}
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 23:00:00}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-moon-o'></i>";
+		greeting = "晚安！";
+	}
+	@*時間如果寫24:00:00會錯誤，因為跟00:00:00重疊*@
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 23:59:59}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-bed'></i>";
+		greeting = "晚安！";
+	}
+
+
+}>
 
 <html>
 <head>
 	<meta name="viewport" content="width=device-width" />
-	<title>@ViewBag.Title</title>
+	<title>@ViewData["Title"]</title>
 
 	<link href="~/css/bootstrap.css" rel="stylesheet">
 	<link href="~/font-awesome/css/font-awesome.css" rel="stylesheet">
@@ -11,7 +49,7 @@
 	<link href="~/css/animate.css" rel="stylesheet">
 	<link href="~/css/style.css" rel="stylesheet">
 
-	<link href="~/css/plugins/datapicker/datepicker3.css" rel="stylesheet">	
+	<link href="~/css/plugins/datapicker/datepicker3.css" rel="stylesheet">
 
 	<link href="~/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
 
@@ -20,6 +58,14 @@
 
 	<link href="~/js/jquery-ui-1.12.1.custom/jquery-ui.css" rel="stylesheet">
 	<link href="~/js/jquery-ui-1.12.1.custom/jquery-ui.theme.css" rel="stylesheet">
+
+	<link rel="Stylesheet" href="~/css/plugins/datetimepicker/bootstrap-datetimepicker.css" />
+
+	<style>
+		.hiddenWidget{
+			 display:none;
+		}
+	</style>
 </head>
 <body>
 
@@ -29,7 +75,7 @@
 			<div class="sidebar-collapse">
 				<ul class="nav metismenu" id="side-menu">
 					<li>
-						<a class="dropdown profile-element" href="#" target="_blank" style="padding: 0px;">
+						<a class="dropdown profile-element" ref="@Url.Action("Dashboard", "Home")" style="padding: 0px;">
 							<img src="~/img/tsti_OneServicelogo.png" style="width: 100%;" />
 						</a>
 					</li>
@@ -89,14 +135,10 @@
 					<li class="active">
 						<a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">服務管理</span> <span class="fa arrow"></span></a>
 						<ul class="nav nav-second-level">
-							<li><a href="@Url.Action("ToDoList", "ServiceRequest")"> <i class="fa fa-window-restore"></i> 待辦清單</a></li>
-							<li><a href="@Url.Action("GenerallySR", "ServiceRequest")" target="_blank"> <i class="fa fa-wrench"></i> 一般服務</a></li>
-							<li><a href="dashboard_2.html"> <i class="fa fa-cogs"></i> 裝機服務</a></li>
-							<li><a href="dashboard_3.html"> <i class="fa fa-calendar-check-o"></i> 定維服務</a></li>
-							<li><a href="dashboard_3.html"> <i class="fa fa-list-ul"></i> 服務總表</a></li>
-							@*<li><a href="@Url.Action("SRTeamMapping", "ServiceRequest")"> <i class="fa fa-cog"></i> 服務團隊對照設定作業</a></li>
-							<li><a href="@Url.Action("SRCustomerEmailMapping", "ServiceRequest")"> <i class="fa fa-cog"></i> 客戶Email對照設定作業</a></li>
-							<li><a href="@Url.Action("SRSQPerson", "ServiceRequest")"> <i class="fa fa-cog"></i> SQ人員設定作業</a></li>*@
+							<li><a href="#"> <i class="fa fa-wrench"></i> 一般服務</a></li>
+							<li><a href="#"> <i class="fa fa-cogs"></i> 裝機服務</a></li>
+							<li><a href="#"> <i class="fa fa-calendar-check-o"></i> 定維服務</a></li>
+							<li><a href="http://tsti-bpm01:999/srReport.aspx" target="_blank"> <i class="fa fa-list-ul"></i> 服務總表</a></li>
 						</ul>
 					</li>
 					<li class="active">
@@ -108,10 +150,10 @@
 							<li><a href="http://psip-qas/Spare/QueryProgress" target="_blank"> <i class="fa fa-hourglass-half"></i> 借用進度查詢</a></li>
 						</ul>
 					</li>
-					<li class="active" style="display: none;">
+					<li class="active" hidden="hidden">
 						<a href="index.html"><i class="fa fa-calendar-o"></i> <span class="nav-label">資訊系統帳號與權限設定項目檢核表</span> <span class="fa arrow"></span></a>
 						<ul class="nav nav-second-level">
-							<li><a href="@Url.Action("OperationParameter", "SysParameter")" target="_blank"><i class="fa fa-clock-o"></i> 資訊系統作業設定</a></li>
+							<li><a href="@Url.Action("OperationParameter", "SysParameter")"><i class="fa fa-clock-o"></i> 資訊系統作業設定</a></li>
 						</ul>
 					</li>
 				</ul>
@@ -131,7 +173,9 @@
 						</form>
 					</div>
 					<ul class="nav navbar-top-links navbar-right">
-						<img src="~/img/logo.gif" />
+						<label style="margin-top: auto; margin-bottom: auto; margin-right: 15px; font-size: 20px; font-family: 'Microsoft JhengHei';">@Html.Raw(greetingIcon)&nbsp;&nbsp;@greeting <a href="javascript:logout()">  登 出</a></label>
+						
+						@*<img src="~/img/logo.gif" />*@
 						<!--
 							<li>
 								<span class="m-r-sm text-muted welcome-message">Welcome .</span>
@@ -177,7 +221,7 @@
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="dialogTitle">借用記錄歷程</h5>
+					<h5 class="modal-title" id="dialogTitle">Title</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
@@ -253,27 +297,9 @@
 		</div>
 	</div>
 
-	<!--ShowBOMDialog-->
-	<div class="modal fade" id="ShowBOMDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-lg" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="ShowBOMdialogTitle">BOM表</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body" id="ShowBOMdialogContent">
-				</div>
-				<div class="modal-footer">
-					<button id="BtnClose" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">關閉</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
 	<!-- Mainly scripts -->
-	<script src="~/js/jquery-3.1.1.min.js"></script>
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+    <script src="~/js/jquery-migrate-3.4.0.js"></script>
 	<script src="~/js/popper.min.js"></script>
 	<script src="~/js/bootstrap.js"></script>
 	<script src="~/js/plugins/metisMenu/jquery.metisMenu.js"></script>
@@ -300,16 +326,17 @@
 	<script src="~/js/plugins/dropzone/dropzone.js?2020071502"></script>
 	<script src="~/js/numeral.js"></script>
 
+	<!--datetimepicker設定參考網址 https://www.bootcss.com/p/bootstrap-datetimepicker/-->
+	<script type="text/javascript" src="~/js/plugins/datetimepicker/bootstrap-datetimepicker.js"></script>
+
 	<!-- iCheck -->
 	<script src="~/js/plugins/iCheck/icheck.min.js"></script>
-	<script src="~/js/common-function.js?2022113003"></script>
-
-	<!--datetimepicker設定參考網址 https://www.bootcss.com/p/bootstrap-datetimepicker/-->
-    <script type="text/javascript" src="~/js/plugins/datetimepicker/bootstrap-datetimepicker.js"></script>
-    <link rel="Stylesheet" href="~/css/plugins/datetimepicker/bootstrap-datetimepicker.css" />
-
+	<script src="~/js/common-function.js?2023011603"></script>
 	<script>
 		$(document).ready(function () {
+
+			dropzoneInit("@Url.Action("AjaxFileUpload", "Ajax")");
+
 			$('.i-checks').iCheck({
 				checkboxClass: 'icheckbox_square-green',
 				radioClass: 'iradio_square-green',
@@ -319,11 +346,18 @@
 				todayBtn: "linked",
 				keyboardNavigation: false,
 				forceParse: false,
-				calendarWeeks: true,
+				calendarWeeks: false,
 				autoclose: true,
 				format: "yyyy-mm-dd"
 			});
-			
+
+			$('.datetimepicker').datetimepicker({
+				minView: "day", //只顯示到每日的整點
+				format: "yyyy-mm-dd hh:ii",
+				autoclose: true, //當選擇一個日期之後是否立即關閉此日期時間選擇器。
+				todayBtn: "linked", //如果此值為true或"linked"，則在日期時間選擇器組件的底部顯示一個today按鈕用以選擇當前日期。如果是true，today按鈕僅僅將視圖轉到當天的日期，如果是linked，當天日期將會被選中。
+				todayHighlight: true, //如果為true，閃亮當前日期。
+			});
 
 			$('#table1').DataTable({
 				language: {
@@ -352,15 +386,25 @@
 				//order:[[ 0, "desc" ]],
 				dom: '<"html5buttons"B>lTfgitp',
 				buttons: [
-					{
-						extend: 'excel',
-						title: 'ExampleFile',
-						text: '匯出Excel'								
-					}
+					{ extend: 'excel', title: 'ExampleFile', text: '匯出Excel' }
 				]
 
-			});			
+			});
+
 		});
+
+		function showDialog(title, message){
+			$("#dialogTitle").html(title);
+			$("#dialogContent").html(message);
+			$("#bulletinDialog").modal("show");
+		}
+
+		function logout(){
+			if(confirm("確定登出?")){
+				window.location.href = "@Url.Action("Logout", "Home")";
+			}
+		}
+
 
 	</script>
 	@RenderSection("js_section", required: false)
