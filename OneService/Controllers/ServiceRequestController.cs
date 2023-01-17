@@ -1504,25 +1504,14 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult SRTeamMapping()
         {
-            try
-            {
-                getLoginAccount();
+            getLoginAccount();
 
-                #region 取得登入人員資訊
-                CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-                EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
-                ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;               
-                #endregion
-              
-            }
-            catch (Exception ex)
-            {
-                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
-                pMsg += " 失敗行數：" + ex.ToString();
-
-                CMF.writeToLog(pSRID, "SRTeamMapping", pMsg, ViewBag.cLoginUser_Name);
-            }
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            #endregion
 
             return View();
         }
@@ -1686,29 +1675,19 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult SRCustomerEmailMapping()
         {
-            var model = new ViewModel();
+            getLoginAccount();
 
-            try
-            {
-                getLoginAccount();
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
-                #region 取得登入人員資訊
-                CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-                EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
 
-                ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-                ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
 
-                pCompanyCode = EmpBean.BUKRS;
-                #endregion
-            }
-            catch (Exception ex)
-            {
-                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
-                pMsg += " 失敗行數：" + ex.ToString();
-
-                CMF.writeToLog(pSRID, "SRCustomerEmailMapping", pMsg, ViewBag.cLoginUser_Name);
-            }
+            var model = new ViewModelTeam();
 
             return View(model);
         }
@@ -1866,6 +1845,202 @@ namespace OneService.Controllers
         #endregion       
 
         #endregion -----↑↑↑↑↑客戶Email對照設定作業 ↑↑↑↑↑-----   
+
+        #region -----↓↓↓↓↓SQ人員設定作業 ↓↓↓↓↓-----
+        /// <summary>
+        /// SQ人員設定作業
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult SRSQPerson()
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            var model = new ViewModelSQ();
+
+            return View(model);
+        }
+
+        #region SQ人員設定作業查詢結果
+        /// <summary>
+        /// SQ人員設定作業查詢結果
+        /// </summary>        
+        /// <param name="cEngineerID">工程師ERPID</param>
+        /// <param name="cFullNAME">SQ人員說明</param>
+        /// <returns></returns>
+        public IActionResult SRSQPersonResult(string cEngineerID, string cFullNAME)
+        {
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            #region 組待查詢清單
+            var beans = dbOne.TbOneSrsqpeople.Where(x => x.Disabled == 0 &&
+                                                    (string.IsNullOrEmpty(cEngineerID) ? true : x.CEngineerId == cEngineerID) &&
+                                                    (string.IsNullOrEmpty(cFullNAME) ? true : x.CFullName.Contains(cFullNAME)));
+
+            foreach (var bean in beans)
+            {
+                string[] QueryInfo = new string[6];                
+
+                QueryInfo[0] = bean.CId.ToString(); //系統ID
+                QueryInfo[1] = bean.CEngineerId;     //工程師ERPID
+                QueryInfo[2] = bean.CEngineerName;   //工程師姓名   
+                QueryInfo[3] = bean.CContent;       //證照編號
+                QueryInfo[4] = bean.CFullKey;       //SQ人員代號
+                QueryInfo[5] = bean.CFullName;      //SQ人員說明               
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion
+
+        #region 儲存SQ人員設定檔
+        /// <summary>
+        /// 儲存SQ人員設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cEngineerID">工程師ERPID</param>
+        /// <param name="cEngineerName">工程師姓名</param>
+        /// <param name="cSecondKEY">區域代號</param>
+        /// <param name="cThirdKEY">類別代號</param>        
+        /// <param name="cContent">證照編號</param>
+        /// <returns></returns>
+        public ActionResult saveSRSQPerson(string cID, string cEngineerID, string cEngineerName, string cSecondKEY, string cThirdKEY, string cContent)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            #endregion
+
+            string tMsg = string.Empty;
+
+            try
+            {
+                int result = 0;
+                if (cID == null)
+                {
+                    #region -- 新增 --
+                    var prBean = dbOne.TbOneSrsqpeople.FirstOrDefault(x => x.Disabled == 0 && 
+                                                                        x.CFirstKey == "Z" &&                                                                        
+                                                                        x.CSecondKey == cSecondKEY &&
+                                                                        x.CThirdKey == cThirdKEY &&
+                                                                        x.CEngineerId == cEngineerID &&
+                                                                        x.CContent == cContent);
+                    if (prBean == null)
+                    {
+                        TbOneSrsqperson prBean1 = new TbOneSrsqperson();
+
+                        string CNO = CMF.GetSRSQNo("Z", cSecondKEY, cThirdKEY);
+                        string CEngineerName = CMF.findEmployeeName(cEngineerID);
+                        string[] CFullInfo = CMF.GetSRSQFullInfo(pOperationID_GenerallySR, "Z", cSecondKEY, cThirdKEY, CNO, cContent, CEngineerName);
+
+                        prBean1.CFirstKey = "Z";
+                        prBean1.CSecondKey = cSecondKEY;
+                        prBean1.CThirdKey = cThirdKEY;
+                        prBean1.CNo = CNO;
+                        prBean1.CEngineerId = cEngineerID;
+                        prBean1.CEngineerName = CEngineerName;
+                        prBean1.CContent = cContent;
+                        prBean1.CFullKey = CFullInfo[0];
+                        prBean1.CFullName = CFullInfo[1];
+                        prBean1.Disabled = 0;
+
+                        prBean1.CreatedUserName = EmpBean.EmployeeCName;
+                        prBean1.CreatedDate = DateTime.Now;
+
+                        dbOne.TbOneSrsqpeople.Add(prBean1);
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此SQ人員代號已存在，請重新輸入！";
+                    }
+                    #endregion                
+                }
+                else
+                {
+                    #region -- 編輯 --
+                    var prBean = dbOne.TbOneSrsqpeople.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                            x.CId.ToString() != cID &&
+                                                                            x.CFirstKey == "Z" &&
+                                                                            x.CSecondKey == cSecondKEY &&
+                                                                            x.CThirdKey == cThirdKEY &&
+                                                                            x.CEngineerId == cEngineerID &&
+                                                                            x.CContent == cContent);
+                    if (prBean == null)
+                    {
+                        var prBean1 = dbOne.TbOneSrsqpeople.FirstOrDefault(x => x.CId.ToString() == cID);
+
+                        string[] CFullInfo = CMF.GetSRSQFullInfo(pOperationID_GenerallySR, "Z", prBean1.CSecondKey, prBean1.CThirdKey, prBean1.CNo, cContent, prBean1.CEngineerName);
+
+                        prBean1.CContent = cContent;
+                        prBean1.CFullName = CFullInfo[1];
+
+                        prBean1.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean1.ModifiedDate = DateTime.Now;
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此SQ人員代號已存在，請重新輸入！";
+                    }
+                    #endregion
+                }
+                return Json(tMsg);
+            }
+            catch (Exception e)
+            {
+                return Json(e.Message);
+            }
+        }
+        #endregion
+
+        #region 刪除SQ人員設定檔
+        /// <summary>
+        /// 刪除SQ人員設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public ActionResult DeleteSRSQPerson(string cID)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            #endregion
+
+            var ctBean = dbOne.TbOneSrsqpeople.FirstOrDefault(x => x.CId.ToString() == cID);
+            ctBean.Disabled = 1;
+            ctBean.ModifiedUserName = EmpBean.EmployeeCName;
+            ctBean.ModifiedDate = DateTime.Now;
+
+            var result = dbOne.SaveChanges();
+
+            return Json(result);
+        }
+        #endregion       
+
+        #endregion -----↑↑↑↑↑SQ人員設定作業 ↑↑↑↑↑-----   
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
@@ -2436,7 +2611,7 @@ namespace OneService.Controllers
 
         #region -----↓↓↓↓↓自定義Class ↓↓↓↓↓-----     
 
-        #region DropDownList選項Class
+        #region DropDownList選項Class(一般服務)
         /// <summary>
         /// DropDownList選項Class
         /// </summary>
@@ -2482,12 +2657,38 @@ namespace OneService.Controllers
             public string ddl_cIsSecondFix { get; set; }
             public List<SelectListItem> ListIsSecondFix = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "ISSECONDFIX", true);
             #endregion
+        }
+        #endregion
 
+        #region DropDownList選項Class(客戶Email對照設定作業)
+        /// <summary>
+        /// DropDownList選項Class
+        /// </summary>
+        public class ViewModelTeam
+        {
             #region 服務團隊ID
             public string ddl_cQueryTeamID { get; set; }
             public string ddl_cTeamID { get; set; }
             public List<SelectListItem> ListTeamID = findSRTeamMappingListItem(pCompanyCode, true);
+            #endregion          
+        }
+        #endregion
+
+        #region DropDownList選項Class(SQ人員設定作業)
+        /// <summary>
+        /// DropDownList選項Class
+        /// </summary>
+        public class ViewModelSQ
+        {
+            #region SQ人員區域代號
+            public string ddl_cSecondKEY { get; set; }
+            public List<SelectListItem> ListSecondKEY = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SQSECKEY", true);
             #endregion
+
+            #region SQ人員類別代號
+            public string ddl_cThirdKEY { get; set; }
+            public List<SelectListItem> ListThirdKEY = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SQTHIKEY", true);
+            #endregion     
         }
         #endregion
 

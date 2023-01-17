@@ -1,0 +1,507 @@
+﻿@{
+	ViewData["Title"] = "SRSQPerson";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+		<script>
+			$(document).ready(function () {
+				initTable();
+				PeopleSearch();				
+			});
+
+			function initTable() {
+				var buttonCommon = {
+					exportOptions: {
+						format: {
+							body: function (data, row, column, node) {
+								//替換&符號
+								var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+									translate = {
+										'nbsp': String.fromCharCode(160),
+										'amp': '&',
+										'quot': '"',
+										'lt': '<',
+										'gt': '>'
+									},
+									translator = function ($0, $1) {
+										return translate[$1];
+									};
+
+								if (typeof data === 'string')
+									data = data.replace(translate_re, translator);
+
+								return data;
+							}
+						}
+					}
+				};
+
+				$('#tableAll').DataTable({
+					language: {
+						"lengthMenu": "每頁顯示筆數 _MENU_ ",
+						"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+						"search": " 關鍵字篩選"
+					},
+					pageLength: 25,
+					responsive: true,
+					order: [[0, "desc"]],
+					dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+					buttons: [
+						$.extend(true, {}, buttonCommon, {
+							extend: 'excelHtml5',
+							title: 'SQ人員設定檔作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+							text: '匯出Excel',
+							sheetName: 'SQ人員設定檔作業',
+							exportOptions: {
+								columns: [1, 2, 3, 4, 5] //要顯示的欄位
+							},
+							customize: function (xlsx) {
+								var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+								$('row c[r^="A"]', sheet).attr('s', '0');	//設成文字格式
+								$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
+								$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
+								$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
+								$('row c[r^="E"]', sheet).attr('s', '0');	//設成文字格式
+							}
+						}),
+					],
+				});
+
+				$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+			}
+
+		//Ajax用中文或英文姓名查詢人員帳號
+		function PeopleSearch() {
+			$(".Peoploe").unbind();
+
+			$(".Peoploe").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+							var ojbID = $(this).attr("id");
+
+							$.ajax({
+								url: '@Url.Action("AjaxfindEmployeeByKeyword", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: {
+									functionName: 'AjaxfindEmployeeByKeyword', keyword: keyword
+								},
+								success: function (result) {
+									objects = [];
+									$.each(result, function (i, idata) {
+										objects[i] = {
+											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
+											idx: i,
+											value: idata.CEmployeeErpid, //value這個值，一定要在label裡才能顯示出下拉											
+											Name: idata.CEmployeeCName
+										};
+									});
+
+									//綁定foucs事件
+									obj.autocomplete({
+										source: objects,
+										select: function (event, ui) {
+											if (ojbID.indexOf('tbx_cEngineerID') >= 0) {
+												$('#tbx_cEngineerName').val(ui.item.Name);
+											}									
+										}
+									}).bind('focus', function () { obj.autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();
+									$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
+								}
+							})
+
+						}
+					}
+				}
+			})
+		}
+
+
+		//儲存明細
+		function saveSRSQPerson() {
+			var strMsg = "";
+			var cType = $("#hid_cType").val();					//目前狀態
+			var IsDo = $("#hid_IsDoADD");						//是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			var hid_cID = $("#hid_cID");						//系統ID
+			var tbx_cEngineerID = $("#tbx_cEngineerID");		//工程師ERPID
+			var tbx_cEngineerName = $("#tbx_cEngineerName");		//工程師姓名
+			var ddl_cSecondKEY = $("#ddl_cSecondKEY");			//區域代號
+			var ddl_cThirdKEY = $("#ddl_cThirdKEY");			//類別代號
+			var tbx_cContent = $("#tbx_cContent");				//證照編號
+
+			if (tbx_cEngineerID.val() == "") {
+				strMsg += "工程師ERPID不得為空！\n";
+			}
+
+			if (tbx_cEngineerName.val() == "") {
+				strMsg += "工程師姓名不得為空！\n";
+			}
+
+			if (ddl_cSecondKEY.val() == "") {
+				strMsg += "請選擇區域代號！\n";
+			}
+
+			if (ddl_cThirdKEY.val() == "") {
+				strMsg += "請選擇類別代號！\n";
+			}
+
+			if (tbx_cContent.val() == "") {
+				strMsg += "證照編號不得為空！\n";
+			}
+
+			if (strMsg != "") {
+				alert(strMsg);
+			}
+			else {
+				$("#btn_saveSRSQPerson").hide();
+				$("#img_waiting_saveSRSQPerson").show();
+				$.ajax({
+					url: '@Url.Action("saveSRSQPerson", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: hid_cID.val(),
+						cEngineerID: tbx_cEngineerID.val(),
+						cEngineerName: tbx_cEngineerName.val(),
+						cSecondKEY: ddl_cSecondKEY.val(),
+						cThirdKEY: ddl_cThirdKEY.val(),
+						cContent: tbx_cContent.val()
+					},
+					success: function (result) {
+						if (result == "") {
+							alert("儲存成功");
+							$("#dialog_pSRSQPerson").modal('hide');
+
+							if (cType == "ADD") {
+								IsDo.val("Y");
+							}
+							else {
+								IsDo.val("");
+							}
+
+							Query();
+						}
+						else {
+							alert(result);
+						}
+						$("#img_waiting_saveSRSQPerson").hide();
+						$("#btn_saveSRSQPerson").show();
+					},
+				});
+			}
+		}
+
+		//刪除
+		function deleteSRSQPerson(rowId, cID) {
+			if (confirm("確定刪除？")) {
+				$.ajax({
+					url: '@Url.Action("DeleteSRSQPerson", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: { cID: cID },
+					success: function (result) {
+						if (result > 0) {
+							$('#' + rowId).remove();
+						}
+					}
+				})
+			}
+		}
+
+		//新增
+		function btn_add_pSRSQPersononclick() {
+			$("#hid_cType").val("ADD");	//目前狀態
+			$("#hid_cID").val("");		//清空系統ID			
+
+			resetPopup("#dialog_pSRSQPerson"); //popup各欄位reset
+
+			$("#tbx_cEngineerID").removeAttr("disabled");	//工程師ERPID
+			$("#ddl_cSecondKEY").removeAttr("disabled");	//區域代號
+			$("#ddl_cThirdKEY").removeAttr("disabled");	//類別代號
+			$("#ddl_cSecondKEY").val("");
+			$("#ddl_cThirdKEY").val("");
+
+			$("#dialog_pSRSQPerson .dropzone").show();
+			$("#dialog_pSRSQPerson").modal('show');
+		}
+
+		//修改
+		function EditSRSQPersonDialog(obj, cID) {
+			$("#hid_cType").val("EDIT");	//目前狀態
+			$("#hid_IsDoADD").val("");	//清空是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			resetPopup("#dialog_pSRSQPerson"); //popup各欄位reset			
+
+			var hid_cID = $("#hid_cID");						//系統ID
+			var tbx_cEngineerID = $("#tbx_cEngineerID");		//工程師ERPID
+			var tbx_cEngineerName = $("#tbx_cEngineerName");		//工程師姓名
+			var ddl_cSecondKEY = $("#ddl_cSecondKEY");			//區域代號
+			var ddl_cThirdKEY = $("#ddl_cThirdKEY");			//類別代號
+			var tbx_cContent = $("#tbx_cContent");				//證照編號
+
+			tbx_cEngineerID.attr('disabled', true);
+			ddl_cSecondKEY.attr('disabled', true);
+			ddl_cThirdKEY.attr('disabled', true);
+
+			//設定各欄位資料
+			var tFullKey = $(obj).parent().parent().find('.tdcFullKEY').text();
+			var tSecondKEY = tFullKey.substr(1,1);
+			var tThirdKEY = tFullKey.substr(2,1);		
+
+			hid_cID.val(cID);
+			tbx_cEngineerID.val($(obj).parent().parent().find('.tdcEngineerID').text());
+			tbx_cEngineerName.val($(obj).parent().parent().find('.tdcEngineerName').text());
+			ddl_cSecondKEY.val(tSecondKEY);
+			ddl_cThirdKEY.val(tThirdKEY);
+			tbx_cContent.val($(obj).parent().parent().find('.tdcContent').text());
+
+			$("#dialog_pSRSQPerson .dropzone").show();
+			$("#dialog_pSRSQPerson").modal('show');
+		}
+
+		//popup各欄位reset
+		function resetPopup(popupId) {
+			var cType = $("#hid_cType").val();		//ADD.新增 EDIT.編輯
+			var cIsDo = $("#hid_IsDoADD").val();	//是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			if (cType == "ADD" && cIsDo == "Y") {
+				//不做事
+			}
+			else {
+				$(popupId).find("input").each(function (index, value) {
+					$(this).val("");
+				});
+				$(popupId).find("select").each(function (index, value) {
+					$(this).val("-1");
+				});
+			}
+
+			$(popupId).find("textarea").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find(".file-box").each(function (index, value) {
+				$(this).remove();
+			});
+		}
+
+		//查詢
+		function Query() {
+			$("#waitingImg").show();
+
+			var tMsg = "";
+			var tbx_QuerycEngineerID = $("#tbx_QuerycEngineerID");	//工程師ERPID
+			var tbx_QuerycFullNAME = $("#tbx_QuerycFullNAME");		//SQ人員說明
+
+			if (tMsg != "") {
+				alert(tMsg);
+				$("#waitingImg").hide();
+				return false;
+			}
+			else {
+				searchSRSQPerson(tbx_QuerycEngineerID.val(), tbx_QuerycFullNAME.val());
+			}
+
+			return true;
+		}
+
+			//查詢結果
+		function searchSRSQPerson(cEngineerID, cFullNAME) {
+				$("#dataDiv").html('');
+				$.ajax({
+					url: '@Url.Action("SRSQPersonResult", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cEngineerID: cEngineerID,
+						cFullNAME: cFullNAME
+					},
+					success: function (result) {
+					},
+					complete: function (result) {
+						$("#dataDiv").html(result.responseText);
+						$("#waitingImg").hide();
+					}
+				});
+			}
+
+		//清除
+		function clearSRSQPerson() {
+			$("#tbx_QuerycEngineerID").val("");
+			$('#tbx_QuerycFullNAME').val("");
+		}
+		</script>
+}
+
+	@section breadcrumb_section{
+		<div class="col-lg-10">
+			<h2>SQ人員設定作業</h2>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a href="#">服務管理系統參數設定</a>
+				</li>
+				<li class="breadcrumb-item active">
+					<strong>SQ人員設定作業</strong>
+				</li>
+			</ol>
+		</div>
+}
+
+		<div class="row">
+
+			<div class="col-lg-12">
+				<div class="ibox ">
+					<div class="ibox-title">
+						<h5>
+							SQ人員設定作業
+							<button id="btn_add_pNA" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_add_pSRSQPersononclick();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+						</h5>
+						<div class="ibox-tools">
+							<a class="collapse-link">
+								<i class="fa fa-chevron-up"></i>
+							</a>
+						</div>
+					</div>
+					<div class="ibox-content">
+					@model OneService.Controllers.ServiceRequestController.ViewModelSQ //載入StatusViewModel
+						<form id="form1" name="form" action='#' method="post">
+							<!--目前狀態 ADD.新增 or EDIT.編輯-->
+							<input type="hidden" id="hid_cType" />
+							<!--是否已經執行過新增存檔，用來判斷下次新增的時候，會預設帶上一次的值-->
+							<input type="hidden" id="hid_IsDoADD" />
+							<!--登人者公司別-->
+							<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+							<div class="form-group row">
+								<label class="col-lg-2 col-form-label">工程師ERPID</label>
+								<div class="col-lg-4">
+								<input type="text" id="tbx_QuerycEngineerID" name="tbx_QuerycEngineerID" class="form-control Peoploe" placeholder="請輸入中文或英文姓名關鍵字">
+								</div>	
+								<label class="col-lg-2 col-form-label">SQ人員說明</label>
+								<div class="col-lg-4">
+									<input type="text" id="tbx_QuerycFullNAME" name="tbx_QuerycFullNAME" class="form-control" placeholder="SQ人員說明">
+								</div>	
+							</div>							
+							<div class="form-group row">
+								<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+								<button class="btn btn-default btn-lg" type="button" onclick="clearSRSQPerson();"><i class="fa fa-trash"></i> 清 除 </button>
+								<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-lg-12">
+				<div class="ibox ">
+					<div class="ibox-title">
+						<h5>SQ人員設定作業查詢結果</h5>
+						<div class="ibox-tools">
+							<a class="collapse-link">
+								<i class="fa fa-chevron-up"></i>
+							</a>
+						</div>
+					</div>
+					<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+						<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+							<thead>
+								<tr>
+									<th></th>
+									<th>工程師ERPID</th>
+									<th>工程師姓名</th>
+									<th>證照編號</th>
+									<th>SQ人員代號</th>
+									<th>SQ人員說明</th>									
+								</tr>
+							</thead>
+							<tbody>
+							@{
+							if (ViewBag.QueryToListBean != null)
+							{
+								int count = 0;
+								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								{
+									count++;
+												<tr id='tr@(count)'>
+													<td style="width:100px;">
+														<button class="btn btn-info" type="button" onclick="EditSRSQPersonDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+														<button class="btn btn-danger" type="button" onclick="deleteSRSQPerson('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+													</td>
+													<td class="tdcEngineerID">@Html.Raw(QueryInfo[1])</td>
+													<td class="tdcEngineerName">@Html.Raw(QueryInfo[2])</td>
+													<td class="tdcContent">@Html.Raw(QueryInfo[3])</td>
+													<td class="tdcFullKEY">@Html.Raw(QueryInfo[4])</td>
+													<td class="tdcFullNAME">@Html.Raw(QueryInfo[5])</td>
+												</tr>
+								}
+							}
+						}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<!--新增/修改彈出視窗-->
+<div class="modal fade" id="dialog_pSRSQPerson" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i>SQ人員設定作業</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<!--系統ID-->
+				<input type="hidden" id="hid_cID" />
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">工程師ERPID*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cEngineerID" name="tbx_cEngineerID" class="form-control Peoploe" placeholder="請輸入中文或英文姓名關鍵字" disabled>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">工程師姓名*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cEngineerName" name="tbx_cEngineerName" class="form-control" placeholder="工程師姓名" disabled>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">區域代號*</label>
+					<div class="col-lg-10">
+						<select asp-for="ddl_cSecondKEY" asp-items="Model.ListSecondKEY" class="form-control" disabled></select>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">類別代號*</label>
+					<div class="col-lg-10">
+						<select asp-for="ddl_cThirdKEY" asp-items="Model.ListThirdKEY" class="form-control" disabled></select>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">證照編號*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cContent" name="tbx_cContent" class="form-control" placeholder="證照編號">
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="col-lg-5"></div>
+				<button id="btn_saveSRSQPerson" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveSRSQPerson();"> <i class="fa fa-save"></i> 儲 存</button>
+				<img id="img_waiting_saveSRSQPerson" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<div class="col-lg-5"></div>
+			</div>
+		</div>
+	</div>
+</div>

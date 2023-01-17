@@ -19,6 +19,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using NuGet.Packaging.Signing;
+using System.Numerics;
 
 namespace OneService.Controllers
 {
@@ -966,6 +967,27 @@ namespace OneService.Controllers
 
         #endregion
 
+        #region 取得員工姓名
+        /// <summary>
+        /// 取得員工姓名
+        /// </summary>
+        /// <param name="tERPID">員工ERPID</param>
+        /// <returns></returns>
+        public string findEmployeeName(string tERPID)
+        {
+            string reValue = string.Empty;
+
+           var bean = dbEIP.People.FirstOrDefault(x => x.ErpId == tERPID);
+
+            if (bean != null)
+            {
+                reValue = bean.Name2;
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #region 查詢客戶資料By公司別
         /// <summary>
         /// 查詢客戶資料By公司別
@@ -1185,6 +1207,63 @@ namespace OneService.Controllers
             }
 
             return strCNO;
+        }
+        #endregion
+
+        #region 取SQ人員流水號
+        /// <summary>
+        /// 取SQ人員流水號
+        /// </summary>
+        /// <param name="cFirstKey">第1碼代號</param>
+        /// <param name="cSecondKEY">區域代號(第2碼代號)</param>
+        /// <param name="cThirdKEY">類別代號(第3碼代號)</param>
+        /// <returns></returns>
+        public string GetSRSQNo(string cFirstKey, string cSecondKEY, string cThirdKEY)
+        {
+            string strCNO = "01";         
+
+            var bean = dbOne.TbOneSrsqpeople.OrderByDescending(x => x.CId).FirstOrDefault(x => x.CFirstKey == cFirstKey && x.CSecondKey == cSecondKEY && x.CThirdKey == cThirdKEY);
+
+            if (bean != null)
+            {
+                strCNO = (int.Parse(bean.CNo) + 1).ToString().PadLeft(2, '0');
+            }
+
+            return strCNO;
+        }
+        #endregion
+
+        #region 取SQ人員代號和說明
+        /// <summary>
+        /// 取SQ人員流水號
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>        
+        /// <param name="cFirstKey">第1碼代號</param>
+        /// <param name="cSecondKEY">區域代號(第2碼代號)</param>
+        /// <param name="cThirdKEY">類別代號(第3碼代號)</param>
+        /// <param name="cNo">流水號</param>
+        /// <param name="cContent">證照編號</param>
+        /// <param name="cEngineerName">工程師姓名</param>
+        /// <returns></returns>
+        public string[] GetSRSQFullInfo(string cOperationID, string cFirstKey, string cSecondKEY, string cThirdKEY, string cNo, string cContent, string cEngineerName)
+        {
+            string[] reValue = new string[2];
+            string tKey = string.Empty;
+            string tName = string.Empty;
+
+            string tSecName = findSysParameterDescription(cOperationID, "OTHER", "T012", "SQSECKEY", cSecondKEY);
+            string tThiName = findSysParameterDescription(cOperationID, "OTHER", "T012", "SQTHIKEY", cThirdKEY);
+
+            //ex.ZA101
+            tKey = cFirstKey + cSecondKEY + cThirdKEY + cNo;
+
+            //ex.ISS-台北-PL70708859-陳勁嘉
+            tName = tThiName + "-" + tSecName + "-" + cContent + "-" + cEngineerName;
+
+            reValue[0] = tKey;
+            reValue[1] = tName;
+
+            return reValue;
         }
         #endregion
 
