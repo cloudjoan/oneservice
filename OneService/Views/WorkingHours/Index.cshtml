@@ -168,6 +168,7 @@
 						if (result.endTime.split(' ')[1] == $(obj).val()) $(obj).addClass("active");
 					});
 
+					$("#lb_CalLabor").html("預估工時(分)：" + result.labor);
 					$("#tbx_WhDescript").focus();
 
 					$("#modifyDialog").modal("show");

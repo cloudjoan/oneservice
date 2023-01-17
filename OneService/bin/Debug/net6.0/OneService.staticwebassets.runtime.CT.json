@@ -1337,6 +1337,28 @@
         },
         "Patterns": null
       },
+      "files": {
+        "Children": {
+          "6d68a379-2ce4-4a6e-931b-3b332483fb08.jpg": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "files/6d68a379-2ce4-4a6e-931b-3b332483fb08.jpg"
+            },
+            "Patterns": null
+          },
+          "965e1d2d-3c55-4c43-a35e-962f87601a1e.pdf": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "files/965e1d2d-3c55-4c43-a35e-962f87601a1e.pdf"
+            },
+            "Patterns": null
+          }
+        },
+        "Asset": null,
+        "Patterns": null
+      },
       "font-awesome": {
         "Children": {
           "css": {

@@ -47,12 +47,12 @@ namespace OneService.Controllers
 
                     //只能找到自己or下屬的資料
                     var erpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
-                    //erpId = "10000479";
-                    var deptMgrBean = dbEIP.ViewDeptMgrs.FirstOrDefault(x => x.ErpId == erpId);
+                    //erpId = "10012338";
+                    var deptMgrBean = dbEIP.ViewDeptMgrs.FirstOrDefault(x => x.ErpId == erpId && x.Disabled != -1);
                     if (deptMgrBean != null)
                     {
                         var deptCodeList = GetAllChildDept(deptMgrBean.DeptCode);
-                        contentObj = dbEIP.ViewEmpInfoWithoutLeaves.Where(x => deptCodeList.Contains(x.DeptId) && (x.EmpName.Contains(keyword) || x.Account.Contains(keyword))).Take(5);
+                        contentObj = dbEIP.ViewEmpInfoWithoutLeaves.Where(x => deptCodeList.Contains(x.DeptId) && (x.EmpName.Contains(keyword) || x.EmpEname.Contains(keyword))).Take(5);
                     }
                     else
                     {

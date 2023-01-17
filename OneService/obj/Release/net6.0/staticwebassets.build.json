@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "oxes8liCDgDrqENo6QJBqr6qtUwu8mr+hKHC3HasHAk=",
+  "Hash": "2QF3LAzjalCZfw7SPwm44JYpdtoq3jLSAr081atkzBA=",
   "Source": "OneService",
   "BasePath": "_content/OneService",
   "Mode": "Default",
@@ -2244,12 +2244,12 @@
       "OriginalItemSpec": "wwwroot\\favicon.ico"
     },
     {
-      "Identity": "D:\\VSProject\\OneService\\OneService\\wwwroot\\files\\0d206bab-ea57-4e9a-b183-222688608a2b.jpg",
+      "Identity": "D:\\VSProject\\OneService\\OneService\\wwwroot\\files\\6d68a379-2ce4-4a6e-931b-3b332483fb08.jpg",
       "SourceId": "OneService",
       "SourceType": "Discovered",
       "ContentRoot": "D:\\VSProject\\OneService\\OneService\\wwwroot\\",
       "BasePath": "_content/OneService",
-      "RelativePath": "files/0d206bab-ea57-4e9a-b183-222688608a2b.jpg",
+      "RelativePath": "files/6d68a379-2ce4-4a6e-931b-3b332483fb08.jpg",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -2258,15 +2258,15 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\files\\0d206bab-ea57-4e9a-b183-222688608a2b.jpg"
+      "OriginalItemSpec": "wwwroot\\files\\6d68a379-2ce4-4a6e-931b-3b332483fb08.jpg"
     },
     {
-      "Identity": "D:\\VSProject\\OneService\\OneService\\wwwroot\\files\\47535e8a-4f80-43d4-9101-391152077927.jpg",
+      "Identity": "D:\\VSProject\\OneService\\OneService\\wwwroot\\files\\965e1d2d-3c55-4c43-a35e-962f87601a1e.pdf",
       "SourceId": "OneService",
       "SourceType": "Discovered",
       "ContentRoot": "D:\\VSProject\\OneService\\OneService\\wwwroot\\",
       "BasePath": "_content/OneService",
-      "RelativePath": "files/47535e8a-4f80-43d4-9101-391152077927.jpg",
+      "RelativePath": "files/965e1d2d-3c55-4c43-a35e-962f87601a1e.pdf",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -2275,24 +2275,7 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\files\\47535e8a-4f80-43d4-9101-391152077927.jpg"
-    },
-    {
-      "Identity": "D:\\VSProject\\OneService\\OneService\\wwwroot\\files\\e8614947-337f-4679-bde9-ccb5ef4ddeca.jpg",
-      "SourceId": "OneService",
-      "SourceType": "Discovered",
-      "ContentRoot": "D:\\VSProject\\OneService\\OneService\\wwwroot\\",
-      "BasePath": "_content/OneService",
-      "RelativePath": "files/e8614947-337f-4679-bde9-ccb5ef4ddeca.jpg",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\files\\e8614947-337f-4679-bde9-ccb5ef4ddeca.jpg"
+      "OriginalItemSpec": "wwwroot\\files\\965e1d2d-3c55-4c43-a35e-962f87601a1e.pdf"
     },
     {
       "Identity": "D:\\VSProject\\OneService\\OneService\\wwwroot\\font-awesome\\css\\fa-brands.css",

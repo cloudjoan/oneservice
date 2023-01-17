@@ -7,6 +7,11 @@ EXPOSE 80
 RUN apt-get update \
 &&  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata cifs-utils
 
+# mount如果遇到 Unable to apply new capability set. 錯誤時，就要在docker run的時候，加上 --privileged=true
+#RUN mount -t cifs -o user=bpmadmin,password=Bpm@dmin '//172.31.7.188/checkout_doc' /app/wwwroot/files
+RUN mkdir -p /app/wwwroot/files \
+    #&& mount -t cifs  -o user=prjadmin,password=Prj@dmin '//172.31.7.60/csreport_test' /app/wwwroot/files
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libldap-2.4-2 \
@@ -39,6 +44,5 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "OneService.dll"]
 
-# mount如果遇到 Unable to apply new capability set. 錯誤時，就要在docker run的時候，加上 --privileged=true
-#RUN mount -t cifs -o user=bpmadmin,password=Bpm@dmin '//172.31.7.188/checkout_doc' /app/wwwroot/files
-RUN mount -t cifs  -o user=bpmadmin,password=Bpm@dmin '//172.31.7.60/csreport_test' /app/wwwroot/files
+
+
