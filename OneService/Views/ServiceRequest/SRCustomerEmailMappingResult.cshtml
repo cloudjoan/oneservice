@@ -4,7 +4,7 @@
 
 <script>
 	$(document).ready(function () {
-		initTable();
+		initTable();		
 	});
 
 	function initTable() {
@@ -51,7 +51,7 @@
 					text: '匯出Excel',
 					sheetName: '服務團隊對照設定檔作業',
 					exportOptions: {
-						columns: [1, 2, 3, 4] //要顯示的欄位
+						columns: [1, 2, 3, 4, 5] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						var sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -60,6 +60,7 @@
 						$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="E"]', sheet).attr('s', '0');	//設成文字格式
 					}
 				}),
 			],

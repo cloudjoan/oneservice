@@ -188,7 +188,7 @@ namespace OneService.Controllers
             #endregion
 
             #region 取得服務團隊清單
-            var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode);           
+            var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, true);           
             #endregion
 
             #region 取得SRID
@@ -1545,7 +1545,7 @@ namespace OneService.Controllers
 
             foreach (var bean in beans)
             {
-                string[] QueryInfo = new string[8];
+                string[] QueryInfo = new string[5];
 
                 QueryInfo[0] = bean.CId.ToString(); //系統ID
                 QueryInfo[1] = bean.CTeamOldId;     //服務團隊ID
@@ -1698,8 +1698,9 @@ namespace OneService.Controllers
 
                 ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
                 ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-                #endregion
 
+                pCompanyCode = EmpBean.BUKRS;
+                #endregion
             }
             catch (Exception ex)
             {
@@ -1716,32 +1717,36 @@ namespace OneService.Controllers
         /// <summary>
         /// 客戶Email對照設定作業查詢結果
         /// </summary>        
-        /// <param name="cTeamNew">服務團隊部門ID(新)</param>
-        /// <param name="cTeamOld">服務團隊ID(舊)</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cTeamID">服務團隊ID</param>
         /// <returns></returns>
-        public IActionResult SRCustomerEmailMappingResult(string cTeamNew, string cTeamOld)
+        public IActionResult SRCustomerEmailMappingResult(string cCustomerID, string cTeamID)
         {
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
             #region 組待查詢清單
-            //var beans = dbOne.tb.TbOneSRCustomerEmailMappings.Where(x => x.Disabled == 0 &&
-            //                                             (string.IsNullOrEmpty(cTeamNew) ? true : x.CTeamNewId == cTeamNew) &&
-            //                                             (string.IsNullOrEmpty(cTeamOld) ? true : x.CTeamOldId == cTeamOld));
+            var beans = dbOne.TbOneSrcustomerEmailMappings.Where(x => x.Disabled == 0 &&
+                                                                (string.IsNullOrEmpty(cCustomerID) ? true : x.CCustomerId == cCustomerID) &&
+                                                                (string.IsNullOrEmpty(cTeamID) ? true : x.CTeamId == cTeamID));
 
-            //foreach (var bean in beans)
-            //{
-            //    string[] QueryInfo = new string[8];
+            foreach (var bean in beans)
+            {
+                string[] QueryInfo = new string[6];
 
-            //    QueryInfo[0] = bean.CId.ToString(); //系統ID
-            //    QueryInfo[1] = bean.CTeamOldId;     //服務團隊ID
-            //    QueryInfo[2] = bean.CTeamOldName;   //服務團隊名稱               
-            //    QueryInfo[3] = bean.CTeamNewId;     //服務團隊部門ID(新)
-            //    QueryInfo[4] = bean.CTeamNewName;   //對應部門名稱                
+                string CCustomerName = CMF.findCustomerName(bean.CCustomerId);
+                string CCTeamName = CMF.findTeamName(bean.CTeamId);
 
-            //    QueryToList.Add(QueryInfo);
-            //}
+                QueryInfo[0] = bean.CId.ToString(); //系統ID
+                QueryInfo[1] = bean.CCustomerId;     //客戶代號
+                QueryInfo[2] = CCustomerName;       //客戶名稱         
+                QueryInfo[3] = bean.CTeamId;        //服務團隊ID
+                QueryInfo[4] = CCTeamName;         //服務團隊名稱
+                QueryInfo[5] = bean.CEmailId;       //Email網域名稱               
 
-            //ViewBag.QueryToListBean = QueryToList;
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
             #endregion
 
             return View();
@@ -1749,117 +1754,115 @@ namespace OneService.Controllers
         #endregion
 
         #region 儲存客戶Email對照設定檔
-        ///// <summary>
-        ///// 儲存客戶Email對照設定檔
-        ///// </summary>
-        ///// <param name="cID">系統ID</param>
-        ///// <param name="cTeamOldID">程式作業編號檔系統ID</param>
-        ///// <param name="cTeamOldName">功能別</param>
-        ///// <param name="cTeamNewID">公司別</param>
-        ///// <param name="cTeamNewName">參數No</param>        
-        ///// <returns></returns>
-        //public ActionResult saveCustomerEmail(string cID, string cTeamOldID, string cTeamOldName, string cTeamNewID, string cTeamNewName)
-        //{
-        //    getLoginAccount();
+        /// <summary>
+        /// 儲存客戶Email對照設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cCustomerName">客戶名稱</param>
+        /// <param name="cTeamID">服務團隊ID</param>
+        /// <param name="cEmailID">Email網域名稱</param>        
+        /// <returns></returns>
+        public ActionResult saveCustomerEmail(string cID, string cCustomerID, string cCustomerName, string cTeamID, string cEmailID)
+        {
+            getLoginAccount();
 
-        //    #region 取得登入人員資訊
-        //    CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-        //    EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
-        //    ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-        //    #endregion
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            #endregion
 
-        //    string tMsg = string.Empty;
+            string tMsg = string.Empty;
 
-        //    try
-        //    {
-        //        int result = 0;
-        //        if (cID == null)
-        //        {
-        //            #region -- 新增 --
-        //            var prBean = dbOne.TbOneSRCustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 &&
-        //                                                                   x.CTeamOldId == cTeamOldID &&
-        //                                                                   x.CTeamNewId == cTeamNewID);
-        //            if (prBean == null)
-        //            {
-        //                TbOneSRCustomerEmailMapping prBean1 = new TbOneSRCustomerEmailMapping();
+            try
+            {
+                int result = 0;
+                if (cID == null)
+                {
+                    #region -- 新增 --
+                    var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamId == cTeamID.Trim());
+                    if (prBean == null)
+                    {
+                        TbOneSrcustomerEmailMapping  prBean1 = new TbOneSrcustomerEmailMapping();
 
-        //                prBean1.CTeamOldId = cTeamOldID.Trim();
-        //                prBean1.CTeamOldName = cTeamOldName.Trim();
-        //                prBean1.CTeamNewId = cTeamNewID.Trim();
-        //                prBean1.CTeamNewName = cTeamNewName.Trim();
-        //                prBean1.Disabled = 0;
+                        prBean1.CCustomerId = cCustomerID.Trim();
+                        prBean1.CCustomerName = cCustomerName.Trim();
+                        prBean1.CTeamId = cTeamID.Trim();
+                        prBean1.CEmailId = cEmailID.Trim();
+                        prBean1.Disabled = 0;
 
-        //                prBean1.CreatedUserName = EmpBean.EmployeeCName;
-        //                prBean1.CreatedDate = DateTime.Now;
+                        prBean1.CreatedUserName = EmpBean.EmployeeCName;
+                        prBean1.CreatedDate = DateTime.Now;
 
-        //                dbOne.TbOneSRCustomerEmailMappings.Add(prBean1);
-        //                result = dbOne.SaveChanges();
-        //            }
-        //            else
-        //            {
-        //                tMsg = "此服務團隊已存在，請重新輸入！";
-        //            }
-        //            #endregion                
-        //        }
-        //        else
-        //        {
-        //            #region -- 編輯 --
-        //            var prBean = dbOne.TbOneSRCustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 &&
-        //                                                                    x.CId.ToString() != cID &&
-        //                                                                    x.CTeamOldId == cTeamOldID &&
-        //                                                                    x.CTeamNewId == cTeamNewID);
-        //            if (prBean == null)
-        //            {
-        //                var prBean1 = dbOne.TbOneSRCustomerEmailMappings.FirstOrDefault(x => x.CId.ToString() == cID);
-        //                prBean1.CTeamNewId = cTeamNewID.Trim();
-        //                prBean1.CTeamNewName = cTeamNewName.Trim();
+                        dbOne.TbOneSrcustomerEmailMappings.Add(prBean1);
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此服務團隊已存在，請重新輸入！";
+                    }
+                    #endregion                
+                }
+                else
+                {
+                    #region -- 編輯 --
+                    var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                            x.CId.ToString() != cID &&
+                                                                            x.CTeamId == cTeamID.Trim());
+                    if (prBean == null)
+                    {
+                        var prBean1 = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.CId.ToString() == cID);
+                        prBean1.CCustomerId = cCustomerID.Trim();
+                        prBean1.CCustomerName = cCustomerName.Trim();
+                        prBean1.CEmailId = cEmailID.Trim();
 
-        //                prBean1.ModifiedUserName = EmpBean.EmployeeCName;
-        //                prBean1.ModifiedDate = DateTime.Now;
-        //                result = dbOne.SaveChanges();
-        //            }
-        //            else
-        //            {
-        //                tMsg = "此服務團隊已存在，請重新輸入！";
-        //            }
-        //            #endregion
-        //        }
-        //        return Json(tMsg);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Json(e.Message);
-        //    }
-        //}
+                        prBean1.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean1.ModifiedDate = DateTime.Now;
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此服務團隊已存在，請重新輸入！";
+                    }
+                    #endregion
+                }
+                return Json(tMsg);
+            }
+            catch (Exception e)
+            {
+                return Json(e.Message);
+            }
+        }
         #endregion
 
         #region 刪除客戶Email對照設定檔
-        ///// <summary>
-        ///// 刪除客戶Email對照設定檔
-        ///// </summary>
-        ///// <param name="cID">系統ID</param>
-        ///// <returns></returns>
-        //public ActionResult DeleteSRCustomerEmailMapping(string cID)
-        //{
-        //    getLoginAccount();
+        /// <summary>
+        /// 刪除客戶Email對照設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public ActionResult DeleteSRCustomerEmailMapping(string cID)
+        {
+            getLoginAccount();
 
-        //    #region 取得登入人員資訊
-        //    CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-        //    EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
-        //    ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-        //    #endregion
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            #endregion
 
-        //    var ctBean = dbOne.TbOneSRCustomerEmailMappings.FirstOrDefault(x => x.CId.ToString() == cID);
-        //    ctBean.Disabled = 1;
-        //    ctBean.ModifiedUserName = EmpBean.EmployeeCName;
-        //    ctBean.ModifiedDate = DateTime.Now;
+            var ctBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.CId.ToString() == cID);
+            ctBean.Disabled = 1;
+            ctBean.ModifiedUserName = EmpBean.EmployeeCName;
+            ctBean.ModifiedDate = DateTime.Now;
 
-        //    var result = dbOne.SaveChanges();
+            var result = dbOne.SaveChanges();
 
-        //    return Json(result);
-        //}
+            return Json(result);
+        }
         #endregion       
 
         #endregion -----↑↑↑↑↑客戶Email對照設定作業 ↑↑↑↑↑-----   
@@ -2416,13 +2419,14 @@ namespace OneService.Controllers
         /// <summary>
         /// 取得服務團隊清單
         /// </summary>        
+        /// <param name="pCompanyCode">公司別(T012、T016、C069、T022)</param>
         /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
         /// <returns></returns>
-        static public List<SelectListItem> findSRTeamMappingListItem(bool cEmptyOption)
+        static public List<SelectListItem> findSRTeamMappingListItem(string pCompanyCode, bool cEmptyOption)
         {
             CommonFunction CMF = new CommonFunction();
 
-            var tList = CMF.findSRTeamMappingListItem(cEmptyOption);
+            var tList = CMF.findSRTeamIDList(pCompanyCode, cEmptyOption);
 
             return tList;
         }
@@ -2481,7 +2485,8 @@ namespace OneService.Controllers
 
             #region 服務團隊ID
             public string ddl_cQueryTeamID { get; set; }
-            public List<SelectListItem> ListTeamID = findSRTeamMappingListItem(true);
+            public string ddl_cTeamID { get; set; }
+            public List<SelectListItem> ListTeamID = findSRTeamMappingListItem(pCompanyCode, true);
             #endregion
         }
         #endregion

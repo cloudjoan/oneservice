@@ -397,8 +397,9 @@ namespace OneService.Controllers
         /// 取得服務團隊清單
         /// </summary>
         /// <param name="pCompanyCode">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
         /// <returns></returns>
-        public List<SelectListItem> findSRTeamIDList(string pCompanyCode)
+        public List<SelectListItem> findSRTeamIDList(string pCompanyCode, bool cEmptyOption)
         {
             List<string> tTempList = new List<string>();
 
@@ -417,7 +418,11 @@ namespace OneService.Controllers
             }
 
             var tList = new List<SelectListItem>();
-            tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
+
+            if (cEmptyOption)
+            {
+                tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
+            }
 
             foreach (var bean in TeamList)
             {
@@ -1060,6 +1065,27 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得客戶名稱
+        /// <summary>
+        /// 取得客戶名稱
+        /// </summary>
+        /// <param name="tCustomerID">客戶代號</param>
+        /// <returns></returns>
+        public string findCustomerName(string tCustomerID)
+        {
+            string reValue = string.Empty;
+
+            var bean = dbProxy.ViewCustomer2s.FirstOrDefault(x => x.Kna1Kunnr == tCustomerID);
+
+            if (bean != null)
+            {
+                reValue = bean.Kna1Name1;
+            }
+
+            return reValue;               
+        }
+        #endregion
+
         #region 判斷登入者是否為MIS
         /// <summary>
         /// 判斷登入者是否為MIS
@@ -1271,41 +1297,26 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 取得服務團隊清單(回傳SelectListItem)
+        #region 取得服務團隊名稱
         /// <summary>
-        /// 取得服務團隊清單(回傳SelectListItem)
-        /// </summary>        
-        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
+        /// 取得服務團隊名稱
+        /// </summary>
+        /// <param name="cTeamOldId">服務團隊ID</param>
         /// <returns></returns>
-        public List<SelectListItem> findSRTeamMappingListItem(bool cEmptyOption)
+        public string findTeamName(string cTeamOldId)
         {
-            var tList = new List<SelectListItem>();
-            List<string> tTempList = new List<string>();
+            string reValue = string.Empty;
 
-            string tKEY = string.Empty;
-            string tNAME = string.Empty;
+            var bean = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.CTeamOldId == cTeamOldId);
 
-            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0);
-
-            if (cEmptyOption)
+            if (bean != null)
             {
-                tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
+                reValue = bean.CTeamOldName;
             }
 
-            foreach (var bean in beans)
-            {
-                if (!tTempList.Contains(bean.CTeamOldId))
-                {
-                    tNAME = bean.CTeamOldId + "_" + bean.CTeamOldName;
-
-                    tList.Add(new SelectListItem { Text = tNAME, Value = bean.CTeamOldId });
-                    tTempList.Add(bean.CTeamOldId);
-                }
-            }
-
-            return tList;
+            return reValue;
         }
-        #endregion
+        #endregion        
 
         #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
         /// <summary>

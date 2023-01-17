@@ -56,7 +56,7 @@
 						text: '匯出Excel',
 						sheetName: '客戶Email對照設定檔作業',
 						exportOptions: {
-							columns: [1, 2, 3, 4] //要顯示的欄位
+							columns: [1, 2, 3, 4, 5] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							var sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -65,6 +65,7 @@
 							$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
 							$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
 							$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="E"]', sheet).attr('s', '0');	//設成文字格式
 						}
 					}),
 				],
@@ -154,12 +155,13 @@
 									obj.autocomplete({
 										source: Customers,
 										select: function (event, ui) {
-											$("#tbx_cCustomerName").html(ui.item.Name);
+											$("#tbx_cCustomerName").val(ui.item.Name);
 										}
 									}).bind('focus', function () { $(this).autocomplete("search"); });
 
 									//開啟autocomplete選單
 									obj.focus();
+									$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
 								}
 							})
 						}
@@ -178,25 +180,25 @@
 			var IsDo = $("#hid_IsDoADD");						//是否已執行新增存檔過(Y.已執行 空白.未執行)
 
 			var hid_cID = $("#hid_cID");						//系統ID
-			var tbx_cTeamOldID = $("#tbx_cTeamOldID");			//CRM服務團隊ID(舊)
-			var tbx_cTeamOldName = $("#tbx_cTeamOldName");		//CRM服務團隊名稱(舊)
-			var tbx_cTeamNewID = $("#tbx_cTeamNewID");			//對應部門ID
-			var tbx_cTeamNewName = $("#tbx_cTeamNewName");		//服務團隊部門名稱(新)
+			var tbx_cCustomerID = $("#tbx_cCustomerID");		//客戶代號
+			var tbx_cCustomerName = $("#tbx_cCustomerName");		//客戶名稱
+			var ddl_cTeamID = $("#ddl_cTeamID");				//服務團隊ID
+			var tbx_cEmailID = $("#tbx_cEmailID");				//Email網域名稱
 
-			if (tbx_cTeamOldID.val() == "") {
-				strMsg += "CRM服務團隊ID(舊)不得為空！\n";
+			if (tbx_cCustomerID.val() == "") {
+				strMsg += "客戶代號不得為空！\n";
 			}
 
-			if (tbx_cTeamOldName.val() == "") {
-				strMsg += "CRM服務團隊名稱(舊)不得為空！\n";
+			if (tbx_cCustomerName.val() == "") {
+				strMsg += "客戶名稱不得為空！\n";
 			}
 
-			if (tbx_cTeamNewID.val() == "-1") {
-				strMsg += "對應部門ID不得為空！\n";
+			if (ddl_cTeamID.val() == "-1") {
+				strMsg += "請選擇服務團隊ID！\n";
 			}
 
-			if (tbx_cTeamNewName.val() == "") {
-				strMsg += "服務團隊部門名稱(新)不得為空！\n";
+			if (tbx_cEmailID.val() == "") {
+				strMsg += "Email網域名稱不得為空！\n";
 			}
 
 			if (strMsg != "") {
@@ -211,10 +213,10 @@
 					dataType: 'json',
 					data: {
 						cID: hid_cID.val(),
-						cTeamOldID: tbx_cTeamOldID.val(),
-						cTeamOldName: tbx_cTeamOldName.val(),
-						cTeamNewID: tbx_cTeamNewID.val(),
-						cTeamNewName: tbx_cTeamNewName.val()
+						cCustomerID: tbx_cCustomerID.val(),
+						cCustomerName: tbx_cCustomerName.val(),
+						cTeamID: ddl_cTeamID.val(),
+						cEmailID: tbx_cEmailID.val()
 					},
 					success: function (result) {
 						if (result == "") {
@@ -260,12 +262,13 @@
 		//新增
 		function btn_add_pCustomerEmailonclick() {
 			$("#hid_cType").val("ADD");	//目前狀態
-			$("#hid_cID").val("");		//清空系統ID
+			$("#hid_cID").val("");		//清空系統ID			
 
 			resetPopup("#dialog_pCustomerEmail"); //popup各欄位reset
 
-			$("#tbx_cTeamOldID").removeAttr("disabled");	//CRM服務團隊ID(舊)
-			$("#tbx_cTeamOldName").removeAttr("disabled");	//CRM服務團隊名稱(舊)
+			$("#tbx_cCustomerID").removeAttr("disabled");	//客戶代號
+			$("#ddl_cTeamID").removeAttr("disabled");		//服務團隊ID
+			$("#ddl_cTeamID").val("");
 
 			$("#dialog_pCustomerEmail .dropzone").show();
 			$("#dialog_pCustomerEmail").modal('show');
@@ -276,26 +279,23 @@
 			$("#hid_cType").val("EDIT");	//目前狀態
 			$("#hid_IsDoADD").val("");	//清空是否已執行新增存檔過(Y.已執行 空白.未執行)
 
-			resetPopup("#dialog_pCustomerEmail"); //popup各欄位reset
-
-			var ddl_cModuleID = $("#ddl_cModuleID");
-			var ddl_cOperationID = $("#ddl_cOperationID");
+			resetPopup("#dialog_pCustomerEmail"); //popup各欄位reset			
 
 			var hid_cID = $("#hid_cID");						//系統ID
-			var tbx_cTeamOldID = $("#tbx_cTeamOldID");			//CRM服務團隊ID(舊)
-			var tbx_cTeamOldName = $("#tbx_cTeamOldName");		//CRM服務團隊名稱(舊)
-			var tbx_cTeamNewID = $("#tbx_cTeamNewID");			//對應部門ID
-			var tbx_cTeamNewName = $("#tbx_cTeamNewName");		//服務團隊部門名稱(新)
+			var tbx_cCustomerID = $("#tbx_cCustomerID");		//客戶代號
+			var tbx_cCustomerName = $("#tbx_cCustomerName");		//客戶名稱
+			var ddl_cTeamID = $("#ddl_cTeamID");				//服務團隊ID
+			var tbx_cEmailID = $("#tbx_cEmailID");				//Email網域名稱
 
-			tbx_cTeamOldID.attr('disabled', true);
-			tbx_cTeamOldName.attr('disabled', true);
+			tbx_cCustomerID.attr('disabled', true);			
+			ddl_cTeamID.attr('disabled', true);
 
 			//設定各欄位資料
 			hid_cID.val(cID);
-			tbx_cTeamOldID.val($(obj).parent().parent().find('.tdcTeamOldID').text());
-			tbx_cTeamOldName.val($(obj).parent().parent().find('.tdcTeamOldName').text());
-			tbx_cTeamNewID.val($(obj).parent().parent().find('.tdcTeamNewID').text());
-			tbx_cTeamNewName.val($(obj).parent().parent().find('.tdcTeamNewName').text());
+			tbx_cCustomerID.val($(obj).parent().parent().find('.tdcCustomerID').text());
+			tbx_cCustomerName.val($(obj).parent().parent().find('.tdcCustomerName').text());
+			ddl_cTeamID.val($(obj).parent().parent().find('.tdcTeamID').text());
+			tbx_cEmailID.val($(obj).parent().parent().find('.tdcEmailID').text());
 
 			$("#dialog_pCustomerEmail .dropzone").show();
 			$("#dialog_pCustomerEmail").modal('show');
@@ -331,8 +331,8 @@
 			$("#waitingImg").show();
 
 			var tMsg = "";
-			var tbx_QuerycTeamNew = $("#tbx_QuerycTeamNew");		//對應部門ID
-			var tbx_QuerycTeamOld = $("#tbx_QuerycTeamOld");		//服務團隊ID(舊)
+			var tbx_QuerycCustomerID = $("#tbx_QuerycCustomerID");	//客戶代號
+			var ddl_cQueryTeamID = $("#ddl_cQueryTeamID");			//服務團隊ID
 
 			if (tMsg != "") {
 				alert(tMsg);
@@ -340,22 +340,22 @@
 				return false;
 			}
 			else {
-				searchTeam(tbx_QuerycTeamNew.val(), tbx_QuerycTeamOld.val());
+				searchCustomerEmail(tbx_QuerycCustomerID.val(), ddl_cQueryTeamID.val());
 			}
 
 			return true;
 		}
 
 		//查詢結果
-		function searchCustomerEmail(cTeamNew, cTeamOld) {
+		function searchCustomerEmail(cCustomerID, cTeamID) {
 			$("#dataDiv").html('');
 			$.ajax({
 				url: '@Url.Action("SRCustomerEmailMappingResult", "ServiceRequest")',
 				type: 'post',
 				dataType: 'json',
 				data: {
-					cTeamNew: cTeamNew,
-					cTeamOld: cTeamOld
+					cCustomerID: cCustomerID,
+					cTeamID: cTeamID
 				},
 				success: function (result) {
 				},
@@ -368,8 +368,8 @@
 
 		//清除
 		function clearCustomerEmail() {
-			$("#tbx_QuerycTeamNew").val("");
-			$('#tbx_QuerycTeamOld').val("");
+			$("#tbx_QuerycCustomerID").val("");
+			$('#ddl_cQueryTeamID').val("");
 		}
 	</script>
 }
@@ -456,32 +456,32 @@
 						</thead>
 						<tbody>
 							@{
-							if (ViewBag.QueryToListBean != null)
-							{
-								int count = 0;
-								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								if (ViewBag.QueryToListBean != null)
 								{
-									count++;
-										<tr id='tr@(count)'>
-											<td style="width:100px;">
-												<button class="btn btn-info" type="button" onclick="EditCustomerEmailDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
-												<button class="btn btn-danger" type="button" onclick="deleteCustomerEmail('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
-											</td>
-											<td class="tdcCustomerID">@Html.Raw(QueryInfo[1])</td>
-											<td class="tdcCustomerName">@Html.Raw(QueryInfo[2])</td>
-											<td class="tdcTeamID">@Html.Raw(QueryInfo[3])</td>
-											<td class="tdcTeamName">@Html.Raw(QueryInfo[4])</td>
-											<td class="tdcEmailID">@Html.Raw(QueryInfo[5])</td>
-										</tr>
+									int count = 0;
+									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+									{
+										count++;
+													<tr id='tr@(count)'>
+														<td style="width:100px;">
+															<button class="btn btn-info" type="button" onclick="EditCustomerEmailDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+															<button class="btn btn-danger" type="button" onclick="deleteCustomerEmail('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+														</td>
+														<td class="tdcCustomerID">@Html.Raw(QueryInfo[1])</td>
+														<td class="tdcCustomerName">@Html.Raw(QueryInfo[2])</td>
+														<td class="tdcTeamID">@Html.Raw(QueryInfo[3])</td>
+														<td class="tdcTeamName">@Html.Raw(QueryInfo[4])</td>
+														<td class="tdcEmailID">@Html.Raw(QueryInfo[5])</td>
+													</tr>
+									}
 								}
 							}
-						}
-					</tbody>
-				</table>
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
 
 <!--新增/修改彈出視窗-->
 <div class="modal fade" id="dialog_pCustomerEmail" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -511,7 +511,7 @@
 				<div class="form-group row">
 					<label class="col-lg-2 col-form-label">服務團隊ID*</label>
 					<div class="col-lg-10">
-						
+						<select asp-for="ddl_cTeamID" asp-items="Model.ListTeamID" class="form-control" disabled></select>
 					</div>
 				</div>
 				<div class="form-group row">
