@@ -627,7 +627,6 @@ namespace OneService.Controllers
 
                     #endregion -----↑↑↑↑↑保固SLA資訊 ↑↑↑↑↑-----
 
-
                     #region -----↓↓↓↓↓處理與工時紀錄↓↓↓↓↓-----
 
                     #region 刪除明細

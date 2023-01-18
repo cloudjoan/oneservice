@@ -116,7 +116,7 @@ var prdReportUrl = "http://tsticrmmbgw.etatung.com:8081/CSreport/";
 var qasReportUrl = "http://tsticrmmbgw.etatung.com:8082/CSreport/";
 var fileUrl = qasReportUrl;
 
-///初始化dropzone
+//初始化dropzone
 function dropzoneInit(uploadUrl) {
 
     $.each($(".dropzone"), function () {
@@ -221,7 +221,7 @@ function generatorFileDiv(functionUrl) {
                         }
 
                         doc += "<div class=\"file-name\">" + result.fileOrgName;
-                        doc += "<a href=\"javascript:delFile('" + result.ID + "', '" + $(hidFiles).prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+                        doc += "<a href=\"javascript:delFile('" + result.id + "', '" + $(hidFiles).prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
                         doc += " </div></div>";
                         fileZoneObj.append(doc);
                         console.log(result.fileOrgName);
