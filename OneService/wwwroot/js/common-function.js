@@ -182,7 +182,7 @@ function dropzoneInit(uploadUrl) {
                         fileZoneObj.append(doc);
 
                         var hidFiles = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
-                        hidFiles.val(hidFiles.val() + obj.Id + ",");
+                        hidFiles.val(hidFiles.val() + obj.id + ",");
                         console.log(hidFiles.val());
                     }
 

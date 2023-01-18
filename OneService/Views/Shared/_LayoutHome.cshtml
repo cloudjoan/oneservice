@@ -336,6 +336,7 @@
 		$(document).ready(function () {
 
 			dropzoneInit("@Url.Action("AjaxFileUpload", "Ajax")");
+			generatorFileDiv("@Url.Action("GetFileData", "Ajax")");
 
 			$('.i-checks').iCheck({
 				checkboxClass: 'icheckbox_square-green',
