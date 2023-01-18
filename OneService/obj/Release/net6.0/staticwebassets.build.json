@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "q3s5Q+vrX3GXbISfx54VwovWw+VAHToqxT569PqQ//0=",
+  "Hash": "iFZqSPOM1CSdl5peM19Jvo/hf6pJaxNRct9QbPtCZK4=",
   "Source": "OneService",
   "BasePath": "_content/OneService",
   "Mode": "Default",
@@ -2276,6 +2276,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\favicon.ico"
+    },
+    {
+      "Identity": "D:\\VSProject\\OneService\\OneService\\wwwroot\\files\\cc8ec610-0f61-443e-b6a3-cf35a8c45000.PDF",
+      "SourceId": "OneService",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\VSProject\\OneService\\OneService\\wwwroot\\",
+      "BasePath": "_content/OneService",
+      "RelativePath": "files/cc8ec610-0f61-443e-b6a3-cf35a8c45000.PDF",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\files\\cc8ec610-0f61-443e-b6a3-cf35a8c45000.PDF"
     },
     {
       "Identity": "D:\\VSProject\\OneService\\OneService\\wwwroot\\font-awesome\\css\\fa-brands.css",

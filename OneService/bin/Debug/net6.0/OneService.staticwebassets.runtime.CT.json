@@ -9337,6 +9337,22 @@
             },
             "Patterns": null
           },
+          "jquery-3.6.0.min.js": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "js/jquery-3.6.0.min.js"
+            },
+            "Patterns": null
+          },
+          "jquery-migrate-3.4.0.js": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "js/jquery-migrate-3.4.0.js"
+            },
+            "Patterns": null
+          },
           "jquery-ui-1.12.1.custom": {
             "Children": {
               "AUTHORS.txt": {
