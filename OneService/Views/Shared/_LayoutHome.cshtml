@@ -135,10 +135,14 @@
 					<li class="active">
 						<a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">服務管理</span> <span class="fa arrow"></span></a>
 						<ul class="nav nav-second-level">
-							<li><a href="#"> <i class="fa fa-wrench"></i> 一般服務</a></li>
-							<li><a href="#"> <i class="fa fa-cogs"></i> 裝機服務</a></li>
-							<li><a href="#"> <i class="fa fa-calendar-check-o"></i> 定維服務</a></li>
-							<li><a href="http://tsti-bpm01:999/srReport.aspx" target="_blank"> <i class="fa fa-list-ul"></i> 服務總表</a></li>
+							<li><a href="@Url.Action("ToDoList", "ServiceRequest")"> <i class="fa fa-window-restore"></i> 待辦清單</a></li>
+							<li><a href="@Url.Action("GenerallySR", "ServiceRequest")" target="_blank"> <i class="fa fa-wrench"></i> 一般服務</a></li>
+							<li><a href="dashboard_2.html"> <i class="fa fa-cogs"></i> 裝機服務</a></li>
+							<li><a href="dashboard_3.html"> <i class="fa fa-calendar-check-o"></i> 定維服務</a></li>
+							<li><a href="dashboard_3.html"> <i class="fa fa-list-ul"></i> 服務總表</a></li>
+							@*<li><a href="@Url.Action("SRTeamMapping", "ServiceRequest")"> <i class="fa fa-cog"></i> 服務團隊對照設定作業</a></li>
+							<li><a href="@Url.Action("SRCustomerEmailMapping", "ServiceRequest")"> <i class="fa fa-cog"></i> 客戶Email對照設定作業</a></li>
+							<li><a href="@Url.Action("SRSQPerson", "ServiceRequest")"> <i class="fa fa-cog"></i> SQ人員設定作業</a></li>*@
 						</ul>
 					</li>
 					<li class="active">
@@ -336,6 +340,7 @@
 		$(document).ready(function () {
 
 			dropzoneInit("@Url.Action("AjaxFileUpload", "Ajax")");
+			generatorFileDiv("@Url.Action("GetFileData", "Ajax")");
 
 			$('.i-checks').iCheck({
 				checkboxClass: 'icheckbox_square-green',

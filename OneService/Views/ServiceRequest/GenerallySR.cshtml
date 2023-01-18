@@ -198,14 +198,14 @@
 				}
 			});
 
-			$(popupId).find(".dropzone").each(function (index, value) {
-				if (IsDisabled){
-					$(this).hide();
-				}
-				else{
-					$(this).show();
-				}
-			});			
+			//$(popupId).find(".dropzone").each(function (index, value) {
+			//	if (IsDisabled){
+			//		$(this).hide();
+			//	}
+			//	else{
+			//		$(this).show();
+			//	}
+			//});			
 		}
 
 		//要略過的清單(Input)
@@ -2357,92 +2357,92 @@
 		//初始化dropzone
 		function initfile()
 		{			 
-            dropzoneInit('@Url.Action("AjaxFileUpload", "Ajax")');
+            dropzoneInit("@Url.Action("AjaxFileUpload", "Ajax")");
 		}
 
-		//初始化dropzone
-        function dropzoneInit(uploadUrl) {
-            $.each($(".dropzone"), function () {
-                try {
-                    var zone = $(this);
-                    $(this).dropzone({
-                        url: uploadUrl,
-                        method: 'post',
-                        dictDefaultMessage: "把檔案拉進來或點我選檔案",
-                        accept: function (file, done) {
-                            console.log($(zone).data("namerule"));
-                            if ($(zone).data("namerule") != null) {
-                                //檔名規則檢核
-                                //file.name  上傳檔案的檔名（含副檔名）
-                                var namerule = $(zone).data("namerule");
-                                var pArray = namerule.split(",");
-                                var tIsExits = false; //檔案是否合法
+		////初始化dropzone
+  //      function dropzoneInit(uploadUrl) {
+  //          $.each($(".dropzone"), function () {
+  //              try {
+  //                  var zone = $(this);
+  //                  $(this).dropzone({
+  //                      url: uploadUrl,
+  //                      method: 'post',
+  //                      dictDefaultMessage: "把檔案拉進來或點我選檔案",
+  //                      accept: function (file, done) {
+  //                          console.log($(zone).data("namerule"));
+  //                          if ($(zone).data("namerule") != null) {
+  //                              //檔名規則檢核
+  //                              //file.name  上傳檔案的檔名（含副檔名）
+  //                              var namerule = $(zone).data("namerule");
+  //                              var pArray = namerule.split(",");
+  //                              var tIsExits = false; //檔案是否合法
 
-                                pArray.forEach(function (element) {
-                                    if (file.name.indexOf(element) != -1) {
-                                        tIsExits = true;
-                                    }
-                                });
+  //                              pArray.forEach(function (element) {
+  //                                  if (file.name.indexOf(element) != -1) {
+  //                                      tIsExits = true;
+  //                                  }
+  //                              });
 
-                            } else {
-                                done();
-                            }
-                        },
-                        acceptedFiles: ".jpg,.png,.jpge,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx,.zip,.rar,.7z,.csv,.mht",
-                        maxFilesize: 20,
-                        createImageThumbnails: false,
-                        init: function () {
-                            this.on("success", function (result) {
-                                var obj = $.parseJSON(result.xhr.responseText);
+  //                          } else {
+  //                              done();
+  //                          }
+  //                      },
+  //                      acceptedFiles: ".jpg,.png,.jpge,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx,.zip,.rar,.7z,.csv,.mht",
+  //                      maxFilesize: 20,
+  //                      createImageThumbnails: false,
+  //                      init: function () {
+  //                          this.on("success", function (result) {
+  //                              var obj = $.parseJSON(result.xhr.responseText);
 
-                                var doc = "<div class=\"file-box\" id='" + obj.ID + "'>";
-                                doc += "<div class=\"file\">";
-                                doc += "<a href='http://" + window.location.host + "/files/" + obj.FILE_NAME + "'" + ((".jpg .jpeg .png .bmp .gif".indexOf(obj.FILE_EXT) != -1) ? "" : "download='" + obj.FILE_ORG_NAME + "'") + " target='_blank'>";
-                                doc += "<span class=\"corner\"></span>";
+  //                              var doc = "<div class=\"file-box\" id='" + obj.ID + "'>";
+  //                              doc += "<div class=\"file\">";
+  //                              doc += "<a href='http://" + window.location.host + "/files/" + obj.FILE_NAME + "'" + ((".jpg .jpeg .png .bmp .gif".indexOf(obj.FILE_EXT) != -1) ? "" : "download='" + obj.FILE_ORG_NAME + "'") + " target='_blank'>";
+  //                              doc += "<span class=\"corner\"></span>";
 
-                                //隱藏附件縮圖區塊
-                                //if (".jpg .jpeg .png .bmp .gif".indexOf(obj.FILE_EXT) != -1) {
-                                //    doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + obj.FILE_NAME + "\"></div>";
-                                //} else {
-                                //    doc += "<div class=\"icon\"><i class=\"fa fa-file\"></i></div>";
-                                //}
+  //                              //隱藏附件縮圖區塊
+  //                              //if (".jpg .jpeg .png .bmp .gif".indexOf(obj.FILE_EXT) != -1) {
+  //                              //    doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + obj.FILE_NAME + "\"></div>";
+  //                              //} else {
+  //                              //    doc += "<div class=\"icon\"><i class=\"fa fa-file\"></i></div>";
+  //                              //}
 
-                                if ($(zone).data("type") == null) {
-                                    doc += "<div class=\"file-name\">" + obj.FILE_ORG_NAME;
-                                    doc += "<a href=\"javascript:delFile('" + obj.ID + "', 'hid_file' + '" + zone.prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
-                                    doc += " </div></div>";
+  //                              if ($(zone).data("type") == null) {
+  //                                  doc += "<div class=\"file-name\">" + obj.FILE_ORG_NAME;
+  //                                  doc += "<a href=\"javascript:delFile('" + obj.ID + "', 'hid_file' + '" + zone.prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+  //                                  doc += " </div></div>";
 
-                                    var fileZoneObj = $("#file" + zone.prop("id"))
-                                    fileZoneObj.append(doc);
+  //                                  var fileZoneObj = $("#file" + zone.prop("id"))
+  //                                  fileZoneObj.append(doc);
 
-                                    var hidFiles = $("#hid_file" + zone.prop("id"))
-                                    hidFiles.val(hidFiles.val() + obj.ID + ",");
-                                    console.log(hidFiles.val());
+  //                                  var hidFiles = $("#hid_file" + zone.prop("id"))
+  //                                  hidFiles.val(hidFiles.val() + obj.ID + ",");
+  //                                  console.log(hidFiles.val());
 
-                                } else if ($(zone).data("type") == "type2") { //動態產生上傳區塊使用
-                                    doc += "<div class=\"file-name\">" + obj.FILE_ORG_NAME;
-                                    doc += "<a href=\"javascript:delFile('" + obj.ID + "', '" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')) + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
-                                    doc += " </div></div>";
+  //                              } else if ($(zone).data("type") == "type2") { //動態產生上傳區塊使用
+  //                                  doc += "<div class=\"file-name\">" + obj.FILE_ORG_NAME;
+  //                                  doc += "<a href=\"javascript:delFile('" + obj.ID + "', '" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')) + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+  //                                  doc += " </div></div>";
 
-                                    var fileZoneObj = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
-                                    fileZoneObj.append(doc);
+  //                                  var fileZoneObj = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
+  //                                  fileZoneObj.append(doc);
 
-                                    var hidFiles = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
-                                    hidFiles.val(hidFiles.val() + obj.ID + ",");
-                                    console.log(hidFiles.val());
-                                }
-                            });
+  //                                  var hidFiles = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
+  //                                  hidFiles.val(hidFiles.val() + obj.ID + ",");
+  //                                  console.log(hidFiles.val());
+  //                              }
+  //                          });
 
-                            this.on("complete", function (file) {
-                                this.removeFile(file);
-                            });
-                        }
-                    })
-                } catch (e) {
-                    console.log(e);
-                }
-            })
-        }
+  //                          this.on("complete", function (file) {
+  //                              this.removeFile(file);
+  //                          });
+  //                      }
+  //                  })
+  //              } catch (e) {
+  //                  console.log(e);
+  //              }
+  //          })
+  //      }
 		
 		//日期相減取得分鐘
 		function TransTimeSpan(obj)
@@ -2806,7 +2806,7 @@
 									</div>
 									<div class="col-lg-9">
 										<div class="attachment" id="filezone_1"></div>
-										<input type="hidden" class="fileids" name="hid_filezone_1" id="hid_filezone_1" />
+										<input type="hidden" class="fileids" name="hid_filezone_1" id="hid_filezone_1" value="@ViewBag.cAttatchement" />
 									</div>
 								</div>
 								<!-- 檔案上傳end-->

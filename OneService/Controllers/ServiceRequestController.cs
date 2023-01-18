@@ -206,6 +206,7 @@ namespace OneService.Controllers
                 ViewBag.cRepairName = beanM.CRepairName;
                 ViewBag.cDesc = beanM.CDesc;
                 ViewBag.cNotes = beanM.CNotes;
+                ViewBag.cAttatchement = beanM.CAttatchement;
                 ViewBag.cSRPathWay = beanM.CSrpathWay;
                 ViewBag.cMAServiceType = beanM.CMaserviceType;
                 ViewBag.cSRProcessWay = beanM.CSrprocessWay;
@@ -328,6 +329,7 @@ namespace OneService.Controllers
             string CRepairName = formCollection["tbx_cRepairName"].FirstOrDefault();
             string CDesc = formCollection["tbx_cDesc"].FirstOrDefault();
             string CNotes = formCollection["tbx_cNotes"].FirstOrDefault();
+            string CAttach = formCollection["hid_filezone_1"].FirstOrDefault();
             string CMaserviceType = formCollection["ddl_cMAServiceType"].FirstOrDefault();
             string CSrtypeOne = formCollection["ddl_cSRTypeOne"].FirstOrDefault();
             string CSrtypeSec = formCollection["ddl_cSRTypeSec"].FirstOrDefault();
@@ -366,6 +368,7 @@ namespace OneService.Controllers
                     beanM.CRepairName = CRepairName;
                     beanM.CDesc = CDesc;
                     beanM.CNotes = CNotes;
+                    beanM.CAttatchement = CAttach;
                     beanM.CMaserviceType = CMaserviceType;
                     beanM.CSrtypeOne = CSrtypeOne;
                     beanM.CSrtypeSec = CSrtypeSec;
@@ -505,6 +508,7 @@ namespace OneService.Controllers
                     beanNowM.CRepairName = CRepairName;
                     beanNowM.CDesc = CDesc;
                     beanNowM.CNotes = CNotes;
+                    beanNowM.CAttatchement = CAttach;
                     beanNowM.CMaserviceType = CMaserviceType;
                     beanNowM.CSrtypeOne = CSrtypeOne;
                     beanNowM.CSrtypeSec = CSrtypeSec;

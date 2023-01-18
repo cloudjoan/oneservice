@@ -107,8 +107,12 @@ namespace OneService.Controllers
 
         public ActionResult GetFileData(string fileId)
         {
-            var fileBean = oneDB.TbOneDocuments.FirstOrDefault(x => x.Id == new Guid(fileId));
-            return Json(fileBean);
+            if (!string.IsNullOrEmpty(fileId))
+            {
+                var fileBean = oneDB.TbOneDocuments.FirstOrDefault(x => x.Id == new Guid(fileId));
+                return Json(fileBean);
+            }
+            return Json(null);
         }
 
 

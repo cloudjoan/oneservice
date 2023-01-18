@@ -1353,6 +1353,20 @@
         },
         "Patterns": null
       },
+      "files": {
+        "Children": {
+          "cc8ec610-0f61-443e-b6a3-cf35a8c45000.PDF": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "files/cc8ec610-0f61-443e-b6a3-cf35a8c45000.PDF"
+            },
+            "Patterns": null
+          }
+        },
+        "Asset": null,
+        "Patterns": null
+      },
       "font-awesome": {
         "Children": {
           "css": {

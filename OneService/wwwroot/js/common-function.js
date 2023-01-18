@@ -171,7 +171,7 @@ function dropzoneInit(uploadUrl) {
                         fileZoneObj.append(doc);
 
                         var hidFiles = $("#hid_file" + zone.prop("id"))
-                        hidFiles.val(hidFiles.val() + obj.Id + ",");
+                        hidFiles.val(hidFiles.val() + obj.id + ",");
                         console.log(hidFiles.val());
 
                     } else if ($(zone).data("type") == "type2") { //動態產生上傳區塊使用
