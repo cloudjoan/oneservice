@@ -243,7 +243,7 @@
 		//要略過的清單(textarea)
 		function checkTextareaSkipList(tID)
 		{
-			var ArrayList = ["tbx_PRcMaterialName","tbx_PAcMaterialName"]; 			
+			var ArrayList = ["tbx_PAcMaterialName"]; 			
 			return SkiptList(tID, ArrayList);
 		}
 
@@ -504,19 +504,14 @@
 				var tds = $(itr).find('td');
 				var objRowNumber = tds.eq(0).children();			//項次
 				var objSerialID = tds.eq(1).children().eq(0);		//序號
-				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)
-				var objMaterialID = tds.eq(2).children();			//料號
-				var objMaterialName = tds.eq(3).children();		//機器型號					
+				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
+				var objMaterialName = tds.eq(2).children();		//機器型號					
 
 				if (objSerialID.val() != undefined) {                    
 					if (objDisabled.val() == "0"){
 						if (objSerialID.val() == "") {
 							Msg += "明細【產品序號資訊】「項次：" + objRowNumber.html() + "」的【序號】不得為空！\n";
-						}
-
-						if (objMaterialID.val() == "") {
-							Msg += "明細【產品序號資訊】「項次：" + objRowNumber.html() + "」的【料號】不得為空！\n";
-						}
+						}						
 
 						if (objMaterialName.val() == "") {
 							Msg += "明細【產品序號資訊】「項次：" + objRowNumber.html() + "」的【機器型號】不得為空！\n";
@@ -1937,13 +1932,13 @@
 
 		//組機器型號
 		function SetMaterialName() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='機器型號' name='tbx_PRcMaterialName' id='tbx_PRcMaterialName" + trProductNoCount + "' readonly></textarea></td>";
+			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='機器型號' name='tbx_PRcMaterialName' id='tbx_PRcMaterialName" + trProductNoCount + "'></textarea></td>";
 			return reValue;
 		}
 
 		//組ProductNumber
 		function SetProductNumber() {
-			var reValue = "<td><input type='text' name='tbx_PRcProductNumber' id='tbx_PRcProductNumber" + trProductNoCount + "' class='form-control' style='width:200px;' placeholder='Product Number' readonly></td>";
+			var reValue = "<td><input type='text' name='tbx_PRcProductNumber' id='tbx_PRcProductNumber" + trProductNoCount + "' class='form-control' style='width:200px;' placeholder='Product Number'></td>";
 			return reValue;
 		}
 
@@ -2625,7 +2620,7 @@
 		
 		//組更換零件料號ID
 		function SetMaterialID_Parts() {
-			var reValue = "<td><input type='text' name='tbx_PAcMaterialID' id='tbx_PAcMaterialID" + trPartsNoCount + "' class='form-control material' style='width:200px;' placeholder='請輸入料號或料號說明的關鍵字'></td>";
+			var reValue = "<td><input type='text' name='tbx_PAcMaterialID' id='tbx_PAcMaterialID" + trPartsNoCount + "' class='form-control material' style='width:150px;' placeholder='請輸入料號或料號說明的關鍵字'></td>";
 			return reValue;
 		}
 
@@ -2655,7 +2650,7 @@
 
 		//組New UEFI 
 		function SetNewUEFI () {
-			var reValue = "<td><input type='text' name='tbx_PAcNewUEFI' id='tbx_PAcNewUEFI" + trPartsNoCount + "' class='form-control' style='width:200px;' placeholder='New UEFI '></td>";
+			var reValue = "<td><input type='text' name='tbx_PAcNewUEFI' id='tbx_PAcNewUEFI" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='New UEFI '></td>";
 			return reValue;
 		}
 
@@ -2685,7 +2680,7 @@
 
 		//組是否有人損
 		function SetPersonalDamage() {
-			var reValue = "<td><input type='text' name='tbx_PAcPersonalDamage' id='tbx_PAcPersonalDamage" + trPartsNoCount + "' class='form-control' style='width:100px;' placeholder='是否有人損'></td>";
+			var reValue = "<td><select class='form-control' style='width:80px;' name='ddl_PAcPersonalDamage' id='ddl_PAcPersonalDamage" + trPartsNoCount + "'><option value = 'N'>N_否</option><option value = 'Y'>Y_是</option></select></td>";
 			return reValue;
 		}		
 
@@ -2772,12 +2767,12 @@
 						@{
 							if (ViewBag.cSRID != "")
 							{
-																<div class="form-group row">
-																	<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
-																		<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
-																	</button>
-																	<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
-																</div>
+								<div class="form-group row">
+									<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
+										<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
+									</button>
+									<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+								</div>
 							}
 						}
 
@@ -3056,7 +3051,7 @@
 																		<input type='hidden' name='hid_PRcDisabled' @("id=hid_PRcDisabled" + count) value=@bean.Disabled>
 																	</td>															
 																	<td>
-																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="機器型號" name="tbx_PRcMaterialName" @("id=tbx_PRcMaterialName" + count) title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
+																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="機器型號" name="tbx_PRcMaterialName" @("id=tbx_PRcMaterialName" + count) title="@bean.CMaterialName">@bean.CMaterialName</textarea>
 																	</td>
 																	<td>
 																		<input type='text' name='tbx_PRcProductNumber' @("id=tbx_PRcProductNumber" + count) class='form-control' style='width:150px;' value="@bean.CProductNumber" title="@bean.CProductNumber">
@@ -3324,120 +3319,120 @@
 								@{									
 									if (ViewBag.pStatus == "E0001")
 									{
-																		<!--新建階段-->
-																		<div class="ibox-content" style="overflow: scroll">
-																			<table id="tablePA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-																				<thead>
-																					<tr>
-																						<th>項次</th>
-																						<th>XC HP申請零件</th>
-																						<th>*更換零件料號ID</th>
-																						<th>*料號說明</th>
-																						<th>Old CT</th>
-																						<th>New CT</th>
-																						<th>HP CT </th>
-																						<th>New UEFI</th>
-																						<th>備機序號</th>
-																						<th>HP Case ID</th>
-																						<th>到貨日</th>
-																						<th>歸還日</th>
-																						<th>是否有人損</th>
-																						<th>備註</th>
-																						<th width="130">刪除</th>
-																					</tr>
-																				</thead>
-																				<tbody>
+										<!--新建階段-->
+										<div class="ibox-content" style="overflow: scroll">
+											<table id="tablePA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
+												<thead>
+													<tr>
+														<th>項次</th>
+														<th>XC HP申請零件</th>
+														<th>*更換零件料號ID</th>
+														<th>*料號說明</th>
+														<th>Old CT</th>
+														<th>New CT</th>
+														<th>HP CT </th>
+														<th>New UEFI</th>
+														<th>備機序號</th>
+														<th>HP Case ID</th>
+														<th>到貨日</th>
+														<th>歸還日</th>
+														<th>是否有人損</th>
+														<th>備註</th>
+														<th width="130">刪除</th>
+													</tr>
+												</thead>
+												<tbody>
 
-																				</tbody>
-																			</table>
-																		</div>
+												</tbody>
+											</table>
+										</div>
 									}
 									else
 									{
-																		<!--審核、駁回階段-->
-																		<div class="ibox-content" style="overflow: scroll">											
-																			<table id="tablePA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-																				<thead>
-																					<tr>
-																						<th>項次</th>
-																						<th>XC HP申請零件</th>
-																						<th>*更換零件料號ID</th>
-																						<th>*料號說明</th>
-																						<th>Old CT</th>
-																						<th>New CT</th>
-																						<th>HP CT </th>
-																						<th>New UEFI</th>
-																						<th>備機序號</th>
-																						<th>HP Case ID</th>
-																						<th>到貨日</th>
-																						<th>歸還日</th>
-																						<th>是否有人損</th>
-																						<th>備註</th>
-																						<th width="130">刪除</th>
-																					</tr>
-																				</thead>
-																				<tbody>
-																					@{
+										<!--審核、駁回階段-->
+										<div class="ibox-content" style="overflow: scroll">											
+											<table id="tablePA" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
+												<thead>
+													<tr>
+														<th>項次</th>
+														<th>XC HP申請零件</th>
+														<th>*更換零件料號ID</th>
+														<th>*料號說明</th>
+														<th>Old CT</th>
+														<th>New CT</th>
+														<th>HP CT </th>
+														<th>New UEFI</th>
+														<th>備機序號</th>
+														<th>HP Case ID</th>
+														<th>到貨日</th>
+														<th>歸還日</th>
+														<th>是否有人損</th>
+														<th>備註</th>
+														<th width="130">刪除</th>
+													</tr>
+												</thead>
+												<tbody>
+													@{
 														if (ViewBag.pSRID != "")
 														{
 															int count = 0;
 															foreach (var bean in ViewBag.Detailbean_Parts)
 															{
 																count++;
-																																<tr id='trPartsNo@(count)'>
-																																	<td>
-																																		<label name='lbl_PARowNumber' style='font-size:14pt'>@(count)</label>
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcXCHP' @("id=tbx_PAcXCHP" + count) class='form-control' style='width:150px;' placeholder='XC HP申請零件' value="@bean.CXchp" title="@bean.CXchp">
-																																		<input type='hidden' name='hid_PAcDisabled' @("id=hid_PAcDisabled" + count) value=@bean.Disabled>																		
-																																	</td>																	
-																																	<td>
-																																		<input type='text' name='tbx_PAcMaterialID' @("id=tbx_PAcMaterialID" + count) class='form-control material' style='width:200px;' placeholder='更換零件料號ID' value="@bean.CMaterialId" title="@bean.CMaterialId">
-																																	</td>																	
-																																	<td>
-																																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PAcMaterialName" @("id=tbx_PAcMaterialName" + count) title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcOldCT' @("id=tbx_PAcOldCT" + count) class='form-control' style='width:100px;' placeholder='Old CT' value="@bean.COldCt" title="@bean.COldCt">
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcNewCT' @("id=tbx_PAcNewCT" + count) class='form-control' style='width:100px;' placeholder='New CT' value="@bean.CNewCt" title="@bean.CNewCt">
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcHPCT' @("id=tbx_PAcHPCT" + count) class='form-control' style='width:100px;' placeholder='HP CT' value="@bean.CHpct" title="@bean.CHpct">
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcNewUEFI' @("id=tbx_PAcNewUEFI" + count) class='form-control' style='width:200px;' placeholder='New UEFI' value="@bean.CNewUefi" title="@bean.CNewUefi">
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcStandbySerialID' @("id=tbx_PAcStandbySerialID" + count) class='form-control' style='width:100px;' placeholder='備機序號' value="@bean.CStandbySerialId" title="@bean.CStandbySerialId">
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcHPCaseID' @("id=tbx_PAcHPCaseID" + count) class='form-control' style='width:100px;' placeholder='HP Case ID' value="@bean.CHpcaseId" title="@bean.CHpcaseId">
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcArriveDate' @("id=tbx_PAcArriveDate" + count) class='form-control calendar' style='width:100px;' placeholder='到貨日' value="@(TransDateFormat(bean.CArriveDate))" title="@(TransDateFormat(bean.CArriveDate))">
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcReturnDate' @("id=tbx_PAcReturnDate" + count) class='form-control calendar' style='width:100px;' placeholder='歸還日' value="@(TransDateFormat(bean.CReturnDate))" title="@(TransDateFormat(bean.CReturnDate))">
-																																	</td>
-																																	<td>
-																																		<input type='text' name='tbx_PAcPersonalDamage' @("id=tbx_PAcPersonalDamage" + count) class='form-control' style='width:100px;' placeholder='是否有人損' value="@bean.CPersonalDamage" title="@bean.CPersonalDamage">
-																																	</td>																	
-																																	<td>
-																																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="備註" name="tbx_PAcNote" title="@bean.CNote">@bean.CNote</textarea>
-																																	</td>
-																																	<td>
-																																		<button name="btn_PartsDel" class='btn btn-danger' type='button' onclick="DelDetailItem_Parts('trPartsNo@(count)', '@(count)')" ;><i class='fa fa-trash'></i></button>
-																																	</td>																							
-																																</tr>
+																<tr id='trPartsNo@(count)'>
+																	<td>
+																		<label name='lbl_PARowNumber' style='font-size:14pt'>@(count)</label>
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcXCHP' @("id=tbx_PAcXCHP" + count) class='form-control' style='width:150px;' placeholder='XC HP申請零件' value="@bean.CXchp" title="@bean.CXchp">
+																		<input type='hidden' name='hid_PAcDisabled' @("id=hid_PAcDisabled" + count) value=@bean.Disabled>																		
+																	</td>																	
+																	<td>
+																		<input type='text' name='tbx_PAcMaterialID' @("id=tbx_PAcMaterialID" + count) class='form-control material' style='width:150px;' placeholder='更換零件料號ID' value="@bean.CMaterialId" title="@bean.CMaterialId">
+																	</td>																	
+																	<td>
+																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PAcMaterialName" @("id=tbx_PAcMaterialName" + count) title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcOldCT' @("id=tbx_PAcOldCT" + count) class='form-control' style='width:100px;' placeholder='Old CT' value="@bean.COldCt" title="@bean.COldCt">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcNewCT' @("id=tbx_PAcNewCT" + count) class='form-control' style='width:100px;' placeholder='New CT' value="@bean.CNewCt" title="@bean.CNewCt">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcHPCT' @("id=tbx_PAcHPCT" + count) class='form-control' style='width:100px;' placeholder='HP CT' value="@bean.CHpct" title="@bean.CHpct">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcNewUEFI' @("id=tbx_PAcNewUEFI" + count) class='form-control' style='width:100px;' placeholder='New UEFI' value="@bean.CNewUefi" title="@bean.CNewUefi">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcStandbySerialID' @("id=tbx_PAcStandbySerialID" + count) class='form-control' style='width:100px;' placeholder='備機序號' value="@bean.CStandbySerialId" title="@bean.CStandbySerialId">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcHPCaseID' @("id=tbx_PAcHPCaseID" + count) class='form-control' style='width:100px;' placeholder='HP Case ID' value="@bean.CHpcaseId" title="@bean.CHpcaseId">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcArriveDate' @("id=tbx_PAcArriveDate" + count) class='form-control calendar' style='width:100px;' placeholder='到貨日' value="@(TransDateFormat(bean.CArriveDate))" title="@(TransDateFormat(bean.CArriveDate))">
+																	</td>
+																	<td>
+																		<input type='text' name='tbx_PAcReturnDate' @("id=tbx_PAcReturnDate" + count) class='form-control calendar' style='width:100px;' placeholder='歸還日' value="@(TransDateFormat(bean.CReturnDate))" title="@(TransDateFormat(bean.CReturnDate))">
+																	</td>
+																	<td>
+																		<select asp-for="ddl_PAcPersonalDamage" asp-items="@(new SelectList(Model.ListPersonalDamage, "Value", "Text", @bean.CPersonalDamage))" class="form-control" style="width:80px;"></select>
+																	</td>																	
+																	<td>
+																		<textarea rows="3" class="form-control" style='width:200px;' placeholder="備註" name="tbx_PAcNote" title="@bean.CNote">@bean.CNote</textarea>
+																	</td>
+																	<td>
+																		<button name="btn_PartsDel" class='btn btn-danger' type='button' onclick="DelDetailItem_Parts('trPartsNo@(count)', '@(count)')" ;><i class='fa fa-trash'></i></button>
+																	</td>																							
+																</tr>
 															}
 														}
-																					}
-																				</tbody>
-																			</table>
-																		</div>
+													}
+												</tbody>
+											</table>
+										</div>
 									}
 								}								
 							</div>

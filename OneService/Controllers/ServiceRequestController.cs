@@ -408,7 +408,7 @@ namespace OneService.Controllers
 
                     #region 新增【產品序號資訊】明細
                     string[] PRcSerialID = formCollection["tbx_PRcSerialID"];
-                    string[] PRcMaterialID = formCollection["tbx_PRcMaterialID"];
+                    string[] PRcMaterialID = formCollection["hid_PRcMaterialID"];
                     string[] PRcMaterialName = formCollection["tbx_PRcMaterialName"];
                     string[] PRcProductNumber = formCollection["tbx_PRcProductNumber"];
                     string[] PRcInstallID = formCollection["tbx_PRcInstallID"];
@@ -555,7 +555,7 @@ namespace OneService.Controllers
 
                     #region 新增明細
                     string[] PRcSerialID = formCollection["tbx_PRcSerialID"];
-                    string[] PRcMaterialID = formCollection["tbx_PRcMaterialID"];
+                    string[] PRcMaterialID = formCollection["hid_PRcMaterialID"];
                     string[] PRcMaterialName = formCollection["tbx_PRcMaterialName"];
                     string[] PRcProductNumber = formCollection["tbx_PRcProductNumber"];
                     string[] PRcInstallID = formCollection["tbx_PRcInstallID"];
@@ -720,7 +720,7 @@ namespace OneService.Controllers
                     string[] PAcHPCaseID = formCollection["tbx_PAcHPCaseID"];
                     string[] PAcArriveDate = formCollection["tbx_PAcArriveDate"];
                     string[] PAcReturnDate = formCollection["tbx_PAcReturnDate"];
-                    string[] PAcPersonalDamage = formCollection["tbx_PAcPersonalDamage"];
+                    string[] PAcPersonalDamage = formCollection["ddl_PAcPersonalDamage"];
                     string[] PAcNote = formCollection["tbx_PAcNote"];
                     string[] PAcDisabled = formCollection["hid_PAcDisabled"];
 
@@ -2672,6 +2672,11 @@ namespace OneService.Controllers
             #region 是否為二修
             public string ddl_cIsSecondFix { get; set; }
             public List<SelectListItem> ListIsSecondFix = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "ISSECONDFIX", true);
+            #endregion
+
+            #region 是否有人損
+            public string ddl_PAcPersonalDamage { get; set; }
+            public List<SelectListItem> ListPersonalDamage = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "PERSONALDAMAGE", false);
             #endregion
         }
         #endregion
