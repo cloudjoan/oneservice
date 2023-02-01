@@ -90,8 +90,8 @@ namespace OneService.Controllers
 
             string tSRPathWay = string.Empty;           //報修管理
             string tSRType = string.Empty;              //報修類別
-            string tMainEngineerID = string.Empty;      //主要工程師ERPID
-            string tMainEngineerName = string.Empty;    //主要工程師姓名            
+            string tMainEngineerID = string.Empty;      //L2工程師ERPID
+            string tMainEngineerName = string.Empty;    //L2工程師姓名            
             string tModifiedDate = string.Empty;        //修改日期
 
             List<TbOneSrmain> beans = new List<TbOneSrmain>();
@@ -128,8 +128,8 @@ namespace OneService.Controllers
                     ProcessInfo[3] = dr["cDesc"].ToString();             //說明
                     ProcessInfo[4] = tSRPathWay;                        //報修管道
                     ProcessInfo[5] = tSRType;                           //報修類別
-                    ProcessInfo[6] = tMainEngineerID;                   //主要工程師ERPID
-                    ProcessInfo[7] = tMainEngineerName;                 //主要工程師姓名
+                    ProcessInfo[6] = tMainEngineerID;                   //L2工程師ERPID
+                    ProcessInfo[7] = tMainEngineerName;                 //L2工程師姓名
                     ProcessInfo[8] = tModifiedDate;                     //最後編輯日期
                     ProcessInfo[9] = dr["cStatus"].ToString();           //狀態
 
@@ -158,8 +158,8 @@ namespace OneService.Controllers
                     ProcessInfo[3] = bean.CDesc;            //說明
                     ProcessInfo[4] = tSRPathWay;           //報修管道
                     ProcessInfo[5] = tSRType;              //報修類別
-                    ProcessInfo[6] = tMainEngineerID;      //主要工程師ERPID
-                    ProcessInfo[7] = tMainEngineerName;    //主要工程師姓名
+                    ProcessInfo[6] = tMainEngineerID;      //L2工程師ERPID
+                    ProcessInfo[7] = tMainEngineerName;    //L2工程師姓名
                     ProcessInfo[8] = tModifiedDate;        //最後編輯日期
                     ProcessInfo[9] = bean.CStatus;          //狀態
 

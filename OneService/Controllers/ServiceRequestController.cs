@@ -202,8 +202,7 @@ namespace OneService.Controllers
                 #region 報修資訊
                 ViewBag.cSRID = beanM.CSrid;
                 ViewBag.cCustomerID = beanM.CCustomerId;
-                ViewBag.cCustomerName = beanM.CCustomerName;
-                ViewBag.cRepairName = beanM.CRepairName;
+                ViewBag.cCustomerName = beanM.CCustomerName;                
                 ViewBag.cDesc = beanM.CDesc;
                 ViewBag.cNotes = beanM.CNotes;
                 ViewBag.cAttatchement = beanM.CAttatchement;
@@ -232,9 +231,14 @@ namespace OneService.Controllers
                     SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
                     SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
                 }
-                #endregion
+                #endregion               
 
-                #region 客戶聯絡窗口資訊
+                #region 客戶報修/聯絡窗口資訊
+                ViewBag.cRepairName = beanM.CRepairName;
+                ViewBag.cRepairAddress = beanM.CRepairAddress;
+                ViewBag.cRepairPhone = beanM.CRepairPhone;
+                ViewBag.cRepairEmail = beanM.CRepairEmail;
+
                 ViewBag.cContacterName = beanM.CContacterName;
                 ViewBag.cContactAddress = beanM.CContactAddress;
                 ViewBag.cContactPhone = beanM.CContactPhone;
@@ -325,8 +329,7 @@ namespace OneService.Controllers
             string OldCStatus = string.Empty; 
             string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
             string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
-            string CCustomerId = formCollection["hid_cCustomerID"].FirstOrDefault();
-            string CRepairName = formCollection["tbx_cRepairName"].FirstOrDefault();
+            string CCustomerId = formCollection["hid_cCustomerID"].FirstOrDefault();            
             string CDesc = formCollection["tbx_cDesc"].FirstOrDefault();
             string CNotes = formCollection["tbx_cNotes"].FirstOrDefault();
             string CAttach = formCollection["hid_filezone_1"].FirstOrDefault();
@@ -337,6 +340,10 @@ namespace OneService.Controllers
             string CSrpathWay = formCollection["ddl_cSRPathWay"].FirstOrDefault();
             string CSrprocessWay = formCollection["ddl_cSRProcessWay"].FirstOrDefault();
             string CIsSecondFix = formCollection["ddl_cIsSecondFix"].FirstOrDefault();
+            string CRepairName = formCollection["tbx_cRepairName"].FirstOrDefault();
+            string CRepairAddress = formCollection["tbx_cRepairAddress"].FirstOrDefault();
+            string CRepairPhone = formCollection["tbx_cRepairPhone"].FirstOrDefault();
+            string CRepairEmail = formCollection["tbx_cRepairEmail"].FirstOrDefault();
             string CContacterName = formCollection["tbx_cContacterName"].FirstOrDefault();
             string CContactAddress = formCollection["tbx_cContactAddress"].FirstOrDefault();
             string CContactPhone = formCollection["tbx_cContactPhone"].FirstOrDefault();
@@ -364,8 +371,7 @@ namespace OneService.Controllers
                     beanM.CSrid = pSRID;
                     beanM.CStatus = "E0005";    //新增時先預設為L3.處理中
                     beanM.CCustomerName = CCustomerName;
-                    beanM.CCustomerId = CCustomerId;
-                    beanM.CRepairName = CRepairName;
+                    beanM.CCustomerId = CCustomerId;                    
                     beanM.CDesc = CDesc;
                     beanM.CNotes = CNotes;
                     beanM.CAttatchement = CAttach;
@@ -376,6 +382,10 @@ namespace OneService.Controllers
                     beanM.CSrpathWay = CSrpathWay;
                     beanM.CSrprocessWay = CSrprocessWay;
                     beanM.CIsSecondFix = CIsSecondFix;
+                    beanM.CRepairName = CRepairName;
+                    beanM.CRepairAddress = CRepairAddress;
+                    beanM.CRepairPhone = CRepairPhone;
+                    beanM.CRepairEmail = CRepairEmail;
                     beanM.CContacterName = CContacterName;
                     beanM.CContactAddress = CContactAddress;
                     beanM.CContactPhone = CContactPhone;
@@ -504,8 +514,7 @@ namespace OneService.Controllers
 
                     beanNowM.CStatus = CStatus;
                     beanNowM.CCustomerName = CCustomerName;
-                    beanNowM.CCustomerId = CCustomerId;
-                    beanNowM.CRepairName = CRepairName;
+                    beanNowM.CCustomerId = CCustomerId;                    
                     beanNowM.CDesc = CDesc;
                     beanNowM.CNotes = CNotes;
                     beanNowM.CAttatchement = CAttach;
@@ -516,6 +525,10 @@ namespace OneService.Controllers
                     beanNowM.CSrpathWay = CSrpathWay;
                     beanNowM.CSrprocessWay = CSrprocessWay;
                     beanNowM.CIsSecondFix = CIsSecondFix;
+                    beanNowM.CRepairName = CRepairName;
+                    beanNowM.CRepairAddress = CRepairAddress;
+                    beanNowM.CRepairPhone = CRepairPhone;
+                    beanNowM.CRepairEmail = CRepairEmail;
                     beanNowM.CContacterName = CContacterName;
                     beanNowM.CContactAddress = CContactAddress;
                     beanNowM.CContactPhone = CContactPhone;
@@ -707,7 +720,7 @@ namespace OneService.Controllers
                     string[] PAcHPCaseID = formCollection["tbx_PAcHPCaseID"];
                     string[] PAcArriveDate = formCollection["tbx_PAcArriveDate"];
                     string[] PAcReturnDate = formCollection["tbx_PAcReturnDate"];
-                    string[] PAcMaterialItem = formCollection["tbx_PAcMaterialItem"];
+                    string[] PAcPersonalDamage = formCollection["tbx_PAcPersonalDamage"];
                     string[] PAcNote = formCollection["tbx_PAcNote"];
                     string[] PAcDisabled = formCollection["hid_PAcDisabled"];
 
@@ -738,7 +751,7 @@ namespace OneService.Controllers
                             beanD.CReturnDate = Convert.ToDateTime(PAcReturnDate[i]);
                         }
 
-                        beanD.CMaterialItem = PAcMaterialItem[i];
+                        beanD.CPersonalDamage = PAcPersonalDamage[i];
                         beanD.CNote = PAcNote[i];
                         beanD.Disabled = int.Parse(PAcDisabled[i]);
 
@@ -1268,12 +1281,12 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 修改協助工程師
+        #region 修改指派工程師
         /// <summary>
-        /// 修改協助工程師
+        /// 修改指派工程師
         /// </summary>
-        /// <param name="cAssEngineerID">目前的協助工程師ERPID(;號隔開)</param>
-        /// <param name="cAssEngineerAcc">欲修改的協助工程師ERPID</param>
+        /// <param name="cAssEngineerID">目前的指派工程師ERPID(;號隔開)</param>
+        /// <param name="cAssEngineerAcc">欲修改的指派工程師ERPID</param>
         /// <returns></returns>
         public IActionResult SavepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
         {
@@ -1297,7 +1310,7 @@ namespace OneService.Controllers
 
                     if (oldAssEngineerAcc.Contains(cAssEngineerAcc))
                     {
-                        reValue = "Error：協助工程師已存在，請重新輸入！";
+                        reValue = "Error：指派工程師已存在，請重新輸入！";
                     }
                     else
                     {
@@ -1308,7 +1321,7 @@ namespace OneService.Controllers
                         {
                             CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "": ViewBag.cSRID,
                             EventName = "SavepjAssEngineer",
-                            Log = "修改協助工程師_舊值: " + oldAssEngineerAcc + "; 新值: " + reValue,
+                            Log = "修改指派工程師_舊值: " + oldAssEngineerAcc + "; 新值: " + reValue,
                             CreatedUserName = ViewBag.cLoginUser_Name,
                             CreatedDate = DateTime.Now
                         };
@@ -1332,17 +1345,17 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 取得協助工程師
+        #region 取得指派工程師
         /// <summary>
-        /// 取得協助工程師
+        /// 取得指派工程師
         /// </summary>
-        /// <param name="cAssEngineerID">協助工程師ERPID(;號隔開)</param>
+        /// <param name="cAssEngineerID">指派工程師ERPID(;號隔開)</param>
         /// <returns></returns>
         public IActionResult GetpjAssEngineer(string cAssEngineerID)
         {            
             List<AssEngineerInfo> liAssEngineerInfo = new List<AssEngineerInfo>();
 
-            string tEmpName = string.Empty; //協助工程師姓名(中文姓名+英文姓名)
+            string tEmpName = string.Empty; //指派工程師姓名(中文姓名+英文姓名)
 
             if (!string.IsNullOrEmpty(cAssEngineerID))
             {
@@ -1377,12 +1390,12 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 刪除協助工程師
+        #region 刪除指派工程師
         /// <summary>
-        /// 刪除協助工程師
+        /// 刪除指派工程師
         /// </summary>
-        /// <param name="cAssEngineerID">目前的協助工程師ERPID(;號隔開)</param>
-        /// <param name="cAssEngineerAcc">欲刪除的協助工程師ERPID</param>
+        /// <param name="cAssEngineerID">目前的指派工程師ERPID(;號隔開)</param>
+        /// <param name="cAssEngineerAcc">欲刪除的指派工程師ERPID</param>
         /// <returns></returns>
         public IActionResult DeletepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
         {
@@ -1424,7 +1437,7 @@ namespace OneService.Controllers
                     {
                         CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
                         EventName = "DeletepjAssEngineer",
-                        Log = "刪除協助工程師_舊值: " + cAssEngineerID + "; 新值: " + reValue,
+                        Log = "刪除指派工程師_舊值: " + cAssEngineerID + "; 新值: " + reValue,
                         CreatedUserName = ViewBag.cLoginUser_Name,
                         CreatedDate = DateTime.Now
                     };
@@ -2770,8 +2783,8 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 協助工程師資訊
-        /// <summary>協助工程師資訊</summary>
+        #region 指派工程師資訊
+        /// <summary>指派工程師資訊</summary>
         public class AssEngineerInfo
         {
             public int ID { get; private set; }

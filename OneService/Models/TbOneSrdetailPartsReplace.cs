@@ -18,7 +18,7 @@ namespace OneService.Models
         public string? CHpcaseId { get; set; }
         public DateTime? CArriveDate { get; set; }
         public DateTime? CReturnDate { get; set; }
-        public string? CMaterialItem { get; set; }
+        public string? CPersonalDamage { get; set; }
         public string? CNote { get; set; }
         public int? Disabled { get; set; }
         public DateTime? CreatedDate { get; set; }

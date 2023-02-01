@@ -153,10 +153,6 @@ namespace OneService.Models
                     .HasMaxLength(40)
                     .HasColumnName("cMaterialID");
 
-                entity.Property(e => e.CMaterialItem)
-                    .HasMaxLength(20)
-                    .HasColumnName("cMaterialItem");
-
                 entity.Property(e => e.CMaterialName)
                     .HasMaxLength(40)
                     .HasColumnName("cMaterialName");
@@ -176,6 +172,11 @@ namespace OneService.Models
                 entity.Property(e => e.COldCt)
                     .HasMaxLength(30)
                     .HasColumnName("cOldCT");
+
+                entity.Property(e => e.CPersonalDamage)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cPersonalDamage");
 
                 entity.Property(e => e.CReturnDate)
                     .HasColumnType("datetime")
@@ -476,9 +477,21 @@ namespace OneService.Models
                     .HasMaxLength(2000)
                     .HasColumnName("cNotes");
 
+                entity.Property(e => e.CRepairAddress)
+                    .HasMaxLength(110)
+                    .HasColumnName("cRepairAddress");
+
+                entity.Property(e => e.CRepairEmail)
+                    .HasMaxLength(200)
+                    .HasColumnName("cRepairEmail");
+
                 entity.Property(e => e.CRepairName)
                     .HasMaxLength(40)
                     .HasColumnName("cRepairName");
+
+                entity.Property(e => e.CRepairPhone)
+                    .HasMaxLength(50)
+                    .HasColumnName("cRepairPhone");
 
                 entity.Property(e => e.CSalesId)
                     .HasMaxLength(20)

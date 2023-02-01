@@ -21,6 +21,9 @@ namespace OneService.Models
         public string? CSrprocessWay { get; set; }
         public string? CIsSecondFix { get; set; }
         public string? CRepairName { get; set; }
+        public string? CRepairAddress { get; set; }
+        public string? CRepairPhone { get; set; }
+        public string? CRepairEmail { get; set; }
         public string? CContacterName { get; set; }
         public string? CContactAddress { get; set; }
         public string? CContactPhone { get; set; }
