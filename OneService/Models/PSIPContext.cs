@@ -25,6 +25,7 @@ namespace OneService.Models
         public virtual DbSet<TbProPjinfo> TbProPjinfos { get; set; } = null!;
         public virtual DbSet<TbProSupportEmp> TbProSupportEmps { get; set; } = null!;
         public virtual DbSet<TbProTask> TbProTasks { get; set; } = null!;
+        public virtual DbSet<TbWhType> TbWhTypes { get; set; } = null!;
         public virtual DbSet<TbWorkingHoursMain> TbWorkingHoursMains { get; set; } = null!;
         public virtual DbSet<ViewProSupportEmp> ViewProSupportEmps { get; set; } = null!;
         public virtual DbSet<ViewWorkingHour> ViewWorkingHours { get; set; } = null!;
@@ -256,9 +257,13 @@ namespace OneService.Models
 
                 entity.Property(e => e.EstimatedDate).HasMaxLength(22);
 
+                entity.Property(e => e.ExpRevenueDate).HasMaxLength(22);
+
                 entity.Property(e => e.FinishedDate).HasMaxLength(22);
 
                 entity.Property(e => e.InsertTime).HasMaxLength(22);
+
+                entity.Property(e => e.InvoiceNo).HasMaxLength(12);
 
                 entity.Property(e => e.IsAlarm)
                     .HasMaxLength(1)
@@ -477,6 +482,21 @@ namespace OneService.Models
                 entity.Property(e => e.UpdateTime).HasMaxLength(22);
 
                 entity.Property(e => e.WorkHours).HasColumnType("numeric(6, 1)");
+            });
+
+            modelBuilder.Entity<TbWhType>(entity =>
+            {
+                entity.ToTable("TB_WhType");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.Sort).HasColumnName("SORT");
+
+                entity.Property(e => e.TypeCode).HasMaxLength(2);
+
+                entity.Property(e => e.TypeName).HasMaxLength(100);
+
+                entity.Property(e => e.UpTypeCode).HasMaxLength(2);
             });
 
             modelBuilder.Entity<TbWorkingHoursMain>(entity =>

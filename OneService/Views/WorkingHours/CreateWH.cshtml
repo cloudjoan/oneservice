@@ -22,6 +22,8 @@
 	actTypeDict.Add("H", "佈版/版控");
 	actTypeDict.Add("I", "教育訓練");
 	actTypeDict.Add("J", "前置準備");
+	actTypeDict.Add("K", "查修/維運");
+	actTypeDict.Add("L", "文書處理");
 }
 
 @section js_section{
@@ -35,8 +37,12 @@
 				url: '@Url.Action("GetWHById", "WorkingHours")',
 				type:'post',
 				dataType:'Json',
+				async:false,
 				data:{"id":id},
 				success:function(result){
+					//先取得任務活動項目
+					GetWhTypeByUpTypeCode(result.whtype);
+
 					$("#Id").val(result.id);
 					$("#ddl_WHType").val(result.whtype);
 					$("#ddl_ActType").val(result.actType);
@@ -100,6 +106,23 @@
 
 		function setCrmOppName(){
 			$("#hid_CrmOppName").val($("#ddl_CrmOppNo").find(":selected").text());
+		}
+
+		function GetWhTypeByUpTypeCode(upTypeCode) {
+			$.ajax({
+				url: '@Url.Action("GetWhTypeByUpTypeCode", "Ajax")',
+				type: 'post',
+				dataType: 'json',
+				async: false,
+				data: { upTypeCode: upTypeCode },
+				success: function (result) {
+					$("#ddl_ActType option").remove();
+
+					$.each(result, function(i, obj){
+						$("#ddl_ActType").append("<option value='"+obj.typeCode+"'>"+obj.typeName+"</option>");
+					});
+				}
+			})
 		}
 
 		function ActiveBtn(targetId, disabledClassName, obj){
@@ -168,7 +191,7 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">工時類型：</label>
 							<div class="col-lg-4">
-								<select class="form-control" id="ddl_WHType" name="ddl_WHType">
+								<select class="form-control" id="ddl_WHType" name="ddl_WHType" onchange="GetWhTypeByUpTypeCode($(this).val())">
 									@*<option value="A">A.客戶服務</option>*@
 									<option value="B">專案導入</option>
 									<option value="C">內部作業</option>
@@ -186,8 +209,10 @@
 									<option value="F">分析/設計</option>
 									<option value="G">開發/測試</option>
 									<option value="H">佈版/版控</option>
+									<option value="K">查修/維運</option>
 									<option value="I">教育訓練</option>
 									<option value="J">前置準備</option>
+									<option value="L">文書處理</option>
 								</select>
 							</div>
 							

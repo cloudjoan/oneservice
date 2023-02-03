@@ -27,5 +27,7 @@ namespace OneService.Models
         public string? IsAlarm { get; set; }
         public string? InsertTime { get; set; }
         public string? UpdateTime { get; set; }
+        public string? InvoiceNo { get; set; }
+        public string? ExpRevenueDate { get; set; }
     }
 }

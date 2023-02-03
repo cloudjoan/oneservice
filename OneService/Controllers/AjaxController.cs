@@ -218,6 +218,12 @@ namespace OneService.Controllers
             return Json(fileBean);
         }
 
+        public ActionResult GetWhTypeByUpTypeCode(string upTypeCode)
+        {
+            var beans = psipDB.TbWhTypes.Where(x => x.UpTypeCode == upTypeCode).OrderBy(x => x.Sort);
+            return Json(beans);
+        }
+
         public string OppNoFormat(string oppNo)
         {
             var _oppNo = "0000000000" + oppNo;
