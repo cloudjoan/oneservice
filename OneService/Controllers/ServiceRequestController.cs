@@ -2058,6 +2058,118 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑SQ人員設定作業 ↑↑↑↑↑-----   
 
+        #region -----↓↓↓↓↓報修類別設定作業 ↓↓↓↓↓-----
+        /// <summary>
+        /// 報修類別設定作業
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult SRRepairType()
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            #region 報修類別
+            //大類
+            var SRTypeOneList = CMF.findFirstKINDList();
+
+            //中類
+            var SRTypeSecList = new List<SelectListItem>();
+            SRTypeSecList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            //小類
+            var SRTypeThrList = new List<SelectListItem>();
+            SRTypeThrList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            ViewBag.QuerySRTypeOneList = SRTypeOneList;
+            ViewBag.QuerySRTypeSecList = SRTypeSecList;
+            ViewBag.QuerySRTypeThrList = SRTypeThrList;
+
+            ViewBag.SRTypeOneList = SRTypeOneList;
+            ViewBag.SRTypeSecList = SRTypeSecList;
+            ViewBag.SRTypeThrList = SRTypeThrList;
+            #endregion
+
+            var model = new ViewModelRepairType();
+
+            return View(model);
+        }
+
+        #region 報修類別設定作業查詢結果
+        /// <summary>
+        /// 報修類別設定作業查詢結果
+        /// </summary>
+        /// <param name="SRTypeOne">報修類別(大類)</param>
+        /// <param name="SRTypeSec">報修類別(中類)</param>
+        /// <param name="SRTypeThr">報修類別(小類)</param>
+        /// <param name="KIND_NAME">類別說明</param>
+        /// <returns></returns>
+        public IActionResult SRRepairTypeResult(string SRTypeOne, string SRTypeSec, string SRTypeThr, string KIND_NAME)
+        {
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            SRTypeOne = string.IsNullOrEmpty(SRTypeOne) ? "" : SRTypeOne;
+            SRTypeSec = string.IsNullOrEmpty(SRTypeSec) ? "" : SRTypeSec;
+            SRTypeThr = string.IsNullOrEmpty(SRTypeThr) ? "" : SRTypeThr;
+            KIND_NAME = string.IsNullOrEmpty(KIND_NAME) ? "" : KIND_NAME.Trim();
+
+            #region 組待查詢清單
+            List<TbOneSrrepairType> tList = new List<TbOneSrrepairType>();
+
+            if (SRTypeOne == "" && SRTypeSec == "" && SRTypeThr == "")
+            {
+                tList = dbOne.TbOneSrrepairTypes.OrderBy(x => x.CKindKey).Where(x => x.Disabled == 0 &&
+                                                               (string.IsNullOrEmpty(KIND_NAME) ? true : x.CKindName.Contains(KIND_NAME))).ToList();
+            }
+            else
+            {
+                if (SRTypeThr != "")
+                {
+                    tList = dbOne.TbOneSrrepairTypes.OrderBy(x => x.CKindKey).Where(x => x.Disabled == 0 && x.CKindKey == SRTypeThr &&
+                                                               (string.IsNullOrEmpty(KIND_NAME) ? true : x.CKindName.Contains(KIND_NAME))).ToList();
+                }
+                else if (SRTypeSec != "")
+                {
+                    tList = dbOne.TbOneSrrepairTypes.OrderBy(x => x.CKindKey).Where(x => x.Disabled == 0 && x.CKindLevel == 3 && x.CUpKindKey == SRTypeSec &&
+                                                               (string.IsNullOrEmpty(KIND_NAME) ? true : x.CKindName.Contains(KIND_NAME))).ToList();
+                }
+                else if (SRTypeOne != "")
+                {
+                    tList = dbOne.TbOneSrrepairTypes.OrderBy(x => x.CKindKey).Where(x => x.Disabled == 0 && x.CKindLevel == 2 && x.CUpKindKey == SRTypeOne &&
+                                                               (string.IsNullOrEmpty(KIND_NAME) ? true : x.CKindName.Contains(KIND_NAME))).ToList();
+                }
+            }
+
+            foreach (var bean in tList)
+            {
+                string[] QueryInfo = new string[6];
+
+                QueryInfo[0] = bean.CId.ToString();         //系統ID
+                QueryInfo[1] = bean.CKindKey;               //類別代號
+                QueryInfo[2] = bean.CKindName;              //類別說明
+                QueryInfo[3] = bean.CKindLevel.ToString();  //類別階層
+                QueryInfo[4] = bean.CUpKindKey;             //父階代號                
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion      
+
+        #endregion -----↑↑↑↑↑報修類別設定作業 ↑↑↑↑↑-----   
+
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
         #region 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
@@ -2710,6 +2822,19 @@ namespace OneService.Controllers
             public string ddl_cThirdKEY { get; set; }
             public List<SelectListItem> ListThirdKEY = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SQTHIKEY", true);
             #endregion     
+        }
+        #endregion
+
+        #region DropDownList選項Class(報修類別設定作業)
+        /// <summary>
+        /// DropDownList選項Class
+        /// </summary>
+        public class ViewModelRepairType
+        {
+            #region SQ人員區域代號
+            public string ddl_QuerycKIND_KEY { get; set; }
+            public List<SelectListItem> ListKIND_KEY = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SQSECKEY", true);
+            #endregion           
         }
         #endregion
 
