@@ -124,7 +124,7 @@
 
 			//先清空下拉選單選項，才不會一直append
 			$('#ddl_cSRTypeSec').empty();
-			$('#ddl_cSRTypeThr').empty();
+			$('#ddl_cSRTypeThr').empty();			
 
 			$.ajax({
 				url: '@Url.Action("findSRTypeSecList", "ServiceRequest")',
@@ -139,29 +139,51 @@
 							$('<option></option>').val(obj.value).html(obj.text)
 						);
 					});
+
+					AjaxfindSRRepairTypeKindKey("0", $('#ddl_cSRTypeOne').val(), "");
+					
+					if ($('#ddl_cSRTypeOne').val() == "")
+					{
+						$("#ddl_cKIND_LEVEL").val("1");
+						$("#tbx_cUP_KIND_KEY").val("0");
+					}
+					else
+					{
+						$("#ddl_cKIND_LEVEL").val("2");
+						$("#tbx_cUP_KIND_KEY").val($('#ddl_cSRTypeOne').val());
+					}
+					
+					$("#tbx_cKIND_NAME").val("");
 				}
 			});
 		}
 
 		//編輯：第二階(中類) onChange
 		function onChangecSRTypeSec_EDIT() {
+			AjaxfindSRRepairTypeKindKey("0", $('#ddl_cSRTypeOne').val(), $('#ddl_cSRTypeSec').val());
+			
+			$("#ddl_cKIND_LEVEL").val("3");
+			$("#tbx_cUP_KIND_KEY").val($('#ddl_cSRTypeSec').val());
+			$("#tbx_cKIND_NAME").val("");
+		}
 
-			//先清空下拉選單選項，才不會一直append
-			$('#ddl_cSRTypeThr').empty();
+		//傳入報修類別檔的0.父類、1.大類、2.中類，並取得最新的類別代號
+		function AjaxfindSRRepairTypeKindKey(SRTypeZero, SRTypeOne, SRTypeSec)
+		{		
+			var reValue = "";
+			var tbx_cKIND_KEY = $("#tbx_cKIND_KEY");	//類別代碼
 
 			$.ajax({
-				url: '@Url.Action("findSRTypeThrList", "ServiceRequest")',
+				url: '@Url.Action("AjaxfindSRRepairTypeKindKey", "ServiceRequest")',
 				type: 'post',
 				dataType: 'json',
 				data: {
-					keyword: $('#ddl_cSRTypeSec').val(),
+					SRTypeZero: SRTypeZero,
+					SRTypeOne: $('#ddl_cSRTypeOne').val(),
+					SRTypeSec: $('#ddl_cSRTypeSec').val()
 				},
 				success: function (result) {
-					$.each(result, function (index, obj) {
-						$("#ddl_cSRTypeThr").append(
-							$('<option></option>').val(obj.value).html(obj.text)
-						);
-					});
+					tbx_cKIND_KEY.val(result);
 				}
 			});
 		}
@@ -223,35 +245,30 @@
 		//儲存明細
 		function saveSRRepairType() {
 			var strMsg = "";
-			var cType = $("#hid_cType").val();					//目前狀態
-			var IsDo = $("#hid_IsDoADD");						//是否已執行新增存檔過(Y.已執行 空白.未執行)
+			var cType = $("#hid_cType").val();				//目前狀態
+			var IsDo = $("#hid_IsDoADD");					//是否已執行新增存檔過(Y.已執行 空白.未執行)
 
 			var hid_cID = $("#hid_cID");						//系統ID
-			var tbx_cEngineerID = $("#tbx_cEngineerID");		//工程師ERPID
-			var tbx_cEngineerName = $("#tbx_cEngineerName");		//工程師姓名
-			var ddl_cSecondKEY = $("#ddl_cSecondKEY");			//區域代號
-			var ddl_cThirdKEY = $("#ddl_cThirdKEY");			//類別代號
-			var tbx_cContent = $("#tbx_cContent");				//證照編號
+			var tbx_cKIND_KEY = $("#tbx_cKIND_KEY");		//類別代碼
+			var tbx_cKIND_NAME = $("#tbx_cKIND_NAME");		//類別說明
+			var ddl_cKIND_LEVEL = $("#ddl_cKIND_LEVEL");	//類別階層
+			var tbx_cUP_KIND_KEY = $("#tbx_cUP_KIND_KEY");	//父階代號
 
-			if (tbx_cEngineerID.val() == "") {
-				strMsg += "工程師ERPID不得為空！\n";
+			if (tbx_cKIND_KEY.val() == "") {
+				strMsg += "類別代碼不得為空！\n";
 			}
 
-			if (tbx_cEngineerName.val() == "") {
-				strMsg += "工程師姓名不得為空！\n";
+			if (tbx_cKIND_NAME.val() == "") {
+				strMsg += "類別說明不得為空！\n";
 			}
 
-			if (ddl_cSecondKEY.val() == "") {
-				strMsg += "請選擇區域代號！\n";
+			if (ddl_cKIND_LEVEL.val() == "") {
+				strMsg += "請選擇類別階層！\n";
 			}
 
-			if (ddl_cThirdKEY.val() == "") {
-				strMsg += "請選擇類別代號！\n";
-			}
-
-			if (tbx_cContent.val() == "") {
-				strMsg += "證照編號不得為空！\n";
-			}
+			if (tbx_cUP_KIND_KEY.val() == "") {
+				strMsg += "父階代號不得為空！\n";
+			}			
 
 			if (strMsg != "") {
 				alert(strMsg);
@@ -265,11 +282,10 @@
 					dataType: 'json',
 					data: {
 						cID: hid_cID.val(),
-						cEngineerID: tbx_cEngineerID.val(),
-						cEngineerName: tbx_cEngineerName.val(),
-						cSecondKEY: ddl_cSecondKEY.val(),
-						cThirdKEY: ddl_cThirdKEY.val(),
-						cContent: tbx_cContent.val()
+						cKIND_KEY: tbx_cKIND_KEY.val(),
+						cKIND_NAME: tbx_cKIND_NAME.val(),
+						cKIND_LEVEL: ddl_cKIND_LEVEL.val(),
+						cUP_KIND_KEY: tbx_cUP_KIND_KEY.val()
 					},
 					success: function (result) {
 						if (result == "") {
@@ -304,8 +320,12 @@
 					dataType: 'json',
 					data: { cID: cID },
 					success: function (result) {
-						if (result > 0) {
+						if (result == "") {
 							$('#' + rowId).remove();
+						}
+						else
+						{
+							alert(result);
 						}
 					}
 				})
@@ -319,11 +339,29 @@
 
 			resetPopup("#dialog_pSRRepairType"); //popup各欄位reset
 
-			$("#tbx_cEngineerID").removeAttr("disabled");	//工程師ERPID
-			$("#ddl_cSecondKEY").removeAttr("disabled");	//區域代號
-			$("#ddl_cThirdKEY").removeAttr("disabled");	//類別代號
-			$("#ddl_cSecondKEY").val("");
-			$("#ddl_cThirdKEY").val("");
+			var cType = $("#hid_cType").val();		//ADD.新增 EDIT.編輯
+			var cIsDo = $("#hid_IsDoADD").val();	//是否已執行新增存檔過(Y.已執行 空白.未執行)
+			var ddl_cSRTypeOne = $("#ddl_cSRTypeOne");		//報修類別(大類)
+			var ddl_cSRTypeSec = $("#ddl_cSRTypeSec");		//報修類別(中類)
+			var ddl_cSRTypeThr = $("#ddl_cSRTypeThr");		//報修類別(小類)
+			var tbx_cKIND_KEY = $("#tbx_cKIND_KEY");		//類別代碼
+			var tbx_cKIND_NAME = $("#tbx_cKIND_NAME");		//類別說明
+			var ddl_cKIND_LEVEL = $("#ddl_cKIND_LEVEL");	//類別階層
+			var tbx_cUP_KIND_KEY = $("#tbx_cUP_KIND_KEY");	//父階代號
+
+			ddl_cSRTypeOne.show();
+			ddl_cSRTypeSec.show();
+			ddl_cSRTypeThr.show();
+
+			tbx_cKIND_KEY.attr('disabled', true);
+			ddl_cKIND_LEVEL.attr('disabled', true);
+			tbx_cUP_KIND_KEY.attr('disabled', true);			
+
+			if (cType == "ADD" && cIsDo != "Y") {
+				ddl_cKIND_LEVEL.val("1");		//預設為1.
+				tbx_cUP_KIND_KEY.val("0");		//預設為0.
+				AjaxfindSRRepairTypeKindKey("0", "", "");
+			}			
 
 			$("#dialog_pSRRepairType .dropzone").show();
 			$("#dialog_pSRRepairType").modal('show');
@@ -343,7 +381,7 @@
 			var tbx_cKIND_KEY = $("#tbx_cKIND_KEY");		//類別代碼
 			var tbx_cKIND_NAME = $("#tbx_cKIND_NAME");		//類別說明
 			var ddl_cKIND_LEVEL = $("#ddl_cKIND_LEVEL");	//類別階層
-			var tbx_cUP_KIND_KEY = $("#tbx_cUP_KIND_KEY");	//父階代號			
+			var tbx_cUP_KIND_KEY = $("#tbx_cUP_KIND_KEY");	//父階代號
 
 			ddl_cSRTypeOne.hide();
 			ddl_cSRTypeSec.hide();
@@ -370,7 +408,16 @@
 			var cIsDo = $("#hid_IsDoADD").val();	//是否已執行新增存檔過(Y.已執行 空白.未執行)
 
 			if (cType == "ADD" && cIsDo == "Y") {
-				//不做事
+
+				if ($('#ddl_cSRTypeSec').val() != ""){
+					AjaxfindSRRepairTypeKindKey("0", $('#ddl_cSRTypeOne').val(), $('#ddl_cSRTypeSec').val());
+				}
+				else if ($('#ddl_cSRTypeOne').val() != "") {
+					AjaxfindSRRepairTypeKindKey("0", $('#ddl_cSRTypeOne').val(), "");
+				}
+				else{
+					AjaxfindSRRepairTypeKindKey("0", "", "");
+				}
 			}
 			else {
 				$(popupId).find("input").each(function (index, value) {
@@ -404,13 +451,9 @@
 			var SRTypeThr = ddl_QuerycSRTypeThr.val();
 			var KIND_NAME = tbx_QuerycKIND_NAME.val();
 
+			if (SRTypeOne == null) SRTypeOne = "";
 			if (SRTypeSec == null) SRTypeSec = "";
 			if (SRTypeThr == null) SRTypeThr = "";			
-
-			if (SRTypeOne == "" && SRTypeSec == "" && SRTypeThr == "" && KIND_NAME == "")
-			{
-				tMsg += "請至少輸入一項查詢條件！\n";
-			}
 
 			if (tMsg != "") {
 				alert(tMsg);
@@ -548,16 +591,16 @@
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
 										count++;
-										<tr id='tr@(count)'>
-											<td style="width:100px;">
-												<button class="btn btn-info" type="button" onclick="EditSRRepairTypeDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
-												<button class="btn btn-danger" type="button" onclick="deleteSRRepairType('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
-											</td>
-											<td class="tdcKIND_KEY">@Html.Raw(QueryInfo[1])</td>
-											<td class="tdcKIND_NAME">@Html.Raw(QueryInfo[2])</td>
-											<td class="tdcKIND_LEVEL">@Html.Raw(QueryInfo[3])</td>
-											<td class="tdcUP_KIND_KEY">@Html.Raw(QueryInfo[4])</td>
-										</tr>
+																			<tr id='tr@(count)'>
+																				<td style="width:100px;">
+																					<button class="btn btn-info" type="button" onclick="EditSRRepairTypeDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+																					<button class="btn btn-danger" type="button" onclick="deleteSRRepairType('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+																				</td>
+																				<td class="tdcKIND_KEY">@Html.Raw(QueryInfo[1])</td>
+																				<td class="tdcKIND_NAME">@Html.Raw(QueryInfo[2])</td>
+																				<td class="tdcKIND_LEVEL">@Html.Raw(QueryInfo[3])</td>
+																				<td class="tdcUP_KIND_KEY">@Html.Raw(QueryInfo[4])</td>
+																			</tr>
 									}
 								}
 							}
@@ -583,10 +626,9 @@
 				<input type="hidden" id="hid_cID" />				
 				<div class="form-group row">
 					<label class="col-lg-2 col-form-label">類別代號*</label>
-					<div class="col-lg-10">
+					<div class="col-lg-10">						
 						@Html.DropDownList("ddl_cSRTypeOne", (IEnumerable<SelectListItem>)ViewBag.SRTypeOneList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeOne_EDIT();" })
-						@Html.DropDownList("ddl_cSRTypeSec", (IEnumerable<SelectListItem>)ViewBag.SRTypeSecList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeSec_EDIT();" })
-						@Html.DropDownList("ddl_cSRTypeThr", (IEnumerable<SelectListItem>)ViewBag.SRTypeThrList, new { @class = "form-control" })
+						@Html.DropDownList("ddl_cSRTypeSec", (IEnumerable<SelectListItem>)ViewBag.SRTypeSecList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeSec_EDIT();" })						
 						<input type="text" id="tbx_cKIND_KEY" name="tbx_cKIND_KEY" class="form-control" placeholder="類別代碼" disabled>
 					</div>
 				</div>

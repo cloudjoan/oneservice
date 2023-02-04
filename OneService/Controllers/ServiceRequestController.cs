@@ -2166,7 +2166,160 @@ namespace OneService.Controllers
 
             return View();
         }
-        #endregion      
+        #endregion
+
+        #region 儲存報修類別設定檔
+        /// <summary>
+        /// 儲存報修類別設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cKIND_KEY">類別代碼</param>
+        /// <param name="cKIND_NAME">類別說明</param>
+        /// <param name="cKIND_LEVEL">類別階層(1.大類 2.中類 3.小類)</param>
+        /// <param name="cUP_KIND_KEY">父階代號(0.父類 1.大類 2.中類)</param>
+        /// <returns></returns>
+        public ActionResult saveSRRepairType(string cID, string cKIND_KEY, string cKIND_NAME, string cKIND_LEVEL, string cUP_KIND_KEY)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            #endregion
+
+            string tMsg = string.Empty;
+
+            try
+            {
+                int result = 0;
+                if (cID == null)
+                {
+                    #region -- 新增 --
+                    var prBean = dbOne.TbOneSrrepairTypes.FirstOrDefault(x => x.Disabled == 0 && x.CKindKey == cKIND_KEY);
+
+                    if (prBean == null)
+                    {
+                        TbOneSrrepairType prBean1 = new TbOneSrrepairType();                        
+
+                        prBean1.CKindKey = cKIND_KEY;
+                        prBean1.CKindName = cKIND_NAME;
+                        prBean1.CKindNameEnUs = "";
+                        prBean1.CKindLevel = int.Parse(cKIND_LEVEL);
+                        prBean1.CUpKindKey = cUP_KIND_KEY;
+                        prBean1.Disabled = 0;
+
+                        prBean1.CreatedUserName = EmpBean.EmployeeCName;
+                        prBean1.CreatedDate = DateTime.Now;
+
+                        dbOne.TbOneSrrepairTypes.Add(prBean1);
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此報修類別代號已存在，請重新輸入！";
+                    }
+                    #endregion                
+                }
+                else
+                {
+                    #region -- 編輯 --
+                    var prBean = dbOne.TbOneSrrepairTypes.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                           x.CId.ToString() != cID &&
+                                                                           x.CKindKey == cKIND_KEY);
+                    if (prBean == null)
+                    {
+                        var prBean1 = dbOne.TbOneSrrepairTypes.FirstOrDefault(x => x.CId.ToString() == cID);
+
+                        prBean1.CKindName = cKIND_NAME;
+
+                        prBean1.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean1.ModifiedDate = DateTime.Now;
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此報修類別代號已存在，請重新輸入！";
+                    }
+                    #endregion
+                }
+                return Json(tMsg);
+            }
+            catch (Exception e)
+            {
+                return Json(e.Message);
+            }
+        }
+        #endregion
+
+        #region 刪除報修類別設定檔
+        /// <summary>
+        /// 刪除報修類別設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public ActionResult DeleteSRRepairType(string cID)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            #endregion
+
+            string reValue = string.Empty;
+
+            var ctBean = dbOne.TbOneSrrepairTypes.FirstOrDefault(x => x.CId.ToString() == cID);
+
+            if (ctBean != null)
+            {
+                string cKIND_KEY = ctBean.CKindKey;
+
+                var bean = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrtypeOne == cKIND_KEY || x.CSrtypeSec == cKIND_KEY || x.CSrtypeThr == cKIND_KEY);
+
+                if (bean == null)
+                {
+                    ctBean.Disabled = 1;
+                    ctBean.ModifiedUserName = EmpBean.EmployeeCName;
+                    ctBean.ModifiedDate = DateTime.Now;
+
+                    var result = dbOne.SaveChanges();
+
+                    if (result <= 0 )
+                    {
+                        reValue = "刪除失敗，請MIS確認資料是否有異常！";
+                    }
+                }
+                else
+                {
+                    reValue = "因該類別代號【" + cKIND_KEY + "】已存在服務主檔，不准許刪除！";
+                }
+            }            
+
+            return Json(reValue);
+        }
+        #endregion 
+
+        #region 傳入報修類別檔的0.父類、1.大類、2.中類，並取得最新的類別代號
+        /// <summary>
+        /// 傳入報修類別檔的0.父類、1.大類、2.中類，並取得最新的類別代號
+        /// </summary>
+        /// <param name="SRTypeZero">父類</param>
+        /// <param name="SRTypeOne">大類</param>
+        /// <param name="SRTypeSec">中類</param>
+        /// <returns></returns>
+        public IActionResult AjaxfindSRRepairTypeKindKey(string SRTypeZero, string SRTypeOne, string SRTypeSec)
+        {
+            string reValue = string.Empty;           
+
+            reValue = CMF.findSRRepairTypeKindKey(SRTypeZero, SRTypeOne, SRTypeSec);
+
+            return Json(reValue);
+        }
+        #endregion
 
         #endregion -----↑↑↑↑↑報修類別設定作業 ↑↑↑↑↑-----   
 

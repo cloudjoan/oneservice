@@ -846,6 +846,77 @@ namespace OneService.Controllers
         }
         #endregion       
 
+        #region 傳入報修類別檔的0.父類、1.大類、2.中類，並取得最新的類別代號
+        /// <summary>
+        /// 傳入報修類別檔的0.父類、1.大類、2.中類，並取得最新的類別代號
+        /// </summary>
+        /// <param name="SRTypeZero">父類</param>
+        /// <param name="SRTypeOne">大類</param>
+        /// <param name="SRTypeSec">中類</param>
+        /// <returns></returns>
+        public string findSRRepairTypeKindKey(string SRTypeZero, string SRTypeOne, string SRTypeSec)
+        {
+            string reValue = string.Empty;
+            string tTempKey = string.Empty;
+
+            int tCount = 0;
+
+            SRTypeOne = string.IsNullOrEmpty(SRTypeOne) ? "" : SRTypeOne.Trim();
+            SRTypeSec = string.IsNullOrEmpty(SRTypeSec) ? "" : SRTypeSec.Trim();
+
+            TbOneSrrepairType bean = new TbOneSrrepairType();
+
+            if (SRTypeSec != "")
+            {
+                bean = dbOne.TbOneSrrepairTypes.OrderByDescending(x => x.CKindKey).FirstOrDefault(x => x.Disabled == 0 && x.CKindLevel == 3 && x.CUpKindKey == SRTypeSec);
+
+                if (bean != null)
+                {
+                    //ex.ZC010101
+                    tTempKey = bean.CKindKey.Replace("ZC", "");
+                    tCount = int.Parse(tTempKey) + 1;
+
+                    reValue = "ZC" + tCount.ToString().PadLeft(6, '0');
+                }
+                else
+                {
+                    tTempKey = SRTypeSec.Replace("ZB", "");
+                    tCount = 1;
+
+                    reValue = "ZC" + tTempKey + tCount.ToString().PadLeft(2, '0');
+                }
+            }
+            else if (SRTypeOne != "")
+            {
+                bean = dbOne.TbOneSrrepairTypes.OrderByDescending(x => x.CKindKey).FirstOrDefault(x => x.Disabled == 0 && x.CKindLevel == 2 && x.CUpKindKey == SRTypeOne);
+
+                if (bean != null)
+                {
+                    //ex.ZB0101
+                    tTempKey = bean.CKindKey.Replace("ZB", "");
+                    tCount = int.Parse(tTempKey) + 1;
+
+                    reValue = "ZB" + tCount.ToString().PadLeft(4, '0');
+                }
+            }
+            else
+            {
+                bean = dbOne.TbOneSrrepairTypes.OrderByDescending(x => x.CKindKey).FirstOrDefault(x => x.Disabled == 0 && x.CKindLevel == 1 && x.CUpKindKey == SRTypeZero);
+
+                if (bean != null)
+                {
+                    //ex.ZA01
+                    tTempKey = bean.CKindKey.Replace("ZA", "");
+                    tCount = int.Parse(tTempKey) + 1;
+
+                    reValue = "ZA" + tCount.ToString().PadLeft(2, '0');
+                }
+            }
+
+            return reValue;
+        }
+        #endregion       
+
         #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
