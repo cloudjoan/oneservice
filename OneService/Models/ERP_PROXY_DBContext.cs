@@ -23,6 +23,7 @@ namespace OneService.Models
         public virtual DbSet<PostalaAddressAndCode> PostalaAddressAndCodes { get; set; } = null!;
         public virtual DbSet<Stockall> Stockalls { get; set; } = null!;
         public virtual DbSet<Stockwty> Stockwties { get; set; } = null!;
+        public virtual DbSet<TbMailContent> TbMailContents { get; set; } = null!;
         public virtual DbSet<ViewCustomer2> ViewCustomer2s { get; set; } = null!;
         public virtual DbSet<ViewMaterialByComp> ViewMaterialByComps { get; set; } = null!;
 
@@ -578,7 +579,7 @@ namespace OneService.Models
                     .HasComment("簽約對象身分");
 
                 entity.Property(e => e.Wp)
-                    .HasMaxLength(150)
+                    .HasMaxLength(255)
                     .HasColumnName("WP")
                     .HasComment("保固期間");
 
@@ -918,6 +919,22 @@ namespace OneService.Models
                     .HasMaxLength(20)
                     .IsUnicode(false)
                     .HasColumnName("UP_USER");
+            });
+
+            modelBuilder.Entity<TbMailContent>(entity =>
+            {
+                entity.ToTable("TB_MAIL_CONTENT");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.MailContent)
+                    .HasColumnName("MAIL_CONTENT")
+                    .HasComment("郵件內容");
+
+                entity.Property(e => e.MailType)
+                    .HasMaxLength(50)
+                    .HasColumnName("MAIL_TYPE")
+                    .HasComment("郵件類型");
             });
 
             modelBuilder.Entity<ViewCustomer2>(entity =>

@@ -222,7 +222,7 @@
 		//要略過的清單(Input)
 		function checkInputSkipList(tID)
 		{
-			var ArrayList = ["tbx_cRepairName","tbx_cRepairAddress","tbx_cRepairPhone","tbx_cRepairEmail","tbx_cContacterName","tbx_cContactAddress","tbx_cContactPhone","tbx_cContactEmail", "tbx_cTeamName", "tbx_cAssEngineerName", "tbx_REcWorkHours"]; 
+			var ArrayList = ["tbx_cRepairName","tbx_cRepairAddress","tbx_cRepairPhone","tbx_cRepairEmail","tbx_cContactName","tbx_cContactAddress","tbx_cContactPhone","tbx_cContactEmail", "tbx_cTeamName", "tbx_cAssEngineerName", "tbx_REcWorkHours"]; 
 			return SkiptList(tID, ArrayList);
 		}
 
@@ -250,7 +250,7 @@
 		//要略過的清單(file-box)
 		function checkFileboxSkipList(tID)
 		{
-			var ArrayList = ["tbx_cRepairName","tbx_cRepairAddress","tbx_cRepairPhone","tbx_cRepairEmail","tbx_cContacterName","tbx_cContactAddress","tbx_cContactPhone","tbx_cContactEmail"]; 			
+			var ArrayList = ["tbx_cRepairName","tbx_cRepairAddress","tbx_cRepairPhone","tbx_cRepairEmail","tbx_cContactName","tbx_cContactAddress","tbx_cContactPhone","tbx_cContactEmail"]; 			
 			return SkiptList(tID, ArrayList);
 		}
 
@@ -349,7 +349,7 @@
 			var tbx_cRepairPhone = $("#tbx_cRepairPhone");			//電話(報修人)
 			var tbx_cRepairEmail	= $("#tbx_cRepairEmail");			//Email(報修人)
 
-			var tbx_cContacterName = $("#tbx_cContacterName");		//姓名(聯絡人)
+			var tbx_cContactName = $("#tbx_cContactName");			//姓名(聯絡人)
 			var tbx_cContactAddress = $("#tbx_cContactAddress");		//地址(聯絡人)
 			var tbx_cContactPhone = $("#tbx_cContactPhone");			//電話(聯絡人)
 			var tbx_cContactEmail	= $("#tbx_cContactEmail");			//Email(聯絡人)
@@ -430,7 +430,7 @@
 				Msg += "【Email(報修人)】不得為空！\n";
 			}
 
-			if (tbx_cContacterName.val() == "") {
+			if (tbx_cContactName.val() == "") {
 				Msg += "【姓名(聯絡人)】不得為空！\n";
 			}
 
@@ -778,7 +778,7 @@
 			});	
 
 			//儲存前將姓名(聯絡人)設為可改，後端才能儲存
-			$(".ContacterName").each(function () {
+			$(".ContactName").each(function () {
 				var obj = $(this);
 				obj.prop('disabled', IsDisabled);
 			});
@@ -1249,7 +1249,7 @@
 			var tbx_cRepairPhone = $("#tbx_cRepairPhone");		//電話(報修人)
 			var tbx_cRepairEmail = $("#tbx_cRepairEmail");		//Email(報修人)
 
-			var tbx_cContacterName = $("#tbx_cContacterName");	//姓名(聯絡人)
+			var tbx_cContactName = $("#tbx_cContactName");		//姓名(聯絡人)
 			var tbx_cContactAddress = $("#tbx_cContactAddress"); //地址(聯絡人)
 			var tbx_cContactPhone = $("#tbx_cContactPhone");		//電話(聯絡人)
 			var tbx_cContactEmail	= $("#tbx_cContactEmail");		//Email(聯絡人)
@@ -1267,7 +1267,7 @@
 			}
 			else
 			{
-				tbx_cContacterName.val(Name);
+				tbx_cContactName.val(Name);
 				tbx_cContactAddress.val(City + Address);
 				tbx_cContactPhone.val(phone);
 				tbx_cContactEmail.val(Email);
@@ -1285,8 +1285,8 @@
 		}
 
 		//清除客戶聯絡人
-		function clearContacterName() {
-			$("#tbx_cContacterName").val('');		//姓名(聯絡人)
+		function clearContactName() {
+			$("#tbx_cContactName").val('');		//姓名(聯絡人)
 			$("#tbx_cContactAddress").val('');		//地址(聯絡人)
 			$("#tbx_cContactPhone").val('');		//電話(聯絡人)
 			$("#tbx_cContactEmail").val('');		//Email(聯絡人)
@@ -2948,11 +2948,11 @@
 									</div>
 									<div class="hr-line-dashed"></div>
 									<div class="form-group row">
-										<button id="btn_showContactInfo" class="btn btn-info showContactInfo" type="button" onclick="showContactInfo('tbx_cContacterName');">
+										<button id="btn_showContactInfo" class="btn btn-info showContactInfo" type="button" onclick="showContactInfo('tbx_cContactName');">
 											<i class="fa fa-user-circle-o" style="font-size: 16px;"></i>
 											<span style="font-weight: bold; margin: 5px;">選擇客戶聯絡人</span>
 										</button>
-										<button id="btn_clearContactInfo" class="btn btn-default btn-lg" type="button" onclick="clearContacterName();">
+										<button id="btn_clearContactInfo" class="btn btn-default btn-lg" type="button" onclick="clearContactName();">
 											<i class="fa fa-trash"></i>
 											<span style="font-weight: bold; margin: 5px;">清除客戶聯絡人</span>
 										</button>										
@@ -2960,7 +2960,7 @@
 									<div class="form-group row">
 										<label class="col-lg-2 col-form-label">*姓名(聯絡人)</label>
 										<div class="col-lg-4">
-											<input type="text" id="tbx_cContacterName" name="tbx_cContacterName" class="form-control ContacterName" placeholder="姓名" value="@ViewBag.cContacterName" title="@ViewBag.cContacterName" disabled>
+											<input type="text" id="tbx_cContactName" name="tbx_cContactName" class="form-control ContactName" placeholder="姓名" value="@ViewBag.cContactName" title="@ViewBag.cContactName" disabled>
 										</div>
 										<label class="col-lg-2 col-form-label">*地址(聯絡人)</label>
 										<div class="col-lg-4">

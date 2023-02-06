@@ -239,7 +239,7 @@ namespace OneService.Controllers
                 ViewBag.cRepairPhone = beanM.CRepairPhone;
                 ViewBag.cRepairEmail = beanM.CRepairEmail;
 
-                ViewBag.cContacterName = beanM.CContacterName;
+                ViewBag.cContactName = beanM.CContactName;
                 ViewBag.cContactAddress = beanM.CContactAddress;
                 ViewBag.cContactPhone = beanM.CContactPhone;
                 ViewBag.cContactEmail = beanM.CContactEmail;
@@ -344,7 +344,7 @@ namespace OneService.Controllers
             string CRepairAddress = formCollection["tbx_cRepairAddress"].FirstOrDefault();
             string CRepairPhone = formCollection["tbx_cRepairPhone"].FirstOrDefault();
             string CRepairEmail = formCollection["tbx_cRepairEmail"].FirstOrDefault();
-            string CContacterName = formCollection["tbx_cContacterName"].FirstOrDefault();
+            string CContactName = formCollection["tbx_cContactName"].FirstOrDefault();
             string CContactAddress = formCollection["tbx_cContactAddress"].FirstOrDefault();
             string CContactPhone = formCollection["tbx_cContactPhone"].FirstOrDefault();
             string CContactEmail = formCollection["tbx_cContactEmail"].FirstOrDefault();
@@ -386,7 +386,7 @@ namespace OneService.Controllers
                     beanM.CRepairAddress = CRepairAddress;
                     beanM.CRepairPhone = CRepairPhone;
                     beanM.CRepairEmail = CRepairEmail;
-                    beanM.CContacterName = CContacterName;
+                    beanM.CContactName = CContactName;
                     beanM.CContactAddress = CContactAddress;
                     beanM.CContactPhone = CContactPhone;
                     beanM.CContactEmail = CContactEmail;
@@ -529,7 +529,7 @@ namespace OneService.Controllers
                     beanNowM.CRepairAddress = CRepairAddress;
                     beanNowM.CRepairPhone = CRepairPhone;
                     beanNowM.CRepairEmail = CRepairEmail;
-                    beanNowM.CContacterName = CContacterName;
+                    beanNowM.CContactName = CContactName;
                     beanNowM.CContactAddress = CContactAddress;
                     beanNowM.CContactPhone = CContactPhone;
                     beanNowM.CContactEmail = CContactEmail;

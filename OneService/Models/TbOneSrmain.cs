@@ -24,7 +24,7 @@ namespace OneService.Models
         public string? CRepairAddress { get; set; }
         public string? CRepairPhone { get; set; }
         public string? CRepairEmail { get; set; }
-        public string? CContacterName { get; set; }
+        public string? CContactName { get; set; }
         public string? CContactAddress { get; set; }
         public string? CContactPhone { get; set; }
         public string? CContactEmail { get; set; }

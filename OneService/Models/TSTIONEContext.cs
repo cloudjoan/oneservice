@@ -101,6 +101,18 @@ namespace OneService.Models
 
                 entity.Property(e => e.CId).HasColumnName("cID");
 
+                entity.Property(e => e.CContactEmail)
+                    .HasMaxLength(200)
+                    .HasColumnName("cContactEmail");
+
+                entity.Property(e => e.CContactName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cContactName");
+
+                entity.Property(e => e.CContactPhone)
+                    .HasMaxLength(50)
+                    .HasColumnName("cContactPhone");
+
                 entity.Property(e => e.CCustomerId)
                     .HasMaxLength(10)
                     .HasColumnName("cCustomerID");
@@ -222,7 +234,7 @@ namespace OneService.Models
                     .HasColumnName("cMaterialID");
 
                 entity.Property(e => e.CMaterialName)
-                    .HasMaxLength(40)
+                    .HasMaxLength(255)
                     .HasColumnName("cMaterialName");
 
                 entity.Property(e => e.CProductNumber)
@@ -432,13 +444,13 @@ namespace OneService.Models
                     .HasMaxLength(200)
                     .HasColumnName("cContactEmail");
 
+                entity.Property(e => e.CContactName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cContactName");
+
                 entity.Property(e => e.CContactPhone)
                     .HasMaxLength(50)
                     .HasColumnName("cContactPhone");
-
-                entity.Property(e => e.CContacterName)
-                    .HasMaxLength(40)
-                    .HasColumnName("cContacterName");
 
                 entity.Property(e => e.CCustomerId)
                     .HasMaxLength(10)

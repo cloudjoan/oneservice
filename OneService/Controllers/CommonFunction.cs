@@ -20,6 +20,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using NuGet.Packaging.Signing;
 using System.Numerics;
+using System.Collections.Specialized;
+using System.Net;
+using System.Web;
 
 namespace OneService.Controllers
 {
@@ -1639,6 +1642,301 @@ namespace OneService.Controllers
             dbOne.TbOneLogs.Add(logBean);
             dbOne.SaveChanges();
             #endregion
+        }
+        #endregion
+
+        #region 呼叫寄送Mail
+        /// <summary>
+        /// 呼叫寄送Mail
+        /// </summary>
+        /// <param name="tMailToTemp">收件者</param>
+        /// <param name="tMailCcTemp">副本</param>
+        /// <param name="tMailBCcTemp">密件副本</param>
+        /// <param name="cFormNo">借用單號</param>
+        /// <param name="cApplicationType">申請類型(REPAIR.備品維修 INTERNAL.內部借用)</param>
+        /// <param name="cApplicationNote">申請說明</param>
+        /// <param name="tNextStage">下個階段</param>
+        /// <param name="tStageName">狀態說明</param>
+        /// <param name="tStageName2">狀態說明2</param>
+        /// <param name="cApplyUser_Name">申請人姓名</param>
+        /// <param name="cFillUser_Name">填表人姓名</param>
+        /// <param name="cSRCustName">客戶名稱</param>
+        /// <param name="cSRNote">服務請求說明</param>
+        /// <param name="cSRID">SRID</param>
+        /// <param name="cSRInfo">主機訊息</param>
+        /// <param name="cStartDate">內部借用(起)</param>
+        /// <param name="cEndDate">內部借用(迄)</param>
+        /// <param name="CreatedDate">建立時間</param>
+        /// <param name="tComment">備註說明</param>
+        /// <param name="tIsFinished">是否結案(Y.結案 N.未結案)</param>
+        private void WSSpareSendMail(string tMailToTemp, string tMailCcTemp, string tMailBCcTemp, string cFormNo, string cApplicationType, string cApplicationNote,
+                                   string tNextStage, string tStageName, string tStageName2, string cApplyUser_Name, string cFillUser_Name,
+                                   string cSRCustName, string cSRNote, string cSRID, string cSRInfo, string cStartDate, string cEndDate,
+                                   string CreatedDate, string tComment, string tIsFinished)
+        {
+            List<string> tMailToList = new List<string>();
+            List<string> tMailCcList = new List<string>();
+            List<string> tMailBCcList = new List<string>();
+
+            string tMailTo = string.Empty;          //收件者            
+            string tMailCc = string.Empty;          //副本            
+            string tMailBCc = string.Empty;         //密件副本
+            string tHypeLink = string.Empty;        //超連結
+            string tSeverName = string.Empty;       //主機名稱
+
+            //bool tIsFormal = getCallSAPERPPara(); //是否為正式區(true.是 false.不是)
+
+            //if (tIsFormal)
+            //{
+            //    tSeverName = "psip-prd-ap";
+            //}
+            //else
+            //{
+            //    tSeverName = "psip-qas";
+            //}
+
+            #region 取得收件者
+            if (tMailToTemp != "")
+            {
+                foreach (string tValue in tMailToTemp.TrimEnd(';').Split(';'))
+                {
+                    if (!tMailToList.Contains(tValue))
+                    {
+                        tMailToList.Add(tValue);
+
+                        tMailTo += tValue + ";";
+                    }
+                }
+
+                tMailTo = tMailTo.TrimEnd(';');
+            }
+            #endregion
+
+            #region 取得副本
+            if (tMailCcTemp != "")
+            {
+                foreach (string tValue in tMailCcTemp.TrimEnd(';').Split(';'))
+                {
+                    if (!tMailCcList.Contains(tValue))
+                    {
+                        tMailCcList.Add(tValue);
+
+                        tMailCc += tValue + ";";
+                    }
+                }
+
+                tMailCc = tMailCc.TrimEnd(';');
+            }
+            #endregion
+
+            #region 取得密件副本
+            if (tMailBCcTemp != "")
+            {
+                foreach (string tValue in tMailBCcTemp.TrimEnd(';').Split(';'))
+                {
+                    if (!tMailBCcList.Contains(tValue))
+                    {
+                        tMailBCcList.Add(tValue);
+
+                        tMailBCc += tValue + ";";
+                    }
+                }
+
+                tMailBCc = tMailBCc.TrimEnd(';');
+            }
+            #endregion
+
+            #region 是否為測試區
+            string strTest = string.Empty;
+
+            if (!pIsFormal)
+            {
+                strTest = "【*測試*】";
+            }
+            #endregion
+
+            #region 郵件主旨
+            //備品維修
+            //(待發料)備品維修_陳大明_台灣大哥大股份有限公司_8100002643
+            //((狀態)借用類型_申請人_客戶_SRID)
+
+            //內部借用
+            //(待備品主管判斷備品周轉)內部借用_陳大明_20201001～20201031
+            //((狀態)借用類型_申請人_借用起訖)
+
+            string tMailSubject = string.Empty;
+
+            if (cApplicationType == "備品維修")
+            {
+                tMailSubject = strTest + "(" + tStageName + ")" + cApplicationType + "_" + cApplyUser_Name + "_" + cSRCustName + "_" + cSRID;
+            }
+            else if (cApplicationType == "內部借用")
+            {
+                tMailSubject = strTest + "(" + tStageName + ")" + cApplicationType + "_" + cApplyUser_Name + "_" + cStartDate + "～" + cEndDate;
+            }
+            #endregion
+
+            #region 郵件內容
+
+            #region 內容格式參考(備品維修)                
+            //備品借用單SP-20200701-0010請協助發料，謝謝。
+            //[服務案件明細]
+            //服務案件ID: 8100002643
+            //借用人:田巧如
+            //填表人:吳若華
+            //建立時間: 2020/10/08 12:58:05
+            //客戶名稱: 台灣大哥大股份有限公司
+            //需求說明: 【網路報修】加盟店-電腦維修無法連結印表機
+            //主機訊息(序號，主機P/N，主機規格/說明): SGH747T67N，OOO，DL360
+
+            //[備品待辦清單]
+            //查看待辦清單 =>超連結(http://psip-qas/Spare/Index?FormNo=SP-20200701-0010&SRID=8100002643&NowStage=3)
+
+            //-------此信件由系統管理員發出，請勿回覆此信件-------
+            #endregion
+
+            #region 內容格式參考(內部借用)                
+            //備品借用單SP-20200701-0010請協助判斷備品周轉，謝謝。
+            //[服務案件明細]
+            //借用人:田巧如
+            //填表人:吳若華
+            //建立時間: 2020/10/08 12:58:05
+            //借用起訖: 20201001~20201031
+            //申請說明: POC電腦維修無法連結印表機
+
+            //[備品待辦清單]
+            //查看待辦清單 =>超連結(http://psip-qas/Spare/Index?FormNo=SP-20200701-0010&NowStage=2)
+
+            //-------此信件由系統管理員發出，請勿回覆此信件-------
+            #endregion
+
+            string tMailBody = string.Empty;
+
+            if (tNextStage == "2" || tNextStage == "13" || tNextStage == "14") //周轉確認、借A還B、除帳
+            {
+                tHypeLink = "http://" + tSeverName + "/Spare/Index?FormNo=" + cFormNo + "&SRID=" + cSRID + "&NowStage=" + tNextStage;
+            }
+            else
+            {
+                if (tIsFinished == "Y")
+                {
+                    tHypeLink = "http://" + tSeverName + "/Spare/Index?FormNo=" + cFormNo + "&SRID=" + cSRID + "&NowStage=" + tNextStage + "&ActionType=History";
+                }
+                else
+                {
+                    tHypeLink = "http://" + tSeverName + "/Spare/ToDoList";
+                }
+            }
+
+            if (cApplicationType == "備品維修")
+            {
+                tMailBody = GetMailBody("WSSpareREPAIR_MAIL");
+
+                tMailBody = tMailBody.Replace("【<cFormNo>】", cFormNo).Replace("【<tStageName2>】", tStageName2).Replace("【<cSRID>】", cSRID);
+                tMailBody = tMailBody.Replace("【<cApplyUser_Name>】", cApplyUser_Name).Replace("【<cFillUser_Name>】", cFillUser_Name);
+                tMailBody = tMailBody.Replace("【<CreatedDate>】", CreatedDate).Replace("【<cSRCustName>】", cSRCustName).Replace("【<cSRNote>】", cSRNote);
+                tMailBody = tMailBody.Replace("【<cSRInfo>】", cSRInfo).Replace("【<tNextStage>】", tNextStage).Replace("【<tComment>】", tComment).Replace("【<tHypeLink>】", tHypeLink);
+            }
+            else if (cApplicationType == "內部借用")
+            {
+                tMailBody = GetMailBody("WSSpareINTERNAL_MAIL");
+
+                tMailBody = tMailBody.Replace("【<cFormNo>】", cFormNo).Replace("【<tStageName2>】", tStageName2);
+                tMailBody = tMailBody.Replace("【<cApplyUser_Name>】", cApplyUser_Name).Replace("【<cFillUser_Name>】", cFillUser_Name);
+                tMailBody = tMailBody.Replace("【<CreatedDate>】", CreatedDate).Replace("【<cStartDate>】", cStartDate).Replace("【<cEndDate>】", cEndDate);
+                tMailBody = tMailBody.Replace("【<cApplicationNote>】", cApplicationNote).Replace("【<cSRInfo>】", cSRInfo).Replace("【<tNextStage>】", tNextStage);
+                tMailBody = tMailBody.Replace("【<tComment>】", tComment).Replace("【<tHypeLink>】", tHypeLink);
+            }
+            #endregion
+
+            //呼叫寄送Mail
+            SendMailByAPI("WSSpareSend", null, tMailTo, tMailCc, tMailBCc, tMailSubject, tMailBody, "", "");
+
+        }
+        #endregion
+
+        #region 取得Mail Body
+        /// <summary>
+        /// 取得Mail Body
+        /// </summary>
+        /// <param name="tMAIL_TYPE">MAIL TYPE</param>
+        /// <returns></returns>
+        public string GetMailBody(string tMAIL_TYPE)
+        {
+            string reValue = string.Empty;
+
+            var bean = dbProxy.TbMailContents.FirstOrDefault(x => x.MailType == tMAIL_TYPE);            
+
+            if (bean != null)
+            {
+                reValue = bean.MailContent;
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 以訊息中心發送Mail(新版)
+        /// <summary>
+        /// Email寄送 API
+        /// </summary>
+        /// <param name="eventName">事件名稱 </param>
+        /// <param name="sender">設定寄件者：如為空或 null，則預設用 IC@etatung.com為寄件者 </param>
+        /// <param name="recipients">收件者：用 ;分隔 </param>
+        /// <param name="ccs">副本：用 ;分隔。如果沒有，就給空值或 null</param>
+        /// <param name="bccs">密碼副本：用 ;分隔。如果沒有，就給空值或 null</param>
+        /// <param name="subject">標題 </param>
+        /// <param name="content">內容 </param>
+        /// <param name="attachFileNames">附檔檔名：用 ;分隔 (※項目必需跟附檔路徑匹配 )。如果沒有，就給空值或 null</param>
+        /// <param name="attachFilePaths">附檔路徑：用 ;分隔 (※項目必需跟附檔檔名匹配 )。如果沒有，就給空值或 null</param>
+        public void SendMailByAPI(string eventName, string sender, string recipients, string ccs, string bccs, string subject, string content, string attachFileNames, string attachFilePaths)
+        {
+            WebRequest browser = WebRequest.Create("http://psip-prd-ap:8080/Ajax/SendMailAPI");
+            browser.Method = "POST";
+            browser.ContentType = "application/x-www-form-urlencoded";
+
+            //附檔轉換成附檔轉換成base64
+            List<string> attachFileBase64s = new List<string>();
+            if (!string.IsNullOrEmpty(attachFilePaths))
+            {
+                var _attachFilePaths = attachFilePaths.Split(';');
+                foreach (var attachFilePath in _attachFilePaths)
+                {
+                    attachFileBase64s.Add(Convert.ToBase64String(System.IO.File.ReadAllBytes(attachFilePath)));
+                }
+            }
+
+            NameValueCollection postParams = HttpUtility.ParseQueryString(string.Empty);
+            postParams.Add("eventName", eventName);
+            postParams.Add("sender", sender);
+            postParams.Add("recipients", recipients);
+            postParams.Add("ccs", ccs);
+            postParams.Add("bccs", bccs);
+            postParams.Add("subject", subject);
+            postParams.Add("content", content);
+            postParams.Add("attachFileNames", attachFileNames);
+            postParams.Add("attachFileBase64s", string.Join(";", attachFileBase64s));
+
+            //要發送的字串轉為要發送的字串轉為byte[]
+            byte[] byteArray = Encoding.UTF8.GetBytes(postParams.ToString());
+            using (Stream reqStream = browser.GetRequestStream())
+            {
+                reqStream.Write(byteArray, 0, byteArray.Length);
+            }//end using
+
+            //API回傳的字串回傳的字串
+            string responseStr = "";
+
+            //發出發出Request
+            using (WebResponse response = browser.GetResponse())
+            {
+                using (StreamReader sr = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+                {
+                    responseStr = sr.ReadToEnd();
+                }//end using
+            }
+
+            System.Diagnostics.Debug.WriteLine(responseStr);
         }
         #endregion
 
