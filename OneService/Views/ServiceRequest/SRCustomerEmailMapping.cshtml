@@ -10,6 +10,7 @@
 			initTable();
 			SRCustomerSearch();
 			CustSearch();
+			ContactInfoSearch();
 		});
 
 		function initTable() {
@@ -56,7 +57,7 @@
 						text: '匯出Excel',
 						sheetName: '客戶Email對照設定檔作業',
 						exportOptions: {
-							columns: [1, 2, 3, 4, 5] //要顯示的欄位
+							columns: [1, 2, 3, 4, 5, 6, 7, 8] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							var sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -66,6 +67,9 @@
 							$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
 							$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
 							$('row c[r^="E"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="F"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="G"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="H"]', sheet).attr('s', '0');	//設成文字格式
 						}
 					}),
 				],
@@ -171,7 +175,73 @@
 			})
 		}
 
-		
+		//客戶聯絡人資訊查詢
+		function ContactInfoSearch() {
+			var compcde = $("#hid_cLoginUser_CompCode").val();
+			var cBUKRS = $("#hid_cLoginUser_BUKRS").val();		//公司別
+			var tbx_cCustomerID = $("#tbx_cCustomerID");		//客戶代號			
+			var tbx_cContactName = $("#tbx_cContactName");		//客戶聯絡人姓名
+			var tbx_cContactPhone = $("#tbx_cContactPhone");		//客戶聯絡人電話
+			var tbx_cContactEmail = $("#tbx_cContactEmail");		//客戶聯絡人E-Mail
+
+			$(".ContactInfo").unbind();
+
+			$(".ContactInfo").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+
+						if (tbx_cCustomerID.val() == "") {
+							alert("您尚未輸入客戶代號！");
+						}
+						else
+						{
+							var keyword = $(this).val();
+							if (keyword.length > 1) {
+								var obj = $(this);
+								$.ajax({
+									url: '@Url.Action("findContactInfoByKeywordAndComp", "ServiceRequest")',
+									type: 'post',
+									dataType: 'json',
+									data: { 
+										functionName: 'findContactInfoByKeywordAndComp',
+										cBUKRS: cBUKRS,
+										CustomerID: tbx_cCustomerID.val(),
+										ContactName: tbx_cContactName.val()
+									},
+									success: function (result) {
+										Customers = [];
+										$.each(result, function (i, idata) {
+											Customers[i] = {
+												label: idata.name + "\\" + idata.phone, //顯示在清單的東西
+												idx: i,
+												value: idata.name, //這個是要填入textbox的值
+												Phone: idata.phone,
+												Email: idata.email,
+											};
+										});
+
+										//綁定foucs事件
+										obj.autocomplete({
+											source: Customers,
+											select: function (event, ui) {												
+												tbx_cContactPhone.val(ui.item.Phone);
+												tbx_cContactEmail.val(ui.item.Email);
+											}
+										}).bind('focus', function () { $(this).autocomplete("search"); });
+
+										//開啟autocomplete選單
+										obj.focus();
+										$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
+									}
+								})
+							}
+						}
+					}
+
+				}
+			})
+		}
 
 		//儲存明細
 		function saveCustomerEmail() {
@@ -184,6 +254,9 @@
 			var tbx_cCustomerName = $("#tbx_cCustomerName");		//客戶名稱
 			var ddl_cTeamID = $("#ddl_cTeamID");				//服務團隊ID
 			var tbx_cEmailID = $("#tbx_cEmailID");				//Email網域名稱
+			var tbx_cContactName = $("#tbx_cContactName");		//客戶聯絡人姓名
+			var tbx_cContactPhone = $("#tbx_cContactPhone");		//客戶聯絡人電話
+			var tbx_cContactEmail = $("#tbx_cContactEmail");		//客戶聯絡人E-Mail
 
 			if (tbx_cCustomerID.val() == "") {
 				strMsg += "客戶代號不得為空！\n";
@@ -193,12 +266,24 @@
 				strMsg += "客戶名稱不得為空！\n";
 			}
 
-			if (ddl_cTeamID.val() == "-1") {
+			if (ddl_cTeamID.val() == "") {
 				strMsg += "請選擇服務團隊ID！\n";
 			}
 
 			if (tbx_cEmailID.val() == "") {
 				strMsg += "Email網域名稱不得為空！\n";
+			}
+
+			if (tbx_cContactName.val() == "") {
+				strMsg += "客戶聯絡人姓名不得為空！\n";
+			}
+
+			if (tbx_cContactPhone.val() == "") {
+				strMsg += "客戶聯絡人電話不得為空！\n";
+			}
+
+			if (tbx_cContactEmail.val() == "") {
+				strMsg += "客戶聯絡人E-Mail不得為空！\n";
 			}
 
 			if (strMsg != "") {
@@ -216,7 +301,10 @@
 						cCustomerID: tbx_cCustomerID.val(),
 						cCustomerName: tbx_cCustomerName.val(),
 						cTeamID: ddl_cTeamID.val(),
-						cEmailID: tbx_cEmailID.val()
+						cEmailID: tbx_cEmailID.val(),
+						cContactName: tbx_cContactName.val(),
+						cContactPhone: tbx_cContactPhone.val(),
+						cContactEmail: tbx_cContactEmail.val()
 					},
 					success: function (result) {
 						if (result == "") {
@@ -269,6 +357,9 @@
 			$("#tbx_cCustomerID").removeAttr("disabled");	//客戶代號
 			$("#ddl_cTeamID").removeAttr("disabled");		//服務團隊ID
 			$("#ddl_cTeamID").val("");
+			$("#tbx_cContactName").removeAttr("disabled");	//客戶聯絡人姓名
+			$("#tbx_cContactPhone").attr('disabled', true);
+			$("#tbx_cContactEmail").attr('disabled', true);
 
 			$("#dialog_pCustomerEmail .dropzone").show();
 			$("#dialog_pCustomerEmail").modal('show');
@@ -286,9 +377,14 @@
 			var tbx_cCustomerName = $("#tbx_cCustomerName");		//客戶名稱
 			var ddl_cTeamID = $("#ddl_cTeamID");				//服務團隊ID
 			var tbx_cEmailID = $("#tbx_cEmailID");				//Email網域名稱
+			var tbx_cContactName = $("#tbx_cContactName");		//客戶聯絡人姓名
+			var tbx_cContactPhone = $("#tbx_cContactPhone");		//客戶聯絡人電話
+			var tbx_cContactEmail = $("#tbx_cContactEmail");		//客戶聯絡人E-Mail
 
-			tbx_cCustomerID.attr('disabled', true);			
-			ddl_cTeamID.attr('disabled', true);
+			tbx_cCustomerID.attr('disabled', true);
+			ddl_cTeamID.attr('disabled', true);			
+			tbx_cContactPhone.attr('disabled', true);
+			tbx_cContactEmail.attr('disabled', true);
 
 			//設定各欄位資料
 			hid_cID.val(cID);
@@ -296,6 +392,9 @@
 			tbx_cCustomerName.val($(obj).parent().parent().find('.tdcCustomerName').text());
 			ddl_cTeamID.val($(obj).parent().parent().find('.tdcTeamID').text());
 			tbx_cEmailID.val($(obj).parent().parent().find('.tdcEmailID').text());
+			tbx_cContactName.val($(obj).parent().parent().find('.tdcContactName').text());
+			tbx_cContactPhone.val($(obj).parent().parent().find('.tdcContactPhone').text());
+			tbx_cContactEmail.val($(obj).parent().parent().find('.tdcContactEmail').text());
 
 			$("#dialog_pCustomerEmail .dropzone").show();
 			$("#dialog_pCustomerEmail").modal('show');
@@ -412,6 +511,8 @@
 						<input type="hidden" id="hid_IsDoADD" />
 						<!--登人者公司別-->
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+						<!--登人者工廠別-->
+						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">客戶代號</label>
 							<div class="col-lg-4">
@@ -452,30 +553,36 @@
 								<th>服務團隊ID</th>
 								<th>服務團隊名稱</th>
 								<th>Email網域名稱</th>
+								<th>客戶聯絡人姓名</th>
+								<th>客戶聯絡人電話</th>
+								<th>客戶聯絡人E-Mail</th>
 							</tr>
 						</thead>
 						<tbody>
 							@{
-								if (ViewBag.QueryToListBean != null)
+							if (ViewBag.QueryToListBean != null)
+							{
+								int count = 0;
+								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
-									int count = 0;
-									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
-									{
-										count++;
-													<tr id='tr@(count)'>
-														<td style="width:100px;">
-															<button class="btn btn-info" type="button" onclick="EditCustomerEmailDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
-															<button class="btn btn-danger" type="button" onclick="deleteCustomerEmail('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
-														</td>
-														<td class="tdcCustomerID">@Html.Raw(QueryInfo[1])</td>
-														<td class="tdcCustomerName">@Html.Raw(QueryInfo[2])</td>
-														<td class="tdcTeamID">@Html.Raw(QueryInfo[3])</td>
-														<td class="tdcTeamName">@Html.Raw(QueryInfo[4])</td>
-														<td class="tdcEmailID">@Html.Raw(QueryInfo[5])</td>
-													</tr>
-									}
+									count++;
+									<tr id='tr@(count)'>
+										<td style="width:100px;">
+											<button class="btn btn-info" type="button" onclick="EditCustomerEmailDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+											<button class="btn btn-danger" type="button" onclick="deleteCustomerEmail('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+										</td>
+										<td class="tdcCustomerID">@Html.Raw(QueryInfo[1])</td>
+										<td class="tdcCustomerName">@Html.Raw(QueryInfo[2])</td>
+										<td class="tdcTeamID">@Html.Raw(QueryInfo[3])</td>
+										<td class="tdcTeamName">@Html.Raw(QueryInfo[4])</td>
+										<td class="tdcEmailID">@Html.Raw(QueryInfo[5])</td>
+										<td class="tdcContactName">@Html.Raw(QueryInfo[6])</td>
+										<td class="tdcContactPhone">@Html.Raw(QueryInfo[7])</td>
+										<td class="tdcContactEmail">@Html.Raw(QueryInfo[8])</td>
+									</tr>
 								}
 							}
+						}
 						</tbody>
 					</table>
 				</div>
@@ -518,6 +625,24 @@
 					<label class="col-lg-2 col-form-label">Email網域名稱*</label>
 					<div class="col-lg-10">
 						<input type="text" id="tbx_cEmailID" name="tbx_cEmailID" class="form-control" placeholder="Email網域名稱">
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">客戶聯絡人姓名*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cContactName" name="tbx_cContactName" class="form-control ContactInfo" placeholder="請輸入客戶聯絡人姓名關鍵字">
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">客戶聯絡人電話*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cContactPhone" name="tbx_cContactPhone" class="form-control" placeholder="客戶聯絡人電話" diabled>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">客戶聯絡人E-Mail*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cContactEmail" name="tbx_cContactEmail" class="form-control" placeholder="客戶聯絡人E-Mail" diabled>
 					</div>
 				</div>
 			</div>

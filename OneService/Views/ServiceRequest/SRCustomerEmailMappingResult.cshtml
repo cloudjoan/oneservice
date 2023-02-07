@@ -51,7 +51,7 @@
 					text: '匯出Excel',
 					sheetName: '客戶Email對照設定檔作業',
 					exportOptions: {
-						columns: [1, 2, 3, 4, 5] //要顯示的欄位
+						columns: [1, 2, 3, 4, 5, 6, 7, 8] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						var sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -61,6 +61,9 @@
 						$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="E"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="F"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="G"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="H"]', sheet).attr('s', '0');	//設成文字格式
 					}
 				}),
 			],
@@ -79,6 +82,9 @@
 			<th>服務團隊ID</th>
 			<th>服務團隊名稱</th>
 			<th>Email網域名稱</th>
+			<th>客戶聯絡人姓名</th>
+			<th>客戶聯絡人電話</th>
+			<th>客戶聯絡人E-Mail</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -99,6 +105,9 @@
 						<td class="tdcTeamID">@Html.Raw(QueryInfo[3])</td>
 						<td class="tdcTeamName">@Html.Raw(QueryInfo[4])</td>
 						<td class="tdcEmailID">@Html.Raw(QueryInfo[5])</td>
+						<td class="tdcContactName">@Html.Raw(QueryInfo[6])</td>
+						<td class="tdcContactPhone">@Html.Raw(QueryInfo[7])</td>
+						<td class="tdcContactEmail">@Html.Raw(QueryInfo[8])</td>
 					</tr>
 				}
 			}

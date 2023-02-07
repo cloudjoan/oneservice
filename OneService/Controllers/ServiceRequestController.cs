@@ -1698,9 +1698,10 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
 
-            pCompanyCode = EmpBean.BUKRS;
+            pCompanyCode = EmpBean.BUKRS;            
             #endregion
 
             var model = new ViewModelTeam();
@@ -1726,7 +1727,7 @@ namespace OneService.Controllers
 
             foreach (var bean in beans)
             {
-                string[] QueryInfo = new string[6];
+                string[] QueryInfo = new string[9];
 
                 string CCustomerName = CMF.findCustomerName(bean.CCustomerId);
                 string CCTeamName = CMF.findTeamName(bean.CTeamId);
@@ -1737,6 +1738,9 @@ namespace OneService.Controllers
                 QueryInfo[3] = bean.CTeamId;        //服務團隊ID
                 QueryInfo[4] = CCTeamName;         //服務團隊名稱
                 QueryInfo[5] = bean.CEmailId;       //Email網域名稱               
+                QueryInfo[6] = bean.CContactName;   //客戶聯絡人姓名
+                QueryInfo[7] = bean.CContactPhone;  //客戶聯絡人電話
+                QueryInfo[8] = bean.CContactEmail;  //客戶聯絡人E-Mail
 
                 QueryToList.Add(QueryInfo);
             }
@@ -1756,9 +1760,12 @@ namespace OneService.Controllers
         /// <param name="cCustomerID">客戶代號</param>
         /// <param name="cCustomerName">客戶名稱</param>
         /// <param name="cTeamID">服務團隊ID</param>
-        /// <param name="cEmailID">Email網域名稱</param>        
+        /// <param name="cEmailID">Email網域名稱</param>   
+        /// <param name="cContactName">客戶聯絡人姓名</param>
+        /// <param name="cContactPhone">客戶聯絡人電話</param>
+        /// <param name="cContactEmail">客戶聯絡人E-Mail</param>
         /// <returns></returns>
-        public ActionResult saveCustomerEmail(string cID, string cCustomerID, string cCustomerName, string cTeamID, string cEmailID)
+        public ActionResult saveCustomerEmail(string cID, string cCustomerID, string cCustomerName, string cTeamID, string cEmailID, string cContactName, string cContactPhone, string cContactEmail)
         {
             getLoginAccount();
 
@@ -1777,7 +1784,7 @@ namespace OneService.Controllers
                 if (cID == null)
                 {
                     #region -- 新增 --
-                    var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamId == cTeamID.Trim());
+                    var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamId == cTeamID.Trim() && x.CEmailId == cEmailID.Trim());
                     if (prBean == null)
                     {
                         TbOneSrcustomerEmailMapping  prBean1 = new TbOneSrcustomerEmailMapping();
@@ -1786,6 +1793,9 @@ namespace OneService.Controllers
                         prBean1.CCustomerName = cCustomerName.Trim();
                         prBean1.CTeamId = cTeamID.Trim();
                         prBean1.CEmailId = cEmailID.Trim();
+                        prBean1.CContactName = cContactName.Trim();
+                        prBean1.CContactPhone = cContactPhone.Trim();
+                        prBean1.CContactEmail = cContactEmail.Trim();
                         prBean1.Disabled = 0;
 
                         prBean1.CreatedUserName = EmpBean.EmployeeCName;
@@ -1796,7 +1806,7 @@ namespace OneService.Controllers
                     }
                     else
                     {
-                        tMsg = "此服務團隊已存在，請重新輸入！";
+                        tMsg = "此服務團隊和Email網域名稱已存在，請重新輸入！";
                     }
                     #endregion                
                 }
@@ -1805,13 +1815,17 @@ namespace OneService.Controllers
                     #region -- 編輯 --
                     var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 &&
                                                                             x.CId.ToString() != cID &&
-                                                                            x.CTeamId == cTeamID.Trim());
+                                                                            x.CTeamId == cTeamID.Trim() && 
+                                                                            x.CEmailId == cEmailID.Trim());
                     if (prBean == null)
                     {
                         var prBean1 = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.CId.ToString() == cID);
                         prBean1.CCustomerId = cCustomerID.Trim();
                         prBean1.CCustomerName = cCustomerName.Trim();
                         prBean1.CEmailId = cEmailID.Trim();
+                        prBean1.CContactName = cContactName.Trim();
+                        prBean1.CContactPhone = cContactPhone.Trim();
+                        prBean1.CContactEmail = cContactEmail.Trim();
 
                         prBean1.ModifiedUserName = EmpBean.EmployeeCName;
                         prBean1.ModifiedDate = DateTime.Now;
@@ -1819,7 +1833,7 @@ namespace OneService.Controllers
                     }
                     else
                     {
-                        tMsg = "此服務團隊已存在，請重新輸入！";
+                        tMsg = "此服務團隊和Email網域名稱已存在，請重新輸入！";
                     }
                     #endregion
                 }
@@ -2532,7 +2546,23 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult GetContactInfo(string cBUKRS, string CustomerID)
         {
-            object contentObj = CMF.GetContactInfo(cBUKRS, CustomerID);            
+            object contentObj = CMF.GetContactInfo(cBUKRS, CustomerID);
+
+            return Json(contentObj);
+        }
+        #endregion
+
+        #region Ajax取得客戶聯絡人資訊(模糊查詢)
+        /// <summary>
+        /// 取得客戶聯絡人
+        /// </summary>
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="CustomerID">客戶代號</param>    
+        /// <param name="ContactName">聯絡人姓名</param>
+        /// <returns></returns>
+        public IActionResult findContactInfoByKeywordAndComp(string cBUKRS, string CustomerID, string ContactName)
+        {
+            object contentObj = CMF.findContactInfoByKeywordAndComp(cBUKRS, CustomerID, ContactName);            
 
             return Json(contentObj);
         }
