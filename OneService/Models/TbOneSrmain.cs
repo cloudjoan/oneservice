@@ -23,15 +23,13 @@ namespace OneService.Models
         public string? CRepairName { get; set; }
         public string? CRepairAddress { get; set; }
         public string? CRepairPhone { get; set; }
+        public string? CRepairMobile { get; set; }
         public string? CRepairEmail { get; set; }
-        public string? CContactName { get; set; }
-        public string? CContactAddress { get; set; }
-        public string? CContactPhone { get; set; }
-        public string? CContactEmail { get; set; }
         public string? CTeamId { get; set; }
         public string? CMainEngineerId { get; set; }
         public string? CMainEngineerName { get; set; }
         public string? CAssEngineerId { get; set; }
+        public string? CTechManagerId { get; set; }
         public string? CSqpersonId { get; set; }
         public string? CSqpersonName { get; set; }
         public string? CSalesId { get; set; }

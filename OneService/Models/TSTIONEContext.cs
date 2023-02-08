@@ -19,6 +19,7 @@ namespace OneService.Models
         public virtual DbSet<TbOneDocument> TbOneDocuments { get; set; } = null!;
         public virtual DbSet<TbOneLog> TbOneLogs { get; set; } = null!;
         public virtual DbSet<TbOneSrcustomerEmailMapping> TbOneSrcustomerEmailMappings { get; set; } = null!;
+        public virtual DbSet<TbOneSrdetailContact> TbOneSrdetailContacts { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailPartsReplace> TbOneSrdetailPartsReplaces { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailProduct> TbOneSrdetailProducts { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailRecord> TbOneSrdetailRecords { get; set; } = null!;
@@ -99,6 +100,8 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_SRCustomerEmailMapping");
 
+                entity.HasIndex(e => new { e.CCustomerId, e.CTeamId, e.CEmailId }, "NonClusteredIndex-20230206-182920");
+
                 entity.Property(e => e.CId).HasColumnName("cID");
 
                 entity.Property(e => e.CContactEmail)
@@ -129,6 +132,47 @@ namespace OneService.Models
                     .HasMaxLength(36)
                     .IsUnicode(false)
                     .HasColumnName("cTeamID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneSrdetailContact>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRDetail_Contact");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CContactAddress)
+                    .HasMaxLength(110)
+                    .HasColumnName("cContactAddress");
+
+                entity.Property(e => e.CContactEmail)
+                    .HasMaxLength(200)
+                    .HasColumnName("cContactEmail");
+
+                entity.Property(e => e.CContactMobile)
+                    .HasMaxLength(50)
+                    .HasColumnName("cContactMobile");
+
+                entity.Property(e => e.CContactName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cContactName");
+
+                entity.Property(e => e.CContactPhone)
+                    .HasMaxLength(50)
+                    .HasColumnName("cContactPhone");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -436,22 +480,6 @@ namespace OneService.Models
 
                 entity.Property(e => e.CAttatchement).HasColumnName("cAttatchement");
 
-                entity.Property(e => e.CContactAddress)
-                    .HasMaxLength(110)
-                    .HasColumnName("cContactAddress");
-
-                entity.Property(e => e.CContactEmail)
-                    .HasMaxLength(200)
-                    .HasColumnName("cContactEmail");
-
-                entity.Property(e => e.CContactName)
-                    .HasMaxLength(40)
-                    .HasColumnName("cContactName");
-
-                entity.Property(e => e.CContactPhone)
-                    .HasMaxLength(50)
-                    .HasColumnName("cContactPhone");
-
                 entity.Property(e => e.CCustomerId)
                     .HasMaxLength(10)
                     .HasColumnName("cCustomerID");
@@ -496,6 +524,10 @@ namespace OneService.Models
                 entity.Property(e => e.CRepairEmail)
                     .HasMaxLength(200)
                     .HasColumnName("cRepairEmail");
+
+                entity.Property(e => e.CRepairMobile)
+                    .HasMaxLength(50)
+                    .HasColumnName("cRepairMobile");
 
                 entity.Property(e => e.CRepairName)
                     .HasMaxLength(40)
@@ -551,6 +583,10 @@ namespace OneService.Models
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("cTeamID");
+
+                entity.Property(e => e.CTechManagerId)
+                    .HasMaxLength(255)
+                    .HasColumnName("cTechManagerID");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 

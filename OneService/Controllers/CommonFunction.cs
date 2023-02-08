@@ -1087,23 +1087,26 @@ namespace OneService.Controllers
         {
             var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
                                                Where(x => (x.Disabled == null || x.Disabled != 1) && x.ContactName != "" && x.ContactCity != "" &&
-                                                          x.ContactAddress != "" && x.ContactPhone != "" &&
+                                                          x.ContactAddress != "" && x.ContactPhone != "" && x.ContactEmail != "" &&
                                                           x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID).ToList();
 
             List<string> tTempList = new List<string>();
 
             string tTempValue = string.Empty;
+            string ContactMobile = string.Empty;
 
             List<PCustomerContact> liPCContact = new List<PCustomerContact>();
             if (qPjRec != null && qPjRec.Count() > 0)
             {
                 foreach (var prBean in qPjRec)
                 {
-                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "");
+                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactEmail.Trim().Replace(" ", "");
 
                     if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人名姓名不重覆才要顯示
                     {
                         tTempList.Add(tTempValue);
+
+                        ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");
 
                         PCustomerContact prDocBean = new PCustomerContact();
 
@@ -1116,6 +1119,7 @@ namespace OneService.Controllers
                         prDocBean.Address = prBean.ContactAddress.Trim().Replace(" ", "");
                         prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
                         prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
+                        prDocBean.Mobile = ContactMobile;
                         prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");
 
                         liPCContact.Add(prDocBean);
@@ -1137,12 +1141,13 @@ namespace OneService.Controllers
         {
             var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
                                                Where(x => (x.Disabled == null || x.Disabled != 1) && x.ContactName != "" && x.ContactCity != "" &&
-                                                          x.ContactAddress != "" && x.ContactPhone != "" &&
+                                                          x.ContactAddress != "" && x.ContactPhone != "" && x.ContactEmail != "" &&
                                                           x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID && x.ContactName.Contains(ContactName)).ToList();
 
             List<string> tTempList = new List<string>();
 
             string tTempValue = string.Empty;
+            string ContactMobile = string.Empty;
 
             List<PCustomerContact> liPCContact = new List<PCustomerContact>();
             if (qPjRec != null && qPjRec.Count() > 0)
@@ -1155,6 +1160,8 @@ namespace OneService.Controllers
                     {
                         tTempList.Add(tTempValue);
 
+                        ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");
+
                         PCustomerContact prDocBean = new PCustomerContact();
 
                         prDocBean.ContactID = prBean.ContactId.ToString();
@@ -1166,6 +1173,7 @@ namespace OneService.Controllers
                         prDocBean.Address = prBean.ContactAddress.Trim().Replace(" ", "");
                         prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
                         prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
+                        prDocBean.Mobile = ContactMobile;
                         prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");
 
                         liPCContact.Add(prDocBean);
@@ -1206,8 +1214,11 @@ namespace OneService.Controllers
             /// <summary>聯絡人電話</summary>
             public string Phone { get; set; }
 
-            /// <summary>來源表單</summary>
-            public string BPMNo { get; set; }
+            /// <summary>聯絡人手機</summary>
+            public string Mobile{ get; set; }
+
+        /// <summary>來源表單</summary>
+        public string BPMNo { get; set; }
         }
         #endregion
 
@@ -1539,7 +1550,7 @@ namespace OneService.Controllers
             string tKEY = string.Empty;
             string tNAME = string.Empty;
 
-            var beans = psipDb.TbOneSysParameters.OrderBy(x => x.COperationId).OrderBy(x => x.CFunctionId).OrderBy(x => x.CCompanyId).OrderBy(x => x.CNo).
+            var beans = psipDb.TbOneSysParameters.OrderBy(x => x.COperationId).ThenBy(x => x.CFunctionId).ThenBy(x => x.CCompanyId).ThenBy(x => x.CNo).ThenBy(x => x.CValue).
                                                Where(x => x.Disabled == 0 &&
                                                           x.COperationId.ToString() == cOperationID &&
                                                           x.CFunctionId == cFunctionID.Trim() &&

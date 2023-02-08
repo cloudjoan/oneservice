@@ -72,6 +72,8 @@ namespace OneService.Models
                     .HasMaxLength(200)
                     .HasComment("聯絡人Email");
 
+                entity.Property(e => e.ContactMobile).HasMaxLength(50);
+
                 entity.Property(e => e.ContactName)
                     .HasMaxLength(40)
                     .HasComment("聯絡人姓名");

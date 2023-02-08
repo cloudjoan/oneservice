@@ -45,6 +45,7 @@ namespace OneService.Models
         /// 聯絡人電話
         /// </summary>
         public string? ContactPhone { get; set; }
+        public string? ContactMobile { get; set; }
         /// <summary>
         /// 聯絡人部門
         /// </summary>

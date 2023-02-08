@@ -233,16 +233,12 @@ namespace OneService.Controllers
                 }
                 #endregion               
 
-                #region 客戶報修/聯絡窗口資訊
+                #region 客戶報修窗口資訊
                 ViewBag.cRepairName = beanM.CRepairName;
                 ViewBag.cRepairAddress = beanM.CRepairAddress;
                 ViewBag.cRepairPhone = beanM.CRepairPhone;
-                ViewBag.cRepairEmail = beanM.CRepairEmail;
-
-                ViewBag.cContactName = beanM.CContactName;
-                ViewBag.cContactAddress = beanM.CContactAddress;
-                ViewBag.cContactPhone = beanM.CContactPhone;
-                ViewBag.cContactEmail = beanM.CContactEmail;
+                ViewBag.cRepairMobile = beanM.CRepairMobile;
+                ViewBag.cRepairEmail = beanM.CRepairEmail;               
                 #endregion
 
                 #region 服務團隊
@@ -254,9 +250,17 @@ namespace OneService.Controllers
                 ViewBag.cSalesID = beanM.CSalesId;
                 ViewBag.cSalesName = beanM.CSalesName;
                 ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                ViewBag.cTechManagerID = beanM.CTechManagerId;
                 #endregion
-                
+
                 ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
+
+                #region 取得客戶聯絡人資訊(明細)
+                var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                ViewBag.Detailbean_Contact = beansContact;
+                ViewBag.trContactNo = beansContact.Count();
+                #endregion
 
                 #region 取得產品序號資訊(明細)
                 var beansProduct = dbOne.TbOneSrdetailProducts.OrderBy(x => x.CSerialId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
@@ -343,11 +347,8 @@ namespace OneService.Controllers
             string CRepairName = formCollection["tbx_cRepairName"].FirstOrDefault();
             string CRepairAddress = formCollection["tbx_cRepairAddress"].FirstOrDefault();
             string CRepairPhone = formCollection["tbx_cRepairPhone"].FirstOrDefault();
-            string CRepairEmail = formCollection["tbx_cRepairEmail"].FirstOrDefault();
-            string CContactName = formCollection["tbx_cContactName"].FirstOrDefault();
-            string CContactAddress = formCollection["tbx_cContactAddress"].FirstOrDefault();
-            string CContactPhone = formCollection["tbx_cContactPhone"].FirstOrDefault();
-            string CContactEmail = formCollection["tbx_cContactEmail"].FirstOrDefault();
+            string CRepairMobile = formCollection["tbx_cRepairMobile"].FirstOrDefault();
+            string CRepairEmail = formCollection["tbx_cRepairEmail"].FirstOrDefault();            
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CSqpersonId = formCollection["hid_cSQPersonID"].FirstOrDefault();
             string CSqpersonName = formCollection["tbx_cSQPersonName"].FirstOrDefault();
@@ -355,7 +356,8 @@ namespace OneService.Controllers
             string CSalesId = formCollection["hid_cSalesID"].FirstOrDefault();
             string CMainEngineerName = formCollection["tbx_cMainEngineerName"].FirstOrDefault();
             string CMainEngineerId = formCollection["hid_cMainEngineerID"].FirstOrDefault();
-            string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();            
+            string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();
+            string CTechManagerId = formCollection["hid_cTechManagerID"].FirstOrDefault();
             string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
 
             try
@@ -385,11 +387,8 @@ namespace OneService.Controllers
                     beanM.CRepairName = CRepairName;
                     beanM.CRepairAddress = CRepairAddress;
                     beanM.CRepairPhone = CRepairPhone;
-                    beanM.CRepairEmail = CRepairEmail;
-                    beanM.CContactName = CContactName;
-                    beanM.CContactAddress = CContactAddress;
-                    beanM.CContactPhone = CContactPhone;
-                    beanM.CContactEmail = CContactEmail;
+                    beanM.CRepairMobile = CRepairMobile;
+                    beanM.CRepairEmail = CRepairEmail;                    
                     beanM.CTeamId = CTeamId;
                     beanM.CSqpersonId = CSqpersonId;
                     beanM.CSqpersonName = CSqpersonName;
@@ -398,12 +397,41 @@ namespace OneService.Controllers
                     beanM.CMainEngineerName = CMainEngineerName;
                     beanM.CMainEngineerId = CMainEngineerId;
                     beanM.CAssEngineerId = CAssEngineerId;
+                    beanM.CTechManagerId = CTechManagerId;
                     beanM.CSystemGuid = Guid.NewGuid();
 
                     beanM.CreatedDate = DateTime.Now;
                     beanM.CreatedUserName = LoginUser_Name;
 
                     dbOne.TbOneSrmains.Add(beanM);
+                    #endregion
+
+                    #region 新增【客戶聯絡窗口資訊】明細
+                    string[] COcContactName = formCollection["tbx_COcContactName"];
+                    string[] COcContactAddress = formCollection["tbx_COcContactAddress"];
+                    string[] COcContactPhone = formCollection["tbx_COcContactPhone"];
+                    string[] COcContactMobile = formCollection["tbx_COcContactMobile"];
+                    string[] COcContactEmail = formCollection["tbx_COcContactEmail"];
+
+                    int countCO = COcContactName.Length;
+
+                    for (int i = 0; i < countCO; i++)
+                    {
+                        TbOneSrdetailContact beanD = new TbOneSrdetailContact();
+
+                        beanD.CSrid = pSRID;
+                        beanD.CContactName = COcContactName[i];
+                        beanD.CContactAddress = COcContactAddress[i];
+                        beanD.CContactPhone = COcContactPhone[i];
+                        beanD.CContactMobile = COcContactMobile[i];
+                        beanD.CContactEmail = COcContactEmail[i];
+                        beanD.Disabled = 0;
+
+                        beanD.CreatedDate = DateTime.Now;
+                        beanD.CreatedUserName = LoginUser_Name;
+
+                        dbOne.TbOneSrdetailContacts.Add(beanD);
+                    }
                     #endregion
 
                     #region 新增【產品序號資訊】明細
@@ -528,11 +556,8 @@ namespace OneService.Controllers
                     beanNowM.CRepairName = CRepairName;
                     beanNowM.CRepairAddress = CRepairAddress;
                     beanNowM.CRepairPhone = CRepairPhone;
-                    beanNowM.CRepairEmail = CRepairEmail;
-                    beanNowM.CContactName = CContactName;
-                    beanNowM.CContactAddress = CContactAddress;
-                    beanNowM.CContactPhone = CContactPhone;
-                    beanNowM.CContactEmail = CContactEmail;
+                    beanNowM.CRepairMobile = CRepairMobile;
+                    beanNowM.CRepairEmail = CRepairEmail;                    
                     beanNowM.CTeamId = CTeamId;
                     beanNowM.CSqpersonId = CSqpersonId;
                     beanNowM.CSqpersonName = CSqpersonName;
@@ -541,11 +566,49 @@ namespace OneService.Controllers
                     beanNowM.CMainEngineerName = CMainEngineerName;
                     beanNowM.CMainEngineerId = CMainEngineerId;
                     beanNowM.CAssEngineerId = CAssEngineerId;
+                    beanNowM.CTechManagerId = CTechManagerId;
                     beanNowM.CSystemGuid = Guid.NewGuid();
 
                     beanNowM.ModifiedDate = DateTime.Now;
                     beanNowM.ModifiedUserName = LoginUser_Name;
                     #endregion
+
+                    #region -----↓↓↓↓↓客戶聯絡窗口資訊↓↓↓↓↓-----
+
+                    #region 刪除明細                    
+                    dbOne.TbOneSrdetailContacts.RemoveRange(dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+                    #endregion
+
+                    #region 新增【客戶聯絡窗口資訊】明細
+                    string[] COcContactName = formCollection["tbx_COcContactName"];
+                    string[] COcContactAddress = formCollection["tbx_COcContactAddress"];
+                    string[] COcContactPhone = formCollection["tbx_COcContactPhone"];
+                    string[] COcContactMobile = formCollection["tbx_COcContactMobile"];
+                    string[] COcContactEmail = formCollection["tbx_COcContactEmail"];
+                    string[] COcDisabled = formCollection["hid_COcDisabled"];
+
+                    int countCO = COcContactName.Length;
+
+                    for (int i = 0; i < countCO; i++)
+                    {
+                        TbOneSrdetailContact beanD = new TbOneSrdetailContact();
+
+                        beanD.CSrid = pSRID;
+                        beanD.CContactName = COcContactName[i];
+                        beanD.CContactAddress = COcContactAddress[i];
+                        beanD.CContactPhone = COcContactPhone[i];
+                        beanD.CContactMobile = COcContactMobile[i];
+                        beanD.CContactEmail = COcContactEmail[i];
+                        beanD.Disabled = int.Parse(COcDisabled[i]);
+
+                        beanD.CreatedDate = DateTime.Now;
+                        beanD.CreatedUserName = LoginUser_Name;
+
+                        dbOne.TbOneSrdetailContacts.Add(beanD);
+                    }
+                    #endregion
+
+                    #endregion -----↑↑↑↑↑客戶聯絡窗口資訊 ↑↑↑↑↑-----
 
                     #region -----↓↓↓↓↓產品序號資訊↓↓↓↓↓-----
 
@@ -1119,8 +1182,8 @@ namespace OneService.Controllers
         /// <summary>
         /// 修改服務團隊
         /// </summary>
-        /// <param name="cAssEngineerID">目前的服務團隊ERPID(;號隔開)</param>
-        /// <param name="cAssEngineerAcc">欲修改的服務團隊ERPID</param>
+        /// <param name="cTeamID">目前的服務團隊ERPID(;號隔開)</param>
+        /// <param name="cTeamAcc">欲修改的服務團隊ERPID</param>
         /// <returns></returns>
         public IActionResult SavepjTeam(string cTeamID, string cTeamAcc)
         {
@@ -1240,7 +1303,7 @@ namespace OneService.Controllers
             {
                 if (!string.IsNullOrEmpty(cTeamID))
                 {
-                    #region 刪除工程師，並回傳最新的工程師
+                    #region 刪除服務團隊，並回傳最新的服務團隊
                     var oldPMAcc = cTeamID;
 
                     List<string> liPmAcc = cTeamID.Split(';').ToList();
@@ -1248,7 +1311,7 @@ namespace OneService.Controllers
 
                     foreach (string tValue in liPmAcc)
                     {
-                        if (tValue.ToLower() != cTeamAcc)
+                        if (tValue.ToLower() != cTeamAcc.ToLower())
                         {
                             liPmAccNew.Add(tValue);
                         }
@@ -1450,6 +1513,181 @@ namespace OneService.Controllers
             catch (Exception e)
             {                
                 return Json("DeletepjAssEngineer Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 修改技術主管
+        /// <summary>
+        /// 修改技術主管
+        /// </summary>
+        /// <param name="cTechManagerID">目前的技術主管ERPID(;號隔開)</param>
+        /// <param name="cTechManagerAcc">欲修改的技術主管ERPID</param>
+        /// <returns></returns>
+        public IActionResult SavepjTechManager(string cTechManagerID, string cTechManagerAcc)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            string reValue = string.Empty;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(cTechManagerID))
+                {
+                    var oldTechManagerAcc = cTechManagerID;
+
+                    if (oldTechManagerAcc.Contains(cTechManagerAcc))
+                    {
+                        reValue = "Error：技術主管已存在，請重新輸入！";
+                    }
+                    else
+                    {
+                        reValue = oldTechManagerAcc + ";" + cTechManagerAcc;
+
+                        #region 紀錄修改log
+                        TbOneLog logBean = new TbOneLog
+                        {
+                            CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
+                            EventName = "SavepjTechManager",
+                            Log = "修改技術主管_舊值: " + oldTechManagerAcc + "; 新值: " + reValue,
+                            CreatedUserName = ViewBag.cLoginUser_Name,
+                            CreatedDate = DateTime.Now
+                        };
+
+                        dbOne.TbOneLogs.Add(logBean);
+                        dbOne.SaveChanges();
+                        #endregion
+                    }
+                }
+                else
+                {
+                    reValue = cTechManagerAcc;
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("SavepjTechManager Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 取得技術主管
+        /// <summary>
+        /// 取得技術主管
+        /// </summary>
+        /// <param name="cTechManagerID">技術主管ERPID(;號隔開)</param>
+        /// <returns></returns>
+        public IActionResult GetpjTechManager(string cTechManagerID)
+        {
+            List<TechManagerInfo> liTechManagerInfo = new List<TechManagerInfo>();
+
+            string tEmpName = string.Empty; //技術主管姓名(中文姓名+英文姓名)
+
+            if (!string.IsNullOrEmpty(cTechManagerID))
+            {
+                List<string> liAssAcc = cTechManagerID.Split(';').ToList();
+                int pmId = 0;
+                foreach (var AssAcc in liAssAcc)
+                {
+                    pmId++;
+                    if (string.IsNullOrEmpty(AssAcc)) continue;
+
+                    var qPm = dbEIP.People.FirstOrDefault(x => x.ErpId == AssAcc);
+                    if (qPm != null)
+                    {
+                        tEmpName = qPm.Name2 + " " + qPm.Name;
+
+                        var qPmDept = dbEIP.Departments.FirstOrDefault(x => x.Id == qPm.DeptId && x.Status == 0);
+                        if (qPmDept == null)
+                        {
+                            TechManagerInfo pmBean = new TechManagerInfo(pmId, AssAcc, tEmpName, qPm.Extension, qPm.Mobile, qPm.Email, "", "");
+                            liTechManagerInfo.Add(pmBean);
+                        }
+                        else
+                        {
+                            TechManagerInfo pmBean = new TechManagerInfo(pmId, AssAcc, tEmpName, qPm.Extension, qPm.Mobile, qPm.Email, qPmDept.Id, qPmDept.Name);
+                            liTechManagerInfo.Add(pmBean);
+                        }
+                    }
+                }
+            }
+
+            return Json(liTechManagerInfo);
+        }
+        #endregion
+
+        #region 刪除技術主管
+        /// <summary>
+        /// 刪除技術主管
+        /// </summary>
+        /// <param name="cTechManagerID">目前的技術主管ERPID(;號隔開)</param>
+        /// <param name="cTechManagerAcc">欲刪除的技術主管ERPID</param>
+        /// <returns></returns>
+        public IActionResult DeletepjTechManager(string cTechManagerID, string cTechManagerAcc)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            string reValue = cTechManagerID;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(cTechManagerID))
+                {
+                    #region 刪除工程師，並回傳最新的工程師
+                    var oldPMAcc = cTechManagerID;
+
+                    List<string> liPmAcc = cTechManagerID.Split(';').ToList();
+                    List<string> liPmAccNew = new List<string>();
+
+                    foreach (string tValue in liPmAcc)
+                    {
+                        if (tValue.ToLower() != cTechManagerAcc)
+                        {
+                            liPmAccNew.Add(tValue);
+                        }
+                    }
+
+                    reValue = string.Join(";", liPmAccNew);
+                    #endregion
+
+                    #region 紀錄刪除log
+                    TbOneLog logBean = new TbOneLog
+                    {
+                        CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
+                        EventName = "DeletepjTechManager",
+                        Log = "刪除技術主管_舊值: " + cTechManagerID + "; 新值: " + reValue,
+                        CreatedUserName = ViewBag.cLoginUser_Name,
+                        CreatedDate = DateTime.Now
+                    };
+
+                    dbOne.TbOneLogs.Add(logBean);
+                    dbOne.SaveChanges();
+                    #endregion
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("DeletepjTechManager Error：" + e.Message);
             }
 
             return Json(reValue);
@@ -1784,7 +2022,7 @@ namespace OneService.Controllers
                 if (cID == null)
                 {
                     #region -- 新增 --
-                    var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamId == cTeamID.Trim() && x.CEmailId == cEmailID.Trim());
+                    var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 && x.CEmailId == cEmailID.Trim());
                     if (prBean == null)
                     {
                         TbOneSrcustomerEmailMapping  prBean1 = new TbOneSrcustomerEmailMapping();
@@ -1806,7 +2044,7 @@ namespace OneService.Controllers
                     }
                     else
                     {
-                        tMsg = "此服務團隊和Email網域名稱已存在，請重新輸入！";
+                        tMsg = "此Email網域名稱已存在，請重新輸入！";
                     }
                     #endregion                
                 }
@@ -1814,8 +2052,7 @@ namespace OneService.Controllers
                 {
                     #region -- 編輯 --
                     var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 &&
-                                                                            x.CId.ToString() != cID &&
-                                                                            x.CTeamId == cTeamID.Trim() && 
+                                                                            x.CId.ToString() != cID &&                                                                             
                                                                             x.CEmailId == cEmailID.Trim());
                     if (prBean == null)
                     {
@@ -1833,7 +2070,7 @@ namespace OneService.Controllers
                     }
                     else
                     {
-                        tMsg = "此服務團隊和Email網域名稱已存在，請重新輸入！";
+                        tMsg = "此Email網域名稱已存在，請重新輸入！";
                     }
                     #endregion
                 }
@@ -2580,20 +2817,25 @@ namespace OneService.Controllers
         /// <param name="cEditContactCity">客戶聯絡人城市</param>
         /// <param name="cEditContactAddress">客戶聯絡人地址</param>
         /// <param name="cEditContactPhone">客戶聯絡人電話</param>
+        /// <param name="cEditContactMobile">客戶聯絡人手機</param>
         /// <param name="cEditContactEmail">客戶聯絡人Email</param>
         /// <param name="ModifiedUserName">修改人姓名</param>        
         /// <returns></returns>
         public IActionResult SaveEditContactInfo(string cEditContactID, string cBUKRS, string cCustomerID, string cCustomerName, string cEditContactName,
-                                               string cEditContactCity, string cEditContactAddress, string cEditContactPhone, string cEditContactEmail, string ModifiedUserName)
+                                               string cEditContactCity, string cEditContactAddress, string cEditContactPhone, string cEditContactMobile, 
+                                               string cEditContactEmail, string ModifiedUserName)
         {
             var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.ContactId.ToString() == cEditContactID);
 
+            cEditContactMobile = String.IsNullOrEmpty(cEditContactMobile) ? "" : cEditContactMobile;
+
             if (bean != null) //修改
             {
-                bean.ContactCity = cEditContactCity;
-                bean.ContactAddress = cEditContactAddress;
-                bean.ContactPhone = cEditContactPhone;
-                bean.ContactEmail = cEditContactEmail;
+                bean.ContactCity = cEditContactCity.Trim();
+                bean.ContactAddress = cEditContactAddress.Trim();
+                bean.ContactPhone = cEditContactPhone.Trim();
+                bean.ContactMobile = cEditContactMobile.Trim();
+                bean.ContactEmail = cEditContactEmail.Trim();
 
                 bean.ModifiedUserName = ModifiedUserName;
                 bean.ModifiedDate = DateTime.Now;
@@ -2617,23 +2859,28 @@ namespace OneService.Controllers
         /// <param name="cAddContactCity">客戶聯絡人城市</param>
         /// <param name="cAddContactAddress">客戶聯絡人地址</param>
         /// <param name="cAddContactPhone">客戶聯絡人電話</param>
+        /// <param name="cAddContactMobile">客戶聯絡人手機</param>
         /// <param name="cAddContactEmail">客戶聯絡人Email</param>
         /// <param name="ModifiedUserName">修改人姓名</param>        
         /// <returns></returns>
         public IActionResult SaveContactInfo(string cAddContactID, string cBUKRS, string cCustomerID, string cCustomerName, string cAddContactName,
-                                           string cAddContactCity, string cAddContactAddress, string cAddContactPhone, string cAddContactEmail, string ModifiedUserName)
+                                           string cAddContactCity, string cAddContactAddress, string cAddContactPhone, string cAddContactMobile, 
+                                           string cAddContactEmail, string ModifiedUserName)
         {
             string tBpmNo = "GenerallySR";
 
             var bean = dbProxy.CustomerContacts.FirstOrDefault(x => (x.Disabled == null || x.Disabled != 1) && 
                                                                  x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
 
+            cAddContactMobile = String.IsNullOrEmpty(cAddContactMobile) ? "" : cAddContactMobile;
+
             if (bean != null) //修改
             {
-                bean.ContactCity = cAddContactCity;
-                bean.ContactAddress = cAddContactAddress;
-                bean.ContactPhone = cAddContactPhone;
-                bean.ContactEmail = cAddContactEmail;
+                bean.ContactCity = cAddContactCity.Trim();
+                bean.ContactAddress = cAddContactAddress.Trim();
+                bean.ContactPhone = cAddContactPhone.Trim();
+                bean.ContactMobile = cAddContactMobile.Trim();
+                bean.ContactEmail = cAddContactEmail.Trim();
 
                 bean.ModifiedUserName = ModifiedUserName;
                 bean.ModifiedDate = DateTime.Now;
@@ -2647,11 +2894,12 @@ namespace OneService.Controllers
                 bean1.Kna1Name1 = cCustomerName;
                 bean1.Knb1Bukrs = cBUKRS;
                 bean1.ContactType = "4";
-                bean1.ContactName = cAddContactName;
-                bean1.ContactCity = cAddContactCity;
-                bean1.ContactAddress = cAddContactAddress;
-                bean1.ContactPhone = cAddContactPhone;
-                bean1.ContactEmail = cAddContactEmail;
+                bean1.ContactName = cAddContactName.Trim();
+                bean1.ContactCity = cAddContactCity.Trim();
+                bean1.ContactAddress = cAddContactAddress.Trim();
+                bean1.ContactPhone = cAddContactPhone.Trim();
+                bean1.ContactMobile = cAddContactMobile.Trim();
+                bean1.ContactEmail = cAddContactEmail.Trim();
                 bean1.BpmNo = tBpmNo;
                 bean1.Disabled = 0;
 
@@ -3110,6 +3358,33 @@ namespace OneService.Controllers
             public string DeptName { get; private set; }
 
             public AssEngineerInfo(int id, string acc, string name, string ext, string mobile, string email, string deptId, string deptName)
+            {
+                ID = id;
+                Acc = acc;
+                Name = name;
+                Ext = ext;
+                Mobile = mobile;
+                Email = email;
+                DeptId = deptId;
+                DeptName = deptName;
+            }
+        }
+        #endregion
+
+        #region 技術主管資訊
+        /// <summary>技術主管資訊</summary>
+        public class TechManagerInfo
+        {
+            public int ID { get; private set; }
+            public string Acc { get; private set; }
+            public string Name { get; private set; }
+            public string Ext { get; private set; }
+            public string Mobile { get; private set; }
+            public string Email { get; private set; }
+            public string DeptId { get; private set; }
+            public string DeptName { get; private set; }
+
+            public TechManagerInfo(int id, string acc, string name, string ext, string mobile, string email, string deptId, string deptName)
             {
                 ID = id;
                 Acc = acc;
