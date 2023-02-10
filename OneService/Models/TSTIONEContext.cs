@@ -108,6 +108,10 @@ namespace OneService.Models
                     .HasMaxLength(200)
                     .HasColumnName("cContactEmail");
 
+                entity.Property(e => e.CContactMobile)
+                    .HasMaxLength(50)
+                    .HasColumnName("cContactMobile");
+
                 entity.Property(e => e.CContactName)
                     .HasMaxLength(40)
                     .HasColumnName("cContactName");
@@ -397,6 +401,10 @@ namespace OneService.Models
                 entity.Property(e => e.CSrid)
                     .HasMaxLength(20)
                     .HasColumnName("cSRID");
+
+                entity.Property(e => e.CSubContractId)
+                    .HasMaxLength(50)
+                    .HasColumnName("cSubContractID");
 
                 entity.Property(e => e.CUsed)
                     .HasMaxLength(1)

@@ -12,6 +12,7 @@ namespace OneService.Models
         public string? CEmailId { get; set; }
         public string? CContactName { get; set; }
         public string? CContactPhone { get; set; }
+        public string? CContactMobile { get; set; }
         public string? CContactEmail { get; set; }
         public int? Disabled { get; set; }
         public DateTime? CreatedDate { get; set; }

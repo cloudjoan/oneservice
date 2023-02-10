@@ -471,6 +471,7 @@ namespace OneService.Controllers
                     string[] WAcSLARESP = formCollection["hidcSLARESP"];
                     string[] WAcSLASRV = formCollection["hidcSLASRV"];
                     string[] WAcContractID = formCollection["hidcContractID"];
+                    string[] WAcSUB_CONTRACTID = formCollection["hidcSUB_CONTRACTID"];
                     string[] WAcBPMFormNo = formCollection["hidcBPMFormNo"];
                     string[] WAcAdvice = formCollection["hidcAdvice"];
                     string[] WACheckUsed = formCollection["hid_CheckUsed"];
@@ -499,6 +500,7 @@ namespace OneService.Controllers
                         beanD.CSlaresp = WAcSLARESP[i];
                         beanD.CSlasrv = WAcSLASRV[i];
                         beanD.CContractId = WAcContractID[i];
+                        beanD.CSubContractId = WAcSUB_CONTRACTID[i];
                         beanD.CBpmformNo = WAcBPMFormNo[i];
                         beanD.CAdvice = WAcAdvice[i];
                         beanD.CUsed = WACheckUsed[i];
@@ -662,6 +664,7 @@ namespace OneService.Controllers
                     string[] WAcSLARESP = formCollection["hidcSLARESP"];
                     string[] WAcSLASRV = formCollection["hidcSLASRV"];
                     string[] WAcContractID = formCollection["hidcContractID"];
+                    string[] WAcSUB_CONTRACTID = formCollection["hidcSUB_CONTRACTID"];
                     string[] WAcBPMFormNo = formCollection["hidcBPMFormNo"];
                     string[] WAcAdvice = formCollection["hidcAdvice"];
                     string[] WACheckUsed = formCollection["hid_CheckUsed"];
@@ -690,6 +693,7 @@ namespace OneService.Controllers
                         beanD.CSlaresp = WAcSLARESP[i];
                         beanD.CSlasrv = WAcSLASRV[i];
                         beanD.CContractId = WAcContractID[i];
+                        beanD.CSubContractId = WAcSUB_CONTRACTID[i];
                         beanD.CBpmformNo = WAcBPMFormNo[i];
                         beanD.CAdvice = WAcAdvice[i];
                         beanD.CUsed = WACheckUsed[i];
@@ -1751,9 +1755,9 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----    
 
-        #region -----↓↓↓↓↓服務團隊對照設定作業 ↓↓↓↓↓-----
+        #region -----↓↓↓↓↓服務團隊對照組織設定作業 ↓↓↓↓↓-----
         /// <summary>
-        /// 服務團隊對照設定作業
+        /// 服務團隊對照組織設定作業
         /// </summary>
         /// <returns></returns>
         public IActionResult SRTeamMapping()
@@ -1770,9 +1774,9 @@ namespace OneService.Controllers
             return View();
         }
 
-        #region 服務團隊對照設定作業查詢結果
+        #region 服務團隊對照組織設定作業查詢結果
         /// <summary>
-        /// 服務團隊對照設定作業查詢結果
+        /// 服務團隊對照組織設定作業查詢結果
         /// </summary>        
         /// <param name="cTeamNew">服務團隊ID</param>
         /// <param name="cTeamOld">對應部門ID</param>
@@ -1806,9 +1810,9 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 儲存服務團隊對照設定檔
+        #region 儲存服務團隊對照組織設定檔
         /// <summary>
-        /// 儲存服務團隊對照設定檔
+        /// 儲存服務團隊對照組織設定檔
         /// </summary>
         /// <param name="cID">系統ID</param>
         /// <param name="cTeamOldID">服務團隊ID</param>
@@ -1892,9 +1896,9 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 刪除服務團隊對照設定檔
+        #region 刪除服務團隊對照組織設定檔
         /// <summary>
-        /// 刪除服務團隊對照設定檔
+        /// 刪除服務團隊對照組織設定檔
         /// </summary>
         /// <param name="cID">系統ID</param>
         /// <returns></returns>
@@ -1920,7 +1924,7 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #endregion -----↑↑↑↑↑服務團隊對照設定作業 ↑↑↑↑↑-----   
+        #endregion -----↑↑↑↑↑服務團隊對照組織設定作業 ↑↑↑↑↑-----   
 
         #region -----↓↓↓↓↓客戶Email對照設定作業 ↓↓↓↓↓-----
         /// <summary>
@@ -1965,7 +1969,7 @@ namespace OneService.Controllers
 
             foreach (var bean in beans)
             {
-                string[] QueryInfo = new string[9];
+                string[] QueryInfo = new string[10];
 
                 string CCustomerName = CMF.findCustomerName(bean.CCustomerId);
                 string CCTeamName = CMF.findTeamName(bean.CTeamId);
@@ -1978,7 +1982,8 @@ namespace OneService.Controllers
                 QueryInfo[5] = bean.CEmailId;       //Email網域名稱               
                 QueryInfo[6] = bean.CContactName;   //客戶聯絡人姓名
                 QueryInfo[7] = bean.CContactPhone;  //客戶聯絡人電話
-                QueryInfo[8] = bean.CContactEmail;  //客戶聯絡人E-Mail
+                QueryInfo[8] = bean.CContactMobile; //客戶聯絡人手機
+                QueryInfo[9] = bean.CContactEmail;  //客戶聯絡人E-Mail
 
                 QueryToList.Add(QueryInfo);
             }
@@ -2001,9 +2006,11 @@ namespace OneService.Controllers
         /// <param name="cEmailID">Email網域名稱</param>   
         /// <param name="cContactName">客戶聯絡人姓名</param>
         /// <param name="cContactPhone">客戶聯絡人電話</param>
+        /// <param name="cContactMobile">客戶聯絡人手機</param>
         /// <param name="cContactEmail">客戶聯絡人E-Mail</param>
         /// <returns></returns>
-        public ActionResult saveCustomerEmail(string cID, string cCustomerID, string cCustomerName, string cTeamID, string cEmailID, string cContactName, string cContactPhone, string cContactEmail)
+        public ActionResult saveCustomerEmail(string cID, string cCustomerID, string cCustomerName, string cTeamID, string cEmailID, string cContactName, 
+                                            string cContactPhone, string cContactMobile, string cContactEmail)
         {
             getLoginAccount();
 
@@ -2015,6 +2022,8 @@ namespace OneService.Controllers
             #endregion
 
             string tMsg = string.Empty;
+
+            cContactMobile = String.IsNullOrEmpty(cContactMobile) ? "" : cContactMobile;
 
             try
             {
@@ -2033,6 +2042,7 @@ namespace OneService.Controllers
                         prBean1.CEmailId = cEmailID.Trim();
                         prBean1.CContactName = cContactName.Trim();
                         prBean1.CContactPhone = cContactPhone.Trim();
+                        prBean1.CContactMobile = cContactMobile.Trim();
                         prBean1.CContactEmail = cContactEmail.Trim();
                         prBean1.Disabled = 0;
 
@@ -2062,6 +2072,7 @@ namespace OneService.Controllers
                         prBean1.CEmailId = cEmailID.Trim();
                         prBean1.CContactName = cContactName.Trim();
                         prBean1.CContactPhone = cContactPhone.Trim();
+                        prBean1.CContactMobile = cContactMobile.Trim();
                         prBean1.CContactEmail = cContactEmail.Trim();
 
                         prBean1.ModifiedUserName = EmpBean.EmployeeCName;
@@ -2893,7 +2904,7 @@ namespace OneService.Controllers
                 bean1.Kna1Kunnr = cCustomerID;
                 bean1.Kna1Name1 = cCustomerName;
                 bean1.Knb1Bukrs = cBUKRS;
-                bean1.ContactType = "4";
+                bean1.ContactType = "5"; //One Service
                 bean1.ContactName = cAddContactName.Trim();
                 bean1.ContactCity = cAddContactCity.Trim();
                 bean1.ContactAddress = cAddContactAddress.Trim();
@@ -3316,6 +3327,8 @@ namespace OneService.Controllers
             public string cBPMFormNoUrl { get; set; }
             /// <summary>客服主管建議</summary>
             public string cAdvice { get; set; }
+            /// <summary>下包文件編號(CRM標的)</summary>
+            public string cSUB_CONTRACTID { get; set; }
             /// <summary>本次使用</summary>
             public string cUsed { get; set; }
             /// <summary>tr背景顏色Class</summary>

@@ -505,7 +505,8 @@ namespace OneService.Controllers
             string cSLASRV = string.Empty;
             string cContractID = string.Empty;
             string cContractIDURL = string.Empty;
-            string tBPMNO = string.Empty;
+            string cSUB_CONTRACTID = string.Empty;
+            string tBPMNO = string.Empty;            
             string tAdvice = string.Empty;
             string tURL = string.Empty;
             string tBGColor = "table-success";
@@ -569,6 +570,8 @@ namespace OneService.Controllers
                             {
                                 tBPMNO = findContractSealsFormNo(cContractID);
 
+                                cSUB_CONTRACTID = findContractSealsOBJSubNo(cContractID);
+
                                 try
                                 {
                                     Int32 ContractID = Int32.Parse(cContractID);
@@ -607,21 +610,22 @@ namespace OneService.Controllers
                             #region 取得清單
                             SRWarranty QueryInfo = new SRWarranty();
 
-                            QueryInfo.cID = NowCount.ToString();        //系統ID
-                            QueryInfo.cSerialID = IV_SERIAL;            //序號                        
-                            QueryInfo.cWTYID = cWTYID;                  //保固
-                            QueryInfo.cWTYName = cWTYName;              //保固說明
-                            QueryInfo.cWTYSDATE = cWTYSDATE;            //保固開始日期
-                            QueryInfo.cWTYEDATE = cWTYEDATE;            //保固結束日期                                                          
-                            QueryInfo.cSLARESP = cSLARESP;              //回應條件
-                            QueryInfo.cSLASRV = cSLASRV;                //服務條件
-                            QueryInfo.cContractID = cContractID;        //合約編號
-                            QueryInfo.cContractIDUrl = cContractIDURL;  //合約編號Url
-                            QueryInfo.cBPMFormNo = tBPMNO;              //BPM表單編號                        
-                            QueryInfo.cBPMFormNoUrl = tURL;             //BPM URL
-                            QueryInfo.cAdvice = tAdvice;               //客服主管建議
+                            QueryInfo.cID = NowCount.ToString();            //系統ID
+                            QueryInfo.cSerialID = IV_SERIAL;                //序號                        
+                            QueryInfo.cWTYID = cWTYID;                      //保固
+                            QueryInfo.cWTYName = cWTYName;                  //保固說明
+                            QueryInfo.cWTYSDATE = cWTYSDATE;                //保固開始日期
+                            QueryInfo.cWTYEDATE = cWTYEDATE;                //保固結束日期                                                          
+                            QueryInfo.cSLARESP = cSLARESP;                  //回應條件
+                            QueryInfo.cSLASRV = cSLASRV;                   //服務條件
+                            QueryInfo.cContractID = cContractID;           //合約編號
+                            QueryInfo.cContractIDUrl = cContractIDURL;     //合約編號Url
+                            QueryInfo.cSUB_CONTRACTID = cSUB_CONTRACTID;   //下包文件編號
+                            QueryInfo.cBPMFormNo = tBPMNO;                 //BPM表單編號                        
+                            QueryInfo.cBPMFormNoUrl = tURL;                //BPM URL
+                            QueryInfo.cAdvice = tAdvice;                  //客服主管建議                            
                             QueryInfo.cUsed = "N";
-                            QueryInfo.cBGColor = tBGColor;             //tr背景顏色Class
+                            QueryInfo.cBGColor = tBGColor;                //tr背景顏色Class
 
                             QueryToList.Add(QueryInfo);
                             #endregion
@@ -662,6 +666,7 @@ namespace OneService.Controllers
             string cSLASRV = string.Empty;
             string cContractID = string.Empty;
             string cContractIDURL = string.Empty;
+            string cSUB_CONTRACTID = string.Empty;
             string tBPMNO = string.Empty;
             string tURL = string.Empty;
             string tAdvice = string.Empty;
@@ -709,6 +714,7 @@ namespace OneService.Controllers
                     cSLARESP = bean.CSlaresp;                                           //回應條件
                     cSLASRV = bean.CSlasrv;                                             //服務條件
                     cContractID = bean.CContractId;                                     //合約編號
+                    cSUB_CONTRACTID = bean.CSubContractId;                              //下包文件編號
                     tBPMNO = bean.CBpmformNo;                                           //BPM表單編號
                     tAdvice = bean.CAdvice;                                             //客服主管建議
                     cUsed = bean.CUsed;                                                 //本次使用
@@ -756,21 +762,22 @@ namespace OneService.Controllers
                     #region 取得清單
                     SRWarranty QueryInfo = new SRWarranty();
 
-                    QueryInfo.cID = NowCount.ToString();        //系統ID
-                    QueryInfo.cSerialID = cSERIAL;              //序號                        
-                    QueryInfo.cWTYID = cWTYID;                  //保固
-                    QueryInfo.cWTYName = cWTYName;              //保固說明
-                    QueryInfo.cWTYSDATE = cWTYSDATE;            //保固開始日期
-                    QueryInfo.cWTYEDATE = cWTYEDATE;            //保固結束日期                                                          
-                    QueryInfo.cSLARESP = cSLARESP;              //回應條件
-                    QueryInfo.cSLASRV = cSLASRV;                //服務條件
-                    QueryInfo.cContractID = cContractID;        //合約編號
-                    QueryInfo.cContractIDUrl = cContractIDURL;  //合約編號Url
-                    QueryInfo.cBPMFormNo = tBPMNO;              //BPM表單編號                        
-                    QueryInfo.cBPMFormNoUrl = tURL;             //BPM URL
-                    QueryInfo.cAdvice = tAdvice;               //客服主管建議                                           
-                    QueryInfo.cUsed = cUsed;                   //本次使用
-                    QueryInfo.cBGColor = tBGColor;             //tr背景顏色Class
+                    QueryInfo.cID = NowCount.ToString();            //系統ID
+                    QueryInfo.cSerialID = cSERIAL;                  //序號                        
+                    QueryInfo.cWTYID = cWTYID;                      //保固
+                    QueryInfo.cWTYName = cWTYName;                  //保固說明
+                    QueryInfo.cWTYSDATE = cWTYSDATE;                //保固開始日期
+                    QueryInfo.cWTYEDATE = cWTYEDATE;                //保固結束日期                                                          
+                    QueryInfo.cSLARESP = cSLARESP;                  //回應條件
+                    QueryInfo.cSLASRV = cSLASRV;                    //服務條件
+                    QueryInfo.cContractID = cContractID;            //合約編號
+                    QueryInfo.cContractIDUrl = cContractIDURL;      //合約編號Url
+                    QueryInfo.cSUB_CONTRACTID = cSUB_CONTRACTID;    //下包文件編號
+                    QueryInfo.cBPMFormNo = tBPMNO;                  //BPM表單編號                        
+                    QueryInfo.cBPMFormNoUrl = tURL;                 //BPM URL
+                    QueryInfo.cAdvice = tAdvice;                    //客服主管建議                                           
+                    QueryInfo.cUsed = cUsed;                        //本次使用
+                    QueryInfo.cBGColor = tBGColor;                  //tr背景顏色Class
 
                     QueryToList.Add(QueryInfo);
                     #endregion
@@ -789,6 +796,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 傳入合約編號並取得BPM用印申請單表單編號
         /// </summary>
+        /// <param name="NO">合約編號</param>
         /// <returns></returns>
         public string findContractSealsFormNo(string NO)
         {
@@ -827,6 +835,117 @@ namespace OneService.Controllers
             return reValue;
         }
         #endregion
+
+        #region 傳入合約編號並取得CRM合約標的的下包文件編號
+        /// <summary>
+        /// 傳入合約編號並取得CRM合約標的的下包文件編號
+        /// </summary>
+        /// <param name="NO">合約編號</param>
+        /// <returns></returns>
+        public string findContractSealsOBJSubNo(string NO)
+        {
+            string reValue = string.Empty;
+            string SUB_CONTRACTID = string.Empty;
+
+            var client = new RestClient("http://localhost:32603/API/API_CONTRACTOBJINFO_GET");
+
+            if (NO != null)
+            {
+                CONTRACTOBJINFO_OUTPUT OUTBean = new CONTRACTOBJINFO_OUTPUT();
+
+                var request = new RestRequest();
+                request.Method = RestSharp.Method.Post;
+
+                Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+                parameters.Add("IV_CONTRACTID", NO);
+
+                request.AddHeader("Content-Type", "application/json");
+                request.AddParameter("application/json", parameters, ParameterType.RequestBody);
+
+                RestResponse response = client.Execute(request);
+
+                #region 取得回傳訊息(成功或失敗)
+                if (response.Content != null)
+                {
+                    var data = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+                    OUTBean.EV_MSGT = data["EV_MSGT"].ToString().Trim();
+                    OUTBean.EV_MSG = data["EV_MSG"].ToString().Trim();
+                    #endregion
+
+                    if (OUTBean.EV_MSGT == "Y")
+                    {
+                        #region 取得合約標的資料List
+                        var tList = (JArray)JsonConvert.DeserializeObject(data["CONTRACTOBJINFO_LIST"].ToString().Trim());
+
+                        if (tList != null)
+                        {
+                            foreach (JObject bean in tList)
+                            {
+                                SUB_CONTRACTID = bean["SUB_CONTRACTID"].ToString().Trim();
+
+                                if (SUB_CONTRACTID != "")
+                                {
+                                    break;
+                                }
+                            }
+
+                            reValue = SUB_CONTRACTID;
+                        }
+                        #endregion
+                    }
+                }
+                else
+                {
+                    reValue = "下包零壹";
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 查詢合約標的資料OUTPUT資訊
+        /// <summary>查詢合約標的資料OUTPUT資訊</summary>
+        public struct CONTRACTOBJINFO_OUTPUT
+        {
+            /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+            public string EV_MSGT { get; set; }
+            /// <summary>消息內容</summary>
+            public string EV_MSG { get; set; }
+
+            /// <summary>合約標的資料清單</summary>
+            public List<CONTRACTOBJINFO_LIST> CONTRACTOBJINFO_LIST { get; set; }
+        }
+
+        public struct CONTRACTOBJINFO_LIST
+        {
+            /// <summary>主約文件編號</summary>
+            public string CONTRACTID;
+            /// <summary>HostName</summary>
+            public string HOSTNAME;
+            /// <summary>序號</summary>
+            public string SN;
+            /// <summary>廠牌</summary>
+            public string BRANDS;
+            /// <summary>ProductModel</summary>
+            public string MODEL;
+            /// <summary>Location</summary>
+            public string LOCATION;
+            /// <summary>地點</summary>
+            public string PLACE;
+            /// <summary>區域</summary>
+            public string AREA;
+            /// <summary>回應條件</summary>
+            public string RESPONSE_LEVEL;
+            /// <summary>服務條件</summary>
+            public string SERVICE_LEVEL;
+            /// <summary>備註</summary>
+            public string NOTES;
+            /// <summary>下包文件編號</summary>
+            public string SUB_CONTRACTID;
+        }
+        #endregion    
 
         #region 取得一般服務(報修類別說明)
         /// <summary>
@@ -1154,7 +1273,7 @@ namespace OneService.Controllers
             {
                 foreach (var prBean in qPjRec)
                 {
-                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "");
+                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactEmail.Trim().Replace(" ", "");
 
                     if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人名姓名不重覆才要顯示
                     {

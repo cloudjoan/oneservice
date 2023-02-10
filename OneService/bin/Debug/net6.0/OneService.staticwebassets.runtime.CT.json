@@ -1355,11 +1355,43 @@
       },
       "files": {
         "Children": {
+          "3547b5a1-c9ac-4327-a2d3-04a849d95d59.txt": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "files/3547b5a1-c9ac-4327-a2d3-04a849d95d59.txt"
+            },
+            "Patterns": null
+          },
+          "6757e3f8-e05b-4500-ac86-bd20cbb147be.txt": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "files/6757e3f8-e05b-4500-ac86-bd20cbb147be.txt"
+            },
+            "Patterns": null
+          },
           "cc8ec610-0f61-443e-b6a3-cf35a8c45000.PDF": {
             "Children": null,
             "Asset": {
               "ContentRootIndex": 0,
               "SubPath": "files/cc8ec610-0f61-443e-b6a3-cf35a8c45000.PDF"
+            },
+            "Patterns": null
+          },
+          "ecaa263b-09c4-46c3-9e23-1d451e63e6ac.txt": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "files/ecaa263b-09c4-46c3-9e23-1d451e63e6ac.txt"
+            },
+            "Patterns": null
+          },
+          "fdaca6c3-8bc4-42b9-8763-487d74f74fe0.txt": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "files/fdaca6c3-8bc4-42b9-8763-487d74f74fe0.txt"
             },
             "Patterns": null
           }

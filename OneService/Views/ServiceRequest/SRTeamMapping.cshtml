@@ -53,9 +53,9 @@
 				buttons: [
 					$.extend(true, {}, buttonCommon, {
 						extend: 'excelHtml5',
-						title: '服務團隊對照設定檔作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						title: '服務團隊對照組織設定檔作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
 						text: '匯出Excel',
-						sheetName: '服務團隊對照設定檔作業',
+						sheetName: '服務團隊對照組織設定檔作業',
 						exportOptions: {
 							columns: [1, 2, 3, 4] //要顯示的欄位
 						},
@@ -420,13 +420,13 @@
 
 	@section breadcrumb_section{
 	<div class="col-lg-10">
-		<h2>服務團隊對照設定作業</h2>
+		<h2>服務團隊對照組織設定作業</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
 				<a href="#">服務管理系統參數設定</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>服務團隊對照設定作業</strong>
+				<strong>服務團隊對照組織設定作業</strong>
 			</li>
 		</ol>
 	</div>
@@ -438,7 +438,7 @@
 			<div class="ibox ">
 				<div class="ibox-title">
 					<h5>
-						服務團隊對照設定作業
+						服務團隊對照組織設定作業
 						<button id="btn_add_pNA" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_add_pTeamonclick();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
 					</h5>
 					<div class="ibox-tools">
@@ -476,7 +476,7 @@
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>服務團隊對照設定作業查詢結果</h5>
+					<h5>服務團隊對照組織設定作業查詢結果</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
@@ -527,7 +527,7 @@
 	<div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<label class="col-form-label"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i>服務團隊對照設定作業</label>
+				<label class="col-form-label"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i>服務團隊對照組織設定作業</label>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>

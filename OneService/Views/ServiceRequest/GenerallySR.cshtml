@@ -205,24 +205,38 @@
 				}
 			});
 
-			//檔案相關 Start
-			$(popupId).find(".dropzone").each(function (index, value) {
-				if (IsDisabled){
-					$(this).hide();
+			setTimeout(function () {
+                if (IsDisabled)
+				{
+					$(".dropzone").hide();
+					$(".btn-del").hide();
 				}
-				else{
-					$(this).show();
+				else
+				{
+					$(".dropzone").show();
+					$(".btn-del").show();
 				}
-			});
+            }, 500);
+			
 
-			$(popupId).find(".attachment").each(function (index, value) {
-				if (IsDisabled){
-					$(this).hide();
-				}
-				else{
-					$(this).show();
-				}
-			});
+			//檔案相關 Start
+			//$(popupId).find(".dropzone").each(function (index, value) {
+			//	if (IsDisabled){
+			//		$(this).hide();
+			//	}
+			//	else{
+			//		$(this).show();
+			//	}
+			//});
+
+			//$(popupId).find(".attachment").each(function (index, value) {
+			//	if (IsDisabled){
+			//		$(this).hide();
+			//	}
+			//	else{
+			//		$(this).show();
+			//	}
+			//});
 			//檔案相關 End
 		}
 
@@ -2367,6 +2381,9 @@
 								+ "    <a href=" + bean.cContractIDUrl + ">" + bean.cContractID + "</a>"
 								+ "    <input type='hidden' name='hidcContractID' id='hidcContractID" + bean.cID + "' value=" + bean.cContractID + ">"
 								+ "</td>"
+								+ "<td class='hidWASUB_CONTRACTID' style='vertical-align: middle;'>" + bean.cSUB_CONTRACTID
+								+ "    <input type='hidden' name='hidcSUB_CONTRACTID' value=" + bean.cSUB_CONTRACTID + ">"
+								+ "</td>"
 								+ "<td>"
 								+ "    <a href=" + bean.cBPMFormNoUrl + ">" + bean.cBPMFormNo + "</a>"
 								+ "    <input type='hidden' name='hidcBPMFormNo' value=" + bean.cBPMFormNo + ">"
@@ -2395,6 +2412,7 @@
 								+ "<th>SLA回應條件</th>"
 								+ "<th>SLA服務條件</th>"
 								+ "<th>合約編號</th>"
+								+ "<th>下包文件編號</th>"
 								+ "<th>保固申請</th>"
 								+ "<th>客服主管建議</th>"
 								+ "<th>本次使用</th>"							    
@@ -2468,6 +2486,9 @@
 									+ "    <a href=" + bean.cContractIDUrl + ">" + bean.cContractID + "</a>"
 									+ "    <input type='hidden' name='hidcContractID' value=" + bean.cContractID + ">"
 									+ "</td>"
+									+ "<td class='hidWASUB_CONTRACTID' style='vertical-align: middle;'>" + bean.cSUB_CONTRACTID
+									+ "    <input type='hidden' name='hidcSUB_CONTRACTID' value=" + bean.cSUB_CONTRACTID + ">"
+									+ "</td>"
 									+ "<td>"
 									+ "    <a href=" + bean.cBPMFormNoUrl + ">" + bean.cBPMFormNo + "</a>"
 									+ "    <input type='hidden' name='hidcBPMFormNo' value=" + bean.cBPMFormNo + ">"
@@ -2496,6 +2517,7 @@
 									+ "<th>SLA回應條件</th>"
 									+ "<th>SLA服務條件</th>"
 									+ "<th>合約編號</th>"
+									+ "<th>下包文件編號</th>"
 									+ "<th>保固申請</th>"
 									+ "<th>客服主管建議</th>"
 									+ "<th>本次使用</th>"							    
@@ -3444,6 +3466,7 @@
 												<th>SLA回應條件</th>
 												<th>SLA服務條件</th>
 												<th>合約編號</th>
+												<th>下包文件編號</th>
 												<th>保固申請</th>
 												<th>本次使用</th>
 											</tr>
