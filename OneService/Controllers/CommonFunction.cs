@@ -95,6 +95,7 @@ namespace OneService.Controllers
             string tSRType = string.Empty;              //報修類別
             string tMainEngineerID = string.Empty;      //L2工程師ERPID
             string tMainEngineerName = string.Empty;    //L2工程師姓名            
+            string cTechManagerID = string.Empty;      //技術主管ERPID            
             string tModifiedDate = string.Empty;        //修改日期
 
             List<TbOneSrmain> beans = new List<TbOneSrmain>();
@@ -107,7 +108,10 @@ namespace OneService.Controllers
                                    where 
                                    (cStatus <> 'E0015' and cStatus <> 'E0006') and 
                                    (
-                                        CMainEngineerId = '{0}' {1}
+                                        (
+                                            (CMainEngineerId = '{0}') or (cTechManagerID like '%{0}%')
+                                        )
+                                        {1}
                                    )";
 
                 tSQL = string.Format(tSQL, tERPID, tWhere);
@@ -120,10 +124,11 @@ namespace OneService.Controllers
                     tSRType = TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
                     tMainEngineerID = dr["cMainEngineerID"].ToString();
                     tMainEngineerName = dr["cMainEngineerName"].ToString();
+                    cTechManagerID = dr["cTechManagerID"].ToString();                    
                     tModifiedDate = dr["ModifiedDate"].ToString() != "" ? Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss") : "";
 
                     #region 組待處理服務
-                    string[] ProcessInfo = new string[10];
+                    string[] ProcessInfo = new string[11];
 
                     ProcessInfo[0] = dr["cSRID"].ToString();             //SRID
                     ProcessInfo[1] = dr["cCustomerName"].ToString();      //客戶
@@ -133,8 +138,9 @@ namespace OneService.Controllers
                     ProcessInfo[5] = tSRType;                           //報修類別
                     ProcessInfo[6] = tMainEngineerID;                   //L2工程師ERPID
                     ProcessInfo[7] = tMainEngineerName;                 //L2工程師姓名
-                    ProcessInfo[8] = tModifiedDate;                     //最後編輯日期
-                    ProcessInfo[9] = dr["cStatus"].ToString();           //狀態
+                    ProcessInfo[8] = cTechManagerID;                    //技術主管ERPID                    
+                    ProcessInfo[9] = tModifiedDate;                     //最後編輯日期
+                    ProcessInfo[10] = dr["cStatus"].ToString();           //狀態
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -142,7 +148,7 @@ namespace OneService.Controllers
             }
             else
             {
-                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006") && (x.CMainEngineerId == tERPID || x.CAssEngineerId.Contains(tERPID))).ToList();
+                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006") && (x.CMainEngineerId == tERPID || x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID))).ToList();
 
                 foreach (var bean in beans)
                 {
@@ -150,10 +156,11 @@ namespace OneService.Controllers
                     tSRType = TransSRType(bean.CSrtypeOne, bean.CSrtypeSec, bean.CSrtypeThr);
                     tMainEngineerID = string.IsNullOrEmpty(bean.CMainEngineerId) ? "" : bean.CMainEngineerId;
                     tMainEngineerName = string.IsNullOrEmpty(bean.CMainEngineerName) ? "" : bean.CMainEngineerName;
+                    cTechManagerID = string.IsNullOrEmpty(bean.CTechManagerId) ? "" : bean.CTechManagerId;                    
                     tModifiedDate = bean.ModifiedDate == DateTime.MinValue ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
 
                     #region 組待處理服務
-                    string[] ProcessInfo = new string[10];
+                    string[] ProcessInfo = new string[11];
 
                     ProcessInfo[0] = bean.CSrid;            //SRID
                     ProcessInfo[1] = bean.CCustomerName;     //客戶
@@ -163,8 +170,9 @@ namespace OneService.Controllers
                     ProcessInfo[5] = tSRType;              //報修類別
                     ProcessInfo[6] = tMainEngineerID;      //L2工程師ERPID
                     ProcessInfo[7] = tMainEngineerName;    //L2工程師姓名
-                    ProcessInfo[8] = tModifiedDate;        //最後編輯日期
-                    ProcessInfo[9] = bean.CStatus;          //狀態
+                    ProcessInfo[8] = cTechManagerID;       //技術主管ERPID                    
+                    ProcessInfo[9] = tModifiedDate;        //最後編輯日期
+                    ProcessInfo[10] = bean.CStatus;         //狀態
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -1382,6 +1390,33 @@ namespace OneService.Controllers
                 if ( bean.CValue.ToLower() == LoginAccount.ToLower())
                 {
                     reValue = true;                    
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入者是否為客服人員
+        /// <summary>
+        /// 判斷登入者是否為客服人員
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+        /// <returns></returns>
+        public bool getIsCustomerService(string LoginAccount, string tSysOperationID)
+        {
+            bool reValue = false;
+
+            Guid tcID = new Guid(tSysOperationID); //全模組
+
+            var bean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "CUSTOMERSERVICE");
+
+            if (bean != null)
+            {
+                if (bean.CValue.ToLower() == LoginAccount.ToLower())
+                {
+                    reValue = true;
                 }
             }
 

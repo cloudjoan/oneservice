@@ -26,8 +26,8 @@ namespace OneService.Controllers
         //string pLoginAccount = string.Empty;
         //string pLoginAccount = @"etatung\elvis.chang";  //MIS
         //string pLoginAccount = @"etatung\Allen.Chen";    //陳勁嘉(主管)
-        string pLoginAccount = @"etatung\Boyen.Chen";    //陳建良(主管)
-        //string pLoginAccount = @"etatung\Aniki.Huang";    //黃志豪(主管)
+        //string pLoginAccount = @"etatung\Boyen.Chen";    //陳建良(主管)
+        string pLoginAccount = @"etatung\Aniki.Huang";    //黃志豪(主管)
         //string pLoginAccount = @"etatung\jack.hung";      //洪佑典(主管)
         //string pLoginAccount = @"etatung\Wenjui.Chan";    //詹文瑞
 
@@ -48,6 +48,11 @@ namespace OneService.Controllers
         /// 登入者是否為MIS(true.是 false.否)
         /// </summary>
         bool pIsMIS = false;
+
+        /// <summary>
+        /// 登入者是否為客服人員(true.是 false.否)
+        /// </summary>
+        bool pIsCS = false;
 
         /// <summary>
         /// 登入者是否為管理者(true.是 false.否)
@@ -1256,7 +1261,7 @@ namespace OneService.Controllers
         {
             List<SRTeamInfo> liSRTeamInfo = new List<SRTeamInfo>();
 
-            string tEmpName = string.Empty; //服務團隊姓名(中文姓名+英文姓名)
+            string tEmpName = string.Empty; //服務團隊姓名(中文姓名+英文姓名)            
 
             if (!string.IsNullOrEmpty(cTeamID))
             {
@@ -2608,8 +2613,10 @@ namespace OneService.Controllers
 
             #region One Service相關帳號
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
+            pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
 
             ViewBag.pIsMIS = pIsMIS;
+            ViewBag.pIsCS = pIsCS;
             #endregion            
         }
         #endregion

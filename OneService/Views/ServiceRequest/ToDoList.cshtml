@@ -185,11 +185,13 @@
 							{
 								foreach (string[] CheckInfo in ViewBag.SRIDList_GenerallySR)
 								{
-									//判斷是主管且狀態非【新建】
-									if (ViewBag.pIsManager && CheckInfo[9] != "E0001")
+									string tERPID = ViewBag.cLoginUser_ERPID;
+
+										//判斷是主管且狀態非【新建】
+									if (ViewBag.pIsManager && CheckInfo[10] != "E0001")
 									{
-										//判斷是主管且不為主要工程師才跳過
-										if (ViewBag.cLoginUser_ERPID != CheckInfo[6]) 
+										//判斷是主管且【不為主要工程師】且【也不為技術主管】才跳過
+										if (tERPID != CheckInfo[6] && CheckInfo[8].IndexOf(tERPID) == -1)
 										{
 											continue;
 										}
@@ -204,48 +206,48 @@
 										<td>@CheckInfo[4]</td>
 										<td>@Html.Raw(CheckInfo[5])</td>
 										<td>@CheckInfo[7]</td>
-										<td>@CheckInfo[8]</td>
+										<td>@CheckInfo[9]</td>
 										<td>
 											@{
 												string tTypeName = string.Empty;
 												string tClass = string.Empty;
 
-												if (CheckInfo[9] == "E0001")
+												if (CheckInfo[10] == "E0001")
 												{
 													tClass = "btn btn-info";
 													tTypeName = "新建";
 												}
-												else if (CheckInfo[9] == "E0002")
+												else if (CheckInfo[10] == "E0002")
 												{
 													tClass = "btn btn-primary";
 													tTypeName = "L2處理中";
 												}
-												else if (CheckInfo[9] == "E0003")
+												else if (CheckInfo[10] == "E0003")
 												{
 													tClass = "btn btn-primary";
 													tTypeName = "報價中";
 												}
-												else if (CheckInfo[9] == "E0004")
+												else if (CheckInfo[10] == "E0004")
 												{
 													tClass = "btn btn-primary";
 													tTypeName = "3rd Party處理中";
 												}
-												else if (CheckInfo[9] == "E0005")
+												else if (CheckInfo[10] == "E0005")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "L3處理中";
 												}
-												else if (CheckInfo[9] == "E0012")
+												else if (CheckInfo[10] == "E0012")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "HPGCSN 申請";
 												}
-												else if (CheckInfo[9] == "E0013")
+												else if (CheckInfo[10] == "E0013")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "HPGCSN 完成";
 												}
-												else if (CheckInfo[9] == "E0014")
+												else if (CheckInfo[10] == "E0014")
 												{
 													tClass = "btn btn-info";
 													tTypeName = "駁回";
