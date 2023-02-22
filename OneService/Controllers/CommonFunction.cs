@@ -71,6 +71,10 @@ namespace OneService.Controllers
                 case "63":  //裝機服務
 
                     break;
+
+                case "65":  //定維服務
+
+                    break;
             }
 
             return SRIDUserToList;

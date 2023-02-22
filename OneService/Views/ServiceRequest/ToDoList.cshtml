@@ -91,7 +91,7 @@
 					{ "width": "100px", "targets": 3 },   //說明
 					{ "width": "32px", "targets": 4 },   //報修管道
 					{ "width": "32px", "targets": 5 },  //報修類別
-					{ "width": "32px", "targets": 6 },  //主要工程師
+					{ "width": "32px", "targets": 6 },  //L2工程師
 					{ "width": "60px", "targets": 7 },   //最後編輯日期
 					{ "width": "32px", "targets": 8 },   //狀態
 				],
@@ -173,7 +173,7 @@
 								<th>說明</th>
 								<th>報修管道</th>
 								<th>報修類別</th>
-								<th>主要工程師</th>
+								<th>L2工程師</th>
 								<th>最後編輯日期</th>
 								<th>狀態</th>
 							</tr>
@@ -190,7 +190,7 @@
 										//判斷是主管且狀態非【新建】
 									if (ViewBag.pIsManager && CheckInfo[10] != "E0001")
 									{
-										//判斷是主管且【不為主要工程師】且【也不為技術主管】才跳過
+										//判斷是主管且【不為L2工程師】且【也不為技術主管】才跳過
 										if (tERPID != CheckInfo[6] && CheckInfo[8].IndexOf(tERPID) == -1)
 										{
 											continue;

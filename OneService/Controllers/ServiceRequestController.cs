@@ -214,6 +214,7 @@ namespace OneService.Controllers
                 ViewBag.cSRPathWay = beanM.CSrpathWay;
                 ViewBag.cMAServiceType = beanM.CMaserviceType;
                 ViewBag.cSRProcessWay = beanM.CSrprocessWay;
+                ViewBag.cDelayReason = beanM.CDelayReason;
                 ViewBag.cIsSecondFix = beanM.CIsSecondFix;
 
                 ViewBag.pStatus = beanM.CStatus;
@@ -295,6 +296,7 @@ namespace OneService.Controllers
                 ViewBag.pStatus = "E0001";      //新建
                 ViewBag.cMAServiceType = "";    //請選擇
                 ViewBag.cSRProcessWay = "";     //請選擇
+                ViewBag.cDelayReason = "";      //空值
                 ViewBag.cIsSecondFix = "";     //請選擇
             }
             #endregion
@@ -348,12 +350,13 @@ namespace OneService.Controllers
             string CSrtypeThr = formCollection["ddl_cSRTypeThr"].FirstOrDefault();
             string CSrpathWay = formCollection["ddl_cSRPathWay"].FirstOrDefault();
             string CSrprocessWay = formCollection["ddl_cSRProcessWay"].FirstOrDefault();
+            string CRepairEmail = formCollection["tbx_cRepairEmail"].FirstOrDefault();
             string CIsSecondFix = formCollection["ddl_cIsSecondFix"].FirstOrDefault();
             string CRepairName = formCollection["tbx_cRepairName"].FirstOrDefault();
             string CRepairAddress = formCollection["tbx_cRepairAddress"].FirstOrDefault();
             string CRepairPhone = formCollection["tbx_cRepairPhone"].FirstOrDefault();
             string CRepairMobile = formCollection["tbx_cRepairMobile"].FirstOrDefault();
-            string CRepairEmail = formCollection["tbx_cRepairEmail"].FirstOrDefault();            
+            string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();            
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CSqpersonId = formCollection["hid_cSQPersonID"].FirstOrDefault();
             string CSqpersonName = formCollection["tbx_cSQPersonName"].FirstOrDefault();
@@ -388,6 +391,7 @@ namespace OneService.Controllers
                     beanM.CSrtypeThr = CSrtypeThr;
                     beanM.CSrpathWay = CSrpathWay;
                     beanM.CSrprocessWay = CSrprocessWay;
+                    beanM.CDelayReason = CDelayReason;
                     beanM.CIsSecondFix = CIsSecondFix;
                     beanM.CRepairName = CRepairName;
                     beanM.CRepairAddress = CRepairAddress;
@@ -559,6 +563,7 @@ namespace OneService.Controllers
                     beanNowM.CSrtypeThr = CSrtypeThr;
                     beanNowM.CSrpathWay = CSrpathWay;
                     beanNowM.CSrprocessWay = CSrprocessWay;
+                    beanNowM.CDelayReason = CDelayReason;
                     beanNowM.CIsSecondFix = CIsSecondFix;
                     beanNowM.CRepairName = CRepairName;
                     beanNowM.CRepairAddress = CRepairAddress;
