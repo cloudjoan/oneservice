@@ -486,7 +486,7 @@ namespace OneService.Models
                     .HasMaxLength(255)
                     .HasColumnName("cAssEngineerID");
 
-                entity.Property(e => e.CAttatchement).HasColumnName("cAttatchement");
+                entity.Property(e => e.CAttachement).HasColumnName("cAttachement");
 
                 entity.Property(e => e.CCustomerId)
                     .HasMaxLength(10)

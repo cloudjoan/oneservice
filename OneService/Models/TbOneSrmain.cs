@@ -10,7 +10,7 @@ namespace OneService.Models
         public string? CCustomerName { get; set; }
         public string? CDesc { get; set; }
         public string? CNotes { get; set; }
-        public string? CAttatchement { get; set; }
+        public string? CAttachement { get; set; }
         public string? CStatus { get; set; }
         public string? CMaserviceType { get; set; }
         public string? CDelayReason { get; set; }

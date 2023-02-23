@@ -210,7 +210,7 @@ namespace OneService.Controllers
                 ViewBag.cCustomerName = beanM.CCustomerName;                
                 ViewBag.cDesc = beanM.CDesc;
                 ViewBag.cNotes = beanM.CNotes;
-                ViewBag.cAttatchement = beanM.CAttatchement;
+                ViewBag.cAttachement = beanM.CAttachement;
                 ViewBag.cSRPathWay = beanM.CSrpathWay;
                 ViewBag.cMAServiceType = beanM.CMaserviceType;
                 ViewBag.cSRProcessWay = beanM.CSrprocessWay;
@@ -384,7 +384,7 @@ namespace OneService.Controllers
                     beanM.CCustomerId = CCustomerId;                    
                     beanM.CDesc = CDesc;
                     beanM.CNotes = CNotes;
-                    beanM.CAttatchement = CAttach;
+                    beanM.CAttachement = CAttach;
                     beanM.CMaserviceType = CMaserviceType;
                     beanM.CSrtypeOne = CSrtypeOne;
                     beanM.CSrtypeSec = CSrtypeSec;
@@ -556,7 +556,7 @@ namespace OneService.Controllers
                     beanNowM.CCustomerId = CCustomerId;                    
                     beanNowM.CDesc = CDesc;
                     beanNowM.CNotes = CNotes;
-                    beanNowM.CAttatchement = CAttach;
+                    beanNowM.CAttachement = CAttach;
                     beanNowM.CMaserviceType = CMaserviceType;
                     beanNowM.CSrtypeOne = CSrtypeOne;
                     beanNowM.CSrtypeSec = CSrtypeSec;
