@@ -9,6 +9,7 @@ using RestSharp;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics.Metrics;
+using System.Drawing;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
@@ -29,7 +30,7 @@ namespace OneService.Controllers
         string pLoginAccount = @"etatung\Boyen.Chen";    //陳建良(主管)
         //string pLoginAccount = @"etatung\Aniki.Huang";    //黃志豪(主管)
         //string pLoginAccount = @"etatung\jack.hung";      //洪佑典(主管)
-        //string pLoginAccount = @"etatung\Wenjui.Chan";    //詹文瑞
+        //string pLoginAccount = @"etatung\Steve.Guo";    //郭翔元
 
         /// <summary>全域變數</summary>
         string pMsg = "";
@@ -216,8 +217,9 @@ namespace OneService.Controllers
                 ViewBag.cSRProcessWay = beanM.CSrprocessWay;
                 ViewBag.cDelayReason = beanM.CDelayReason;
                 ViewBag.cIsSecondFix = beanM.CIsSecondFix;
-
                 ViewBag.pStatus = beanM.CStatus;
+
+                ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                 #endregion
 
                 #region 報修類別
@@ -307,6 +309,7 @@ namespace OneService.Controllers
             model.ddl_cMAServiceType = ViewBag.cMAServiceType;   //設定維護服務種類
             model.ddl_cSRProcessWay = ViewBag.cSRProcessWay;    //設定處理方式
             model.ddl_cIsSecondFix = ViewBag.cIsSecondFix;      //是否為二修
+            model.ddl_cCustomerType = ViewBag.cCustomerType;    //客戶類型(P.個人 C.法人)
             #endregion
 
             ViewBag.SRTypeOneList = SRTypeOneList;
@@ -1153,6 +1156,22 @@ namespace OneService.Controllers
             CommonFunction CMF = new CommonFunction();
 
             var tList = CMF.findSysParameterListItem(cOperationID, cFunctionID, cCompanyID, cNo, cEmptyOption);
+
+            return tList;
+        }
+        #endregion
+
+        #region 取得客戶類型
+        /// <summary>
+        /// 取得客戶類型
+        /// </summary>        
+        static public List<SelectListItem> findCustomerTypeList()
+        {
+            var tList = new List<SelectListItem>();
+
+            tList.Add(new SelectListItem { Text = "", Value = "" });
+            tList.Add(new SelectListItem { Text = "法人", Value = "C" });
+            tList.Add(new SelectListItem { Text = "個人", Value = "P" });
 
             return tList;
         }
@@ -2330,6 +2349,203 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑SQ人員設定作業 ↑↑↑↑↑-----   
 
+        #region -----↓↓↓↓↓個人客戶設定作業 ↓↓↓↓↓-----
+        /// <summary>
+        /// 個人客戶設定作業
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult SRPersonCustomer()
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion            
+
+            return View();
+        }
+
+        #region 個人客戶設定作業查詢結果
+        /// <summary>
+        /// 個人客戶設定作業查詢結果
+        /// </summary>        
+        /// <param name="KNA1_KUNNR">個人客戶代號/名稱</param>
+        /// <param name="ContactName">姓名</param>
+        /// <returns></returns>
+        public IActionResult SRPersonCustomerResult(string KNA1_KUNNR, string ContactName)
+        {
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            #region 組待查詢清單
+            var beans = dbProxy.PersonalContacts.OrderBy(x => x.Kna1Kunnr).Where(x => x.Disabled == 0 &&
+                                                                            (string.IsNullOrEmpty(KNA1_KUNNR) ? true : (x.Kna1Kunnr.Contains(KNA1_KUNNR) || x.Kna1Name1.Contains(KNA1_KUNNR))) &&
+                                                                            (string.IsNullOrEmpty(ContactName) ? true : x.ContactName.Contains(ContactName)));
+
+            foreach (var bean in beans)
+            {
+                string[] QueryInfo = new string[10];
+
+                QueryInfo[0] = bean.ContactId.ToString();   //系統ID
+                QueryInfo[1] = bean.Kna1Kunnr;              //個人客戶代號
+                QueryInfo[2] = bean.Kna1Name1;              //個人客戶名稱   
+                QueryInfo[3] = pCompanyCode;                //公司別
+                QueryInfo[4] = bean.ContactName;            //姓名
+                QueryInfo[5] = bean.ContactPhone;           //電話
+                QueryInfo[6] = bean.ContactMobile;          //手機
+                QueryInfo[7] = bean.ContactEmail;           //Email
+                QueryInfo[8] = bean.ContactCity;            //城市
+                QueryInfo[9] = bean.ContactAddress;         //詳細地址
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion
+
+        #region 儲存個人客戶設定檔
+        /// <summary>
+        /// 儲存個人客戶設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="KNB1_BUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="KNA1_KUNNR">個人客戶代號</param>
+        /// <param name="KNA1_NAME1">個人客戶名稱</param>
+        /// <param name="ContactName">姓名</param>
+        /// <param name="ContactPhone">電話</param>
+        /// <param name="ContactCity">城市</param>
+        /// <param name="ContactMobile">手機</param>
+        /// <param name="ContactAddress">詳細地址</param>
+        /// <param name="ContactEmail">Email</param>
+        /// <returns></returns>
+        public ActionResult saveSRPersonCustomer(string cID, string KNB1_BUKRS, string KNA1_KUNNR, string KNA1_NAME1, string ContactName, 
+                                               string ContactPhone, string ContactCity, string ContactMobile, string ContactAddress, string ContactEmail)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            #endregion
+
+            string tMsg = string.Empty;
+
+            KNB1_BUKRS = string.IsNullOrEmpty(KNB1_BUKRS) ? "" : KNB1_BUKRS;
+            KNA1_KUNNR = string.IsNullOrEmpty(KNA1_KUNNR) ? "" : KNA1_KUNNR;
+            KNA1_NAME1 = string.IsNullOrEmpty(KNA1_NAME1) ? "" : KNA1_NAME1;
+            ContactName = string.IsNullOrEmpty(ContactName) ? "" : ContactName;
+            ContactPhone = string.IsNullOrEmpty(ContactPhone) ? "" : ContactPhone;
+            ContactCity = string.IsNullOrEmpty(ContactCity) ? "" : ContactCity;
+            ContactMobile = string.IsNullOrEmpty(ContactMobile) ? "" : ContactMobile;
+            ContactAddress = string.IsNullOrEmpty(ContactAddress) ? "" : ContactAddress;
+            ContactEmail = string.IsNullOrEmpty(ContactEmail) ? "" : ContactEmail;
+
+            try
+            {
+                int result = 0;
+                if (cID == null)
+                {
+                    #region -- 新增 --                    
+                    PersonalContact prBean1 = new PersonalContact();
+
+                    string CNO = CMF.findPERSONALISerialID();
+
+                    prBean1.ContactId = Guid.NewGuid();                    
+                    prBean1.Kna1Kunnr = CNO;
+                    prBean1.Kna1Name1 = KNA1_NAME1;
+                    prBean1.Knb1Bukrs = EmpBean.BUKRS;
+                    prBean1.ContactName = ContactName;
+                    prBean1.ContactPhone = ContactPhone;
+                    prBean1.ContactCity = ContactCity;
+                    prBean1.ContactMobile = ContactMobile;
+                    prBean1.ContactAddress = ContactAddress;
+                    prBean1.ContactEmail = ContactEmail;
+                    prBean1.Disabled = 0;
+
+                    prBean1.CreatedUserName = EmpBean.EmployeeCName;
+                    prBean1.CreatedDate = DateTime.Now;
+
+                    dbProxy.PersonalContacts.Add(prBean1);
+                    result = dbProxy.SaveChanges();
+                    #endregion
+                }
+                else
+                {
+                    #region -- 編輯 --
+                    var prBean = dbProxy.PersonalContacts.FirstOrDefault(x => x.Disabled == 0 && x.ContactId.ToString() != cID &&
+                                                                          (string.IsNullOrEmpty(ContactEmail) ? true : x.ContactEmail == ContactEmail));
+                    if (prBean == null)
+                    {
+                        var prBean1 = dbProxy.PersonalContacts.FirstOrDefault(x => x.ContactId.ToString() == cID);
+
+                        prBean1.Kna1Name1 = KNA1_NAME1;                        
+                        prBean1.ContactName = ContactName;
+                        prBean1.ContactPhone = ContactPhone;
+                        prBean1.ContactCity = ContactCity;
+                        prBean1.ContactMobile = ContactMobile;
+                        prBean1.ContactAddress = ContactAddress;
+                        prBean1.ContactEmail = ContactEmail;
+
+                        prBean1.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean1.ModifiedDate = DateTime.Now;
+                        result = dbProxy.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此個人客戶Email已存在，請重新輸入！";
+                    }
+                    #endregion
+                }
+                return Json(tMsg);
+            }
+            catch (Exception e)
+            {
+                return Json(e.Message);
+            }
+        }
+        #endregion
+
+        #region 刪除個人客戶設定檔
+        /// <summary>
+        /// 刪除個人客戶設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public ActionResult DeleteSRPersonCustomer(string cID)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            #endregion
+
+            var ctBean = dbProxy.PersonalContacts.FirstOrDefault(x => x.ContactId.ToString() == cID);
+            ctBean.Disabled = 1;
+            ctBean.ModifiedUserName = EmpBean.EmployeeCName;
+            ctBean.ModifiedDate = DateTime.Now;
+
+            var result = dbProxy.SaveChanges();
+
+            return Json(result);
+        }
+        #endregion       
+
+        #endregion -----↑↑↑↑↑個人客戶設定作業 ↑↑↑↑↑-----   
+
         #region -----↓↓↓↓↓報修類別設定作業 ↓↓↓↓↓-----
         /// <summary>
         /// 報修類別設定作業
@@ -2848,21 +3064,40 @@ namespace OneService.Controllers
                                                string cEditContactCity, string cEditContactAddress, string cEditContactPhone, string cEditContactMobile, 
                                                string cEditContactEmail, string ModifiedUserName)
         {
-            var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.ContactId.ToString() == cEditContactID);
-
             cEditContactMobile = String.IsNullOrEmpty(cEditContactMobile) ? "" : cEditContactMobile;
 
-            if (bean != null) //修改
+            if (cCustomerID.Substring(0, 1) == "P")
             {
-                bean.ContactCity = cEditContactCity.Trim();
-                bean.ContactAddress = cEditContactAddress.Trim();
-                bean.ContactPhone = cEditContactPhone.Trim();
-                bean.ContactMobile = cEditContactMobile.Trim();
-                bean.ContactEmail = cEditContactEmail.Trim();
+                var bean = dbProxy.PersonalContacts.FirstOrDefault(x => x.ContactId.ToString() == cEditContactID);
 
-                bean.ModifiedUserName = ModifiedUserName;
-                bean.ModifiedDate = DateTime.Now;
-            }           
+                if (bean != null) //修改
+                {
+                    bean.ContactCity = cEditContactCity.Trim();
+                    bean.ContactAddress = cEditContactAddress.Trim();
+                    bean.ContactPhone = cEditContactPhone.Trim();
+                    bean.ContactMobile = cEditContactMobile.Trim();
+                    bean.ContactEmail = cEditContactEmail.Trim();
+
+                    bean.ModifiedUserName = ModifiedUserName;
+                    bean.ModifiedDate = DateTime.Now;
+                }
+            }
+            else
+            {
+                var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.ContactId.ToString() == cEditContactID);
+
+                if (bean != null) //修改
+                {
+                    bean.ContactCity = cEditContactCity.Trim();
+                    bean.ContactAddress = cEditContactAddress.Trim();
+                    bean.ContactPhone = cEditContactPhone.Trim();
+                    bean.ContactMobile = cEditContactMobile.Trim();
+                    bean.ContactEmail = cEditContactEmail.Trim();
+
+                    bean.ModifiedUserName = ModifiedUserName;
+                    bean.ModifiedDate = DateTime.Now;
+                }
+            }                       
 
             var result = dbProxy.SaveChanges();
 
@@ -2892,45 +3127,91 @@ namespace OneService.Controllers
         {
             string tBpmNo = "GenerallySR";
 
-            var bean = dbProxy.CustomerContacts.FirstOrDefault(x => (x.Disabled == null || x.Disabled != 1) && 
-                                                                 x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
-
-            cAddContactMobile = String.IsNullOrEmpty(cAddContactMobile) ? "" : cAddContactMobile;
-
-            if (bean != null) //修改
+            if (cCustomerID.Substring(0, 1) == "P")
             {
-                bean.ContactCity = cAddContactCity.Trim();
-                bean.ContactAddress = cAddContactAddress.Trim();
-                bean.ContactPhone = cAddContactPhone.Trim();
-                bean.ContactMobile = cAddContactMobile.Trim();
-                bean.ContactEmail = cAddContactEmail.Trim();
+                #region 個人客戶
 
-                bean.ModifiedUserName = ModifiedUserName;
-                bean.ModifiedDate = DateTime.Now;
+                var bean = dbProxy.PersonalContacts.FirstOrDefault(x => x.Disabled == 0 && x.Knb1Bukrs == cBUKRS &&
+                                                                     x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
+
+                if (bean != null) //修改
+                {
+                    bean.ContactCity = cAddContactCity.Trim();
+                    bean.ContactAddress = cAddContactAddress.Trim();
+                    bean.ContactPhone = cAddContactPhone.Trim();
+                    bean.ContactMobile = cAddContactMobile.Trim();
+                    bean.ContactEmail = cAddContactEmail.Trim();
+                   
+                    bean.ModifiedUserName = ModifiedUserName;
+                    bean.ModifiedDate = DateTime.Now;
+                }
+                else
+                {
+                    PersonalContact bean1 = new PersonalContact();
+
+                    bean1.ContactId = Guid.NewGuid();
+                    bean1.Kna1Kunnr = cCustomerID;
+                    bean1.Kna1Name1 = cCustomerName;
+                    bean1.Knb1Bukrs = cBUKRS;
+                    bean1.ContactName = cAddContactName.Trim();
+                    bean1.ContactCity = cAddContactCity.Trim();
+                    bean1.ContactAddress = cAddContactAddress.Trim();
+                    bean1.ContactPhone = cAddContactPhone.Trim();
+                    bean1.ContactMobile = cAddContactMobile.Trim();
+                    bean1.ContactEmail = cAddContactEmail.Trim();
+                    bean1.Disabled = 0;
+
+                    bean1.CreatedUserName = pLoginName;
+                    bean1.CreatedDate = DateTime.Now;
+
+                    dbProxy.PersonalContacts.Add(bean1);
+                }
+                #endregion
             }
-            else //新增
+            else
             {
-                CustomerContact bean1 = new CustomerContact();
+                #region 法人客戶
+                var bean = dbProxy.CustomerContacts.FirstOrDefault(x => (x.Disabled == null || x.Disabled != 1) &&
+                                                                     x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
 
-                bean1.ContactId = Guid.NewGuid();
-                bean1.Kna1Kunnr = cCustomerID;
-                bean1.Kna1Name1 = cCustomerName;
-                bean1.Knb1Bukrs = cBUKRS;
-                bean1.ContactType = "5"; //One Service
-                bean1.ContactName = cAddContactName.Trim();
-                bean1.ContactCity = cAddContactCity.Trim();
-                bean1.ContactAddress = cAddContactAddress.Trim();
-                bean1.ContactPhone = cAddContactPhone.Trim();
-                bean1.ContactMobile = cAddContactMobile.Trim();
-                bean1.ContactEmail = cAddContactEmail.Trim();
-                bean1.BpmNo = tBpmNo;
-                bean1.Disabled = 0;
+                cAddContactMobile = String.IsNullOrEmpty(cAddContactMobile) ? "" : cAddContactMobile;
 
-                bean1.ModifiedUserName = ModifiedUserName;                
-                bean1.ModifiedDate = DateTime.Now;
+                if (bean != null) //修改
+                {
+                    bean.ContactCity = cAddContactCity.Trim();
+                    bean.ContactAddress = cAddContactAddress.Trim();
+                    bean.ContactPhone = cAddContactPhone.Trim();
+                    bean.ContactMobile = cAddContactMobile.Trim();
+                    bean.ContactEmail = cAddContactEmail.Trim();
 
-                dbProxy.CustomerContacts.Add(bean1);
-            }
+                    bean.ModifiedUserName = ModifiedUserName;
+                    bean.ModifiedDate = DateTime.Now;
+                }
+                else //新增
+                {
+                    CustomerContact bean1 = new CustomerContact();
+
+                    bean1.ContactId = Guid.NewGuid();
+                    bean1.Kna1Kunnr = cCustomerID;
+                    bean1.Kna1Name1 = cCustomerName;
+                    bean1.Knb1Bukrs = cBUKRS;
+                    bean1.ContactType = "5"; //One Service
+                    bean1.ContactName = cAddContactName.Trim();
+                    bean1.ContactCity = cAddContactCity.Trim();
+                    bean1.ContactAddress = cAddContactAddress.Trim();
+                    bean1.ContactPhone = cAddContactPhone.Trim();
+                    bean1.ContactMobile = cAddContactMobile.Trim();
+                    bean1.ContactEmail = cAddContactEmail.Trim();
+                    bean1.BpmNo = tBpmNo;
+                    bean1.Disabled = 0;
+
+                    bean1.ModifiedUserName = ModifiedUserName;
+                    bean1.ModifiedDate = DateTime.Now;
+
+                    dbProxy.CustomerContacts.Add(bean1);
+                }
+                #endregion
+            }            
 
             var result = dbProxy.SaveChanges();
 
@@ -3069,8 +3350,15 @@ namespace OneService.Controllers
 
             string tBpmNo = "GenerallySR";
 
-            contentObj = dbProxy.CustomerContacts.Where(x => (x.Disabled == null || x.Disabled != 1) &&
-                                                           x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName.Contains(keyword));
+            if (cCustomerID.Substring(0, 1) == "P") //個人客戶
+            {
+                contentObj = dbProxy.PersonalContacts.Where(x => x.Disabled == 0 && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName.Contains(keyword));
+            }
+            else //法人客戶
+            {
+                contentObj = dbProxy.CustomerContacts.Where(x => (x.Disabled == null || x.Disabled != 1) &&
+                                                               x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName.Contains(keyword));
+            }
 
             return Json(contentObj);
         }
@@ -3243,6 +3531,11 @@ namespace OneService.Controllers
             #region 是否有人損
             public string ddl_PAcPersonalDamage { get; set; }
             public List<SelectListItem> ListPersonalDamage = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "PERSONALDAMAGE", false);
+            #endregion
+
+            #region 客戶類型
+            public string ddl_cCustomerType { get; set; }
+            public List<SelectListItem> ListCustomerType = findCustomerTypeList();
             #endregion
         }
         #endregion

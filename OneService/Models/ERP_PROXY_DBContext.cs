@@ -20,11 +20,13 @@ namespace OneService.Models
         public virtual DbSet<F0005> F0005s { get; set; } = null!;
         public virtual DbSet<F4501> F4501s { get; set; } = null!;
         public virtual DbSet<Material> Materials { get; set; } = null!;
+        public virtual DbSet<PersonalContact> PersonalContacts { get; set; } = null!;
         public virtual DbSet<PostalaAddressAndCode> PostalaAddressAndCodes { get; set; } = null!;
         public virtual DbSet<Stockall> Stockalls { get; set; } = null!;
         public virtual DbSet<Stockwty> Stockwties { get; set; } = null!;
         public virtual DbSet<TbMailContent> TbMailContents { get; set; } = null!;
         public virtual DbSet<ViewCustomer2> ViewCustomer2s { get; set; } = null!;
+        public virtual DbSet<ViewCustomerandpersonal> ViewCustomerandpersonals { get; set; } = null!;
         public virtual DbSet<ViewMaterialByComp> ViewMaterialByComps { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -674,6 +676,49 @@ namespace OneService.Models
                     .HasComment("儲格");
             });
 
+            modelBuilder.Entity<PersonalContact>(entity =>
+            {
+                entity.HasKey(e => e.ContactId);
+
+                entity.ToTable("PERSONAL_Contact");
+
+                entity.Property(e => e.ContactId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("ContactID");
+
+                entity.Property(e => e.ContactAddress).HasMaxLength(100);
+
+                entity.Property(e => e.ContactCity).HasMaxLength(10);
+
+                entity.Property(e => e.ContactEmail).HasMaxLength(200);
+
+                entity.Property(e => e.ContactMobile).HasMaxLength(50);
+
+                entity.Property(e => e.ContactName).HasMaxLength(40);
+
+                entity.Property(e => e.ContactPhone).HasMaxLength(50);
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.Kna1Kunnr)
+                    .HasMaxLength(10)
+                    .HasColumnName("KNA1_KUNNR");
+
+                entity.Property(e => e.Kna1Name1)
+                    .HasMaxLength(35)
+                    .HasColumnName("KNA1_NAME1");
+
+                entity.Property(e => e.Knb1Bukrs)
+                    .HasMaxLength(4)
+                    .HasColumnName("KNB1_BUKRS");
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
             modelBuilder.Entity<PostalaAddressAndCode>(entity =>
             {
                 entity.HasKey(e => new { e.Code, e.City, e.Township, e.Road, e.No });
@@ -944,6 +989,29 @@ namespace OneService.Models
                 entity.HasNoKey();
 
                 entity.ToView("VIEW_CUSTOMER_2");
+
+                entity.Property(e => e.Kna1Kunnr)
+                    .HasMaxLength(10)
+                    .HasColumnName("KNA1_KUNNR");
+
+                entity.Property(e => e.Kna1Name1)
+                    .HasMaxLength(35)
+                    .HasColumnName("KNA1_NAME1");
+
+                entity.Property(e => e.KnvvKdgrp)
+                    .HasMaxLength(2)
+                    .HasColumnName("KNVV_KDGRP");
+
+                entity.Property(e => e.KnvvVkorg)
+                    .HasMaxLength(4)
+                    .HasColumnName("KNVV_VKORG");
+            });
+
+            modelBuilder.Entity<ViewCustomerandpersonal>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_CUSTOMERANDPERSONAL");
 
                 entity.Property(e => e.Kna1Kunnr)
                     .HasMaxLength(10)

@@ -1193,17 +1193,17 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 查詢客戶資料By公司別
+        #region 查詢客戶資料By公司別(含法人和個人客戶)
         /// <summary>
-        /// 查詢客戶資料By公司別
+        /// 查詢客戶資料By公司別(含法人和個人客戶)
         /// </summary>
         /// <param name="keyword">關鍵字</param>
         /// <param name="compcde">公司別</param>
         /// <returns></returns>
-        public IQueryable<ViewCustomer2> findCustByKeywordAndComp(string keyword, string compcde)
+        public IQueryable<ViewCustomerandpersonal> findCustByKeywordAndComp(string keyword, string compcde)
         {
-            return dbProxy.ViewCustomer2s.Where(x => x.KnvvVkorg == compcde &&
-                                                   (x.Kna1Name1.Contains(keyword) || x.Kna1Kunnr.Contains(keyword))).Take(30);
+            return dbProxy.ViewCustomerandpersonals.Where(x => x.KnvvVkorg == compcde &&
+                                                          (x.Kna1Name1.Contains(keyword) || x.Kna1Kunnr.Contains(keyword))).Take(30);
         }
         #endregion
 
@@ -1216,27 +1216,21 @@ namespace OneService.Controllers
         /// <returns></returns>
         public List<PCustomerContact> GetContactInfo(string cBUKRS, string CustomerID)
         {
-            var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
-                                               Where(x => (x.Disabled == null || x.Disabled != 1) && x.ContactName != "" && x.ContactCity != "" &&
-                                                          x.ContactAddress != "" && x.ContactPhone != "" && x.ContactEmail != "" &&
-                                                          x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID).ToList();
-
             List<string> tTempList = new List<string>();
+            List<PCustomerContact> liPCContact = new List<PCustomerContact>();
 
             string tTempValue = string.Empty;
             string ContactMobile = string.Empty;
 
-            List<PCustomerContact> liPCContact = new List<PCustomerContact>();
-            if (qPjRec != null && qPjRec.Count() > 0)
+            if (CustomerID.Substring(0, 1) == "P")
             {
-                foreach (var prBean in qPjRec)
+                var qPjRec = dbProxy.PersonalContacts.OrderByDescending(x => x.ModifiedDate).
+                                                   Where(x => x.Disabled == 0 && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID).ToList();
+
+                if (qPjRec != null && qPjRec.Count() > 0)
                 {
-                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactEmail.Trim().Replace(" ", "");
-
-                    if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人名姓名不重覆才要顯示
+                    foreach (var prBean in qPjRec)
                     {
-                        tTempList.Add(tTempValue);
-
                         ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");
 
                         PCustomerContact prDocBean = new PCustomerContact();
@@ -1251,12 +1245,50 @@ namespace OneService.Controllers
                         prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
                         prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
                         prDocBean.Mobile = ContactMobile;
-                        prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");
+                        prDocBean.BPMNo = "GenerallySR";
 
                         liPCContact.Add(prDocBean);
                     }
                 }
             }
+            else
+            {
+                var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
+                                                   Where(x => (x.Disabled == null || x.Disabled != 1) && x.ContactName != "" && x.ContactCity != "" &&
+                                                              x.ContactAddress != "" && x.ContactPhone != "" && x.ContactEmail != "" &&
+                                                              x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID).ToList();
+
+                if (qPjRec != null && qPjRec.Count() > 0)
+                {
+                    foreach (var prBean in qPjRec)
+                    {
+                        tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactEmail.Trim().Replace(" ", "");
+
+                        if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人名姓名不重覆才要顯示
+                        {
+                            tTempList.Add(tTempValue);
+
+                            ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");
+
+                            PCustomerContact prDocBean = new PCustomerContact();
+
+                            prDocBean.ContactID = prBean.ContactId.ToString();
+                            prDocBean.CustomerID = prBean.Kna1Kunnr.Trim().Replace(" ", "");
+                            prDocBean.CustomerName = prBean.Kna1Name1.Trim().Replace(" ", "");
+                            prDocBean.BUKRS = cBUKRS;
+                            prDocBean.Name = prBean.ContactName.Trim().Replace(" ", "");
+                            prDocBean.City = prBean.ContactCity.Trim().Replace(" ", "");
+                            prDocBean.Address = prBean.ContactAddress.Trim().Replace(" ", "");
+                            prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
+                            prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
+                            prDocBean.Mobile = ContactMobile;
+                            prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");
+
+                            liPCContact.Add(prDocBean);
+                        }
+                    }
+                }
+            }            
 
             return liPCContact;
         }
@@ -1688,7 +1720,34 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion        
+        #endregion
+
+        #region 新增時取得個人客戶流水號ID
+        /// <summary>
+        /// 新增時取得個人客戶流水號ID
+        /// </summary>
+        /// <returns></returns>
+        public string findPERSONALISerialID()
+        {
+            string reValue = string.Empty;
+
+            int tSerialID = 1;
+
+            var bean = dbProxy.PersonalContacts.OrderByDescending(x => x.Kna1Kunnr).FirstOrDefault();
+
+            if (bean != null)
+            {
+                tSerialID = int.Parse(bean.Kna1Kunnr.Replace("P", "")) + 1;
+                reValue = "P" + tSerialID.ToString().PadLeft(8, '0');
+            }
+            else
+            {
+                reValue = "P00000001";
+            }
+
+            return reValue;
+        }
+        #endregion
 
         #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
         /// <summary>
