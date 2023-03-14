@@ -1,0 +1,112 @@
+﻿@{
+	Layout = null;
+}
+
+<script>
+	$(document).ready(function () {
+		initTable();
+	});
+
+	function initTable() {
+		var buttonCommon = {
+			exportOptions: {
+				format: {
+					body: function (data, row, column, node) {
+						//替換&符號
+						var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+							translate = {
+								'nbsp': String.fromCharCode(160),
+								'amp': '&',
+								'quot': '"',
+								'lt': '<',
+								'gt': '>'
+							},
+							translator = function ($0, $1) {
+								return translate[$1];
+							};
+
+						if (typeof data === 'string')
+							data = data.replace(translate_re, translator);
+
+						return data;
+					}
+				}
+			}
+		};
+
+		$('#tableAll').DataTable({
+			language: {
+				"lengthMenu": "每頁顯示筆數 _MENU_ ",
+				"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+				"search": " 關鍵字篩選"
+			},
+			pageLength: 25,
+			responsive: true,			
+			dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+			buttons: [
+				$.extend(true, {}, buttonCommon, {
+					extend: 'excelHtml5',
+					title: '服務進度查詢作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+					text: '匯出Excel',
+					sheetName: '服務進度查詢作業',
+					exportOptions: {
+						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] //要顯示的欄位
+					},
+					customize: function (xlsx) {
+						var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+						$('row c[r^="A"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="E"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="F"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="G"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="H"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="I"]', sheet).attr('s', '0');	//設成文字格式
+					}
+				}),
+			],
+		});
+
+		$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+	}
+</script>
+
+<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+	<thead>
+		<tr>
+			<th>SRID</th>
+			<th>客戶</th>
+			<th>客戶報修人</th>
+			<th>說明</th>
+			<th>報修管道</th>
+			<th>報修類別</th>
+			<th>L2工程師</th>
+			<th>最後編輯日期</th>
+			<th>狀態</th>
+		</tr>
+	</thead>
+	<tbody>
+		@{
+			if (ViewBag.QueryToListBean != null)
+			{
+				foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+				{
+					<tr>
+						<td>@Html.Raw(QueryInfo[0])</td>
+						<td>@Html.Raw(QueryInfo[1])</td>
+						<td>@Html.Raw(QueryInfo[2])</td>
+						<td>@Html.Raw(QueryInfo[3])</td>
+						<td>@Html.Raw(QueryInfo[4])</td>
+						<td>@Html.Raw(QueryInfo[5])</td>
+						<td>@Html.Raw(QueryInfo[6])</td>
+						<td>@Html.Raw(QueryInfo[9])</td>
+						<td>@Html.Raw(QueryInfo[10])</td>
+					</tr>
+				}
+			}
+		}
+	</tbody>
+</table>
+

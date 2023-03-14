@@ -39,6 +39,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VydmljZVJlcXVlc3RcR2VuZXJhbGx5U1IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/GIT/oneservice/OneService/Views/ServiceRequest/QuerySRProgress.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VydmljZVJlcXVlc3RcUXVlcnlTUlByb2dyZXNzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/GIT/oneservice/OneService/Views/ServiceRequest/QuerySRProgressResult.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VydmljZVJlcXVlc3RcUXVlcnlTUlByb2dyZXNzUmVzdWx0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/GIT/oneservice/OneService/Views/ServiceRequest/SpareBOM.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VydmljZVJlcXVlc3RcU3BhcmVCT00uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

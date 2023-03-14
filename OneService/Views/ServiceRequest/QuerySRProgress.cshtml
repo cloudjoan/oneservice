@@ -1,0 +1,488 @@
+﻿@{
+	ViewData["Title"] = "QuerySRProgress";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>
+		$(document).ready(function () {
+			initTable();
+			CustSearch();
+			PeopleSearch();
+		});
+
+		function initTable() {
+			var buttonCommon = {
+				exportOptions: {
+					format: {
+						body: function (data, row, column, node) {
+							//替換&符號
+							var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+								translate = {
+									'nbsp': String.fromCharCode(160),
+									'amp': '&',
+									'quot': '"',
+									'lt': '<',
+									'gt': '>'
+								},
+								translator = function ($0, $1) {
+									return translate[$1];
+								};
+
+							if (typeof data === 'string')
+								data = data.replace(translate_re, translator);
+
+							return data;
+						}
+					}
+				}
+			};
+
+			$('#tableAll').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,				
+				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+				buttons: [
+					$.extend(true, {}, buttonCommon, {
+						extend: 'excelHtml5',
+						title: '服務進度查詢作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						text: '匯出Excel',
+						sheetName: '服務進度查詢作業',
+						exportOptions: {
+							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] //要顯示的欄位
+						},
+						customize: function (xlsx) {
+							var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+							$('row c[r^="A"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="E"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="F"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="G"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="H"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="I"]', sheet).attr('s', '0');	//設成文字格式
+						}
+					}),
+				],
+			});
+
+			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+		}
+
+		//SAP客戶代號/客戶名稱查詢
+		//compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
+		function CustSearch() {
+			var compcde = $("#hid_cLoginUser_CompCode").val();
+
+			$(".CustName").unbind();
+
+			$(".CustName").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+							$.ajax({
+								url: '@Url.Action("findCustByKeywordAndComp", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: { functionName: 'findCustByKeywordAndComp', keyword: keyword, compcde: compcde },
+								success: function (result) {
+									Customers = [];
+									$.each(result, function (i, idata) {
+										Customers[i] = {
+											label: idata.Kna1Kunnr + "\\" + idata.Kna1Name1, //顯示在清單的東西
+											idx: i,
+											value: idata.Kna1Kunnr //這個是要填入textbox的值
+										};
+									});
+
+									//綁定foucs事件
+									obj.autocomplete({
+										source: Customers
+									}).bind('focus', function () { $(this).autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();
+								}
+							})
+						}
+					}
+
+				}
+			})
+		}
+
+		//Ajax用中文或英文姓名查詢人員帳號
+		function PeopleSearch() {
+			$(".Peoploe").unbind();
+
+			$(".Peoploe").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+							var ojbID = $(this).attr("id");
+
+							$.ajax({
+								url: '@Url.Action("AjaxfindEmployeeByKeyword", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: {
+									functionName: 'AjaxfindEmployeeByKeyword', keyword: keyword
+								},
+								success: function (result) {
+									objects = [];
+									$.each(result, function (i, idata) {
+										objects[i] = {
+											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
+											idx: i,
+											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉											
+										};
+									});
+
+									//綁定foucs事件
+									obj.autocomplete({
+										source: objects
+									}).bind('focus', function () { obj.autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();									
+								}
+							})
+
+						}
+					}
+				}
+			})
+		}
+
+		//-----↓↓↓↓↓報修類別 ↓↓↓↓↓-----
+		//第一階(大類) onChange
+		function onChangecSRTypeOne() {
+
+			//先清空下拉選單選項，才不會一直append
+			$('#ddl_cSRTypeSec').empty();
+			$('#ddl_cSRTypeThr').empty();
+
+			$.ajax({
+				url: '@Url.Action("findSRTypeSecList", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					keyword: $('#ddl_cSRTypeOne').val(),
+				},
+				success: function (result) {
+					$.each(result, function (index, obj) {
+						$("#ddl_cSRTypeSec").append(
+							$('<option></option>').val(obj.value).html(obj.text)
+						);
+					});
+				}
+			});
+		}
+
+		//第二階(中類) onChange
+		function onChangecSRTypeSec() {
+
+			//先清空下拉選單選項，才不會一直append
+			$('#ddl_cSRTypeThr').empty();
+
+			$.ajax({
+				url: '@Url.Action("findSRTypeThrList", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					keyword: $('#ddl_cSRTypeSec').val(),
+				},
+				success: function (result) {
+					$.each(result, function (index, obj) {
+						$("#ddl_cSRTypeThr").append(
+							$('<option></option>').val(obj.value).html(obj.text)
+						);
+					});
+				}
+			});
+		}
+		//-----↑↑↑↑↑報修類別 ↑↑↑↑↑-----
+
+		//查詢
+		function Query() {
+			$("#waitingImg").show();
+
+			var tMsg = "";			
+			var ddl_cSRCaseType = $("#ddl_cSRCaseType");				//服務案件種類
+			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//派單起始日期
+			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');			//派單結束日期
+			var tbx_cCustomerID = $('#tbx_cCustomerID');				//客戶代號
+			var tbx_cCustomerName = $('#tbx_cCustomerName');				//客戶名稱
+			var tbx_cSRID = $('#tbx_cSRID');							//SRID
+			var tbx_cRepairName = $('#tbx_cRepairName');				//報修人姓名
+			var ddl_cSRPathWay = $('#ddl_cSRPathWay');					//報修管道
+			var tbx_cMainEngineerID = $('#tbx_cMainEngineerID');			//L2工程師ERPID
+			var tbx_cAssEngineerID = $('#tbx_cAssEngineerID');			//指派工程師ERPID
+			var tbx_cTechManagerID = $('#tbx_cTechManagerID');			//技術主管ERPID
+
+			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');					//報修類別-大類
+			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');					//報修類別-中類
+			var ddl_cSRTypeThr = $('#ddl_cSRTypeThr');					//報修類別-小類
+
+			if (ddl_cSRCaseType.val() == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" && tbx_cCustomerID.val() == "" &&
+				tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_cRepairName.val() == "" && ddl_cSRPathWay.val() == "" &&
+				tbx_cMainEngineerID.val() == "" && tbx_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && ddl_cSRTypeOne.val() == "" && 				
+				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
+				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
+
+				tMsg += "請至少輸入一項查詢條件！　\n";
+			}
+
+			if (tbx_cStartCreatedDate.val() != "" && tbx_cEndCreatedDate.val() != "") {
+
+				if (tbx_cStartCreatedDate.val() > tbx_cEndCreatedDate.val()) {
+					tMsg += '派單起始日期不能大於結束日期！\n';
+					tbx_cEndCreatedDate.val(""); //清空
+				}
+			}
+
+			if (tMsg != "") {
+				alert(tMsg);
+				$("#waitingImg").hide();
+				return false;
+			}
+			else {
+				searchQuerySRProgress(ddl_cSRCaseType.val(), tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
+									  tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_cRepairName.val(), ddl_cSRPathWay.val(),
+									  tbx_cMainEngineerID.val(), tbx_cAssEngineerID.val(), tbx_cTechManagerID.val(),
+									  ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val());
+			}
+
+			return true;
+		}
+
+		//查詢結果
+		function searchQuerySRProgress(cSRCaseType, cStartCreatedDate, cEndCreatedDate, cCustomerID,cCustomerName, cSRID, cRepairName, cSRPathWay,
+									  cMainEngineerID, cAssEngineerID, cTechManagerID, cSRTypeOne, cSRTypeSec, cSRTypeThr) {
+			
+			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
+			$("#dataDiv").html('');
+
+			$.ajax({
+				url: '@Url.Action("QuerySRProgressResult", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cCompanyID: cCompanyID,
+					cSRCaseType: cSRCaseType,
+					cStartCreatedDate: cStartCreatedDate,
+					cEndCreatedDate: cEndCreatedDate,
+					cCustomerID: cCustomerID,
+					cCustomerName: cCustomerName,
+					cSRID: cSRID,
+					cRepairName: cRepairName,
+					cSRPathWay: cSRPathWay,
+					cMainEngineerID: cMainEngineerID,
+					cAssEngineerID: cAssEngineerID,
+					cTechManagerID: cTechManagerID,
+					cSRTypeOne: cSRTypeOne,
+					cSRTypeSec: cSRTypeSec,
+					cSRTypeThr: cSRTypeThr
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#dataDiv").html(result.responseText);
+					$("#waitingImg").hide();
+				}
+			});
+		}
+
+		//清除
+		function clearQuerySRProgress() {
+			$("#ddl_cSRCaseType").val("");
+			$('#tbx_cStartCreatedDate').val("");
+			$('#tbx_cEndCreatedDate').val("");
+			$('#tbx_cCustomerID').val("");
+			$('#tbx_cCustomerName').val("");
+			$('#tbx_cSRID').val("");
+			$('#tbx_cRepairName').val("");
+			$('#ddl_cSRPathWay').val("");
+			$('#tbx_cMainEngineerID').val("");
+			$('#tbx_cAssEngineerID').val("");
+			$('#tbx_cTechManagerID').val("");
+			
+			$('#ddl_cSRTypeOne').val("");			
+			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
+			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
+		}
+	</script>
+}
+
+	@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>服務進度查詢作業</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">服務管理系統參數設定</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>服務進度查詢作業</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+	<div class="row">
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>
+						服務進度查詢作業						
+					</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content">
+					@model OneService.Controllers.ServiceRequestController.ViewModelQuerySRProgress //載入StatusViewModel
+					<form id="form1" name="form" action='#' method="post">						
+						<!--登人者公司別(Comp-1、Comp-2...)-->
+						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+						<!--登人者公司別(T012、T016...)-->
+						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">服務案件種類</label>
+							<div class="col-lg-4">
+								<select asp-for="ddl_cSRCaseType" asp-items="Model.ListSRCaseType" class="form-control"></select>
+							</div>							
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">派單日期</label>
+							<div class="input-group col-md-10 col-lg-6">
+								<span class="input-group-addon">起</span>
+								<input type="text" name="tbx_cStartCreatedDate" id="tbx_cStartCreatedDate" class="calendar form-control" placeholder="起始日期"><span class="input-group-addon">迄</span>
+								<input type="text" name="tbx_cEndCreatedDate" id="tbx_cEndCreatedDate" class="calendar form-control" placeholder="結束日期">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">客戶代號</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cCustomerID" id="tbx_cCustomerID" class="form-control CustName" placeholder="請輸入客戶名稱或統編的關鍵字">
+							</div>
+							<label class="col-lg-2 col-form-label">客戶名稱</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cCustomerName" id="tbx_cCustomerName" class="form-control" placeholder="客戶名稱">
+							</div>
+						</div>
+						<div class="form-group row">							
+							<label class="col-lg-2 col-form-label">SRID</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cSRID" id="tbx_cSRID" class="form-control" placeholder="SRID">
+							</div>
+							<label class="col-lg-2 col-form-label">報修人姓名</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cRepairName" id="tbx_cRepairName" class="form-control" placeholder="客戶報修人姓名">
+							</div>
+						</div>												
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">報修管道</label>
+							<div class="col-lg-4">
+								<select asp-for="ddl_cSRPathWay" asp-items="Model.ListSRPathWay" class="form-control"></select>
+							</div>
+							<label class="col-lg-2 col-form-label">L2工程師ERPID</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cMainEngineerID" id="tbx_cMainEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">指派工程師ERPID</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cAssEngineerID" id="tbx_cAssEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+							</div>
+							<label class="col-lg-2 col-form-label">技術主管ERPID</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cTechManagerID" id="tbx_cTechManagerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">報修類別</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_cSRTypeOne", (IEnumerable<SelectListItem>)ViewBag.SRTypeOneList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeOne();" })
+								@Html.DropDownList("ddl_cSRTypeSec", (IEnumerable<SelectListItem>)ViewBag.SRTypeSecList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeSec();" })
+								@Html.DropDownList("ddl_cSRTypeThr", (IEnumerable<SelectListItem>)ViewBag.SRTypeThrList, new { @class = "form-control" })
+							</div>
+						</div>
+						<div class="form-group row">
+							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+							<button class="btn btn-default btn-lg" type="button" onclick="clearQuerySRProgress();"><i class="fa fa-trash"></i> 清 除 </button>
+							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>服務進度查詢結果</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+					<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+						<thead>
+							<tr>
+								<th>SRID</th>
+								<th>客戶</th>
+								<th>客戶報修人</th>
+								<th>說明</th>
+								<th>報修管道</th>
+								<th>報修類別</th>
+								<th>L2工程師</th>
+								<th>最後編輯日期</th>
+								<th>狀態</th>
+							</tr>
+						</thead>
+						<tbody>
+							@{
+								if (ViewBag.QueryToListBean != null)
+								{									
+									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+									{										
+										<tr>
+											<td>@Html.Raw(QueryInfo[0])</td>
+											<td>@Html.Raw(QueryInfo[1])</td>
+											<td>@Html.Raw(QueryInfo[2])</td>
+											<td>@Html.Raw(QueryInfo[3])</td>
+											<td>@Html.Raw(QueryInfo[4])</td>
+											<td>@Html.Raw(QueryInfo[5])</td>
+											<td>@Html.Raw(QueryInfo[6])</td>
+											<td>@Html.Raw(QueryInfo[9])</td>
+											<td>@Html.Raw(QueryInfo[10])</td>
+										</tr>
+									}
+								}
+							}
+						</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

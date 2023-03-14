@@ -93,6 +93,147 @@ namespace OneService.Controllers
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
 
+        #region -----↓↓↓↓↓服務進度查詢 ↓↓↓↓↓-----
+        public IActionResult QuerySRProgress()
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
+            ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
+            ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
+            ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
+            ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
+            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
+            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+            ViewBag.pIsManager = EmpBean.IsManager;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+
+            pCompanyCode = EmpBean.BUKRS;
+            pIsManager = EmpBean.IsManager;
+            #endregion
+
+            var model = new ViewModelQuerySRProgress();
+
+            #region 報修類別
+            //大類
+            var SRTypeOneList = CMF.findFirstKINDList();
+
+            //中類
+            var SRTypeSecList = new List<SelectListItem>();
+            SRTypeSecList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            //小類
+            var SRTypeThrList = new List<SelectListItem>();
+            SRTypeThrList.Add(new SelectListItem { Text = " ", Value = "" });
+            #endregion
+
+            ViewBag.SRTypeOneList = SRTypeOneList;
+            ViewBag.SRTypeSecList = SRTypeSecList;
+            ViewBag.SRTypeThrList = SRTypeThrList;
+
+            return View(model);
+        }
+
+        #region 服務進度查詢結果
+        /// <summary>
+        /// 服務進度查詢結果
+        /// </summary>
+        /// <param name="cCompanyID">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cSRCaseType">服務案件種類</param>
+        /// <param name="cStartCreatedDate">派單起始日期</param>
+        /// <param name="cEndCreatedDate">派單結束日期</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cCustomerName">客戶名稱</param>
+        /// <param name="cSRID">SRID</param>
+        /// <param name="cRepairName">報修人姓名</param>
+        /// <param name="cSRPathWay">報修管道</param>
+        /// <param name="cMainEngineerID">L2工程師ERPID</param>
+        /// <param name="cAssEngineerID">指派工程師ERPID</param>
+        /// <param name="cTechManagerID">技術主管ERPID</param>
+        /// <param name="cSRTypeOne">報修類別-大類</param>
+        /// <param name="cSRTypeSec">報修類別-中類</param>
+        /// <param name="cSRTypeThr">報修類別-小類</param>
+        /// <returns></returns>
+        public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStartCreatedDate, string cEndCreatedDate, string cCustomerID, 
+                                                 string cCustomerName, string cSRID, string cRepairName, string cSRPathWay, string cMainEngineerID, 
+                                                 string cAssEngineerID, string cTechManagerID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr)
+        {            
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            string tSRPathWay = string.Empty;           //報修管理
+            string tStatus = string.Empty;              //狀態
+            string tSRType = string.Empty;              //報修類別
+            string tMainEngineerID = string.Empty;      //L2工程師ERPID
+            string tMainEngineerName = string.Empty;    //L2工程師姓名            
+            string tTechManagerID = string.Empty;      //技術主管ERPID            
+            string tModifiedDate = string.Empty;        //修改日期
+
+            DateTime DateSDATE = string.IsNullOrEmpty(cStartCreatedDate) ? DateTime.MinValue : Convert.ToDateTime(cStartCreatedDate);
+            DateTime DateEDATE = string.IsNullOrEmpty(cEndCreatedDate) ? DateTime.MinValue : Convert.ToDateTime(cEndCreatedDate);
+
+            List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
+            List<TbOneSysParameter> tSRStatus_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRSTATUS");
+
+            #region 組待查詢清單
+            var beans = dbOne.TbOneSrmains.OrderBy(x => x.CSrid).Where(x => (string.IsNullOrEmpty(cSRCaseType) ? true : x.CSrid.Substring(0, 2) == cSRCaseType) &&
+                                                                        (string.IsNullOrEmpty(cCustomerID) ? true : x.CCustomerId == cCustomerID) &&
+                                                                        (string.IsNullOrEmpty(cCustomerName) ? true : x.CCustomerName.Contains(cCustomerName)) &&
+                                                                        (string.IsNullOrEmpty(cSRID) ? true : x.CSrid.Contains(cSRID)) &&
+                                                                        (string.IsNullOrEmpty(cSRPathWay) ? true : x.CSrpathWay == cSRPathWay) &&
+                                                                        (string.IsNullOrEmpty(cMainEngineerID) ? true : x.CMainEngineerId == cMainEngineerID) &&
+                                                                        (string.IsNullOrEmpty(cAssEngineerID) ? true : x.CAssEngineerId.Contains(cAssEngineerID)) &&
+                                                                        (string.IsNullOrEmpty(cTechManagerID) ? true : x.CTechManagerId.Contains(cTechManagerID)) &&
+                                                                        (string.IsNullOrEmpty(cSRTypeOne) ? true : x.CSrtypeOne == cSRTypeOne) &&
+                                                                        (string.IsNullOrEmpty(cSRTypeSec) ? true : x.CSrtypeSec == cSRTypeSec) &&
+                                                                        (string.IsNullOrEmpty(cSRTypeThr) ? true : x.CSrtypeThr == cSRTypeThr) &&
+                                                                        (
+                                                                            (DateSDATE == DateTime.MinValue ? true : x.CreatedDate >= DateSDATE) &&
+                                                                            (DateEDATE == DateTime.MinValue ? true : x.CreatedDate <= DateEDATE)
+                                                                        ));
+
+            foreach (var bean in beans)
+            {
+                tSRPathWay = CMF.TransSysParameterByList(tSRPathWay_List, bean.CSrpathWay);
+                tStatus = CMF.TransSysParameterByList(tSRStatus_List, bean.CStatus);
+                tSRType = CMF.TransSRType(bean.CSrtypeOne, bean.CSrtypeSec, bean.CSrtypeThr);
+                tMainEngineerID = string.IsNullOrEmpty(bean.CMainEngineerId) ? "" : bean.CMainEngineerId;
+                tMainEngineerName = string.IsNullOrEmpty(bean.CMainEngineerName) ? "" : bean.CMainEngineerName;
+                tTechManagerID = string.IsNullOrEmpty(bean.CTechManagerId) ? "" : bean.CTechManagerId;
+                tModifiedDate = bean.ModifiedDate == null ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
+
+                string[] QueryInfo = new string[11];                
+
+                QueryInfo[0] = bean.CSrid;            //SRID
+                QueryInfo[1] = bean.CCustomerName;     //客戶
+                QueryInfo[2] = bean.CRepairName;       //客戶報修人
+                QueryInfo[3] = bean.CDesc;            //說明
+                QueryInfo[4] = tSRPathWay;            //報修管道
+                QueryInfo[5] = tSRType;               //報修類別
+                QueryInfo[6] = tMainEngineerID;       //L2工程師ERPID
+                QueryInfo[7] = tMainEngineerName;     //L2工程師姓名
+                QueryInfo[8] = tTechManagerID;        //技術主管ERPID                    
+                QueryInfo[9] = tModifiedDate;         //最後編輯日期
+                QueryInfo[10] = tStatus;              //狀態
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑服務進度查詢 ↑↑↑↑↑-----   
+
         #region -----↓↓↓↓↓待辦清單 ↓↓↓↓↓-----
         public IActionResult ToDoList()
         {
@@ -1172,6 +1313,43 @@ namespace OneService.Controllers
             tList.Add(new SelectListItem { Text = "", Value = "" });
             tList.Add(new SelectListItem { Text = "法人", Value = "C" });
             tList.Add(new SelectListItem { Text = "個人", Value = "P" });
+
+            return tList;
+        }
+        #endregion
+
+        #region 取得服務案件種類說明
+        /// <summary>
+        /// 取得服務案件種類說明
+        /// </summary>        
+        /// <returns></returns>
+        static public List<SelectListItem> findSRIDTypeList()
+        {
+            var tList = new List<SelectListItem>();
+
+            tList.Add(new SelectListItem { Text = "", Value = "" });
+            tList.Add(new SelectListItem { Text = "61_一般服務", Value = "61" });
+            tList.Add(new SelectListItem { Text = "63_裝機服務", Value = "63" });
+            tList.Add(new SelectListItem { Text = "65_定維服務", Value = "65" });
+
+            return tList;           
+        }
+        #endregion
+
+        #region 取得報修管道清單
+        /// <summary>
+        /// 取得報修管道清單
+        /// </summary>        
+        /// <returns></returns>
+        static public List<SelectListItem> findSRPathWayList(string cOperationID, string cFunctionID, string cCompanyID, string cNo, bool cEmptyOption)
+        {
+            CommonFunction CMF = new CommonFunction();            
+
+            var tList = new List<SelectListItem>();
+            tList.Add(new SelectListItem { Text = "", Value = "" });
+
+            var tListS = CMF.findSysParameterListItem(cOperationID, cFunctionID, cCompanyID, cNo, cEmptyOption);
+            tList.AddRange(tListS);
 
             return tList;
         }
@@ -3483,7 +3661,7 @@ namespace OneService.Controllers
 
         #region DropDownList選項Class(一般服務)
         /// <summary>
-        /// DropDownList選項Class
+        /// DropDownList選項Class(一般服務)
         /// </summary>
         public class ViewModel
         {
@@ -3542,7 +3720,7 @@ namespace OneService.Controllers
 
         #region DropDownList選項Class(客戶Email對照設定作業)
         /// <summary>
-        /// DropDownList選項Class
+        /// DropDownList選項Class(客戶Email對照設定作業)
         /// </summary>
         public class ViewModelTeam
         {
@@ -3556,7 +3734,7 @@ namespace OneService.Controllers
 
         #region DropDownList選項Class(SQ人員設定作業)
         /// <summary>
-        /// DropDownList選項Class
+        /// DropDownList選項Class(SQ人員設定作業)
         /// </summary>
         public class ViewModelSQ
         {
@@ -3574,14 +3752,32 @@ namespace OneService.Controllers
 
         #region DropDownList選項Class(報修類別設定作業)
         /// <summary>
-        /// DropDownList選項Class
+        /// DropDownList選項Class(報修類別設定作業)
         /// </summary>
         public class ViewModelRepairType
         {
-            #region SQ人員區域代號
+            #region 報修類別代號
             public string ddl_QuerycKIND_KEY { get; set; }
             public List<SelectListItem> ListKIND_KEY = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SQSECKEY", true);
             #endregion           
+        }
+        #endregion
+
+        #region DropDownList選項Class(服務案件種類)
+        /// <summary>
+        /// DropDownList選項Class(服務案件種類)
+        /// </summary>
+        public class ViewModelQuerySRProgress
+        {
+            #region 服務案件種類代號
+            public string ddl_cSRCaseType { get; set; }
+            public List<SelectListItem> ListSRCaseType = findSRIDTypeList();
+            #endregion
+
+            #region 報修管道
+            public string ddl_cSRPathWay { get; set; }
+            public List<SelectListItem> ListSRPathWay = findSRPathWayList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPATH", false);
+            #endregion
         }
         #endregion
 

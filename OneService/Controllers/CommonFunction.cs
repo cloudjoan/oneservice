@@ -103,6 +103,7 @@ namespace OneService.Controllers
             string tModifiedDate = string.Empty;        //修改日期
 
             List<TbOneSrmain> beans = new List<TbOneSrmain>();
+            List<TbOneSysParameter> tSRPathWay_List = findSysParameterALLDescription(cOperationID, "OTHER", cCompanyID, "SRPATH");            
 
             if (IsManager)
             {
@@ -124,7 +125,7 @@ namespace OneService.Controllers
 
                 foreach (DataRow dr in dt.Rows)
                 {
-                    tSRPathWay = TransSRPATH(cOperationID, cCompanyID, dr["cSRPathWay"].ToString());
+                    tSRPathWay = TransSysParameterByList(tSRPathWay_List, dr["cSRPathWay"].ToString());
                     tSRType = TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
                     tMainEngineerID = dr["cMainEngineerID"].ToString();
                     tMainEngineerName = dr["cMainEngineerName"].ToString();
@@ -156,12 +157,12 @@ namespace OneService.Controllers
 
                 foreach (var bean in beans)
                 {
-                    tSRPathWay = TransSRPATH(cOperationID, cCompanyID, bean.CSrpathWay);
+                    tSRPathWay = TransSysParameterByList(tSRPathWay_List, bean.CSrpathWay);                    
                     tSRType = TransSRType(bean.CSrtypeOne, bean.CSrtypeSec, bean.CSrtypeThr);
                     tMainEngineerID = string.IsNullOrEmpty(bean.CMainEngineerId) ? "" : bean.CMainEngineerId;
                     tMainEngineerName = string.IsNullOrEmpty(bean.CMainEngineerName) ? "" : bean.CMainEngineerName;
                     cTechManagerID = string.IsNullOrEmpty(bean.CTechManagerId) ? "" : bean.CTechManagerId;                    
-                    tModifiedDate = bean.ModifiedDate == DateTime.MinValue ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
+                    tModifiedDate = bean.ModifiedDate == null ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
 
                     #region 組待處理服務
                     string[] ProcessInfo = new string[11];
@@ -256,6 +257,29 @@ namespace OneService.Controllers
             string tValue = findSysParameterDescription(cOperationID, "OTHER", cCompanyID, "SRPATH", cSRPathWay);
 
             return tValue;
+        }
+        #endregion
+
+        #region 取得參數值說明By List
+        /// <summary>
+        /// 取得參數值說明By List
+        /// </summary>
+        /// <param name="tList">報修管道參數值清單</param>
+        /// <param name="tValue">參數值</param>
+        /// <returns></returns>
+        public string TransSysParameterByList(List<TbOneSysParameter> tList, string tValue)
+        {
+            string reValue = string.Empty;
+
+            foreach (var bean in tList)
+            {
+                if (bean.CValue == tValue.Trim())
+                {
+                    reValue = bean.CDescription;
+                }
+            }
+
+            return reValue;
         }
         #endregion
 
@@ -1747,7 +1771,7 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion
+        #endregion       
 
         #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
         /// <summary>
@@ -1849,6 +1873,28 @@ namespace OneService.Controllers
             }
 
             return reValue;
+        }
+        #endregion        
+
+        #region 取得【資訊系統參數設定檔】的所有參數值說明
+        /// <summary>
+        /// 取得【資訊系統參數設定檔】的參數值
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cFunctionID">功能別(SENDMAIL.寄送Mail、ACCOUNT.取得人員帳號、OTHER.其他自定義)</param>
+        /// <param name="cCompanyID">公司別(ALL.全集團、T012.大世科、T016.群輝、C069.大世科技上海、T022.協志科)</param>
+        /// <param name="cNo">參數No</param>
+        /// <param name="cValue">參數值</param>
+        /// <returns></returns>
+        public List<TbOneSysParameter> findSysParameterALLDescription(string cOperationID, string cFunctionID, string cCompanyID, string cNo)
+        {
+            var bean = psipDb.TbOneSysParameters.Where(x => x.Disabled == 0 &&
+                                                                 x.COperationId.ToString() == cOperationID &&
+                                                                 x.CFunctionId == cFunctionID.Trim() &&
+                                                                 x.CCompanyId == cCompanyID.Trim() &&
+                                                                 x.CNo == cNo.Trim()).ToList();           
+
+            return bean;
         }
         #endregion        
 
