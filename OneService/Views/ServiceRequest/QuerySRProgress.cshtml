@@ -374,6 +374,9 @@
 			$('#tbx_cMainEngineerID').val("");
 			$('#tbx_cAssEngineerID').val("");
 			$('#tbx_cTechManagerID').val("");
+			$('#tbx_cSerialID').val("");
+			$('#tbx_cMaterialName').val("");
+			$('#tbx_cProductNumber').val("");
 			
 			$('#ddl_cSRTypeOne').val("");			
 			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
@@ -478,24 +481,22 @@
 								@Html.DropDownList("ddl_cSRTypeSec", (IEnumerable<SelectListItem>)ViewBag.SRTypeSecList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeSec();" })
 								@Html.DropDownList("ddl_cSRTypeThr", (IEnumerable<SelectListItem>)ViewBag.SRTypeThrList, new { @class = "form-control" })
 							</div>
-						</div>
-						<div class="hr-line-dashed"></div>
-						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">產品序號</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSerialID" id="tbx_cSerialID" class="form-control" placeholder="產品序號">
 							</div>
+						</div>						
+						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">產品機器型號</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cMaterialName" id="tbx_cMaterialName" class="form-control" placeholder="產品機器型號">
 							</div>
-						</div>
-						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">Product Number</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cProductNumber" id="tbx_cProductNumber" class="form-control" placeholder="Product Number">
-							</div>							
-						</div>
+							</div>
+						</div>						
+						<div class="hr-line-dashed"></div>
 						<div class="form-group row">
 							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
 							<button class="btn btn-default btn-lg" type="button" onclick="clearQuerySRProgress();"><i class="fa fa-trash"></i> 清 除 </button>

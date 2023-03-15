@@ -23,6 +23,7 @@ using System.Numerics;
 using System.Collections.Specialized;
 using System.Net;
 using System.Web;
+using System.Xml.Linq;
 
 namespace OneService.Controllers
 {
@@ -1933,7 +1934,40 @@ namespace OneService.Controllers
 
             return bean;
         }
-        #endregion       
+        #endregion
+
+        #region 服務進度查詢Distinct SRID
+        /// <summary>
+        /// 服務進度查詢Distinct SRID
+        /// </summary>
+        /// <param name="dtSource">傳入的DataTable</param>
+        /// <returns></returns>
+        public DataTable DistinctTable(DataTable dtSource)
+        {
+            DataTable dt = dtSource.Clone();
+            DataTable dtDistinct = dtSource.DefaultView.ToTable(true, new string[] { "cSRID" }); //取得distinct SRID
+
+            int count = dtDistinct.Rows.Count;
+
+            for (int i = 0; i < count; i++)
+            {                
+                string tFiler = "cSRID = '" + dtDistinct.Rows[i][0].ToString() + "'";
+
+                DataRow[] drs = dtSource.Select(tFiler);
+
+                foreach (DataRow dr in drs)
+                {
+                    #region 只要塞入第一筆DataTable
+                    dt.Rows.Add(dr.ItemArray);
+                    #endregion
+
+                    break;
+                }
+            }
+
+            return dt;
+        }
+        #endregion
 
         #region 傳入語法回傳DataTable(根據資料庫名稱)
         /// <summary>

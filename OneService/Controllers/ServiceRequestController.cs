@@ -171,12 +171,13 @@ namespace OneService.Controllers
                                                  string cSerialID, string cMaterialName, string cProductNumber)
         {            
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
-            
-            DataTable dtProgress = null;           
+
+            DataTable dt = null;
+            DataTable dtProgress = null;
 
             StringBuilder tSQL = new StringBuilder();
-
-            string ttWhere = string.Empty;
+            
+            string ttWhere = string.Empty;            
             string tSRPathWay = string.Empty;           //報修管理
             string tStatus = string.Empty;              //狀態
             string tSRType = string.Empty;              //報修類別
@@ -310,14 +311,16 @@ namespace OneService.Controllers
             
             #region SQL語法
             tSQL.AppendLine(" Select M.*,");
-            tSQL.AppendLine("        (Select top 1 P.cSerialID + '＃＃' + P.cMaterialName + '＃＃' + P.cProductNumber");
-            tSQL.AppendLine("         From TB_ONE_SRDetail_Product P where M.cSRID = P.cSRID");
+            tSQL.AppendLine("        (Select top 1 sp.cSerialID + '＃＃' + sp.cMaterialName + '＃＃' + sp.cProductNumber");
+            tSQL.AppendLine("         From TB_ONE_SRDetail_Product sp where M.cSRID = sp.cSRID AND sp.disabled = 0");
             tSQL.AppendLine("        ) as Products");
             tSQL.AppendLine(" From TB_ONE_SRMain M");
-            tSQL.AppendLine(" Where 1=1 " + ttWhere);
+            tSQL.AppendLine(" left join TB_ONE_SRDetail_Product P on M.cSRID = P.cSRID ");
+            tSQL.AppendLine(" Where 1=1 AND P.disabled = 0 " + ttWhere);
             #endregion
 
-            dtProgress = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
+            dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
+            dtProgress = CMF.DistinctTable(dt);
 
             foreach (DataRow dr in dtProgress.Rows)
             {
