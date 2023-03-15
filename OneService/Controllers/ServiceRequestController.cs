@@ -11,6 +11,7 @@ using System.Data;
 using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Security.Policy;
@@ -160,67 +161,190 @@ namespace OneService.Controllers
         /// <param name="cSRTypeOne">報修類別-大類</param>
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
+        /// <param name="cSerialID">產品序號</param>
+        /// <param name="cMaterialName">產品機器型號</param>
+        /// <param name="cProductNumber">Product Number</param>
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStartCreatedDate, string cEndCreatedDate, string cCustomerID, 
                                                  string cCustomerName, string cSRID, string cRepairName, string cSRPathWay, string cMainEngineerID, 
-                                                 string cAssEngineerID, string cTechManagerID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr)
+                                                 string cAssEngineerID, string cTechManagerID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
+                                                 string cSerialID, string cMaterialName, string cProductNumber)
         {            
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+            
+            DataTable dtProgress = null;           
 
+            StringBuilder tSQL = new StringBuilder();
+
+            string ttWhere = string.Empty;
             string tSRPathWay = string.Empty;           //報修管理
             string tStatus = string.Empty;              //狀態
             string tSRType = string.Empty;              //報修類別
+            string tSRProductSerial = string.Empty;     //產品序號資訊
             string tMainEngineerID = string.Empty;      //L2工程師ERPID
             string tMainEngineerName = string.Empty;    //L2工程師姓名            
             string tTechManagerID = string.Empty;      //技術主管ERPID            
-            string tModifiedDate = string.Empty;        //修改日期
-
-            DateTime DateSDATE = string.IsNullOrEmpty(cStartCreatedDate) ? DateTime.MinValue : Convert.ToDateTime(cStartCreatedDate);
-            DateTime DateEDATE = string.IsNullOrEmpty(cEndCreatedDate) ? DateTime.MinValue : Convert.ToDateTime(cEndCreatedDate);
+            string tModifiedDate = string.Empty;        //修改日期            
 
             List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
             List<TbOneSysParameter> tSRStatus_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRSTATUS");
 
-            #region 組待查詢清單
-            var beans = dbOne.TbOneSrmains.OrderBy(x => x.CSrid).Where(x => (string.IsNullOrEmpty(cSRCaseType) ? true : x.CSrid.Substring(0, 2) == cSRCaseType) &&
-                                                                        (string.IsNullOrEmpty(cCustomerID) ? true : x.CCustomerId == cCustomerID) &&
-                                                                        (string.IsNullOrEmpty(cCustomerName) ? true : x.CCustomerName.Contains(cCustomerName)) &&
-                                                                        (string.IsNullOrEmpty(cSRID) ? true : x.CSrid.Contains(cSRID)) &&
-                                                                        (string.IsNullOrEmpty(cSRPathWay) ? true : x.CSrpathWay == cSRPathWay) &&
-                                                                        (string.IsNullOrEmpty(cMainEngineerID) ? true : x.CMainEngineerId == cMainEngineerID) &&
-                                                                        (string.IsNullOrEmpty(cAssEngineerID) ? true : x.CAssEngineerId.Contains(cAssEngineerID)) &&
-                                                                        (string.IsNullOrEmpty(cTechManagerID) ? true : x.CTechManagerId.Contains(cTechManagerID)) &&
-                                                                        (string.IsNullOrEmpty(cSRTypeOne) ? true : x.CSrtypeOne == cSRTypeOne) &&
-                                                                        (string.IsNullOrEmpty(cSRTypeSec) ? true : x.CSrtypeSec == cSRTypeSec) &&
-                                                                        (string.IsNullOrEmpty(cSRTypeThr) ? true : x.CSrtypeThr == cSRTypeThr) &&
-                                                                        (
-                                                                            (DateSDATE == DateTime.MinValue ? true : x.CreatedDate >= DateSDATE) &&
-                                                                            (DateEDATE == DateTime.MinValue ? true : x.CreatedDate <= DateEDATE)
-                                                                        ));
-
-            foreach (var bean in beans)
+            #region 服務案件種類
+            if (!string.IsNullOrEmpty(cSRCaseType))
             {
-                tSRPathWay = CMF.TransSysParameterByList(tSRPathWay_List, bean.CSrpathWay);
-                tStatus = CMF.TransSysParameterByList(tSRStatus_List, bean.CStatus);
-                tSRType = CMF.TransSRType(bean.CSrtypeOne, bean.CSrtypeSec, bean.CSrtypeThr);
-                tMainEngineerID = string.IsNullOrEmpty(bean.CMainEngineerId) ? "" : bean.CMainEngineerId;
-                tMainEngineerName = string.IsNullOrEmpty(bean.CMainEngineerName) ? "" : bean.CMainEngineerName;
-                tTechManagerID = string.IsNullOrEmpty(bean.CTechManagerId) ? "" : bean.CTechManagerId;
-                tModifiedDate = bean.ModifiedDate == null ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
+                ttWhere += "AND M.cSRID LIKE N'%" + cSRCaseType + "%' ";
+            }
+            #endregion
 
-                string[] QueryInfo = new string[11];                
+            #region 申請日期
+            if (!string.IsNullOrEmpty(cStartCreatedDate))
+            {
+                ttWhere += "AND Convert(varchar(10),M.CreatedDate,111) >= N'" + cStartCreatedDate.Replace("-", "/") + "' ";
+            }
 
-                QueryInfo[0] = bean.CSrid;            //SRID
-                QueryInfo[1] = bean.CCustomerName;     //客戶
-                QueryInfo[2] = bean.CRepairName;       //客戶報修人
-                QueryInfo[3] = bean.CDesc;            //說明
-                QueryInfo[4] = tSRPathWay;            //報修管道
-                QueryInfo[5] = tSRType;               //報修類別
-                QueryInfo[6] = tMainEngineerID;       //L2工程師ERPID
-                QueryInfo[7] = tMainEngineerName;     //L2工程師姓名
-                QueryInfo[8] = tTechManagerID;        //技術主管ERPID                    
-                QueryInfo[9] = tModifiedDate;         //最後編輯日期
-                QueryInfo[10] = tStatus;              //狀態
+            if (!string.IsNullOrEmpty(cEndCreatedDate))
+            {
+                ttWhere += "AND Convert(varchar(10),M.CreatedDate,111) <= N'" + cEndCreatedDate.Replace("-", "/") + "' ";
+            }
+            #endregion 申請日期
+
+            #region 客戶代號
+            if (!string.IsNullOrEmpty(cCustomerID))
+            {
+                ttWhere += "AND M.cCustomerID = '" + cCustomerID + "' ";
+            }
+            #endregion
+
+            #region 客戶名稱
+            if (!string.IsNullOrEmpty(cCustomerName))
+            {
+                ttWhere += "AND M.cCustomerName LIKE N'%" + cCustomerName + "%' ";
+            }
+            #endregion
+
+            #region SRID
+            if (!string.IsNullOrEmpty(cSRID))
+            {
+                ttWhere += "AND M.cSRID LIKE N'%" + cSRID + "%' ";
+            }
+            #endregion
+
+            #region 報修人姓名
+            if (!string.IsNullOrEmpty(cRepairName))
+            {
+                ttWhere += "AND M.cRepairName LIKE N'%" + cRepairName + "%' ";
+            }
+            #endregion
+
+            #region 報修管道
+            if (!string.IsNullOrEmpty(cSRPathWay))
+            {
+                ttWhere += "AND M.cSRPathWay = '" + cSRPathWay + "' ";
+            }
+            #endregion
+
+            #region L2工程師ERPID
+            if (!string.IsNullOrEmpty(cMainEngineerID))
+            {
+                ttWhere += "AND M.cMainEngineerID = '" + cMainEngineerID + "' ";
+            }
+            #endregion
+
+            #region 指派工程師ERPID
+            if (!string.IsNullOrEmpty(cAssEngineerID))
+            {
+                ttWhere += "AND M.cAssEngineerID LIKE N'%" + cAssEngineerID + "%' ";
+            }
+            #endregion
+
+            #region 技術主管ERPID
+            if (!string.IsNullOrEmpty(cTechManagerID))
+            {
+                ttWhere += "AND M.cTechManagerID LIKE N'%" + cTechManagerID + "%' ";
+            }
+            #endregion
+
+            #region 報修類別-大類
+            if (!string.IsNullOrEmpty(cSRTypeOne))
+            {
+                ttWhere += "AND M.cSRTypeOne = '" + cSRTypeOne + "' ";
+            }
+            #endregion
+
+            #region 報修類別-中類
+            if (!string.IsNullOrEmpty(cSRTypeSec))
+            {
+                ttWhere += "AND M.cSRTypeSec = '" + cSRTypeSec + "' ";
+            }
+            #endregion
+
+            #region 報修類別-小類
+            if (!string.IsNullOrEmpty(cSRTypeThr))
+            {
+                ttWhere += "AND M.cSRTypeThr = '" + cSRTypeThr + "' ";
+            }
+            #endregion
+
+            #region 產品序號
+            if (!string.IsNullOrEmpty(cSerialID))
+            {
+                ttWhere += "AND P.cSerialID LIKE N'%" + cSerialID + "%' ";
+            }
+            #endregion
+
+            #region 產品機器型號
+            if (!string.IsNullOrEmpty(cMaterialName))
+            {
+                ttWhere += "AND P.cMaterialName LIKE N'%" + cMaterialName + "%' ";
+            }
+            #endregion
+
+            #region Product Number
+            if (!string.IsNullOrEmpty(cProductNumber))
+            {
+                ttWhere += "AND P.cProductNumber LIKE N'%" + cProductNumber + "%' ";
+            }
+            #endregion
+
+            #region 組待查詢清單
+            
+            #region SQL語法
+            tSQL.AppendLine(" Select M.*,");
+            tSQL.AppendLine("        (Select top 1 P.cSerialID + '＃＃' + P.cMaterialName + '＃＃' + P.cProductNumber");
+            tSQL.AppendLine("         From TB_ONE_SRDetail_Product P where M.cSRID = P.cSRID");
+            tSQL.AppendLine("        ) as Products");
+            tSQL.AppendLine(" From TB_ONE_SRMain M");
+            tSQL.AppendLine(" Where 1=1 " + ttWhere);
+            #endregion
+
+            dtProgress = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
+
+            foreach (DataRow dr in dtProgress.Rows)
+            {
+                tSRPathWay = CMF.TransSysParameterByList(tSRPathWay_List, dr["cSRPathWay"].ToString());
+                tStatus = CMF.TransSysParameterByList(tSRStatus_List, dr["cStatus"].ToString());
+                tSRType = CMF.TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
+                tSRProductSerial = CMF.TransProductSerial(dr["Products"].ToString());
+                tMainEngineerID = string.IsNullOrEmpty(dr["cMainEngineerID"].ToString()) ? "" : dr["cMainEngineerID"].ToString();
+                tMainEngineerName = string.IsNullOrEmpty(dr["cMainEngineerName"].ToString()) ? "" : dr["cMainEngineerName"].ToString();
+                tTechManagerID = string.IsNullOrEmpty(dr["cTechManagerID"].ToString()) ? "" : dr["cTechManagerID"].ToString();
+                tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
+
+                string[] QueryInfo = new string[13];                
+
+                QueryInfo[0] = dr["cSRID"].ToString();          //SRID
+                QueryInfo[1] = dr["cCustomerName"].ToString();   //客戶
+                QueryInfo[2] = dr["cRepairName"].ToString();     //客戶報修人
+                QueryInfo[3] = dr["cDesc"].ToString();          //說明
+                QueryInfo[4] = tSRProductSerial;               //產品序號資訊
+                QueryInfo[5] = tSRPathWay;                     //報修管道
+                QueryInfo[6] = tSRType;                        //報修類別                
+                QueryInfo[7] = tMainEngineerID;                //L2工程師ERPID
+                QueryInfo[8] = tMainEngineerName;              //L2工程師姓名
+                QueryInfo[9] = tTechManagerID;                 //技術主管ERPID                    
+                QueryInfo[10] = tModifiedDate;                 //最後編輯日期
+                QueryInfo[11] = tStatus;                       //狀態                
+                QueryInfo[12] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
 
                 QueryToList.Add(QueryInfo);
             }

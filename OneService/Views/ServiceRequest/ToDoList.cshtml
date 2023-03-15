@@ -65,20 +65,20 @@
 				buttons: [
 					$.extend(true, {}, buttonCommon, {
 						extend: 'excelHtml5',
-						title: 'ToDoListFile',
+						title: '待辦清單_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
 						text: '匯出Excel',
+						sheetName: '待辦清單',
 						customize: function (xlsx) {
-							var sheet = xlsx.xl.worksheets['sheet1.xml'];
-
-							$('row c[r^="A"]', sheet).attr('s', '0'); //樣式代號請參閱 https://datatables.net/reference/button/excelHtml5
-							$('row c[r^="B"]', sheet).attr('s', '0');
-							$('row c[r^="C"]', sheet).attr('s', '0');
-							$('row c[r^="D"]', sheet).attr('s', '0');
-							$('row c[r^="E"]', sheet).attr('s', '0');
-							$('row c[r^="F"]', sheet).attr('s', '0');
-							$('row c[r^="G"]', sheet).attr('s', '0');
-							$('row c[r^="H"]', sheet).attr('s', '0');
-							$('row c[r^="I"]', sheet).attr('s', '0');
+							addCustomNumberFormat(xlsx, '0');
+							formatTargetColumn(xlsx, 'A');
+							formatTargetColumn(xlsx, 'B');
+							formatTargetColumn(xlsx, 'C');
+							formatTargetColumn(xlsx, 'D');
+							formatTargetColumn(xlsx, 'E');
+							formatTargetColumn(xlsx, 'F');
+							formatTargetColumn(xlsx, 'G');
+							formatTargetColumn(xlsx, 'H');
+							formatTargetColumn(xlsx, 'I');							
 						}
 					}),
 				],
@@ -98,6 +98,34 @@
 			});
 
 			$("#tableGenerallySRList_wrapper .dt-buttons").css("float", "right"); //匯出excel按鈕位置靠右
+		}
+
+		function addCustomNumberFormat(xlsx, numberFormat) {
+			// this adds a new custom number format to the Excel "styles" document:
+			var numFmtsElement = xlsx.xl['styles.xml'].getElementsByTagName('numFmts')[0];
+			// assume 6 custom number formats already exist, and next available ID is 176:
+			var numFmtElement = '<numFmt numFmtId="176" formatCode="' + numberFormat + '"/>';
+			$(numFmtsElement).append(numFmtElement);
+			$(numFmtsElement).attr("count", "7"); // increment the count
+
+			// now add a new "cellXfs" cell formatter, which uses our new number format (numFmt 176):
+			var celXfsElement = xlsx.xl['styles.xml'].getElementsByTagName('cellXfs');
+			var cellStyle = '<xf numFmtId="176" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"'
+				+ ' applyFont="1" applyFill="1" applyBorder="1"/>';
+			// this will be the 8th "xf" element - and will therefore have an index of "7", when we use it later:
+			$(celXfsElement).append(cellStyle);
+			$(celXfsElement).attr("count", "66"); //(1.2.3版)官方提供0-64共65種格式，在此自己新增加一種
+		}
+
+		function formatTargetColumn(xlsx, col) {
+			var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+			if (col == "A") {
+				$('row c[r^="' + col + '"]', sheet).attr('s', '65'); //使用自定義格式
+			}
+			else {
+				$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
+			}
 		}
 	</script>
 }

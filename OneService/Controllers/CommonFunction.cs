@@ -330,6 +330,43 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得產品序號資訊說明
+        /// <summary>
+        /// 取得報修類別說明
+        /// </summary>
+        /// <param name="Products">產品序號＃＃產品機器型號＃＃Product Number</param>        
+        /// <returns></returns>
+        public string TransProductSerial(string Products)
+        {
+            string reValue = string.Empty;
+            string cSerialID = string.Empty;        //產品序號
+            string cMaterialName = string.Empty;    //產品機器型號
+            string cProductNumber = string.Empty;   //Product Number
+
+            string[] tAry = Products.Split("＃＃");
+            cSerialID = tAry.Length >= 1 ? tAry[0] : "";
+            cMaterialName = tAry.Length >= 2 ? tAry[1] : "";
+            cProductNumber = tAry.Length >= 3 ? tAry[2] : "";
+
+            if (!string.IsNullOrEmpty(cSerialID))
+            {
+                reValue += cSerialID + "<br/>";
+            }
+
+            if (!string.IsNullOrEmpty(cMaterialName))
+            {
+                reValue += cMaterialName + "<br/>";
+            }
+
+            if (!string.IsNullOrEmpty(cProductNumber))
+            {
+                reValue += cProductNumber;
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑待辦清單 ↑↑↑↑↑-----   
 
         #region -----↓↓↓↓↓一般服務 ↓↓↓↓↓-----        
@@ -1896,7 +1933,7 @@ namespace OneService.Controllers
 
             return bean;
         }
-        #endregion        
+        #endregion       
 
         #region 傳入語法回傳DataTable(根據資料庫名稱)
         /// <summary>
