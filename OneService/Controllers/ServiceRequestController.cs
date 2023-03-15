@@ -62,9 +62,9 @@ namespace OneService.Controllers
         bool pIsManager = false;
 
         /// <summary>
-        /// 登入者是否為負責工程師(含主要和協助)
+        /// 登入者是否可編輯服務案件
         /// </summary>
-        bool pIsExeEngineer = false;
+        bool pIsCanEditSR = false;
 
         /// <summary>
         /// 服務ID
@@ -219,21 +219,21 @@ namespace OneService.Controllers
             #region 客戶名稱
             if (!string.IsNullOrEmpty(cCustomerName))
             {
-                ttWhere += "AND M.cCustomerName LIKE N'%" + cCustomerName + "%' ";
+                ttWhere += "AND M.cCustomerName LIKE N'%" + cCustomerName.Trim() + "%' ";
             }
             #endregion
 
             #region SRID
             if (!string.IsNullOrEmpty(cSRID))
             {
-                ttWhere += "AND M.cSRID LIKE N'%" + cSRID + "%' ";
+                ttWhere += "AND M.cSRID LIKE N'%" + cSRID.Trim() + "%' ";
             }
             #endregion
 
             #region 報修人姓名
             if (!string.IsNullOrEmpty(cRepairName))
             {
-                ttWhere += "AND M.cRepairName LIKE N'%" + cRepairName + "%' ";
+                ttWhere += "AND M.cRepairName LIKE N'%" + cRepairName.Trim() + "%' ";
             }
             #endregion
 
@@ -254,14 +254,14 @@ namespace OneService.Controllers
             #region 指派工程師ERPID
             if (!string.IsNullOrEmpty(cAssEngineerID))
             {
-                ttWhere += "AND M.cAssEngineerID LIKE N'%" + cAssEngineerID + "%' ";
+                ttWhere += "AND M.cAssEngineerID LIKE N'%" + cAssEngineerID.Trim() + "%' ";
             }
             #endregion
 
             #region 技術主管ERPID
             if (!string.IsNullOrEmpty(cTechManagerID))
             {
-                ttWhere += "AND M.cTechManagerID LIKE N'%" + cTechManagerID + "%' ";
+                ttWhere += "AND M.cTechManagerID LIKE N'%" + cTechManagerID.Trim() + "%' ";
             }
             #endregion
 
@@ -289,21 +289,21 @@ namespace OneService.Controllers
             #region 產品序號
             if (!string.IsNullOrEmpty(cSerialID))
             {
-                ttWhere += "AND P.cSerialID LIKE N'%" + cSerialID + "%' ";
+                ttWhere += "AND P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' ";
             }
             #endregion
 
             #region 產品機器型號
             if (!string.IsNullOrEmpty(cMaterialName))
             {
-                ttWhere += "AND P.cMaterialName LIKE N'%" + cMaterialName + "%' ";
+                ttWhere += "AND P.cMaterialName LIKE N'%" + cMaterialName.Trim() + "%' ";
             }
             #endregion
 
             #region Product Number
             if (!string.IsNullOrEmpty(cProductNumber))
             {
-                ttWhere += "AND P.cProductNumber LIKE N'%" + cProductNumber + "%' ";
+                ttWhere += "AND P.cProductNumber LIKE N'%" + cProductNumber.Trim() + "%' ";
             }
             #endregion
 
@@ -472,6 +472,9 @@ namespace OneService.Controllers
             {
                 //記錄目前GUID，用來判斷更新的先後順序
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
+                
+                //判斷登入者是否可以編輯服務案件
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, EmpBean.EmployeeERPID);
 
                 #region 報修資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -586,6 +589,7 @@ namespace OneService.Controllers
             ViewBag.SRTeamIDList = SRTeamIDList;
 
             ViewBag.pOperationID = pOperationID_GenerallySR;
+            ViewBag.pIsCanEditSR = pIsCanEditSR.ToString();  //登入者是否可以編輯服務案件
 
             return View(model);
         }

@@ -24,6 +24,7 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Web;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 
 namespace OneService.Controllers
 {
@@ -1515,6 +1516,130 @@ namespace OneService.Controllers
                 if (bean.CValue.ToLower() == LoginAccount.ToLower())
                 {
                     reValue = true;
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入者是否可以編輯服務案件
+        /// <summary>
+        /// 判斷登入者是否可以編輯服務案件
+        /// </summary>
+        /// <param name="tSRID">SRID</param>
+        /// <param name="tLoginERPID">登入者ERPID</param>
+        /// <returns></returns>
+        public bool checkIsCanEditSR(string tSRID, string tLoginERPID)
+        {
+            bool reValue = false;
+
+            //服務團隊主管、L2工程師、指派工程師、技術主管
+            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == tSRID);
+
+            if (beanM != null)
+            {
+                if (beanM.CStatus == "E0006" || beanM.CStatus == "E0015") //完修或取修不可編輯
+                {
+                    return false;
+                }
+
+                if (beanM.CStatus == "E0007") //技術支援升級(技術主管可編輯)
+                {
+                    if (beanM.CTechManagerId != null)
+                    {
+                        if (beanM.CTechManagerId.Contains(tLoginERPID))
+                        {
+                            reValue = true;
+                        }
+                    }
+                }
+                else if (beanM.CStatus == "E0002") //L2處理中(L2工程師可編輯)
+                {
+                    if (beanM.CMainEngineerId != null)
+                    {
+                        if (beanM.CMainEngineerId == tLoginERPID)
+                        {
+                            reValue = true;
+                        }
+                    }
+                }
+                else //其他狀態(服務團隊主管、L2工程師、指派工程師都可以編輯)
+                {
+                    #region 指派工程師
+                    if (beanM.CAssEngineerId != null)
+                    {
+                        if (beanM.CAssEngineerId.Contains(tLoginERPID))
+                        {
+                            reValue = true;
+                        }
+                    }
+                    #endregion
+
+                    #region L2工程師
+                    if (!reValue)
+                    {
+                        if (beanM.CMainEngineerId != null)
+                        {
+                            if (beanM.CMainEngineerId == tLoginERPID)
+                            {
+                                reValue = true;
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region 服務團隊主管
+                    if (!reValue)
+                    {
+                        string tMGRERPID = string.Empty;                        
+                        string cTeamOldID = beanM.CTeamId;
+
+                        var beanT = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamOldId == cTeamOldID);
+
+                        if (beanT != null)
+                        {
+                            tMGRERPID = findDeptMGRERPID(beanT.CTeamNewId);
+
+                            if (tLoginERPID == tMGRERPID)
+                            {
+                                reValue = true;
+                            }
+                        }
+                    }
+                    #endregion                   
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得該部門主管的ERPID
+        /// <summary>
+        /// 取得該部門主管的ERPID
+        /// </summary>
+        /// <param name="DEPTID">部門ID</param>        
+        /// <returns></returns>
+        public string findDeptMGRERPID(string DEPTID)
+        {
+            string reValue = string.Empty;
+            string tManagerID = string.Empty;
+
+            var beanDept = dbEIP.Departments.FirstOrDefault(x => x.Id == DEPTID);
+
+            if (beanDept != null)
+            {
+                tManagerID = beanDept.ManagerId;
+
+                if (tManagerID != "")
+                {
+                    var beanP = dbEIP.People.FirstOrDefault(x => x.Id == tManagerID);
+
+                    if (beanP != null)
+                    {
+                        reValue = beanP.ErpId;
+                    }
                 }
             }
 
