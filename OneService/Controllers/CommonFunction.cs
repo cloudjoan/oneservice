@@ -518,6 +518,34 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得服務團隊說明By List
+        /// <summary>
+        /// 取得服務團隊說明By List
+        /// </summary>
+        /// <param name="tList">服務團隊清單</param>
+        /// <param name="tValue">參數值</param>
+        /// <returns></returns>
+        public string TransSRTeam(List<SelectListItem> tList, string tValue)
+        {
+            string reValue = string.Empty;
+            string[] tAryValue = tValue.Split(';');
+
+            foreach(string tStr in tAryValue)
+            {
+                foreach (var bean in tList)
+                {
+                    if (bean.Value == tStr)
+                    {
+                        reValue += bean.Text + "<br/>";
+                        break;
+                    }
+                }
+            }            
+
+            return reValue;
+        }
+        #endregion
+
         #region 取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
         /// <summary>
         /// 取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
@@ -565,10 +593,11 @@ namespace OneService.Controllers
         /// </summary>        
         /// <param name="ArySERIAL">序號Array</param>
         /// <param name="NowCount">目前的項次</param>
-        /// <param name="tURLName">BPM站台名稱</param>
-        /// <param name="tSeverName">PSIP站台名稱</param>
+        /// <param name="tBPMURLName">BPM站台名稱</param>
+        /// <param name="tPSIPURLName">PSIP站台名稱</param>
+        /// <param name="tAPIURLName">API站台名稱</param>
         /// <returns></returns>
-        public List<SRWarranty> ZFM_TICC_SERIAL_SEARCHWTYList(string[] ArySERIAL, ref int NowCount, string tURLName, string tSeverName)
+        public List<SRWarranty> ZFM_TICC_SERIAL_SEARCHWTYList(string[] ArySERIAL, ref int NowCount, string tBPMURLName, string tPSIPURLName, string tAPIURLName)
         {
             List<SRWarranty> QueryToList = new List<SRWarranty>();
 
@@ -645,7 +674,7 @@ namespace OneService.Controllers
                             {
                                 tBPMNO = findContractSealsFormNo(cContractID);
 
-                                cSUB_CONTRACTID = findContractSealsOBJSubNo(cContractID);
+                                cSUB_CONTRACTID = findContractSealsOBJSubNo(tAPIURLName, cContractID);
 
                                 try
                                 {
@@ -653,14 +682,14 @@ namespace OneService.Controllers
 
                                     if (ContractID >= 10506151 && ContractID != 10506152 && ContractID != 10506157) //新的用印申請單
                                     {
-                                        tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/ContractSeals/ContractSealsForm.aspx?FormNo=" + tBPMNO + " target=_blank";
+                                        tURL = "http://" + tBPMURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/ContractSeals/ContractSealsForm.aspx?FormNo=" + tBPMNO + " target=_blank";
                                     }
                                     else //舊的用印申請單
                                     {
-                                        tURL = "http://" + tURLName + "/ContractSeals/_layouts/FormServer.aspx?XmlLocation=%2fContractSeals%2fBPMContractSealsForm%2f" + tBPMNO + ".xml&ClientInstalled=true&DefaultItemOpen=1&source=/_layouts/TSTI.SharePoint.BPM/CloseWindow.aspx target=_blank";
+                                        tURL = "http://" + tBPMURLName + "/ContractSeals/_layouts/FormServer.aspx?XmlLocation=%2fContractSeals%2fBPMContractSealsForm%2f" + tBPMNO + ".xml&ClientInstalled=true&DefaultItemOpen=1&source=/_layouts/TSTI.SharePoint.BPM/CloseWindow.aspx target=_blank";
                                     }
 
-                                    cContractIDURL = "http://" + tSeverName + "/Spare/QueryContractInfo?CONTRACTID=" + cContractID + " target=_blank"; //合約編號URL
+                                    cContractIDURL = "http://" + tPSIPURLName + "/Spare/QueryContractInfo?CONTRACTID=" + cContractID + " target=_blank"; //合約編號URL
                                 }
                                 catch (Exception ex)
                                 {
@@ -673,11 +702,11 @@ namespace OneService.Controllers
                             {
                                 if (tBPMNO.IndexOf("WTY") != -1)
                                 {
-                                    tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/Warranty/WarrantyForm.aspx?FormNo=" + tBPMNO + " target=_blank";
+                                    tURL = "http://" + tBPMURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/Warranty/WarrantyForm.aspx?FormNo=" + tBPMNO + " target=_blank";
                                 }
                                 else
                                 {
-                                    tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Form/Guarantee/GuaranteeForm.aspx?FormNo=" + tBPMNO + " target=_blank";
+                                    tURL = "http://" + tBPMURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Form/Guarantee/GuaranteeForm.aspx?FormNo=" + tBPMNO + " target=_blank";
                                 }
                             }
                             #endregion
@@ -915,14 +944,16 @@ namespace OneService.Controllers
         /// <summary>
         /// 傳入合約編號並取得CRM合約標的的下包文件編號
         /// </summary>
+        /// <param name="tAPIURLName">API站台名稱</param>
         /// <param name="NO">合約編號</param>
         /// <returns></returns>
-        public string findContractSealsOBJSubNo(string NO)
+        public string findContractSealsOBJSubNo(string tAPIURLName, string NO)
         {
             string reValue = string.Empty;
             string SUB_CONTRACTID = string.Empty;
+            string tURL = tAPIURLName + "/API/API_CONTRACTOBJINFO_GET";
 
-            var client = new RestClient("http://localhost:32603/API/API_CONTRACTOBJINFO_GET");
+            var client = new RestClient(tURL);
 
             if (NO != null)
             {
@@ -969,11 +1000,7 @@ namespace OneService.Controllers
                         }
                         #endregion
                     }
-                }
-                else
-                {
-                    reValue = "下包零壹";
-                }
+                }                
             }
 
             return reValue;
@@ -1529,8 +1556,10 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="tSRID">SRID</param>
         /// <param name="tLoginERPID">登入者ERPID</param>
+        /// <param name="tIsMIS">登入者是否為MIS</param>
+        /// <param name="tIsCS">登入者是否為客服人員</param>
         /// <returns></returns>
-        public bool checkIsCanEditSR(string tSRID, string tLoginERPID)
+        public bool checkIsCanEditSR(string tSRID, string tLoginERPID, bool tIsMIS, bool tIsCS)
         {
             bool reValue = false;
 
@@ -1544,40 +1573,43 @@ namespace OneService.Controllers
                     return false;
                 }
 
-                if (beanM.CStatus == "E0007") //技術支援升級(技術主管可編輯)
+                if (tIsMIS || tIsCS) //MIS or 客服人員都可編輯
                 {
-                    if (beanM.CTechManagerId != null)
-                    {
-                        if (beanM.CTechManagerId.Contains(tLoginERPID))
-                        {
-                            reValue = true;
-                        }
-                    }
+                    reValue = true;
                 }
-                else if (beanM.CStatus == "E0002") //L2處理中(L2工程師可編輯)
+                else
                 {
-                    if (beanM.CMainEngineerId != null)
+                    #region 服務團隊主管可編輯
+                    string tMGRERPID = string.Empty;
+                    string cTeamOldID = beanM.CTeamId;
+
+                    var beanT = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamOldId == cTeamOldID);
+
+                    if (beanT != null)
                     {
-                        if (beanM.CMainEngineerId == tLoginERPID)
-                        {
-                            reValue = true;
-                        }
-                    }
-                }
-                else //其他狀態(服務團隊主管、L2工程師、指派工程師都可以編輯)
-                {
-                    #region 指派工程師
-                    if (beanM.CAssEngineerId != null)
-                    {
-                        if (beanM.CAssEngineerId.Contains(tLoginERPID))
+                        tMGRERPID = findDeptMGRERPID(beanT.CTeamNewId);
+
+                        if (tLoginERPID == tMGRERPID)
                         {
                             reValue = true;
                         }
                     }
                     #endregion
+                }
 
-                    #region L2工程師
-                    if (!reValue)
+                if (!reValue)
+                {
+                    if (beanM.CStatus == "E0007") //技術支援升級(技術主管可編輯)
+                    {
+                        if (beanM.CTechManagerId != null)
+                        {
+                            if (beanM.CTechManagerId.Contains(tLoginERPID))
+                            {
+                                reValue = true;
+                            }
+                        }
+                    }
+                    else if (beanM.CStatus == "E0002") //L2處理中(L2工程師可編輯)
                     {
                         if (beanM.CMainEngineerId != null)
                         {
@@ -1587,27 +1619,31 @@ namespace OneService.Controllers
                             }
                         }
                     }
-                    #endregion
-
-                    #region 服務團隊主管
-                    if (!reValue)
+                    else //其他狀態(L2工程師、指派工程師都可以編輯)
                     {
-                        string tMGRERPID = string.Empty;                        
-                        string cTeamOldID = beanM.CTeamId;
-
-                        var beanT = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamOldId == cTeamOldID);
-
-                        if (beanT != null)
+                        #region 指派工程師
+                        if (beanM.CAssEngineerId != null)
                         {
-                            tMGRERPID = findDeptMGRERPID(beanT.CTeamNewId);
-
-                            if (tLoginERPID == tMGRERPID)
+                            if (beanM.CAssEngineerId.Contains(tLoginERPID))
                             {
                                 reValue = true;
                             }
                         }
+                        #endregion
+
+                        #region L2工程師
+                        if (!reValue)
+                        {
+                            if (beanM.CMainEngineerId != null)
+                            {
+                                if (beanM.CMainEngineerId == tLoginERPID)
+                                {
+                                    reValue = true;
+                                }
+                            }
+                        }
+                        #endregion
                     }
-                    #endregion                   
                 }
             }
 
@@ -1934,7 +1970,7 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion       
+        #endregion               
 
         #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
         /// <summary>

@@ -54,10 +54,13 @@
 	<link href="~/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
 
 	<link href="~/css/plugins/dropzone/basic.css" rel="stylesheet" />
-	<link href="~/css/plugins/dropzone/dropzone.css" rel="stylesheet" />
+	<link href="~/css/plugins/dropzone/dropzone.css" rel="stylesheet" />	
 
 	<link href="~/js/jquery-ui-1.12.1.custom/jquery-ui.css" rel="stylesheet">
 	<link href="~/js/jquery-ui-1.12.1.custom/jquery-ui.theme.css" rel="stylesheet">
+
+	<link href="~/css/plugins/chosen/bootstrap-chosen.css" rel="stylesheet">
+	<link href="~/css/plugins/chosen/chosen.css" rel="stylesheet">
 
 	<link rel="Stylesheet" href="~/css/plugins/datetimepicker/bootstrap-datetimepicker.css" />
 
@@ -335,6 +338,9 @@
 	<script src="~/js/plugins/dropzone/dropzone.js?2020071502"></script>
 	<script src="~/js/numeral.js"></script>
 
+	<!-- Chosen -->
+	<script src="~/js/plugins/chosen/chosen.jquery.js"></script>
+
 	<!--datetimepicker設定參考網址 https://www.bootcss.com/p/bootstrap-datetimepicker/-->
 	<script type="text/javascript" src="~/js/plugins/datetimepicker/bootstrap-datetimepicker.js"></script>
 
@@ -400,6 +406,8 @@
 				]
 
 			});
+
+			$('.chosen-select').chosen({ width: "100%" });
 
 		});
 

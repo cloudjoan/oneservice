@@ -41,7 +41,7 @@
 								return data;
 							}
 						}
-						else if (column === 4 || column === 6) //將換行符號<br>換成excel可以識別的\n
+						else if (column === 4 || column === 5 || column === 7) //將換行符號<br>換成excel可以識別的\n
 						{
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 						}
@@ -68,7 +68,7 @@
 					text: '匯出Excel',
 					sheetName: '服務進度查詢作業',
 					exportOptions: {
-						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] //要顯示的欄位
+						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						addCustomNumberFormat(xlsx, '0');
@@ -82,6 +82,8 @@
 						formatTargetColumn(xlsx, 'H');
 						formatTargetColumn(xlsx, 'I');
 						formatTargetColumn(xlsx, 'J');
+						formatTargetColumn(xlsx, 'K');
+						formatTargetColumn(xlsx, 'L');
 					}
 				}),
 			],
@@ -129,9 +131,11 @@
 			<th>客戶報修人</th>
 			<th>說明</th>
 			<th>產品序號相關明細</th>
+			<th>服務團隊</th>
 			<th>報修管道</th>
 			<th>報修類別</th>
 			<th>L2工程師</th>
+			<th>派單日期</th>
 			<th>最後編輯日期</th>
 			<th>狀態</th>
 		</tr>
@@ -143,16 +147,18 @@
 				foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 				{
 					<tr>
-						<td><a href="@QueryInfo[12]" target="_blank">@QueryInfo[0]</a></td>
+						<td><a href="@QueryInfo[14]" target="_blank">@QueryInfo[0]</a></td>
 						<td>@Html.Raw(QueryInfo[1])</td>
 						<td>@Html.Raw(QueryInfo[2])</td>
 						<td>@Html.Raw(QueryInfo[3])</td>
 						<td>@Html.Raw(QueryInfo[4])</td>
 						<td>@Html.Raw(QueryInfo[5])</td>
 						<td>@Html.Raw(QueryInfo[6])</td>
-						<td>@Html.Raw(QueryInfo[8])</td>
-						<td>@Html.Raw(QueryInfo[10])</td>
+						<td>@Html.Raw(QueryInfo[7])</td>
+						<td>@Html.Raw(QueryInfo[9])</td>
 						<td>@Html.Raw(QueryInfo[11])</td>
+						<td>@Html.Raw(QueryInfo[12])</td>
+						<td>@Html.Raw(QueryInfo[13])</td>
 					</tr>
 				}
 			}

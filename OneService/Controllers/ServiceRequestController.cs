@@ -16,6 +16,8 @@ using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
+using Microsoft.CodeAnalysis;
+using System;
 
 
 namespace OneService.Controllers
@@ -122,6 +124,11 @@ namespace OneService.Controllers
 
             var model = new ViewModelQuerySRProgress();
 
+            #region 服務團隊
+            var selectTeamList = CMF.findSRTeamIDList(pCompanyCode, false);
+            ViewBag.ddl_cTeamID = selectTeamList;
+            #endregion
+
             #region 報修類別
             //大類
             var SRTypeOneList = CMF.findFirstKINDList();
@@ -148,6 +155,7 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="cCompanyID">公司別(T012、T016、C069、T022)</param>
         /// <param name="cSRCaseType">服務案件種類</param>
+        /// <param name="cStatus">狀態</param>
         /// <param name="cStartCreatedDate">派單起始日期</param>
         /// <param name="cEndCreatedDate">派單結束日期</param>
         /// <param name="cCustomerID">客戶代號</param>
@@ -158,6 +166,7 @@ namespace OneService.Controllers
         /// <param name="cMainEngineerID">L2工程師ERPID</param>
         /// <param name="cAssEngineerID">指派工程師ERPID</param>
         /// <param name="cTechManagerID">技術主管ERPID</param>
+        /// <param name="cTeamID">服務團隊</param>
         /// <param name="cSRTypeOne">報修類別-大類</param>
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
@@ -165,9 +174,9 @@ namespace OneService.Controllers
         /// <param name="cMaterialName">產品機器型號</param>
         /// <param name="cProductNumber">Product Number</param>
         /// <returns></returns>
-        public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStartCreatedDate, string cEndCreatedDate, string cCustomerID, 
-                                                 string cCustomerName, string cSRID, string cRepairName, string cSRPathWay, string cMainEngineerID, 
-                                                 string cAssEngineerID, string cTechManagerID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
+        public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
+                                                 string cCustomerID, string cCustomerName, string cSRID, string cRepairName, string cSRPathWay, string cMainEngineerID, 
+                                                 string cAssEngineerID, string cTechManagerID, string cTeamID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
                                                  string cSerialID, string cMaterialName, string cProductNumber)
         {            
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
@@ -177,16 +186,21 @@ namespace OneService.Controllers
 
             StringBuilder tSQL = new StringBuilder();
             
-            string ttWhere = string.Empty;            
+            string ttWhere = string.Empty;
+            string ttJoin = string.Empty;
+            string ttStrItem = string.Empty;
             string tSRPathWay = string.Empty;           //報修管理
             string tStatus = string.Empty;              //狀態
             string tSRType = string.Empty;              //報修類別
             string tSRProductSerial = string.Empty;     //產品序號資訊
+            string tSRTeam = string.Empty;              //服務團隊
             string tMainEngineerID = string.Empty;      //L2工程師ERPID
             string tMainEngineerName = string.Empty;    //L2工程師姓名            
-            string tTechManagerID = string.Empty;      //技術主管ERPID            
-            string tModifiedDate = string.Empty;        //修改日期            
+            string tTechManagerID = string.Empty;       //技術主管ERPID
+            string tCreatedDate = string.Empty;         //派單日期
+            string tModifiedDate = string.Empty;        //最後編輯日期            
 
+            var tSRTeam_List = CMF.findSRTeamIDList(cCompanyID, false);
             List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
             List<TbOneSysParameter> tSRStatus_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRSTATUS");
 
@@ -194,6 +208,13 @@ namespace OneService.Controllers
             if (!string.IsNullOrEmpty(cSRCaseType))
             {
                 ttWhere += "AND M.cSRID LIKE N'%" + cSRCaseType + "%' ";
+            }
+            #endregion
+
+            #region 狀態
+            if (!string.IsNullOrEmpty(cStatus))
+            {
+                ttWhere += "AND M.cStatus = N'" + cStatus + "' ";
             }
             #endregion
 
@@ -286,6 +307,36 @@ namespace OneService.Controllers
             }
             #endregion
 
+            #region 服務團隊
+            if (!string.IsNullOrEmpty(cTeamID))
+            {
+                ttStrItem = "";
+                string[] tAryTeam = cTeamID.TrimEnd(',').Split(',');
+
+                if(tAryTeam.Length >= 0)
+                {
+                    ttStrItem = "AND (";
+                }
+
+                foreach (string tLocation in tAryTeam)
+                {
+                    ttStrItem += " M.cTeamID like N'%" + tLocation + "%' or";
+                }                
+
+                if (tAryTeam.Length >= 0)
+                {
+                    if (ttStrItem.EndsWith("or"))
+                    {
+                        ttStrItem = ttStrItem.Substring(0, ttStrItem.Length - 2); //去除最後一個or  
+                    }                    
+
+                    ttStrItem += ") ";
+                }
+
+                ttWhere += ttStrItem;
+            }
+            #endregion 倉區
+
             #region 產品序號
             if (!string.IsNullOrEmpty(cSerialID))
             {
@@ -307,16 +358,24 @@ namespace OneService.Controllers
             }
             #endregion
 
+            #region 若【產品序號】、【產品機器型號】、【Product Number】其中有一個，就要執行Join語法
+            if (!string.IsNullOrEmpty(cSerialID) || !string.IsNullOrEmpty(cMaterialName) || !string.IsNullOrEmpty(cProductNumber))
+            {
+                ttJoin = " left join TB_ONE_SRDetail_Product P on M.cSRID = P.cSRID";
+                ttWhere = "AND P.disabled = 0 " + ttWhere;
+            }
+            #endregion
+
             #region 組待查詢清單
-            
+
             #region SQL語法
             tSQL.AppendLine(" Select M.*,");
             tSQL.AppendLine("        (Select top 1 sp.cSerialID + '＃＃' + sp.cMaterialName + '＃＃' + sp.cProductNumber");
             tSQL.AppendLine("         From TB_ONE_SRDetail_Product sp where M.cSRID = sp.cSRID AND sp.disabled = 0");
             tSQL.AppendLine("        ) as Products");
             tSQL.AppendLine(" From TB_ONE_SRMain M");
-            tSQL.AppendLine(" left join TB_ONE_SRDetail_Product P on M.cSRID = P.cSRID ");
-            tSQL.AppendLine(" Where 1=1 AND P.disabled = 0 " + ttWhere);
+            tSQL.AppendLine(ttJoin);
+            tSQL.AppendLine(" Where 1=1 " + ttWhere);
             #endregion
 
             dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
@@ -326,28 +385,32 @@ namespace OneService.Controllers
             {
                 tSRPathWay = CMF.TransSysParameterByList(tSRPathWay_List, dr["cSRPathWay"].ToString());
                 tStatus = CMF.TransSysParameterByList(tSRStatus_List, dr["cStatus"].ToString());
+                tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
                 tSRType = CMF.TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
                 tSRProductSerial = CMF.TransProductSerial(dr["Products"].ToString());
                 tMainEngineerID = string.IsNullOrEmpty(dr["cMainEngineerID"].ToString()) ? "" : dr["cMainEngineerID"].ToString();
                 tMainEngineerName = string.IsNullOrEmpty(dr["cMainEngineerName"].ToString()) ? "" : dr["cMainEngineerName"].ToString();
                 tTechManagerID = string.IsNullOrEmpty(dr["cTechManagerID"].ToString()) ? "" : dr["cTechManagerID"].ToString();
+                tCreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
 
-                string[] QueryInfo = new string[13];                
+                string[] QueryInfo = new string[15];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
                 QueryInfo[1] = dr["cCustomerName"].ToString();   //客戶
                 QueryInfo[2] = dr["cRepairName"].ToString();     //客戶報修人
                 QueryInfo[3] = dr["cDesc"].ToString();          //說明
                 QueryInfo[4] = tSRProductSerial;               //產品序號資訊
-                QueryInfo[5] = tSRPathWay;                     //報修管道
-                QueryInfo[6] = tSRType;                        //報修類別                
-                QueryInfo[7] = tMainEngineerID;                //L2工程師ERPID
-                QueryInfo[8] = tMainEngineerName;              //L2工程師姓名
-                QueryInfo[9] = tTechManagerID;                 //技術主管ERPID                    
-                QueryInfo[10] = tModifiedDate;                 //最後編輯日期
-                QueryInfo[11] = tStatus;                       //狀態                
-                QueryInfo[12] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
+                QueryInfo[5] = tSRTeam;                        //服務團隊
+                QueryInfo[6] = tSRPathWay;                     //報修管道
+                QueryInfo[7] = tSRType;                        //報修類別                
+                QueryInfo[8] = tMainEngineerID;                //L2工程師ERPID
+                QueryInfo[9] = tMainEngineerName;              //L2工程師姓名
+                QueryInfo[10] = tTechManagerID;                 //技術主管ERPID                    
+                QueryInfo[11] = tCreatedDate;                  //派單日期
+                QueryInfo[12] = tModifiedDate;                 //最後編輯日期
+                QueryInfo[13] = tStatus;                       //狀態                
+                QueryInfo[14] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
 
                 QueryToList.Add(QueryInfo);
             }
@@ -474,7 +537,7 @@ namespace OneService.Controllers
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
                 
                 //判斷登入者是否可以編輯服務案件
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, EmpBean.EmployeeERPID);
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, EmpBean.EmployeeERPID, pIsMIS, pIsCS);
 
                 #region 報修資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -1174,6 +1237,7 @@ namespace OneService.Controllers
             string EDATE = string.Empty;
             string tURL = string.Empty;
             string tURLName = string.Empty;
+            string tAPIURLName = string.Empty;
             string tSeverName = string.Empty;
             string tInvoiceNo = string.Empty;
             string tInvoiceItem = string.Empty;
@@ -1184,11 +1248,13 @@ namespace OneService.Controllers
             {
                 tURLName = "tsti-bpm01.etatung.com.tw";
                 tSeverName = "psip-prd-ap";
+                tAPIURLName = @"https://api.etatung.com";
             }
             else
             {
-                tURLName = "bpm-qas";
+                tURLName = "bpm -qas";
                 tSeverName = "psip-qas";
+                tAPIURLName = @"https://api-qas.etatung.com";
             }
 
             DataTable dtWTY = null; //RFC保固Table
@@ -1200,7 +1266,7 @@ namespace OneService.Controllers
             try
             {
                 #region 呼叫RFC並回傳保固SLA Table清單
-                QueryToList = CMF.ZFM_TICC_SERIAL_SEARCHWTYList(ArySERIAL, ref NowCount, tURLName, tSeverName);
+                QueryToList = CMF.ZFM_TICC_SERIAL_SEARCHWTYList(ArySERIAL, ref NowCount, tURLName, tSeverName, tAPIURLName);
                 #endregion
 
                 #region 保固，因RFC已經有回傳所有清單，這邊暫時先不用
@@ -1433,6 +1499,25 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得系統參數清單(第一項為空白)
+        /// <summary>
+        /// 取得系統參數清單(第一項為空白)
+        /// </summary>        
+        /// <returns></returns>
+        static public List<SelectListItem> findSysParameterList_WithEmpty(string cOperationID, string cFunctionID, string cCompanyID, string cNo, bool cEmptyOption)
+        {
+            CommonFunction CMF = new CommonFunction();
+
+            var tList = new List<SelectListItem>();
+            tList.Add(new SelectListItem { Text = "", Value = "" });
+
+            var tListS = CMF.findSysParameterListItem(cOperationID, cFunctionID, cCompanyID, cNo, cEmptyOption);
+            tList.AddRange(tListS);
+
+            return tList;
+        }
+        #endregion
+
         #region 取得客戶類型
         /// <summary>
         /// 取得客戶類型
@@ -1465,26 +1550,7 @@ namespace OneService.Controllers
 
             return tList;           
         }
-        #endregion
-
-        #region 取得報修管道清單
-        /// <summary>
-        /// 取得報修管道清單
-        /// </summary>        
-        /// <returns></returns>
-        static public List<SelectListItem> findSRPathWayList(string cOperationID, string cFunctionID, string cCompanyID, string cNo, bool cEmptyOption)
-        {
-            CommonFunction CMF = new CommonFunction();            
-
-            var tList = new List<SelectListItem>();
-            tList.Add(new SelectListItem { Text = "", Value = "" });
-
-            var tListS = CMF.findSysParameterListItem(cOperationID, cFunctionID, cCompanyID, cNo, cEmptyOption);
-            tList.AddRange(tListS);
-
-            return tList;
-        }
-        #endregion
+        #endregion       
 
         #region Ajax傳入第一階(大類)並取得第二階(中類)清單
         /// <summary>
@@ -3900,6 +3966,11 @@ namespace OneService.Controllers
         /// </summary>
         public class ViewModelQuerySRProgress
         {
+            #region 狀態
+            public string ddl_cStatus { get; set; }
+            public List<SelectListItem> ListStatus = findSysParameterList_WithEmpty(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRSTATUS", false);
+            #endregion
+
             #region 服務案件種類代號
             public string ddl_cSRCaseType { get; set; }
             public List<SelectListItem> ListSRCaseType = findSRIDTypeList();
@@ -3907,7 +3978,7 @@ namespace OneService.Controllers
 
             #region 報修管道
             public string ddl_cSRPathWay { get; set; }
-            public List<SelectListItem> ListSRPathWay = findSRPathWayList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPATH", false);
+            public List<SelectListItem> ListSRPathWay = findSysParameterList_WithEmpty(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPATH", false);
             #endregion
         }
         #endregion

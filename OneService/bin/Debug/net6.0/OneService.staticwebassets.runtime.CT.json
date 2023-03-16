@@ -417,6 +417,44 @@
                 "Asset": null,
                 "Patterns": null
               },
+              "chosen": {
+                "Children": {
+                  "bootstrap-chosen.css": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "css/plugins/chosen/bootstrap-chosen.css"
+                    },
+                    "Patterns": null
+                  },
+                  "chosen-sprite.png": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "css/plugins/chosen/chosen-sprite.png"
+                    },
+                    "Patterns": null
+                  },
+                  "chosen-sprite@2x.png": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "css/plugins/chosen/chosen-sprite@2x.png"
+                    },
+                    "Patterns": null
+                  },
+                  "chosen.css": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "css/plugins/chosen/chosen.css"
+                    },
+                    "Patterns": null
+                  }
+                },
+                "Asset": null,
+                "Patterns": null
+              },
               "clockpicker": {
                 "Children": {
                   "clockpicker.css": {
@@ -9732,6 +9770,20 @@
                     "Asset": {
                       "ContentRootIndex": 0,
                       "SubPath": "js/plugins/chartJs/Chart.min.js"
+                    },
+                    "Patterns": null
+                  }
+                },
+                "Asset": null,
+                "Patterns": null
+              },
+              "chosen": {
+                "Children": {
+                  "chosen.jquery.js": {
+                    "Children": null,
+                    "Asset": {
+                      "ContentRootIndex": 0,
+                      "SubPath": "js/plugins/chosen/chosen.jquery.js"
                     },
                     "Patterns": null
                   }

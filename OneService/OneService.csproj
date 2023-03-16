@@ -25,7 +25,9 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\css\plugins\datetimepicker\" />
+    <Folder Include="wwwroot\css\plugins\chosen\" />
     <Folder Include="wwwroot\js\plugins\datetimepicker\" />
+    <Folder Include="wwwroot\js\plugins\chosen\" />
     <Folder Include="wwwroot\upload\" />
   </ItemGroup>
 
