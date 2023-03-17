@@ -1393,6 +1393,14 @@
       },
       "files": {
         "Children": {
+          "28646a6b-7ae0-4d74-9dbd-babbebffdb32.png": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "files/28646a6b-7ae0-4d74-9dbd-babbebffdb32.png"
+            },
+            "Patterns": null
+          },
           "3547b5a1-c9ac-4327-a2d3-04a849d95d59.txt": {
             "Children": null,
             "Asset": {
