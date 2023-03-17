@@ -984,7 +984,7 @@
 				success: function (result) {
 					if (result != undefined) {
 						var tr = obj.parent().parent();
-						var tds = tr.find("td");											
+						var tds = tr.find("td");
 						
 						tds.eq(2).children().val(Product);
 						tds.eq(3).children().val(result[0]);
@@ -2248,7 +2248,7 @@
 
 		//組BOM
 		function SetBOM() {
-			var reValue = "<td><a href=\"javascript:void(0);showBOMDialog('')\"></a></td>";
+			var reValue = "<td><a href=\"javascript:void(0);showBOMDialog('')\"></a>";
 			    reValue += "<input type='hidden' name='hid_PRcMaterialID' id='hid_PRcMaterialID" + trProductNoCount + "'></td>";
 			return reValue;
 		}
