@@ -23,7 +23,6 @@ namespace OneService.Models
         public virtual DbSet<PersonalContact> PersonalContacts { get; set; } = null!;
         public virtual DbSet<PostalaAddressAndCode> PostalaAddressAndCodes { get; set; } = null!;
         public virtual DbSet<Stockall> Stockalls { get; set; } = null!;
-        public virtual DbSet<Stockwty> Stockwties { get; set; } = null!;
         public virtual DbSet<TbMailContent> TbMailContents { get; set; } = null!;
         public virtual DbSet<ViewCustomer2> ViewCustomer2s { get; set; } = null!;
         public virtual DbSet<ViewCustomerandpersonal> ViewCustomerandpersonals { get; set; } = null!;
@@ -34,7 +33,7 @@ namespace OneService.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=172.31.7.40;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin");
+                optionsBuilder.UseSqlServer("Server=172.31.7.119;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin");
             }
         }
 
@@ -45,8 +44,6 @@ namespace OneService.Models
                 entity.HasKey(e => e.ContactId);
 
                 entity.ToTable("CUSTOMER_Contact");
-
-                entity.HasIndex(e => new { e.Kna1Kunnr, e.Knb1Bukrs }, "NonClusteredIndex-20221004-134356");
 
                 entity.Property(e => e.ContactId)
                     .HasColumnName("ContactID")
@@ -188,8 +185,7 @@ namespace OneService.Models
 
                 entity.Property(e => e.Dsc2)
                     .HasMaxLength(80)
-                    .HasColumnName("DSC2")
-                    .HasComment("天數");
+                    .HasColumnName("DSC2");
 
                 entity.Property(e => e.Id)
                     .ValueGeneratedOnAdd()
@@ -744,8 +740,6 @@ namespace OneService.Models
 
                 entity.ToTable("STOCKALL");
 
-                entity.HasIndex(e => new { e.VendoromSdate, e.VendoromEdate, e.OmSdate, e.OmEdate, e.ExSdate, e.ExEdate, e.TmSdate, e.TmEdate }, "NonClusteredIndex-20220901-160826");
-
                 entity.Property(e => e.IvSerial)
                     .HasMaxLength(40)
                     .HasColumnName("IV_SERIAL");
@@ -877,95 +871,6 @@ namespace OneService.Models
                 entity.Property(e => e.VendoromWtyid)
                     .HasMaxLength(40)
                     .HasColumnName("VENDOROM_WTYID");
-            });
-
-            modelBuilder.Entity<Stockwty>(entity =>
-            {
-                entity.HasKey(e => e.CId);
-
-                entity.ToTable("STOCKWTY");
-
-                entity.Property(e => e.CId)
-                    .ValueGeneratedNever()
-                    .HasColumnName("cID");
-
-                entity.Property(e => e.Advice).HasColumnName("ADVICE");
-
-                entity.Property(e => e.BpNo)
-                    .HasMaxLength(40)
-                    .HasColumnName("BP_NO");
-
-                entity.Property(e => e.BpmNo)
-                    .HasMaxLength(20)
-                    .HasColumnName("BPM_NO");
-
-                entity.Property(e => e.CarePackNo)
-                    .HasMaxLength(50)
-                    .HasColumnName("CARE_PACK_NO");
-
-                entity.Property(e => e.CrDate)
-                    .HasColumnType("datetime")
-                    .HasColumnName("CR_DATE");
-
-                entity.Property(e => e.CrUser)
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .HasColumnName("CR_USER");
-
-                entity.Property(e => e.IvCid)
-                    .HasMaxLength(10)
-                    .HasColumnName("IV_CID");
-
-                entity.Property(e => e.IvDndate)
-                    .HasColumnType("datetime")
-                    .HasColumnName("IV_DNDATE");
-
-                entity.Property(e => e.IvEdate)
-                    .HasColumnType("datetime")
-                    .HasColumnName("IV_EDATE");
-
-                entity.Property(e => e.IvSdate)
-                    .HasColumnType("datetime")
-                    .HasColumnName("IV_SDATE");
-
-                entity.Property(e => e.IvSerial)
-                    .HasMaxLength(40)
-                    .HasColumnName("IV_SERIAL");
-
-                entity.Property(e => e.IvSlaresp)
-                    .HasMaxLength(10)
-                    .HasColumnName("IV_SLARESP");
-
-                entity.Property(e => e.IvSlasrv)
-                    .HasMaxLength(10)
-                    .HasColumnName("IV_SLASRV");
-
-                entity.Property(e => e.IvSono)
-                    .HasMaxLength(10)
-                    .HasColumnName("IV_SONO");
-
-                entity.Property(e => e.IvWtydesc)
-                    .HasMaxLength(50)
-                    .HasColumnName("IV_WTYDESC");
-
-                entity.Property(e => e.IvWtyid)
-                    .HasMaxLength(40)
-                    .HasColumnName("IV_WTYID");
-
-                entity.Property(e => e.Note).HasColumnName("NOTE");
-
-                entity.Property(e => e.ReceiptDate).HasMaxLength(22);
-
-                entity.Property(e => e.ReceiptNo).HasMaxLength(100);
-
-                entity.Property(e => e.UpDate)
-                    .HasColumnType("datetime")
-                    .HasColumnName("UP_DATE");
-
-                entity.Property(e => e.UpUser)
-                    .HasMaxLength(20)
-                    .IsUnicode(false)
-                    .HasColumnName("UP_USER");
             });
 
             modelBuilder.Entity<TbMailContent>(entity =>

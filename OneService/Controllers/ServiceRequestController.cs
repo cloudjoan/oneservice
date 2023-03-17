@@ -726,8 +726,8 @@ namespace OneService.Controllers
                 }
                 else
                 {
-                    tURLName = "bpm -qas";
-                    tSeverName = "psip-qas";
+                    tURLName = "tsti-bpm01.etatung.com.tw";
+                    tSeverName = "psip-prd-ap";
                     tAPIURLName = @"https://api-qas.etatung.com";
                 }
 
@@ -1305,8 +1305,8 @@ namespace OneService.Controllers
             }
             else
             {
-                tURLName = "bpm -qas";
-                tSeverName = "psip-qas";
+                tURLName = "tsti-bpm01.etatung.com.tw";
+                tSeverName = "psip-prd-ap";
                 tAPIURLName = @"https://api-qas.etatung.com";
             }
 
@@ -1419,8 +1419,8 @@ namespace OneService.Controllers
             }
             else
             {
-                tURLName = "bpm-qas";
-                tSeverName = "psip-qas";
+                tURLName = "tsti-bpm01.etatung.com.tw";
+                tSeverName = "psip-prd-ap";
             }            
 
             int NowCount = 0;

@@ -985,11 +985,12 @@
 					if (result != undefined) {
 						var tr = obj.parent().parent();
 						var tds = tr.find("td");											
-											
-						tds.eq(2).children().val(ProdID);
-						tds.eq(3).children().val(Product);
-						tds.eq(4).children().val(result[0]);
-						tds.eq(6).children().val(result[1]);
+						
+						tds.eq(2).children().val(Product);
+						tds.eq(3).children().val(result[0]);
+						tds.eq(4).children().eq(0).html(ProdID);
+						tds.eq(4).children().eq(1).val(ProdID);
+						tds.eq(5).children().val(result[1]);
 					}
 				}
 			})
