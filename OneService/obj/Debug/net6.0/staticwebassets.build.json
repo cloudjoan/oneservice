@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "hAt3zpLU+h7WrAmE4dXfwdY0zpw1OGU+PIizQh5KtGE=",
+  "Hash": "9lAxS5GVwRmvygG9a4nTIjom2q+y3M4HcYbXNI1oxqU=",
   "Source": "OneService",
   "BasePath": "_content/OneService",
   "Mode": "Default",
@@ -2344,6 +2344,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\favicon.ico"
+    },
+    {
+      "Identity": "D:\\GIT\\oneservice\\OneService\\wwwroot\\files\\28646a6b-7ae0-4d74-9dbd-babbebffdb32.png",
+      "SourceId": "OneService",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\GIT\\oneservice\\OneService\\wwwroot\\",
+      "BasePath": "_content/OneService",
+      "RelativePath": "files/28646a6b-7ae0-4d74-9dbd-babbebffdb32.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\files\\28646a6b-7ae0-4d74-9dbd-babbebffdb32.png"
     },
     {
       "Identity": "D:\\GIT\\oneservice\\OneService\\wwwroot\\files\\3547b5a1-c9ac-4327-a2d3-04a849d95d59.txt",

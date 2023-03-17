@@ -675,7 +675,12 @@ namespace OneService.Controllers
 
             pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
-            string OldCStatus = string.Empty; 
+            string tURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tSeverName = string.Empty;
+            string OldCStatus = string.Empty;
+            string OldCMainEngineerId = string.Empty;
+
             string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
             string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
             string CCustomerId = formCollection["hid_cCustomerID"].FirstOrDefault();            
@@ -706,14 +711,34 @@ namespace OneService.Controllers
             string CTechManagerId = formCollection["hid_cTechManagerID"].FirstOrDefault();
             string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
 
+            SRCondition srCon = new SRCondition();
+            SRMain_GENERALSRSTATUS_INPUT beanIN = new SRMain_GENERALSRSTATUS_INPUT();
+
             try
             {
+                bool tIsFormal = CMF.getCallSAPERPPara(pOperationID_GenerallySR); //取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
+
+                if (tIsFormal)
+                {
+                    tURLName = "tsti-bpm01.etatung.com.tw";
+                    tSeverName = "psip-prd-ap";
+                    tAPIURLName = @"https://api-qas.etatung.com";
+                }
+                else
+                {
+                    tURLName = "bpm -qas";
+                    tSeverName = "psip-qas";
+                    tAPIURLName = @"https://api-qas.etatung.com";
+                }
+
                 var beanNowM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
 
                 if (beanNowM == null)
                 {
                     #region 新增主檔
                     TbOneSrmain beanM = new TbOneSrmain();
+
+                    srCon = SRCondition.ADD;
 
                     //主表資料
                     beanM.CSrid = pSRID;
@@ -881,6 +906,16 @@ namespace OneService.Controllers
                         dbOne.TbOneLogs.Add(logBean);
                         dbOne.SaveChanges();
                         #endregion
+
+                        #region call ONE SERVICE（一般服務案件）狀態更新接口來寄送Mail
+                        beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanIN.IV_SRID = pSRID;
+                        beanIN.IV_STATUS = "E0005|ADD"; //新建但狀態是L3處理中
+                        beanIN.IV_APIURLName = tAPIURLName;
+
+                        CMF.GetAPI_GenerallySRSTATUS_Update(beanIN);
+                        #endregion
                     }
                 }
                 else
@@ -888,6 +923,7 @@ namespace OneService.Controllers
                     #region 修改主檔                    
                     //主表資料
                     OldCStatus = beanNowM.CStatus;
+                    OldCMainEngineerId = beanNowM.CMainEngineerId;
 
                     beanNowM.CStatus = CStatus;
                     beanNowM.CCustomerName = CCustomerName;
@@ -1201,6 +1237,23 @@ namespace OneService.Controllers
                         dbOne.TbOneLogs.Add(logBean);
                         dbOne.SaveChanges();
                         #endregion
+
+                        #region call ONE SERVICE（一般服務案件）狀態更新接口來寄送Mail
+                        string TempStatus = CStatus;
+
+                        if (OldCMainEngineerId != CMainEngineerId)
+                        {
+                            TempStatus = CStatus + "|TRANS"; //轉單
+                        }
+
+                        beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanIN.IV_SRID = pSRID;
+                        beanIN.IV_STATUS = TempStatus;
+                        beanIN.IV_APIURLName = tAPIURLName;
+
+                        CMF.GetAPI_GenerallySRSTATUS_Update(beanIN);
+                        #endregion
                     }
                 }
             }
@@ -1248,7 +1301,7 @@ namespace OneService.Controllers
             {
                 tURLName = "tsti-bpm01.etatung.com.tw";
                 tSeverName = "psip-prd-ap";
-                tAPIURLName = @"https://api.etatung.com";
+                tAPIURLName = @"https://api-qas.etatung.com";
             }
             else
             {
@@ -3439,7 +3492,11 @@ namespace OneService.Controllers
                                                string cEditContactCity, string cEditContactAddress, string cEditContactPhone, string cEditContactMobile, 
                                                string cEditContactEmail, string ModifiedUserName)
         {
-            cEditContactMobile = String.IsNullOrEmpty(cEditContactMobile) ? "" : cEditContactMobile;
+            cEditContactCity = string.IsNullOrEmpty(cEditContactCity) ? "" : cEditContactCity.Trim();
+            cEditContactAddress = string.IsNullOrEmpty(cEditContactAddress) ? "" : cEditContactAddress.Trim();
+            cEditContactPhone = string.IsNullOrEmpty(cEditContactPhone) ? "" : cEditContactPhone.Trim();
+            cEditContactMobile = string.IsNullOrEmpty(cEditContactMobile) ? "" : cEditContactMobile.Trim();
+            cEditContactEmail = string.IsNullOrEmpty(cEditContactEmail) ? "" : cEditContactEmail.Trim();
 
             if (cCustomerID.Substring(0, 1) == "P")
             {
@@ -3447,11 +3504,11 @@ namespace OneService.Controllers
 
                 if (bean != null) //修改
                 {
-                    bean.ContactCity = cEditContactCity.Trim();
-                    bean.ContactAddress = cEditContactAddress.Trim();
-                    bean.ContactPhone = cEditContactPhone.Trim();
-                    bean.ContactMobile = cEditContactMobile.Trim();
-                    bean.ContactEmail = cEditContactEmail.Trim();
+                    bean.ContactCity = cEditContactCity;
+                    bean.ContactAddress = cEditContactAddress;
+                    bean.ContactPhone = cEditContactPhone;
+                    bean.ContactMobile = cEditContactMobile;
+                    bean.ContactEmail = cEditContactEmail;
 
                     bean.ModifiedUserName = ModifiedUserName;
                     bean.ModifiedDate = DateTime.Now;
@@ -3463,11 +3520,11 @@ namespace OneService.Controllers
 
                 if (bean != null) //修改
                 {
-                    bean.ContactCity = cEditContactCity.Trim();
-                    bean.ContactAddress = cEditContactAddress.Trim();
-                    bean.ContactPhone = cEditContactPhone.Trim();
-                    bean.ContactMobile = cEditContactMobile.Trim();
-                    bean.ContactEmail = cEditContactEmail.Trim();
+                    bean.ContactCity = cEditContactCity;
+                    bean.ContactAddress = cEditContactAddress;
+                    bean.ContactPhone = cEditContactPhone;
+                    bean.ContactMobile = cEditContactMobile;
+                    bean.ContactEmail = cEditContactEmail;
 
                     bean.ModifiedUserName = ModifiedUserName;
                     bean.ModifiedDate = DateTime.Now;
@@ -3502,6 +3559,13 @@ namespace OneService.Controllers
         {
             string tBpmNo = "GenerallySR";
 
+            cAddContactName = string.IsNullOrEmpty(cAddContactName) ? "" : cAddContactName.Trim();
+            cAddContactCity = string.IsNullOrEmpty(cAddContactCity) ? "" : cAddContactCity.Trim();
+            cAddContactAddress = string.IsNullOrEmpty(cAddContactAddress) ? "" : cAddContactAddress.Trim();
+            cAddContactPhone = string.IsNullOrEmpty(cAddContactPhone) ? "" : cAddContactPhone.Trim();
+            cAddContactMobile = string.IsNullOrEmpty(cAddContactMobile) ? "" : cAddContactMobile.Trim();
+            cAddContactEmail = string.IsNullOrEmpty(cAddContactEmail) ? "" : cAddContactEmail.Trim();
+
             if (cCustomerID.Substring(0, 1) == "P")
             {
                 #region 個人客戶
@@ -3511,11 +3575,11 @@ namespace OneService.Controllers
 
                 if (bean != null) //修改
                 {
-                    bean.ContactCity = cAddContactCity.Trim();
-                    bean.ContactAddress = cAddContactAddress.Trim();
-                    bean.ContactPhone = cAddContactPhone.Trim();
-                    bean.ContactMobile = cAddContactMobile.Trim();
-                    bean.ContactEmail = cAddContactEmail.Trim();
+                    bean.ContactCity = cAddContactCity;
+                    bean.ContactAddress = cAddContactAddress;
+                    bean.ContactPhone = cAddContactPhone;
+                    bean.ContactMobile = cAddContactMobile;
+                    bean.ContactEmail = cAddContactEmail;
                    
                     bean.ModifiedUserName = ModifiedUserName;
                     bean.ModifiedDate = DateTime.Now;
@@ -3528,12 +3592,12 @@ namespace OneService.Controllers
                     bean1.Kna1Kunnr = cCustomerID;
                     bean1.Kna1Name1 = cCustomerName;
                     bean1.Knb1Bukrs = cBUKRS;
-                    bean1.ContactName = cAddContactName.Trim();
-                    bean1.ContactCity = cAddContactCity.Trim();
-                    bean1.ContactAddress = cAddContactAddress.Trim();
-                    bean1.ContactPhone = cAddContactPhone.Trim();
-                    bean1.ContactMobile = cAddContactMobile.Trim();
-                    bean1.ContactEmail = cAddContactEmail.Trim();
+                    bean1.ContactName = cAddContactName;
+                    bean1.ContactCity = cAddContactCity;
+                    bean1.ContactAddress = cAddContactAddress;
+                    bean1.ContactPhone = cAddContactPhone;
+                    bean1.ContactMobile = cAddContactMobile;
+                    bean1.ContactEmail = cAddContactEmail;
                     bean1.Disabled = 0;
 
                     bean1.CreatedUserName = pLoginName;
@@ -3553,11 +3617,11 @@ namespace OneService.Controllers
 
                 if (bean != null) //修改
                 {
-                    bean.ContactCity = cAddContactCity.Trim();
-                    bean.ContactAddress = cAddContactAddress.Trim();
-                    bean.ContactPhone = cAddContactPhone.Trim();
-                    bean.ContactMobile = cAddContactMobile.Trim();
-                    bean.ContactEmail = cAddContactEmail.Trim();
+                    bean.ContactCity = cAddContactCity;
+                    bean.ContactAddress = cAddContactAddress;
+                    bean.ContactPhone = cAddContactPhone;
+                    bean.ContactMobile = cAddContactMobile;
+                    bean.ContactEmail = cAddContactEmail;
 
                     bean.ModifiedUserName = ModifiedUserName;
                     bean.ModifiedDate = DateTime.Now;
@@ -3571,12 +3635,12 @@ namespace OneService.Controllers
                     bean1.Kna1Name1 = cCustomerName;
                     bean1.Knb1Bukrs = cBUKRS;
                     bean1.ContactType = "5"; //One Service
-                    bean1.ContactName = cAddContactName.Trim();
-                    bean1.ContactCity = cAddContactCity.Trim();
-                    bean1.ContactAddress = cAddContactAddress.Trim();
-                    bean1.ContactPhone = cAddContactPhone.Trim();
-                    bean1.ContactMobile = cAddContactMobile.Trim();
-                    bean1.ContactEmail = cAddContactEmail.Trim();
+                    bean1.ContactName = cAddContactName;
+                    bean1.ContactCity = cAddContactCity;
+                    bean1.ContactAddress = cAddContactAddress;
+                    bean1.ContactPhone = cAddContactPhone;
+                    bean1.ContactMobile = cAddContactMobile;
+                    bean1.ContactEmail = cAddContactEmail;
                     bean1.BpmNo = tBpmNo;
                     bean1.Disabled = 0;
 
@@ -4148,8 +4212,99 @@ namespace OneService.Controllers
             /// <summary>建立人姓名</summary>
             public string CrName { get; set; }            
         }
-        #endregion
+        #endregion        
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----  
     }
+
+    #region 服務案件執行條件
+    /// <summary>
+    /// 服務案件執行條件
+    /// </summary>
+    public enum SRCondition
+    {
+        /// <summary>
+        /// 新建
+        /// </summary>
+        ADD,
+
+        /// <summary>
+        /// 轉派L2工程師
+        /// </summary>
+        TRANS,
+
+        /// <summary>
+        /// 駁回
+        /// </summary>
+        REJECT,
+
+        /// <summary>
+        /// HPGCSN申請
+        /// </summary>
+        HPGCSN,
+
+        /// <summary>
+        /// HPGCSN完成
+        /// </summary>
+        HPGCSNDONE,
+
+        /// <summary>
+        /// 二修
+        /// </summary>
+        SECFIX,
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        SAVE,
+
+        /// <summary>
+        /// 技術支援升級
+        /// </summary>
+        SUPPORT,
+
+        /// <summary>
+        /// 3 Party
+        /// </summary>
+        THRPARTY,
+
+        /// <summary>
+        /// 取消
+        /// </summary>
+        CANCEL,
+
+        /// <summary>
+        /// 完修
+        /// </summary>
+        DONE
+    }
+    #endregion
+
+    #region 一般服務案件狀態更新INPUT資訊
+    /// <summary>一般服務案件狀態更新INPUT資訊</summary>
+    public struct SRMain_GENERALSRSTATUS_INPUT
+    {
+        /// <summary>修改者員工編號ERPID</summary>
+        public string IV_LOGINEMPNO { get; set; }
+        /// <summary>修改者員工姓名(中文+英文)</summary>
+        public string IV_LOGINEMPNAME { get; set; }
+        /// <summary>服務案件ID</summary>
+        public string IV_SRID { get; set; }
+        /// <summary>服務狀態ID</summary>
+        public string IV_STATUS { get; set; }
+        /// <summary>APIURL開頭網址</summary>
+        public string IV_APIURLName { get; set; }
+    }
+    #endregion
+
+    #region 一般服務案件狀態更新OUTPUT資訊
+    /// <summary>一般服務案件狀態更新OUTPUT資訊</summary>
+    public struct SRMain_GENERALSRSTATUS_OUTPUT
+    {
+        /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+        public string EV_MSGT { get; set; }
+        /// <summary>消息內容</summary>
+        public string EV_MSG { get; set; }
+    }
+    #endregion
 }

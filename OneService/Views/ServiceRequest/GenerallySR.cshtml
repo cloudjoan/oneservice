@@ -441,8 +441,8 @@
 				Msg += "【地址(報修人)】不得為空！\n";
 			}
 
-			if (tbx_cRepairPhone.val() == "") {
-				Msg += "【電話(報修人)】不得為空！\n";
+			if (tbx_cRepairPhone.val() == "" && tbx_cRepairMobile.val() == "") {
+				Msg += "【電話(報修人)】【手機(報修人)】請至少擇一輸入！\n";
 			}			
 
 			if (tbx_cRepairEmail.val() == "") {
@@ -1560,8 +1560,8 @@
 				strMsg += "客戶聯絡人【詳細地址】不得為空！\n";
 			}			
 
-			if (tbx_cEditContactPhone.val() == "") {
-				strMsg += "客戶聯絡人【電話】不得為空！\n";
+			if (tbx_cEditContactPhone.val() == "" && tbx_cEditContactMobile.val() == "") {
+				strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
 			}			
 
 			if (tbx_cEditContactEmail.val() == "") {
@@ -1644,8 +1644,8 @@
 				strMsg += "客戶聯絡人【門牌號碼/樓層】不得為空！\n";
 			}
 
-			if (tbx_cAddContactPhone.val() == "") {
-				strMsg += "客戶聯絡人【電話】不得為空！\n";
+			if (tbx_cAddContactPhone.val() == "" && tbx_cAddContactMobile.val() == "") {
+				strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
 			}
 
 			if (tbx_cAddContactEmail.val() == "") {
@@ -3251,7 +3251,7 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-lg-2 col-form-label">*電話(報修人)</label>
+										<label class="col-lg-2 col-form-label">電話(報修人)</label>
 										<div class="col-lg-4">
 											<input type="text" id="tbx_cRepairPhone" name="tbx_cRepairPhone" class="form-control RepairPhone" placeholder="電話(報修人)" value="@ViewBag.cRepairPhone" title="@ViewBag.cRepairPhone" disabled>
 										</div>
@@ -3303,7 +3303,7 @@
 																	<th>項次</th>	
 																	<th>*姓名(聯絡人)</th>
 																	<th>*地址(聯絡人)</th>
-																	<th>*電話(聯絡人)</th>
+																	<th>電話(聯絡人)</th>
 																	<th>手機(聯絡人)</th>
 																	<th>*E-Mail(聯絡人)</th>
 																	<th width="130">刪除</th>
@@ -3325,7 +3325,7 @@
 																	<th>項次</th>
 																	<th>*姓名(聯絡人)</th>
 																	<th>*地址(聯絡人)</th>
-																	<th>*電話(聯絡人)</th>
+																	<th>電話(聯絡人)</th>
 																	<th>手機(聯絡人)</th>
 																	<th>*E-Mail(聯絡人)</th>
 																	<th width="130">刪除</th>
@@ -3953,7 +3953,7 @@
 						<div class="col-lg-4">
 							<input type="text" id="tbx_cAddContactName" name="tbx_cAddContactName" class="form-control" placeholder="姓名">
 						</div>
-						<label class="col-lg-2 col-form-label">電話*</label>
+						<label class="col-lg-2 col-form-label">電話</label>
 						<div class="col-lg-4">
 							<input type="text" id="tbx_cAddContactPhone" name="tbx_cAddContactPhone" class="form-control" placeholder="電話">
 						</div>
@@ -3980,6 +3980,10 @@
 						<div class="col-lg-10">
 							<input type="text" id="tbx_cAddContactEmail" name="tbx_cAddContactEmail" class="form-control" placeholder="Email" onblur="CheckEmailValid();">
 						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label"></label>
+						<label class="col-lg-10 col-form-label" style="color:red;font-size: large;">電話和手機請至少擇一輸入！</label>
 					</div>
 				</div>
 				<div class="modal-footer">
@@ -4022,7 +4026,7 @@
 						<div class="col-lg-4">
 							<input type="text" id="tbx_cEditContactName" name="tbx_cEditContactName" class="form-control" placeholder="姓名" disabled>
 						</div>
-						<label class="col-lg-2 col-form-label">電話*</label>
+						<label class="col-lg-2 col-form-label">電話</label>
 						<div class="col-lg-4">
 							<input type="text" id="tbx_cEditContactPhone" name="tbx_cEditContactPhone" class="form-control" placeholder="電話">
 						</div>
@@ -4048,6 +4052,10 @@
 						<div class="col-lg-10">
 							<input type="text" id="tbx_cEditContactEmail" name="tbx_cEditContactEmail" class="form-control" placeholder="Email" onblur="CheckEditEmailValid();">
 						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label"></label>
+						<label class="col-lg-10 col-form-label" style="color:red;font-size: large;">電話和手機請至少擇一輸入！</label>
 					</div>
 					<div class="form-group row">
 						<div class="col-lg-2">

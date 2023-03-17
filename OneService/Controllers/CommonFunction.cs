@@ -1139,7 +1139,65 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion       
+        #endregion
+
+        #region call ONE SERVICE（一般服務案件）狀態更新接口
+        /// <summary>
+        /// call ONE SERVICE（一般服務案件）狀態更新接口
+        /// </summary>
+        /// <param name="beanIN"></param>
+        public SRMain_GENERALSRSTATUS_OUTPUT GetAPI_GenerallySRSTATUS_Update(SRMain_GENERALSRSTATUS_INPUT beanIN)
+        {
+            SRMain_GENERALSRSTATUS_OUTPUT OUTBean = new SRMain_GENERALSRSTATUS_OUTPUT();
+
+            string pMsg = string.Empty;
+
+            try
+            {
+                string tURL = beanIN.IV_APIURLName + "/API/API_GENERALSRSTATUS_UPDATE";
+
+                var client = new RestClient(tURL);
+
+                var request = new RestRequest();
+                request.Method = RestSharp.Method.Post;
+
+                Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+                parameters.Add("IV_LOGINEMPNO", beanIN.IV_LOGINEMPNO);
+                parameters.Add("IV_SRID", beanIN.IV_SRID);
+                parameters.Add("IV_STATUS", beanIN.IV_STATUS);                
+
+                request.AddHeader("Content-Type", "application/json");
+                request.AddParameter("application/json", parameters, ParameterType.RequestBody);
+
+                RestResponse response = client.Execute(request);
+
+                #region 取得回傳訊息(成功或失敗)
+                var data = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+                OUTBean.EV_MSGT = data["EV_MSGT"].ToString().Trim();
+                OUTBean.EV_MSG = data["EV_MSG"].ToString().Trim();
+                #endregion
+
+                if (OUTBean.EV_MSGT == "Y")
+                {
+                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE（一般服務案件）狀態更新接口成功";                    
+                }
+                else
+                {
+                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE（一般服務案件）狀態更新接口失敗，原因:" + OUTBean.EV_MSG;                    
+                }               
+            }
+            catch (Exception ex)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE（一般服務案件）狀態更新接口失敗，原因:" + ex.Message + Environment.NewLine;
+                pMsg += " 失敗行數：" + ex.ToString();                
+            }
+
+            writeToLog(beanIN.IV_SRID, "GetAPI_GenerallySRSTATUS_Update", pMsg, beanIN.IV_LOGINEMPNAME);
+
+            return OUTBean;
+        }
+        #endregion
 
         #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----
 
@@ -1344,8 +1402,9 @@ namespace OneService.Controllers
             else
             {
                 var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
-                                                   Where(x => (x.Disabled == null || x.Disabled != 1) && x.ContactName != "" && x.ContactCity != "" &&
-                                                              x.ContactAddress != "" && x.ContactPhone != "" && x.ContactEmail != "" &&
+                                                   Where(x => (x.Disabled == null || x.Disabled != 1) && 
+                                                              x.ContactName != "" && x.ContactCity != "" && 
+                                                              x.ContactAddress != "" && x.ContactEmail != "" &&                                                              
                                                               x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID).ToList();
 
                 if (qPjRec != null && qPjRec.Count() > 0)
@@ -1579,19 +1638,33 @@ namespace OneService.Controllers
                 }
                 else
                 {
-                    #region 服務團隊主管可編輯
-                    string tMGRERPID = string.Empty;
-                    string cTeamOldID = beanM.CTeamId;
-
-                    var beanT = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamOldId == cTeamOldID);
-
-                    if (beanT != null)
+                    #region L2工程師可編輯
+                    if (beanM.CMainEngineerId != null)
                     {
-                        tMGRERPID = findDeptMGRERPID(beanT.CTeamNewId);
-
-                        if (tLoginERPID == tMGRERPID)
+                        if (beanM.CMainEngineerId == tLoginERPID)
                         {
                             reValue = true;
+                        }
+                    }
+                    #endregion
+
+                    #region 服務團隊主管可編輯
+                    if (!reValue)
+                    {
+                        string tMGRERPID = string.Empty;
+                        string cTeamOldID = beanM.CTeamId;
+
+                        var beansT = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && cTeamOldID.Contains(x.CTeamOldId));
+
+                        foreach(var beanT in beansT)
+                        {
+                            tMGRERPID = findDeptMGRERPID(beanT.CTeamNewId);
+
+                            if (tLoginERPID == tMGRERPID)
+                            {
+                                reValue = true;
+                                break;
+                            }
                         }
                     }
                     #endregion
@@ -1608,41 +1681,21 @@ namespace OneService.Controllers
                                 reValue = true;
                             }
                         }
-                    }
-                    else if (beanM.CStatus == "E0002") //L2處理中(L2工程師可編輯)
-                    {
-                        if (beanM.CMainEngineerId != null)
-                        {
-                            if (beanM.CMainEngineerId == tLoginERPID)
-                            {
-                                reValue = true;
-                            }
-                        }
-                    }
-                    else //其他狀態(L2工程師、指派工程師都可以編輯)
+                    }                    
+                    else //非L2處理中狀態(指派工程師都可以編輯)
                     {
                         #region 指派工程師
-                        if (beanM.CAssEngineerId != null)
+                        if (beanM.CStatus != "E0002")
                         {
-                            if (beanM.CAssEngineerId.Contains(tLoginERPID))
+                            if (beanM.CAssEngineerId != null)
                             {
-                                reValue = true;
-                            }
-                        }
-                        #endregion
-
-                        #region L2工程師
-                        if (!reValue)
-                        {
-                            if (beanM.CMainEngineerId != null)
-                            {
-                                if (beanM.CMainEngineerId == tLoginERPID)
+                                if (beanM.CAssEngineerId.Contains(tLoginERPID))
                                 {
                                     reValue = true;
                                 }
                             }
                         }
-                        #endregion
+                        #endregion                       
                     }
                 }
             }
