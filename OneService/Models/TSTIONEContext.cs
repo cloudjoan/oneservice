@@ -269,7 +269,7 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_SRDetail_Product");
 
-                entity.HasIndex(e => new { e.CSrid, e.CSerialId }, "NonClusteredIndex-20221108-160519");
+                entity.HasIndex(e => new { e.CSrid, e.CSerialId, e.CNewSerialId }, "NonClusteredIndex-20221108-160519");
 
                 entity.Property(e => e.CId).HasColumnName("cID");
 
@@ -284,6 +284,10 @@ namespace OneService.Models
                 entity.Property(e => e.CMaterialName)
                     .HasMaxLength(255)
                     .HasColumnName("cMaterialName");
+
+                entity.Property(e => e.CNewSerialId)
+                    .HasMaxLength(40)
+                    .HasColumnName("cNewSerialID");
 
                 entity.Property(e => e.CProductNumber)
                     .HasMaxLength(50)

@@ -8,6 +8,7 @@ namespace OneService.Models
         public int CId { get; set; }
         public string CSrid { get; set; } = null!;
         public string CSerialId { get; set; } = null!;
+        public string? CNewSerialId { get; set; }
         public string? CMaterialId { get; set; }
         public string? CMaterialName { get; set; }
         public string? CProductNumber { get; set; }

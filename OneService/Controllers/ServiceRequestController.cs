@@ -811,6 +811,7 @@ namespace OneService.Controllers
                     string[] PRcMaterialID = formCollection["hid_PRcMaterialID"];
                     string[] PRcMaterialName = formCollection["tbx_PRcMaterialName"];
                     string[] PRcProductNumber = formCollection["tbx_PRcProductNumber"];
+                    string[] PRcNewSerialID = formCollection["tbx_PRcNewSerialID"];
                     string[] PRcInstallID = formCollection["tbx_PRcInstallID"];
 
                     int countPR = PRcSerialID.Length;
@@ -824,6 +825,7 @@ namespace OneService.Controllers
                         beanD.CMaterialId = PRcMaterialID[i];
                         beanD.CMaterialName = PRcMaterialName[i];
                         beanD.CProductNumber = PRcProductNumber[i];
+                        beanD.CNewSerialId = PRcNewSerialID[i];
                         beanD.CInstallId = PRcInstallID[i];
                         beanD.Disabled = 0;
 
@@ -1007,6 +1009,7 @@ namespace OneService.Controllers
                     string[] PRcMaterialID = formCollection["hid_PRcMaterialID"];
                     string[] PRcMaterialName = formCollection["tbx_PRcMaterialName"];
                     string[] PRcProductNumber = formCollection["tbx_PRcProductNumber"];
+                    string[] PRcNewSerialID = formCollection["tbx_PRcNewSerialID"];
                     string[] PRcInstallID = formCollection["tbx_PRcInstallID"];
                     string[] PRcDisabled = formCollection["hid_PRcDisabled"];
 
@@ -1021,6 +1024,7 @@ namespace OneService.Controllers
                         beanD.CMaterialId = PRcMaterialID[i];
                         beanD.CMaterialName = PRcMaterialName[i];
                         beanD.CProductNumber = PRcProductNumber[i];
+                        beanD.CNewSerialId = PRcNewSerialID[i];
                         beanD.CInstallId = PRcInstallID[i];
                         beanD.Disabled = int.Parse(PRcDisabled[i]);
 
