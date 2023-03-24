@@ -340,7 +340,7 @@ namespace OneService.Controllers
             #region 產品序號
             if (!string.IsNullOrEmpty(cSerialID))
             {
-                ttWhere += "AND P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' ";
+                ttWhere += "AND (P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' or P.cNewSerialID LIKE N'%" + cSerialID.Trim() + "%') ";
             }
             #endregion
 
@@ -370,7 +370,9 @@ namespace OneService.Controllers
 
             #region SQL語法
             tSQL.AppendLine(" Select M.*,");
-            tSQL.AppendLine("        (Select top 1 sp.cSerialID + '＃＃' + sp.cMaterialName + '＃＃' + sp.cProductNumber");
+            tSQL.AppendLine("        (Select top 1");
+            tSQL.AppendLine("            case when sp.cNewSerialID <> '' then sp.cSerialID + '(更換後序號：' + sp.cNewSerialID + ')' + '＃＃' + sp.cMaterialName + '＃＃' + sp.cProductNumber");
+            tSQL.AppendLine("            else sp.cSerialID + '＃＃' + sp.cMaterialName + '＃＃' + sp.cProductNumber end");            
             tSQL.AppendLine("         From TB_ONE_SRDetail_Product sp where M.cSRID = sp.cSRID AND sp.disabled = 0");
             tSQL.AppendLine("        ) as Products");
             tSQL.AppendLine(" From TB_ONE_SRMain M");
