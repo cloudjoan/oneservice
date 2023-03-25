@@ -2228,7 +2228,7 @@ namespace OneService.Controllers
                     tMATERIAL = AryMATERIAL[i];
                     tDesc = AryDesc[i];
 
-                    if (tOriSERIAL != "") //原序號不為空才執行
+                    if (tSERIAL != "") //新序號不為空才執行
                     {
                         var request = new RestRequest();
                         request.Method = RestSharp.Method.Post;
@@ -2260,6 +2260,22 @@ namespace OneService.Controllers
                             if (OUTBean.EV_MSGT == "E")
                             {
                                 returnMsg += OUTBean.EV_MSG;
+                            }
+                            else
+                            {
+                                #region 新增至log
+                                TbOneLog logBean = new TbOneLog
+                                {
+                                    CSrid = "",
+                                    EventName = "callAjaxSaveStockOUT",
+                                    Log = "序號異動設定作業_原序號: " + tOriSERIAL + "; 新序號: " + tSERIAL,
+                                    CreatedUserName = pLoginName,
+                                    CreatedDate = DateTime.Now
+                                };
+
+                                dbOne.TbOneLogs.Add(logBean);
+                                dbOne.SaveChanges();
+                                #endregion
                             }
                         }
                     }
