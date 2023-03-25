@@ -488,7 +488,7 @@ namespace OneService.Controllers
             CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
             ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
             ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
@@ -1494,7 +1494,7 @@ namespace OneService.Controllers
                     prBean.CDesc = cDesc;
                     prBean.CSrreport = string.IsNullOrEmpty(cReport) ? "" : cReport;
                     prBean.Disabled = 0;
-                    prBean.CreatedUserName = EmpBean.EmployeeCName;
+                    prBean.CreatedUserName = ViewBag.empEngName;
                     prBean.CreatedDate = DateTime.Now;
 
                     dbOne.TbOneSrdetailRecords.Add(prBean);
@@ -1515,7 +1515,7 @@ namespace OneService.Controllers
                         prBean.CSrreport = string.IsNullOrEmpty(cReport) ? "" : cReport;
                         prBean.Disabled = 1;
 
-                        prBean.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean.ModifiedUserName = ViewBag.empEngName;
                         prBean.ModifiedDate = DateTime.Now;
                         
                         result = dbOne.SaveChanges();                        
@@ -1686,7 +1686,7 @@ namespace OneService.Controllers
                             CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
                             EventName = "SavepjTeam",
                             Log = "修改服務團隊_舊值: " + oldTeamAcc + "; 新值: " + reValue,
-                            CreatedUserName = ViewBag.cLoginUser_Name,
+                            CreatedUserName = ViewBag.empEngName,
                             CreatedDate = DateTime.Now
                         };
 
@@ -1793,7 +1793,7 @@ namespace OneService.Controllers
                         CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
                         EventName = "DeletepjTeam",
                         Log = "刪除服務團隊_舊值: " + cTeamID + "; 新值: " + reValue,
-                        CreatedUserName = ViewBag.cLoginUser_Name,
+                        CreatedUserName = ViewBag.empEngName,
                         CreatedDate = DateTime.Now
                     };
 
@@ -1852,7 +1852,7 @@ namespace OneService.Controllers
                             CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "": ViewBag.cSRID,
                             EventName = "SavepjAssEngineer",
                             Log = "修改指派工程師_舊值: " + oldAssEngineerAcc + "; 新值: " + reValue,
-                            CreatedUserName = ViewBag.cLoginUser_Name,
+                            CreatedUserName = ViewBag.empEngName,
                             CreatedDate = DateTime.Now
                         };
 
@@ -1968,7 +1968,7 @@ namespace OneService.Controllers
                         CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
                         EventName = "DeletepjAssEngineer",
                         Log = "刪除指派工程師_舊值: " + cAssEngineerID + "; 新值: " + reValue,
-                        CreatedUserName = ViewBag.cLoginUser_Name,
+                        CreatedUserName = ViewBag.empEngName,
                         CreatedDate = DateTime.Now
                     };
 
@@ -2027,7 +2027,7 @@ namespace OneService.Controllers
                             CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
                             EventName = "SavepjTechManager",
                             Log = "修改技術主管_舊值: " + oldTechManagerAcc + "; 新值: " + reValue,
-                            CreatedUserName = ViewBag.cLoginUser_Name,
+                            CreatedUserName = ViewBag.empEngName,
                             CreatedDate = DateTime.Now
                         };
 
@@ -2143,7 +2143,7 @@ namespace OneService.Controllers
                         CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
                         EventName = "DeletepjTechManager",
                         Log = "刪除技術主管_舊值: " + cTechManagerID + "; 新值: " + reValue,
-                        CreatedUserName = ViewBag.cLoginUser_Name,
+                        CreatedUserName = ViewBag.empEngName,
                         CreatedDate = DateTime.Now
                     };
 
@@ -2199,7 +2199,7 @@ namespace OneService.Controllers
                     CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
                     EventName = "DeletepjContact",
                     Log = "刪除聯絡人_舊值: " + cContactID + "; 新值: " + cContactID,
-                    CreatedUserName = ViewBag.cLoginUser_Name,
+                    CreatedUserName = ViewBag.empEngName,
                     CreatedDate = DateTime.Now
                 };
 
@@ -2232,6 +2232,7 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             return View();
@@ -2292,6 +2293,7 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             string tMsg = string.Empty;
@@ -2315,7 +2317,7 @@ namespace OneService.Controllers
                         prBean1.CTeamNewName = cTeamNewName.Trim();                        
                         prBean1.Disabled = 0;
 
-                        prBean1.CreatedUserName = EmpBean.EmployeeCName;
+                        prBean1.CreatedUserName = ViewBag.empEngName;
                         prBean1.CreatedDate = DateTime.Now;
 
                         dbOne.TbOneSrteamMappings.Add(prBean1);
@@ -2340,7 +2342,7 @@ namespace OneService.Controllers
                         prBean1.CTeamNewId = cTeamNewID.Trim();
                         prBean1.CTeamNewName = cTeamNewName.Trim();
 
-                        prBean1.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean1.ModifiedUserName = ViewBag.empEngName;
                         prBean1.ModifiedDate = DateTime.Now;
                         result = dbOne.SaveChanges();
                     }
@@ -2374,11 +2376,12 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             var ctBean = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.CId.ToString() == cID);
             ctBean.Disabled = 1;
-            ctBean.ModifiedUserName = EmpBean.EmployeeCName;
+            ctBean.ModifiedUserName = ViewBag.empEngName;
             ctBean.ModifiedDate = DateTime.Now;
 
             var result = dbOne.SaveChanges();
@@ -2482,6 +2485,7 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             string tMsg = string.Empty;
@@ -2509,7 +2513,7 @@ namespace OneService.Controllers
                         prBean1.CContactEmail = cContactEmail.Trim();
                         prBean1.Disabled = 0;
 
-                        prBean1.CreatedUserName = EmpBean.EmployeeCName;
+                        prBean1.CreatedUserName = ViewBag.empEngName;
                         prBean1.CreatedDate = DateTime.Now;
 
                         dbOne.TbOneSrcustomerEmailMappings.Add(prBean1);
@@ -2538,7 +2542,7 @@ namespace OneService.Controllers
                         prBean1.CContactMobile = cContactMobile.Trim();
                         prBean1.CContactEmail = cContactEmail.Trim();
 
-                        prBean1.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean1.ModifiedUserName = ViewBag.empEngName;
                         prBean1.ModifiedDate = DateTime.Now;
                         result = dbOne.SaveChanges();
                     }
@@ -2572,11 +2576,12 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             var ctBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.CId.ToString() == cID);
             ctBean.Disabled = 1;
-            ctBean.ModifiedUserName = EmpBean.EmployeeCName;
+            ctBean.ModifiedUserName = ViewBag.empEngName;
             ctBean.ModifiedDate = DateTime.Now;
 
             var result = dbOne.SaveChanges();
@@ -2668,6 +2673,7 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             string tMsg = string.Empty;
@@ -2703,7 +2709,7 @@ namespace OneService.Controllers
                         prBean1.CFullName = CFullInfo[1];
                         prBean1.Disabled = 0;
 
-                        prBean1.CreatedUserName = EmpBean.EmployeeCName;
+                        prBean1.CreatedUserName = ViewBag.empEngName;
                         prBean1.CreatedDate = DateTime.Now;
 
                         dbOne.TbOneSrsqpeople.Add(prBean1);
@@ -2734,7 +2740,7 @@ namespace OneService.Controllers
                         prBean1.CContent = cContent;
                         prBean1.CFullName = CFullInfo[1];
 
-                        prBean1.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean1.ModifiedUserName = ViewBag.empEngName;
                         prBean1.ModifiedDate = DateTime.Now;
                         result = dbOne.SaveChanges();
                     }
@@ -2768,11 +2774,12 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             var ctBean = dbOne.TbOneSrsqpeople.FirstOrDefault(x => x.CId.ToString() == cID);
             ctBean.Disabled = 1;
-            ctBean.ModifiedUserName = EmpBean.EmployeeCName;
+            ctBean.ModifiedUserName = ViewBag.empEngName;
             ctBean.ModifiedDate = DateTime.Now;
 
             var result = dbOne.SaveChanges();
@@ -2871,6 +2878,7 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             string tMsg = string.Empty;
@@ -2907,7 +2915,7 @@ namespace OneService.Controllers
                     prBean1.ContactEmail = ContactEmail;
                     prBean1.Disabled = 0;
 
-                    prBean1.CreatedUserName = EmpBean.EmployeeCName;
+                    prBean1.CreatedUserName = ViewBag.empEngName;
                     prBean1.CreatedDate = DateTime.Now;
 
                     dbProxy.PersonalContacts.Add(prBean1);
@@ -2931,7 +2939,7 @@ namespace OneService.Controllers
                         prBean1.ContactAddress = ContactAddress;
                         prBean1.ContactEmail = ContactEmail;
 
-                        prBean1.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean1.ModifiedUserName = ViewBag.empEngName;
                         prBean1.ModifiedDate = DateTime.Now;
                         result = dbProxy.SaveChanges();
                     }
@@ -2965,11 +2973,12 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             var ctBean = dbProxy.PersonalContacts.FirstOrDefault(x => x.ContactId.ToString() == cID);
             ctBean.Disabled = 1;
-            ctBean.ModifiedUserName = EmpBean.EmployeeCName;
+            ctBean.ModifiedUserName = ViewBag.empEngName;
             ctBean.ModifiedDate = DateTime.Now;
 
             var result = dbProxy.SaveChanges();
@@ -3109,6 +3118,7 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             string tMsg = string.Empty;
@@ -3132,7 +3142,7 @@ namespace OneService.Controllers
                         prBean1.CUpKindKey = cUP_KIND_KEY;
                         prBean1.Disabled = 0;
 
-                        prBean1.CreatedUserName = EmpBean.EmployeeCName;
+                        prBean1.CreatedUserName = ViewBag.empEngName;
                         prBean1.CreatedDate = DateTime.Now;
 
                         dbOne.TbOneSrrepairTypes.Add(prBean1);
@@ -3156,7 +3166,7 @@ namespace OneService.Controllers
 
                         prBean1.CKindName = cKIND_NAME;
 
-                        prBean1.ModifiedUserName = EmpBean.EmployeeCName;
+                        prBean1.ModifiedUserName = ViewBag.empEngName;
                         prBean1.ModifiedDate = DateTime.Now;
                         result = dbOne.SaveChanges();
                     }
@@ -3190,6 +3200,7 @@ namespace OneService.Controllers
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
 
             ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
             #endregion
 
             string reValue = string.Empty;
@@ -3205,7 +3216,7 @@ namespace OneService.Controllers
                 if (bean == null)
                 {
                     ctBean.Disabled = 1;
-                    ctBean.ModifiedUserName = EmpBean.EmployeeCName;
+                    ctBean.ModifiedUserName = ViewBag.empEngName;
                     ctBean.ModifiedDate = DateTime.Now;
 
                     var result = dbOne.SaveChanges();
@@ -3244,6 +3255,243 @@ namespace OneService.Controllers
         #endregion
 
         #endregion -----↑↑↑↑↑報修類別設定作業 ↑↑↑↑↑-----   
+
+        #region -----↓↓↓↓↓序號異動設定作業 ↓↓↓↓↓-----
+        /// <summary>
+        /// 序號異動設定作業
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult SRSerialChang()
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            #endregion
+
+            #region 取得API URL
+            bool tIsFormal = CMF.getCallSAPERPPara(pOperationID_GenerallySR); //取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
+            string tAPIURLName = string.Empty;
+
+            if (tIsFormal)
+            {                
+                tAPIURLName = @"https://api-qas.etatung.com";
+            }
+            else
+            {             
+                tAPIURLName = @"https://api-qas.etatung.com";
+            }
+
+            ViewBag.cAPIURLName = tAPIURLName;
+            #endregion
+
+            var model = new ViewModelTeam();
+
+            return View(model);
+        }
+
+        #region 序號異動設定作業查詢結果
+        /// <summary>
+        /// 序號異動設定作業查詢結果
+        /// </summary>        
+        /// <param name="IV_SERIAL">序號</param>
+        /// <param name="cTeamID">服務團隊ID</param>
+        /// <returns></returns>
+        public IActionResult SRSerialChangResult(string IV_SERIAL)
+        {
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            string IV_DNDATE = string.Empty;
+            string IV_VNAME = string.Empty;
+
+            #region 組待查詢清單
+            var beans = dbProxy.Stockalls.Where(x => x.IvSerial.Contains(IV_SERIAL));
+
+            foreach (var bean in beans)
+            {
+                #region 組待查詢清單
+                string[] QueryInfo = new string[7];
+
+                if (bean.IvDndate != null)
+                {
+                    IV_DNDATE = Convert.ToDateTime(bean.IvDndate).ToString("yyyy-MM-dd");
+                }                
+
+                QueryInfo[0] = bean.IvSerial;       //序號
+                QueryInfo[1] = bean.CustomerId;     //客戶代號
+                QueryInfo[2] = bean.CustomerName;   //客戶名稱           
+                QueryInfo[3] = bean.SoNo;          //銷售訂單號
+                QueryInfo[4] = IV_DNDATE;         //出貨日期
+                QueryInfo[5] = bean.ProdId;        //物料編號
+                QueryInfo[6] = bean.Product;       //品名/規格                
+
+                QueryToList.Add(QueryInfo);
+                #endregion
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion
+
+        #region 呼叫Ajax儲存出貨資料檔
+        /// <summary>
+        /// 呼叫Ajax儲存出貨資料檔
+        /// </summary>               
+        /// <param name="pLoginName">登入者姓名</param>        
+        /// <param name="pAPIURLName">API站台名稱</param>
+        /// <param name="AryOriSERIAL">Array 原序號</param>
+        /// <param name="ArySERIAL">Array 新序號</param>
+        /// <param name="AryCID">Array 客戶ID</param>
+        /// <param name="AryCIDName">Array 客戶名稱</param>
+        /// <param name="ArySONO">Array 銷售訂單號</param>
+        /// <param name="AryMATERIAL">Array 產品編號</param>
+        /// <param name="AryDesc">Array 品名/規格</param>        
+        /// <returns></returns>
+        public IActionResult callAjaxSaveStockOUT(string pLoginName, string pAPIURLName, string[] AryOriSERIAL, string[] ArySERIAL,
+                                                string[] AryCID, string[] AryCIDName, string[] ArySONO, string[] AryMATERIAL, string[] AryDesc)
+        {
+            string result = "";
+
+            result = CMF.callAjaxSaveStockOUT(pLoginName, pAPIURLName, AryOriSERIAL, ArySERIAL, AryCID, AryCIDName, ArySONO, AryMATERIAL, AryDesc);
+
+            return Json(result);
+        }
+        #endregion
+
+        #region 儲存序號異動設定檔
+        /// <summary>
+        /// 儲存序號異動設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cCustomerName">客戶名稱</param>
+        /// <param name="cTeamID">服務團隊ID</param>
+        /// <param name="cEmailID">Email網域名稱</param>   
+        /// <param name="cContactName">客戶聯絡人姓名</param>
+        /// <param name="cContactPhone">客戶聯絡人電話</param>
+        /// <param name="cContactMobile">客戶聯絡人手機</param>
+        /// <param name="cContactEmail">客戶聯絡人E-Mail</param>
+        /// <returns></returns>
+        public ActionResult saveSRSerialChang(string cID, string cCustomerID, string cCustomerName, string cTeamID, string cEmailID, string cContactName,
+                                            string cContactPhone, string cContactMobile, string cContactEmail)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            #endregion
+
+            string tMsg = string.Empty;
+
+            cContactMobile = String.IsNullOrEmpty(cContactMobile) ? "" : cContactMobile;
+
+            try
+            {
+                int result = 0;
+                if (cID == null)
+                {
+                    #region -- 新增 --
+                    var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 && x.CEmailId == cEmailID.Trim());
+                    if (prBean == null)
+                    {
+                        TbOneSrcustomerEmailMapping prBean1 = new TbOneSrcustomerEmailMapping();
+
+                        prBean1.CCustomerId = cCustomerID.Trim();
+                        prBean1.CCustomerName = cCustomerName.Trim();
+                        prBean1.CTeamId = cTeamID.Trim();
+                        prBean1.CEmailId = cEmailID.Trim();
+                        prBean1.CContactName = cContactName.Trim();
+                        prBean1.CContactPhone = cContactPhone.Trim();
+                        prBean1.CContactMobile = cContactMobile.Trim();
+                        prBean1.CContactEmail = cContactEmail.Trim();
+                        prBean1.Disabled = 0;
+
+                        prBean1.CreatedUserName = ViewBag.empEngName;
+                        prBean1.CreatedDate = DateTime.Now;
+
+                        dbOne.TbOneSrcustomerEmailMappings.Add(prBean1);
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此Email網域名稱已存在，請重新輸入！";
+                    }
+                    #endregion                
+                }
+                else
+                {
+                    #region -- 編輯 --
+                    var prBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                            x.CId.ToString() != cID &&
+                                                                            x.CEmailId == cEmailID.Trim());
+                    if (prBean == null)
+                    {
+                        var prBean1 = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.CId.ToString() == cID);
+                        prBean1.CCustomerId = cCustomerID.Trim();
+                        prBean1.CCustomerName = cCustomerName.Trim();
+                        prBean1.CEmailId = cEmailID.Trim();
+                        prBean1.CContactName = cContactName.Trim();
+                        prBean1.CContactPhone = cContactPhone.Trim();
+                        prBean1.CContactMobile = cContactMobile.Trim();
+                        prBean1.CContactEmail = cContactEmail.Trim();
+
+                        prBean1.ModifiedUserName = ViewBag.empEngName;
+                        prBean1.ModifiedDate = DateTime.Now;
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此Email網域名稱已存在，請重新輸入！";
+                    }
+                    #endregion
+                }
+                return Json(tMsg);
+            }
+            catch (Exception e)
+            {
+                return Json(e.Message);
+            }
+        }
+        #endregion
+
+        #region 新增序號異動記錄檔
+        /// <summary>
+        /// 新增序號異動記錄檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public void InsertSRSerialChang(string cID)
+        {
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            #endregion
+
+            var ctBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.CId.ToString() == cID);
+            ctBean.Disabled = 1;
+            ctBean.ModifiedUserName = ViewBag.empEngName;
+            ctBean.ModifiedDate = DateTime.Now;
+
+            var result = dbOne.SaveChanges();            
+        }
+        #endregion       
+
+        #endregion -----↑↑↑↑↑序號異動設定作業 ↑↑↑↑↑-----   
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 

@@ -2183,6 +2183,113 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 呼叫Ajax儲存出貨資料檔
+        /// <summary>
+        /// 呼叫Ajax儲存出貨資料檔
+        /// </summary>        
+        /// <param name="pLoginName">登入者姓名</param>   
+        /// <param name="pAPIURLName">API站台名稱</param>
+        /// <param name="AryOriSERIAL">Array 原序號</param>
+        /// <param name="ArySERIAL">Array 新序號</param>
+        /// <param name="AryCID">Array 客戶ID</param>
+        /// <param name="AryCIDName">Array 客戶名稱</param>
+        /// <param name="ArySONO">Array 銷售訂單號</param>
+        /// <param name="AryMATERIAL">Array 產品編號</param>
+        /// <param name="AryDesc">Array 品名/規格</param>        
+        /// <returns></returns>
+        public string callAjaxSaveStockOUT(string pLoginName, string pAPIURLName, string[] AryOriSERIAL, string[] ArySERIAL, string[] AryCID, string[] AryCIDName,
+                                         string[] ArySONO, string[] AryMATERIAL, string[] AryDesc)
+        {
+            string returnMsg = "";
+            string tOriSERIAL = string.Empty;
+            string tSERIAL = string.Empty;
+            string tCID = string.Empty;
+            string tCIDName = string.Empty;
+            string tSONO = string.Empty;
+            string tMATERIAL = string.Empty;
+            string tDesc = string.Empty;            
+            string tURL = pAPIURLName + "/API/API_STOCKOUTINFO_UPDATE";
+
+            var client = new RestClient(tURL);
+
+            int tCount = AryOriSERIAL.Length;
+
+            for (int i = 0; i < tCount; i++)
+            {
+                try
+                {
+                    STOCKITEMINFO_OUTPUT OUTBean = new STOCKITEMINFO_OUTPUT();
+
+                    tOriSERIAL = AryOriSERIAL[i];
+                    tSERIAL = string.IsNullOrEmpty(ArySERIAL[i]) ? "" : ArySERIAL[i];
+                    tCID = AryCID[i];
+                    tCIDName = AryCIDName[i];
+                    tSONO = ArySONO[i];
+                    tMATERIAL = AryMATERIAL[i];
+                    tDesc = AryDesc[i];
+
+                    if (tOriSERIAL != "") //原序號不為空才執行
+                    {
+                        var request = new RestRequest();
+                        request.Method = RestSharp.Method.Post;
+
+                        Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+                        parameters.Add("IV_LOGINEMPNAME", pLoginName);
+                        parameters.Add("IV_SN", tOriSERIAL);
+                        parameters.Add("IV_SNNEW", tSERIAL);
+                        parameters.Add("IV_MATERIALNO", tMATERIAL);
+                        parameters.Add("IV_PID", tDesc);
+                        parameters.Add("IV_SO", tSONO);
+                        parameters.Add("IV_CUSTOMERID", tCID);
+                        parameters.Add("IV_IO", "O");
+
+                        request.AddHeader("Content-Type", "application/json");
+                        request.AddParameter("application/json", parameters, ParameterType.RequestBody);
+
+                        RestResponse response = client.Execute(request);
+
+                        #region 取得回傳訊息(成功或失敗)
+                        if (response.Content != null)
+                        {
+                            var data = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+                            OUTBean.EV_MSGT = data["EV_MSGT"].ToString().Trim();
+                            OUTBean.EV_MSG = data["EV_MSG"].ToString().Trim();
+                            #endregion
+
+                            if (OUTBean.EV_MSGT == "E")
+                            {
+                                returnMsg += OUTBean.EV_MSG;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    returnMsg += "出貨資料檔儲存失敗！原序號【" + tOriSERIAL + "】原因：" + ex.Message + Environment.NewLine;
+                }
+            }
+
+            if (returnMsg == "")
+            {
+                returnMsg = "SUCCESS";
+            }
+
+            return returnMsg;
+        }
+        #endregion
+
+        #region 更新進出貨資料OUTPUT資訊
+        /// <summary>更新進出貨資料OUTPUT資訊</summary>
+        public struct STOCKITEMINFO_OUTPUT
+        {
+            /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+            public string EV_MSGT { get; set; }
+            /// <summary>消息內容</summary>
+            public string EV_MSG { get; set; }
+        }
+        #endregion
+
         #region 傳入語法回傳DataTable(根據資料庫名稱)
         /// <summary>
         /// 傳入語法回傳DataTable(根據資料庫名稱)

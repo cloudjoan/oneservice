@@ -1,0 +1,47 @@
+﻿@{
+	Layout = null;
+}
+
+<script>
+	$(document).ready(function () {
+		
+	});	
+</script>
+
+<table id="tableOUT" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
+	<thead>
+		<tr>			
+			<th>原序號</th>
+			<th>新序號</th>
+			<th>客戶代號</th>
+			<th>客戶</th>
+			<th>銷售訂單號</th>
+			<th width="90">出貨日期</th>
+			<th>物料編號</th>
+			<th>品名/規格</th>			
+		</tr>
+	</thead>
+	<tbody>
+		@{
+			if (ViewBag.QueryToListBean != null)
+			{
+				int count = 0;
+				foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+				{
+					count++;
+					<tr id='tr@(count)'>					
+						<td><span id="IV_OriSERIALID@(count)">@Html.Raw(QueryInfo[0])</span></td>
+						<td><input type="text" name="tbx_IV_SERIAL" id="tbx_IV_SERIAL@(count)" class="form-control SERIAL" placeholder="新序號"></td>
+						<td><span id="IV_CID@(count)">@Html.Raw(QueryInfo[1])</span></td>
+						<td><span id="IV_CIDName@(count)">@Html.Raw(QueryInfo[2])</span></td>
+						<td><span id="IV_SONO@(count)">@Html.Raw(QueryInfo[3])</span></td>
+						<td>@Html.Raw(QueryInfo[4])</td>
+						<td><span id="IV_MATERIAL@(count)">@Html.Raw(QueryInfo[5])</span></td>
+						<td><span id="IV_Desc@(count)">@Html.Raw(QueryInfo[6])</span></td>						
+					</tr>
+				}
+			}
+		}
+	</tbody>
+</table>
+
