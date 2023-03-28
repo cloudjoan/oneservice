@@ -2266,7 +2266,7 @@ namespace OneService.Controllers
                                 #region 新增至log
                                 TbOneLog logBean = new TbOneLog
                                 {
-                                    CSrid = "",
+                                    CSrid = tOriSERIAL,
                                     EventName = "callAjaxSaveStockOUT",
                                     Log = "序號異動設定作業_原序號: " + tOriSERIAL + "; 新序號: " + tSERIAL,
                                     CreatedUserName = pLoginName,
