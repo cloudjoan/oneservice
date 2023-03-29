@@ -223,6 +223,11 @@
 				alert('開始或結束日期未填？');
 				return false;
 			}
+			if ($("#ddl_WHType2").val() == "" || $("#ddl_ActType2").val() == ""){
+				alert("工時類型 或 任務活動 未選？");
+				return false;
+			}
+			
 			return true;
 		}
 

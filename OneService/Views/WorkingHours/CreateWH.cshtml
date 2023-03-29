@@ -145,6 +145,10 @@
 				showDialog('錯誤!', '開始時間不得等於或晚於結束時間！');
 				return false;
 			}
+			if ($("#ddl_WHType").val() == "" || $("#ddl_ActType").val() == ""){
+				showDialog('錯誤!', '工時類型 或 任務活動 未選？');
+				return false;
+			}
 
 		}
 
