@@ -508,6 +508,11 @@ namespace OneService.Models
                     .HasMaxLength(255)
                     .HasColumnName("cDesc");
 
+                entity.Property(e => e.CIsAppclose)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cIsAPPClose");
+
                 entity.Property(e => e.CIsSecondFix)
                     .HasMaxLength(1)
                     .IsUnicode(false)

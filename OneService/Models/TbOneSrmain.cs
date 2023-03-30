@@ -20,6 +20,7 @@ namespace OneService.Models
         public string? CSrpathWay { get; set; }
         public string? CSrprocessWay { get; set; }
         public string? CIsSecondFix { get; set; }
+        public string? CIsAppclose { get; set; }
         public string? CRepairName { get; set; }
         public string? CRepairAddress { get; set; }
         public string? CRepairPhone { get; set; }

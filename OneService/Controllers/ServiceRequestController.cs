@@ -773,6 +773,7 @@ namespace OneService.Controllers
                     beanM.CAssEngineerId = CAssEngineerId;
                     beanM.CTechManagerId = CTechManagerId;
                     beanM.CSystemGuid = Guid.NewGuid();
+                    beanM.CIsAppclose = "";
 
                     beanM.CreatedDate = DateTime.Now;
                     beanM.CreatedUserName = LoginUser_Name;
