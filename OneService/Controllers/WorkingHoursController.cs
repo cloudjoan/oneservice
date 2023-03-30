@@ -126,6 +126,8 @@ namespace OneService.Controllers
                 DateTime endTime = Convert.ToDateTime(bean.EndTime);
                 TimeSpan ts = endTime - startTime;
                 bean.Labor = Convert.ToInt32(ts.TotalMinutes);
+
+                bean.ActType = string.IsNullOrEmpty(bean.ActType) ? "L" : bean.ActType;
             }
             else
             {
@@ -147,6 +149,8 @@ namespace OneService.Controllers
                 DateTime endTime = Convert.ToDateTime(bean.EndTime);
                 TimeSpan ts = endTime - startTime;
                 bean.Labor = Convert.ToInt32(ts.TotalMinutes);
+
+                bean.ActType = string.IsNullOrEmpty(bean.ActType) ? "L" : bean.ActType;
 
                 psipDB.TbWorkingHoursMains.Add(bean);
             }
