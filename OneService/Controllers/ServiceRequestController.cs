@@ -960,6 +960,11 @@ namespace OneService.Controllers
                     beanNowM.CTechManagerId = CTechManagerId;
                     beanNowM.CSystemGuid = Guid.NewGuid();
 
+                    if (CStatus == "E0006") //完修
+                    {
+                        beanNowM.CIsAppclose = "N";
+                    }
+
                     beanNowM.ModifiedDate = DateTime.Now;
                     beanNowM.ModifiedUserName = LoginUser_Name;
                     #endregion
