@@ -677,9 +677,11 @@ namespace OneService.Controllers
 
             pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
-            string tURLName = string.Empty;
+            bool tIsFormal = false;
+            string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
-            string tSeverName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
             string OldCStatus = string.Empty;
             string OldCMainEngineerId = string.Empty;
 
@@ -718,20 +720,16 @@ namespace OneService.Controllers
 
             try
             {
-                bool tIsFormal = CMF.getCallSAPERPPara(pOperationID_GenerallySR); //取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
+                #region 取得系統位址參數相關資訊
+                SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
 
-                if (tIsFormal)
-                {
-                    tURLName = "tsti-bpm01.etatung.com.tw";
-                    tSeverName = "psip-prd-ap";
-                    tAPIURLName = @"https://api-qas.etatung.com";
-                }
-                else
-                {
-                    tURLName = "tsti-bpm01.etatung.com.tw";
-                    tSeverName = "psip-prd-ap";
-                    tAPIURLName = @"https://api-qas.etatung.com";
-                }
+                tIsFormal = ParaBean.IsFormal;
+                
+                tBPMURLName = ParaBean.BPMURLName;
+                tPSIPURLName = ParaBean.PSIPURLName;
+                tAPIURLName = ParaBean.APIURLName;
+                tAttachURLName = ParaBean.AttachURLName;                
+                #endregion
 
                 var beanNowM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
 
@@ -1296,31 +1294,29 @@ namespace OneService.Controllers
 
             ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
 
+            bool tIsFormal = false;
             string BPMNO = string.Empty;
             string DNDATE = string.Empty;
             string SDATE = string.Empty;
             string EDATE = string.Empty;
             string tURL = string.Empty;
-            string tURLName = string.Empty;
+            string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
-            string tSeverName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
             string tInvoiceNo = string.Empty;
             string tInvoiceItem = string.Empty;
 
-            bool tIsFormal = CMF.getCallSAPERPPara(pOperationID_GenerallySR); //取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
 
-            if (tIsFormal)
-            {
-                tURLName = "tsti-bpm01.etatung.com.tw";
-                tSeverName = "psip-prd-ap";
-                tAPIURLName = @"https://api-qas.etatung.com";
-            }
-            else
-            {
-                tURLName = "tsti-bpm01.etatung.com.tw";
-                tSeverName = "psip-prd-ap";
-                tAPIURLName = @"https://api-qas.etatung.com";
-            }
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+            #endregion           
 
             DataTable dtWTY = null; //RFC保固Table
 
@@ -1331,7 +1327,7 @@ namespace OneService.Controllers
             try
             {
                 #region 呼叫RFC並回傳保固SLA Table清單
-                QueryToList = CMF.ZFM_TICC_SERIAL_SEARCHWTYList(ArySERIAL, ref NowCount, tURLName, tSeverName, tAPIURLName);
+                QueryToList = CMF.ZFM_TICC_SERIAL_SEARCHWTYList(ArySERIAL, ref NowCount, tBPMURLName, tPSIPURLName, tAPIURLName);
                 #endregion
 
                 #region 保固，因RFC已經有回傳所有清單，這邊暫時先不用
@@ -1361,11 +1357,11 @@ namespace OneService.Controllers
                 //            {
                 //                if (bean.BpmNo.IndexOf("WTY") != -1)
                 //                {
-                //                    tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/Warranty/WarrantyForm.aspx?FormNo=" + bean.BpmNo + " target=_blank";
+                //                    tURL = "http://" + tBPMURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Rwd/Warranty/WarrantyForm.aspx?FormNo=" + bean.BpmNo + " target=_blank";
                 //                }
                 //                else
                 //                {
-                //                    tURL = "http://" + tURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Form/Guarantee/GuaranteeForm.aspx?FormNo=" + bean.BpmNo + " target=_blank";
+                //                    tURL = "http://" + tBPMURLName + "/sites/bpm/_layouts/Taif/BPM/Page/Form/Guarantee/GuaranteeForm.aspx?FormNo=" + bean.BpmNo + " target=_blank";
                 //                }
                 //            }
                 //            #endregion
@@ -1419,21 +1415,22 @@ namespace OneService.Controllers
 
             ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
 
-            string tURLName = string.Empty;
-            string tSeverName = string.Empty;
+            bool tIsFormal = false;
+            string tBPMURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tAttachURLName = string.Empty;
 
-            bool tIsFormal = CMF.getCallSAPERPPara(pOperationID_GenerallySR); //取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
 
-            if (tIsFormal)
-            {
-                tURLName = "tsti-bpm01.etatung.com.tw";
-                tSeverName = "psip-prd-ap";
-            }
-            else
-            {
-                tURLName = "tsti-bpm01.etatung.com.tw";
-                tSeverName = "psip-prd-ap";
-            }            
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+            #endregion           
 
             int NowCount = 0;
 
@@ -1441,7 +1438,7 @@ namespace OneService.Controllers
 
             try
             {                
-                QueryToList = CMF.SEARCHWTYList(cSRID, ref NowCount, tURLName, tSeverName);
+                QueryToList = CMF.SEARCHWTYList(cSRID, ref NowCount, tBPMURLName, tPSIPURLName);
                 QueryToList = QueryToList.OrderBy(x => x.cSerialID).ThenByDescending(x => x.cWTYEDATE).ToList();
             }
             catch (Exception ex)
@@ -4349,6 +4346,22 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----  
     }
+
+    #region 取得系統位址參數相關資訊
+    public class SRSYSPARAINFO
+    {
+        /// <summary>呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)</summary>
+        public bool IsFormal { get; set; }        
+        /// <summary>BPM URL</summary>
+        public string BPMURLName { get; set; }
+        /// <summary>PSIP URL</summary>
+        public string PSIPURLName { get; set; }
+        /// <summary>API URL</summary>
+        public string APIURLName { get; set; }
+        /// <summary>附件URL</summary>
+        public string AttachURLName { get; set; }
+    }
+    #endregion
 
     #region 服務案件執行條件
     /// <summary>

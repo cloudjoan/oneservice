@@ -564,6 +564,43 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得系統位址參數相關資訊
+        /// <summary>
+        /// 取得系統位址參數相關資訊
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>        
+        /// <returns></returns>
+        public SRSYSPARAINFO findSRSYSPARAINFO(string cOperationID)
+        {
+            SRSYSPARAINFO OUTBean = new SRSYSPARAINFO();
+
+            bool tIsFormal = getCallSAPERPPara(cOperationID); //取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)          
+
+            OUTBean.IsFormal = tIsFormal;
+
+            if (tIsFormal)
+            {
+                #region 正式區                
+                OUTBean.BPMURLName = "tsti-bpm01.etatung.com.tw";
+                OUTBean.PSIPURLName = "psip-prd-ap";
+                OUTBean.AttachURLName = "tsticrmmbgw.etatung.com:8082";
+                OUTBean.APIURLName = @"https://api-qas.etatung.com";
+                #endregion
+            }
+            else
+            {
+                #region 測試區                
+                OUTBean.BPMURLName = "tsti-bpm01.etatung.com.tw";
+                OUTBean.PSIPURLName = "psip-prd-ap";
+                OUTBean.AttachURLName = "tsticrmmbgw.etatung.com:8082";
+                OUTBean.APIURLName = @"https://api-qas.etatung.com";
+                #endregion
+            }
+
+            return OUTBean;
+        }
+        #endregion
+
         #region 呼叫BPM保固申請單並取得計費業務、發票號碼、發票日期
         /// <summary>
         /// 呼叫BPM保固申請單並取得計費業務、發票號碼、發票日期
