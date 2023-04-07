@@ -1,18 +1,249 @@
 ﻿
 @{
-    ViewData["Title"] = "Index";
+	ViewData["Title"] = "工時查詢";
     Layout = "~/Views/Shared/_LayoutHome.cshtml";
+
+	DateTime dt = Convert.ToDateTime("2022-01-01 00:00");
+	DateTime dt2 = Convert.ToDateTime("2022-01-01 00:00");
+
+	Dictionary<string, string> whTypeDict = new Dictionary<string, string>();
+	Dictionary<string, string> actTypeDict = new Dictionary<string, string>();
+	whTypeDict.Add("A", "A.客戶服務");
+	whTypeDict.Add("B", "B.專案導入");
+	whTypeDict.Add("C", "C.內部作業");
+	whTypeDict.Add("D", "D.專業服務");
+
+	actTypeDict.Add("A", "維修");
+	actTypeDict.Add("B", "定維");
+	actTypeDict.Add("C", "裝機");
+	actTypeDict.Add("D", "會議");
+	actTypeDict.Add("E", "需求訪談");
+	actTypeDict.Add("F", "分析/設計");
+	actTypeDict.Add("G", "開發/測試");
+	actTypeDict.Add("H", "佈版/版控");
+	actTypeDict.Add("I", "教育訓練");
+	actTypeDict.Add("J", "前置準備");
 }
+
+@section js_section{
+	<script>
+		$(document).ready(function () {
+
+			$("#tbx_EmpName").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13) {
+						var keyword = $(this).val();
+						var obj = $(this);
+						$.ajax({
+							url: '@Url.Action("AjaxHandler", "Ajax")',
+							type: 'post',
+							dataType: 'json',
+							data: { functionName: 'findEmployeeByKeywordAndPrivilege', keyword: keyword },
+							success: function (result) {
+								objects = [];
+								$.each(result, function (i, idata) {
+									objects[i] = {
+										label: idata.EmpEname + "\\" + idata.EmpName,
+										idx: i,
+										value: idata.EmpName,
+										account: idata.Account,
+										erpId: idata.ErpId,
+										deptName: idata.DeptName
+									};
+								});
+
+								//綁定foucs事件
+								obj.autocomplete({
+									source: objects,
+									select: function (event, ui) {
+										$("#hie_ErpId").val(ui.item.erpId);
+										$("#lb_DeptName").html(ui.item.deptName);
+									}
+								}).bind('focus', function () { $(this).autocomplete("search"); });
+
+								//開啟autocomplete選單
+								obj.focus();
+							}
+						})
+					}
+
+				}
+			})
+
+		});
+
+		function SearchSRLabor(){
+			$("#dataDiv").html('');
+			$.ajax({
+				url: '@Url.Action("GetSRLabor", "WorkingHours")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					erpId: $("#hie_ErpId").val(),
+					whType: $("#ddl_WHType").val(),
+					startDate: $("#tbx_StartDate").val(),
+					endDate: $("#tbx_EndDate").val()
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#dataDiv").html(result.responseText);
+				}
+			});
+		}
+
+		function clearWidget(){
+			//$.each($(":text"), function (i, obj) {
+			//	$(obj).val('');
+			//});
+			$("#ddl_WHType").val('');
+			$("#tbx_StartDate").val('');
+			$("#tbx_EndDate").val('');
+			$("#dataDiv").html('');
+		}
+
+		function SaveWH(){
+			if(checkForm()){
+				$.ajax({
+					url: '@Url.Action("SaveWH", "WorkingHours")',
+					type: 'post',
+					dataType: 'Json',
+					data: {
+						"id": $("#Id").val(),
+						"ddl_WHType": $("#ddl_WHType2").val(),
+						"ddl_ActType": $("#ddl_ActType2").val(),
+						"ddl_CrmOppNo": $("#ddl_CrmOppNo").val(),
+						"hid_CrmOppName": $("#hid_CrmOppName").val(),
+						"tbx_WhDescript": $("#tbx_WhDescript").val(),
+						"tbx_StartDate": $("#tbx_StartDate2").val(),
+						"hid_StartTime": $("#hid_StartTime").val(),
+						"tbx_EndDate": $("#tbx_EndDate2").val(),
+						"hid_EndTime": $("#hid_EndTime").val(),
+						"actionType": "AJAX"
+					},
+					success: function (result) {
+						console.log(result);
+						if (result == "Finish") {
+							showDialog("完成", "儲存完成！");
+							$("#modifyDialog").modal("hide");
+							SearchSRLabor();
+						}
+					}
+				});
+			}
+
+		}
+
+		function GetWHById(id) {
+			$.ajax({
+				url: '@Url.Action("GetWHById", "WorkingHours")',
+				type: 'post',
+				dataType: 'Json',
+				data: { "id": id },
+				success: function (result) {
+					$("#Id").val(result.id);
+					$("#ddl_WHType2").val(result.whtype);
+					$("#ddl_ActType2").val(result.actType);
+
+					$("#ddl_CrmOppNo option").remove();
+					$("#ddl_CrmOppNo").append("<option value='" + result.crmOppNo + "'>" + result.crmOppName + "</option>");
+					$("#hid_CrmOppName").val(result.crmOppName);
+
+					$("#tbx_WhDescript").val(result.whDescript);
+					$("#tbx_StartDate2").val(result.startTime.split(' ')[0]);
+					$("#hid_StartTime").val(result.startTime.split(' ')[1]);
+					$("#tbx_EndDate2").val(result.endTime.split(' ')[0]);
+					$("#hid_EndTime").val(result.endTime.split(' ')[1]);
+					$(".startTime").removeClass("active");
+					$(".endTime").removeClass("active");
+
+					console.log(result.startTime.split(' ')[1]);
+
+					$.each($(".startTime"), function (i, obj) {
+						if (result.startTime.split(' ')[1] == $(obj).val()) $(obj).addClass("active");
+					});
+
+					$.each($(".endTime"), function (i, obj) {
+						if (result.endTime.split(' ')[1] == $(obj).val()) $(obj).addClass("active");
+					});
+
+					$("#lb_CalLabor").html("預估工時(分)：" + result.labor);
+					$("#tbx_WhDescript").focus();
+
+					$("#modifyDialog").modal("show");
+				}
+			})
+		}
+
+		function DeleteWHById(id, obj) {
+			if (confirm("確定刪除？")) {
+				$.ajax({
+					url: '@Url.Action("DeleteWHById", "WorkingHours")',
+					type: 'post',
+					dataType: 'Json',
+					data: { "id": id },
+					success: function (result) {
+						if (result == 'OK') {
+							$(obj).parent().parent().hide();
+						}
+						SearchSRLabor();
+					}
+				});
+			}
+
+		}
+
+		function ActiveBtn(targetId, disabledClassName, obj) {
+			$(disabledClassName).removeClass("active");
+			$("#" + targetId).val($(obj).val());
+			$(obj).addClass("active");
+
+			//預估工時
+			var startTime = new Date($("#tbx_StartDate2").val() + ' ' + $("#hid_StartTime").val());
+			var endTime = new Date($("#tbx_EndDate2").val() + ' ' + $("#hid_EndTime").val());
+			$("#lb_CalLabor").html("預估工時(分)：" + (endTime - startTime) / (1000 * 60));
+		}
+
+		function checkForm() {
+			var startTime = new Date($("#tbx_StartDate2").val() + ' ' + $("#hid_StartTime").val());
+			var endTime = new Date($("#tbx_EndDate2").val() + ' ' + $("#hid_EndTime").val());
+			console.log(startTime);
+			console.log(endTime);
+			if(startTime >= endTime){
+				alert('開始時間不得等於或晚於結束時間！');
+				return false;
+			}
+			if ($("#tbx_WhDescript").val() == ""){
+				alert('工作說明不得為空！');
+				$("#tbx_WhDescript").focus();
+				return false;
+			}
+			if ($("#tbx_StartDate2").val() == "" || $("#tbx_EndDate2").val() == ""){
+				alert('開始或結束日期未填？');
+				return false;
+			}
+			if ($("#ddl_WHType2").val() == "" || $("#ddl_ActType2").val() == ""){
+				alert("工時類型 或 任務活動 未選？");
+				return false;
+			}
+			
+			return true;
+		}
+
+	</script>
+}
+
 
 @section breadcrumb_section{
 	<div class="col-lg-10">
-		<h2>工時登錄</h2>
+		<h2>工時查詢</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
-				<a href="#">工作管理</a>
+				<a href="#">工時管理</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>工時登錄</strong>
+				<strong>工時查詢</strong>
 			</li>
 		</ol>
 	</div>
@@ -23,7 +254,7 @@
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>工時登錄</h5>
+					<h5>工時查詢</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
@@ -33,26 +264,31 @@
 				<div class="ibox-content">
 					<form name="form" action='#' method="post">
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">同仁姓名：</label>
-							<div class="col-lg-3"><input type="text" id="tbx_CustName" name="tbx_CustName" class="form-control" placeholder="姓名" required></div>
-							<label class="col-lg-6 col-form-label">系統服務事業群 客戶服務處</label>
+							<label class="col-lg-2 col-form-label">同仁姓名： </label>
+							<div class="col-lg-3">
+								<input type="text" id="tbx_EmpName" name="tbx_EmpName" class="form-control" placeholder="姓名" value="@ViewBag.userName" required>
+								<input type="hidden" id="hie_ErpId" name="hie_ErpId" value="@ViewBag.userErpId">
+							</div>
+							<label id="lb_DeptName" class="col-lg-6 col-form-label">@ViewBag.deptName</label>
 						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">工時類型：</label>
 							<div class="col-lg-3">
-								<select class="form-control">
+								<select class="form-control" id="ddl_WHType" name="ddl_WHType">
+									<option value="">全部</option>
 									<option value="A">A.客戶服務</option>
 									<option value="B">B.專案導入</option>
 									<option value="C">C.內部作業</option>
+									<option value="D">D.專業服務</option>
 								</select>
 							</div>
 							<label class="col-lg-2 col-form-label">時間起訖：</label>
 							<div class="input-group m-b col-lg-5">
-								<input type="text" class="form-control calendar" placeholder="開始日期">
+								<input type="text" id="tbx_StartDate" name="tbx_StartDate" class="form-control calendar" placeholder="開始日期">
 								<div class="input-group-append">
 									<span class="input-group-addon"> ~ </span>
 								</div>
-								<input type="text" class="form-control calendar" placeholder="結束日期">
+								<input type="text" id="tbx_EndDate" name="tbx_EndDate" class="form-control calendar" placeholder="結束日期">
 							</div>
 						</div>
 						<!-- 檔案上傳start-->
@@ -69,8 +305,8 @@
 						</div>
 						<!-- 檔案上傳end-->
 						<div class="hr-line-dashed"></div>
-						<button class="btn btn-primary btn-lg" type="button" onclick="searchCust()"><i class="fa fa-search"></i> 查 詢 </button>
-						<button class="btn btn-default btn-lg" type="button" onclick="searchCust()"><i class="fa fa-eraser"></i> 清 除 </button>
+						<button class="btn btn-primary btn-lg" type="button" onclick="SearchSRLabor()"><i class="fa fa-search"></i> 查 詢 </button>
+						<button class="btn btn-default btn-lg" type="button" onclick="clearWidget()"><i class="fa fa-eraser"></i> 清 除 </button>
 					</form>
 				</div>
 			</div>
@@ -79,91 +315,123 @@
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>DataTable列表</h5>
+					<h5>工時列表</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
 						</a>
 					</div>
 				</div>
-				<div class="ibox-content" id="dataDiv">
-					<table id="table1" class="table table-striple table-bordered table-hover dataTables-example">
-						<thead>
-							<tr>
-								<th>日期</th>
-								<th>工時</th>
-								<th>工時類型</th>
-								<th>任務活動</th>
-								<th>專案（商機）</th>
-								<th>工作說明</th>
-								<th width="130">功能</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>2022-10-01</td>
-								<td>1</td>
-								<td>A.客戶服務</td>
-								<td>裝機</td>
-								<td>830000125 硬碟裝機</td>
-								<td>裝機</td>
-								<td>
-									<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-									<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-								</td>
-							</tr>
-							<tr>
-								<td>2022-10-02</td>
-								<td>2</td>
-								<td>B.專案導入</td>
-								<td>裝機</td>
-								<td>830000125 硬碟裝機</td>
-								<td>裝機</td>
-								<td>
-									<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-									<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-								</td>
-							</tr>
-							<tr>
-								<td>2022-10-01</td>
-								<td>3</td>
-								<td>C.內部作業</td>
-								<td>裝機</td>
-								<td>830000125 硬碟裝機</td>
-								<td>裝機</td>
-								<td>
-									<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-									<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-								</td>
-							</tr>
-							<tr>
-								<td>2022-10-01</td>
-								<td>1</td>
-								<td>A.客戶服務</td>
-								<td>裝機</td>
-								<td>830000125 硬碟裝機</td>
-								<td>裝機</td>
-								<td>
-									<a href="" class="btn btn-primary"><i class="fa fa-pencil"></i> 編輯</a>
-									<a href="" class="btn btn-danger"><i class="fa fa-trash"></i> 刪除</a>
-								</td>
-							</tr>
-						</tbody>
-						<tfoot>
-							<tr>
-								<td></td>
-								<td>10</td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-							</tr>
-						</tfoot>
-				</table>
-			</div>
+				<div class="ibox-content" id="dataDiv"></div>
 		</div>
 	</div>
 
 </div>
+
+
+<!--WorkingHours Modify Dialog-->
+<div class="modal fade" id="modifyDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document" style="max-width:70%">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">修改工時</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="WHContent">
+					<input type="hidden" id="Id" name="Id" />
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">同仁姓名：</label>
+						<div class="col-lg-4">
+							<input type="text" id="tbx_UserName" name="tbx_UserName" class="form-control" placeholder="姓名" value="@ViewBag.userName" onfocus="this.blur()" required>
+							<input type="hidden" id="hid_UserErpId" name="hid_UserErpId" value="@ViewBag.userErpId" />
+						</div>
+						<label class="col-lg-6 col-form-label">@ViewBag.deptName </label>
+					</div>
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">工時類型：</label>
+						<div class="col-lg-4">
+							<select class="form-control" id="ddl_WHType2" name="ddl_WHType2">
+								@*<option value="A">A.客戶服務</option>*@
+								<option value="B">專案導入</option>
+								<option value="C">內部作業</option>
+								<option value="D">專業服務</option>
+							</select>
+						</div>
+						<label class="col-lg-2 col-form-label">任務活動：</label>
+						<div class="col-lg-4">
+							<select class="form-control" id="ddl_ActType2" name="ddl_ActType2">
+								@*									<option value="A">維修</option>
+							<option value="B">定維</option>
+							<option value="C">裝機</option>*@
+								<option value="D">會議</option>
+								<option value="E">需求訪談</option>
+								<option value="F">分析/設計</option>
+								<option value="G">開發/測試</option>
+								<option value="H">佈版/版控</option>
+								<option value="I">教育訓練</option>
+								<option value="J">前置準備</option>
+							</select>
+						</div>
+
+					</div>
+
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label"> 專案（商機）：</label>
+						<div class="col-lg-4">
+							<select id="ddl_CrmOppNo" name="ddl_CrmOppNo" class="form-control" onchange="setCrmOppName()">
+								<option value="">選擇商機/專案</option>
+								
+							</select>
+					</div>
+					<label class="col-lg-2 col-form-label" id="lb_CrmOppName"></label>
+					<input type="hidden" id="hid_CrmOppName" name="hid_CrmOppName" />
+				</div>
+
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label"> 工作說明：</label>
+					<div class="col-lg-5">
+						<textarea rows="3" id="tbx_WhDescript" name="tbx_WhDescript" class="form-control" placeholder="工作說明" required></textarea>
+					</div>
+				</div>
+
+				<div class="form-group row btn-group" role="group">
+					<label class="col-lg-2 col-form-label">時間起：</label>
+					<div class="col-lg-2">
+						<input type="text" class="form-control calendar" id="tbx_StartDate2" name="tbx_StartDate2" value="@ViewBag.now" placeholder="開始時間" required>
+					</div>
+					<div class="col-lg-8">
+						@while (dt <= Convert.ToDateTime("2022-01-01 23:45"))
+						{
+							<button type="button" class="btn btn-outline btn-lg btn-primary startTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt))" onclick="ActiveBtn('hid_StartTime', '.startTime', this)">@(string.Format("{0:HH:mm}", dt))</button>
+							dt = dt.AddMinutes(30);
+						}
+						<input type="hidden" id="hid_StartTime" name="hid_startTime" />
+					</div>
+				</div>
+				<div class="form-group row btn-group" role="group">
+					<label class="col-lg-2 col-form-label">時間訖：</label>
+					<div class="col-lg-2">
+						<input type="text" class="form-control calendar" id="tbx_EndDate2" name="tbx_EndDate2" value="@ViewBag.now" placeholder="結束時間" required>
+					</div>
+					<div class="col-lg-8">
+						@while (dt2 <= Convert.ToDateTime("2022-01-01 23:45"))
+						{
+							<button type="button" class="btn btn-outline btn-lg btn-success endTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt2))" onclick="ActiveBtn('hid_EndTime', '.endTime', this)">@(string.Format("{0:HH:mm}", dt2))</button>
+							dt2 = dt2.AddMinutes(30);
+						}
+						<input type="hidden" id="hid_EndTime" name="hid_EndTime" />
+					</div>
+				</div>
+				<label id="lb_CalLabor" class="col-form-label"></label>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-success btn-lg" onclick="SaveWH()"><i class="fa fa-"></i> 儲存 </button>
+					<button id="Button2" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">關閉</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 

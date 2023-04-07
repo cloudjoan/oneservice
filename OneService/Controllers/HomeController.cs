@@ -1,6 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using OneService.Models;
+using OneService.Utils;
 using System.Diagnostics;
+using System.DirectoryServices;
+using System.DirectoryServices.Protocols;
+using System.Net;
 
 namespace OneService.Controllers
 {
@@ -41,5 +46,76 @@ namespace OneService.Controllers
             ViewBag.beans = beans;
             return View();
         }
+
+        //登入頁
+        public IActionResult Login()
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != null && HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == "true")
+            {
+                return RedirectToAction("Index", "WorkingHours");
+            }
+            else
+            {
+                ViewBag.errorMsg = HttpContext.Session.GetString(SessionKey.LOGIN_MESSAGE);
+                return View();
+            }
+
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
+        }
+
+        //登入
+        public IActionResult DoLogin(IFormCollection formCollection)
+        {
+            if (IsAuthenticated(formCollection["account"], formCollection["password"]))
+            {
+                MCSWorkflowContext eipDB = new MCSWorkflowContext();
+                var empBean = eipDB.ViewEmpInfoWithoutLeaves.FirstOrDefault(x => x.Account.ToUpper() == @"etatung\" + formCollection["account"]);
+                
+                //登入後，寫入人員相關資訊到Session
+                HttpContext.Session.SetString(SessionKey.LOGIN_STATUS, "true");
+                HttpContext.Session.SetString(SessionKey.USER_ACCOUNT, @"etatung\" + formCollection["account"]);
+                HttpContext.Session.SetString(SessionKey.USER_ERP_ID, empBean.ErpId);
+                HttpContext.Session.SetString(SessionKey.USER_NAME, empBean.EmpName);
+                HttpContext.Session.SetString(SessionKey.DEPT_ID, empBean.DeptId);
+                HttpContext.Session.SetString(SessionKey.DEPT_NAME, empBean.DeptName);
+                HttpContext.Session.SetString(SessionKey.LOGIN_MESSAGE, "");
+
+                return RedirectToAction("ToDoList", "ServiceRequest");
+            }
+            else
+            {
+                HttpContext.Session.SetString(SessionKey.LOGIN_STATUS, "false");
+                HttpContext.Session.SetString(SessionKey.LOGIN_MESSAGE, "帳號或密碼錯誤？");
+
+                return RedirectToAction("Login");
+            }
+
+        }
+
+        //AD帳密驗證
+        public static bool IsAuthenticated(string username, string pwd)
+        {
+            try
+            {
+                using (var ldapConnection = new LdapConnection(new LdapDirectoryIdentifier("139.223.14.100")))
+                {
+                    ldapConnection.Credential = new NetworkCredential(@"etatung\" + username, pwd);
+                    ldapConnection.AuthType = AuthType.Basic;
+                    ldapConnection.Bind();
+                    return true;
+                }
+            }
+            catch (LdapException ex)
+            {
+                return false;
+            }
+        }
+
+
     }
 }

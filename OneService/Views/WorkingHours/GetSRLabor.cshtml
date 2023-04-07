@@ -1,0 +1,78 @@
+﻿@{
+	Layout = null;
+}
+<script>
+
+	$(document).ready(function () {
+		$('#table1').DataTable({
+			language: {
+				"lengthMenu": "每頁顯示筆數 _MENU_ ",
+				"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+				"search": " 關鍵字篩選"
+			},
+			pageLength: 25,
+			responsive: true,
+			order: [[0, "desc"]],
+			dom: '<"html5buttons"B>lTfgitp',
+			buttons: [
+				{ extend: 'excel', title: 'ExampleFile', text: '匯出Excel' }
+			]
+
+		});
+	});
+
+
+
+</script>
+
+<table id="table1" class="table table-striple table-bordered table-hover dataTables-example">
+	<thead>
+		<tr>
+			<th width="120px">編輯/刪除</th>
+			<th>完成日期</th>
+			<th>工時(分)</th>
+			<th>工時類型</th>
+			<th>任務活動</th>
+			<th>專案（商機）/ 服務請求ID</th>
+			<th>工作說明</th>
+		</tr>
+	</thead>
+	<tbody>
+		@if (ViewBag.viewWHBeans != null){
+			@foreach (var bean in ViewBag.viewWHBeans)
+			{
+				<tr>
+					<td>
+						@if (bean.SourceFrom != "CRM")
+						{
+							<a class="btn btn-warning" href="javascript:GetWHById(@bean.Id)"><i class="fa fa-pencil"></i></a>
+							<a class="btn btn-danger" href="javascript:DeleteWHById(@bean.Id, this)"><i class="fa fa-trash"></i></a>
+						}
+
+					</td>
+					<td>@bean.FinishTime</td>
+					<td>@bean.Labor</td>
+					<td>@bean.WhtypeName</td>
+					<td>@bean.ActTypeName</td>
+					<td>
+						@(bean.SourceFrom != "CRM" ? bean.CrmOppName : bean.SrId)
+					</td>
+					<td>@bean.WhDescript</td>
+
+				</tr>
+			}
+		}
+
+	</tbody>
+	<tfoot>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	</tfoot>
+</table>

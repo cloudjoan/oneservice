@@ -1,0 +1,92 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+
+    <link href="~/css/bootstrap.css" rel="stylesheet">
+    <link href="~/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="~/css/plugins/iCheck/custom.css" rel="stylesheet">
+    <link href="~/css/animate.css" rel="stylesheet">
+    <link href="~/css/style.css" rel="stylesheet">
+
+    <link href="~/css/plugins/datapicker/datepicker3.css" rel="stylesheet">
+
+    <link href="~/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+
+    <link href="~/css/plugins/dropzone/basic.css" rel="stylesheet" />
+    <link href="~/css/plugins/dropzone/dropzone.css" rel="stylesheet" />
+
+    <link href="~/js/jquery-ui-1.12.1.custom/jquery-ui.css" rel="stylesheet">
+    <link href="~/js/jquery-ui-1.12.1.custom/jquery-ui.theme.css" rel="stylesheet">
+
+    <link rel="Stylesheet" href="~/css/plugins/datetimepicker/bootstrap-datetimepicker.css" />
+
+    <!-- Mainly scripts -->
+    <script src="~/js/jquery-3.1.1.min.js"></script>
+    <script src="~/js/popper.min.js"></script>
+    <script src="~/js/bootstrap.js"></script>
+    <script src="~/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+    <script src="~/js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="~/js/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+
+    <!-- Custom and plugin javascript -->
+    <script src="~/js/inspinia.js"></script>
+    <script src="~/js/plugins/pace/pace.min.js"></script>
+
+    <!-- Data picker -->
+    <script src="~/js/plugins/datapicker/bootstrap-datepicker.js"></script>
+
+    <!-- Date range picker -->
+    <script src="~/js/plugins/daterangepicker/daterangepicker.js"></script>
+
+    <!-- datatable -->
+    <script src="~/js/plugins/dataTables/datatables.min.js"></script>
+    <script src="~/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
+
+</head>
+
+
+<body>
+    <div class="middle-box text-center loginscreen animated fadeInDown">
+        <div>
+            <form class="m-t" role="form" action="@Url.Action("DoLogin", "Home")" method="post">
+
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>OneService 系統登入</h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="row">
+                            <div class="col-sm-12 b-r">
+                                <div class="form-group"><input id="account" name="account"  type="text" placeholder="請輸入AD帳號" class="form-control" required></div>
+                                <div class="form-group"><input id="password" name="password" type="password" placeholder="請輸入AD密碼" class="form-control" required></div>
+                                <label class="col-form-label" style="color:mediumvioletred; font-size:19px">@ViewBag.errorMsg</label>
+                                    <div>
+                                        <br /><br /><button class="btn btn-primary m-t-n-xs full-width m-b" type="submit"><i class="fa fa-check"></i> &nbsp;登 入</button>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+
+    </div>
+</body>
+</html>

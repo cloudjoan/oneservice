@@ -138,7 +138,7 @@ namespace OneService.Models
         /// <summary>
         /// 分機
         /// </summary>
-        public string? Extension { get; set; }
+        public string Extension { get; set; } = null!;
         /// <summary>
         /// 國籍(CDE_TYPE=Nation_Id)
         /// </summary>

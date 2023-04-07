@@ -8,6 +8,7 @@ RUN apt-get update \
 &&  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata cifs-utils
 
 # mount如果遇到 Unable to apply new capability set. 錯誤時，就要在docker run的時候，加上 --privileged=true
+#RUN mount -t cifs -o user=bpmadmin,password=Bpm@dmin '//172.31.7.188/checkout_doc' /app/wwwroot/files
 RUN mkdir -p /app/wwwroot/files \
     #&& mount -t cifs  -o user=prjadmin,password=Prj@dmin '//172.31.7.60/csreport_test' /app/wwwroot/files
 
@@ -24,7 +25,8 @@ RUN apt-get update \
 RUN TZ=Asia/Taipei \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone \
-    && dpkg-reconfigure -f noninteractive tzdata
+    && dpkg-reconfigure -f noninteractive tzdata 
+
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src

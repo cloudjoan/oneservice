@@ -1,7 +1,27 @@
-﻿#PSIP 
-dotnet ef dbcontext scaffold "Server=172.31.7.67;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_PIS_INSTALLMaterial -f
+﻿#如果沒有ef指令的話，就要先執行這一行：dotnet tool install --global dotnet-ef
+
+#PSIP 
+dotnet ef dbcontext scaffold "Server=172.31.7.66;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -t TB_PRO_PJINFO -t TB_PRO_SUPPORT_EMP -t VIEW_WORKING_HOURS -t VIEW_PRO_SUPPORT_EMP -t TB_WhType -f
+
+#PSIP-QAS
+dotnet ef dbcontext scaffold "Server=172.31.7.67;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_PIS_INSTALLMaterial -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -t TB_PRO_PJINFO -t TB_PRO_SUPPORT_EMP -t VIEW_WORKING_HOURS -t VIEW_PRO_SUPPORT_EMP -t TB_WhType -f
 dotnet ef dbcontext scaffold "Server=172.31.7.67;Database=TSTI-ONE;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_ONE_SRRepairType -t TB_ONE_SRIDFormat -t TB_ONE_SRMain -t TB_ONE_SRDetail_Product -t TB_ONE_SRDetail_Warranty -t TB_ONE_SRTeamMapping -t TB_ONE_LOG -t TB_ONE_SRSQPerson -t TB_ONE_SRDetail_PartsReplace -t TB_ONE_SRDetail_Record -t TB_ONE_DOCUMENT -t TB_ONE_SRCustomerEmailMapping -t TB_ONE_SRDetail_Contact -f
+
+#ONE-Service
 dotnet ef dbcontext scaffold "Server=172.31.7.54;Database=TSTI-ONE;User=TSTI-ONE;Password=!QAZ5tgb" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_ONE_SRRepairType -t TB_ONE_SRIDFormat -t TB_ONE_SRMain -t TB_ONE_SRDetail_Product -t TB_ONE_SRDetail_Warranty -t TB_ONE_SRTeamMapping -t TB_ONE_LOG -t TB_ONE_SRSQPerson -t TB_ONE_SRDetail_PartsReplace -t TB_ONE_SRDetail_Record -t TB_ONE_DOCUMENT -t TB_ONE_SRCustomerEmailMapping -t TB_ONE_SRDetail_Contact -f
+
+#BPM
 dotnet ef dbcontext scaffold "Server=172.31.7.50;Database=TAIF;User=BPM;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t tblEmployee -t tblDepartment -t tblForm_Guarantee_Pop -f
-dotnet ef dbcontext scaffold "Server=172.31.7.119;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MATERIAL -t VIEW_CUSTOMER_2 -t CUSTOMER_Contact -t PostalaAddressAndCode -t STOCKALL -t VIEW_MATERIAL_ByComp -t F4501 -t F0005 -t TB_MAIL_CONTENT -t PERSONAL_Contact -t VIEW_CUSTOMERANDPERSONAL -f
-dotnet ef dbcontext scaffold "Server=172.31.7.26;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -f
+
+#PROXY DB
+dotnet ef dbcontext scaffold "Server=172.31.7.40;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_CRM_OPP_HEAD  -f
+
+#PROXY-QAS
+dotnet ef dbcontext scaffold "Server=172.31.7.119;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_CRM_OPP_HEAD -t MATERIAL -t VIEW_CUSTOMER_2 -t CUSTOMER_Contact -t PostalaAddressAndCode -t STOCKALL -t VIEW_MATERIAL_ByComp -t F4501 -t F0005 -t TB_MAIL_CONTENT -t PERSONAL_Contact -t VIEW_CUSTOMERANDPERSONAL -f
+
+#EIP
+dotnet ef dbcontext scaffold "Server=172.31.7.26;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -t VIEW_EMP_INFO -t VIEW_EMP_INFO_WITHOUT_LEAVE -t VIEW_DEPT_MGR -f
+
+#BI TSTI-DW
+dotnet ef dbcontext scaffold "Server=172.31.7.94;Database=BI;User=biread;Password=!QAZ2wsx" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MART_AnalyseServiceRequestLabor -f
+

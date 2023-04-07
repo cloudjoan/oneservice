@@ -18,6 +18,9 @@ namespace OneService.Models
 
         public virtual DbSet<Department> Departments { get; set; } = null!;
         public virtual DbSet<Person> People { get; set; } = null!;
+        public virtual DbSet<ViewDeptMgr> ViewDeptMgrs { get; set; } = null!;
+        public virtual DbSet<ViewEmpInfo> ViewEmpInfos { get; set; } = null!;
+        public virtual DbSet<ViewEmpInfoWithoutLeave> ViewEmpInfoWithoutLeaves { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -286,6 +289,7 @@ namespace OneService.Models
                 entity.Property(e => e.Extension)
                     .HasMaxLength(20)
                     .IsUnicode(false)
+                    .HasDefaultValueSql("('')")
                     .HasComment("分機");
 
                 entity.Property(e => e.JobStatus)
@@ -409,6 +413,168 @@ namespace OneService.Models
                     .IsFixedLength();
 
                 entity.Property(e => e.Workers).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<ViewDeptMgr>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_DEPT_MGR");
+
+                entity.Property(e => e.CompCode)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasColumnName("COMP_CODE")
+                    .IsFixedLength();
+
+                entity.Property(e => e.DeptCode)
+                    .HasMaxLength(36)
+                    .IsUnicode(false)
+                    .HasColumnName("DEPT_CODE");
+
+                entity.Property(e => e.DeptLevel).HasColumnName("DEPT_LEVEL");
+
+                entity.Property(e => e.DeptName)
+                    .HasMaxLength(50)
+                    .HasColumnName("DEPT_NAME");
+
+                entity.Property(e => e.Disabled).HasColumnName("DISABLED");
+
+                entity.Property(e => e.ErpId)
+                    .HasMaxLength(10)
+                    .HasColumnName("ERP_ID");
+
+                entity.Property(e => e.Up1DeptId)
+                    .HasMaxLength(36)
+                    .IsUnicode(false)
+                    .HasColumnName("UP1_DEPT_ID");
+
+                entity.Property(e => e.Up1DeptMgErpId)
+                    .HasMaxLength(10)
+                    .HasColumnName("UP1_DEPT_MG_ERP_ID");
+
+                entity.Property(e => e.Up1DeptName)
+                    .HasMaxLength(50)
+                    .HasColumnName("UP1_DEPT_NAME");
+
+                entity.Property(e => e.Up1Level).HasColumnName("UP1_LEVEL");
+
+                entity.Property(e => e.Up1Status).HasColumnName("UP1_Status");
+
+                entity.Property(e => e.Up2DeptMgErpId)
+                    .HasMaxLength(10)
+                    .HasColumnName("UP2_DEPT_MG_ERP_ID");
+
+                entity.Property(e => e.Up2DeptName)
+                    .HasMaxLength(50)
+                    .HasColumnName("UP2_DEPT_NAME");
+
+                entity.Property(e => e.Up2DpetId)
+                    .HasMaxLength(36)
+                    .IsUnicode(false)
+                    .HasColumnName("UP2_DPET_ID");
+
+                entity.Property(e => e.Up2Level).HasColumnName("UP2_LEVEL");
+
+                entity.Property(e => e.Up2Status).HasColumnName("UP2_Status");
+            });
+
+            modelBuilder.Entity<ViewEmpInfo>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_EMP_INFO");
+
+                entity.Property(e => e.Account)
+                    .HasMaxLength(108)
+                    .HasColumnName("ACCOUNT");
+
+                entity.Property(e => e.CompName)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasColumnName("COMP_NAME");
+
+                entity.Property(e => e.Constellation)
+                    .HasMaxLength(12)
+                    .IsUnicode(false)
+                    .HasColumnName("CONSTELLATION");
+
+                entity.Property(e => e.DeptId)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("DEPT_ID");
+
+                entity.Property(e => e.DeptName)
+                    .HasMaxLength(50)
+                    .HasColumnName("DEPT_NAME");
+
+                entity.Property(e => e.EmpName)
+                    .HasMaxLength(100)
+                    .HasColumnName("EMP_NAME");
+
+                entity.Property(e => e.ErpId)
+                    .HasMaxLength(10)
+                    .HasColumnName("ERP_ID");
+
+                entity.Property(e => e.Id)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("ID");
+
+                entity.Property(e => e.RegistDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("REGIST_DATE");
+            });
+
+            modelBuilder.Entity<ViewEmpInfoWithoutLeave>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_EMP_INFO_WITHOUT_LEAVE");
+
+                entity.Property(e => e.Account)
+                    .HasMaxLength(108)
+                    .HasColumnName("ACCOUNT");
+
+                entity.Property(e => e.CompName)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasColumnName("COMP_NAME");
+
+                entity.Property(e => e.Constellation)
+                    .HasMaxLength(12)
+                    .IsUnicode(false)
+                    .HasColumnName("CONSTELLATION");
+
+                entity.Property(e => e.DeptId)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("DEPT_ID");
+
+                entity.Property(e => e.DeptName)
+                    .HasMaxLength(50)
+                    .HasColumnName("DEPT_NAME");
+
+                entity.Property(e => e.EmpEname)
+                    .HasMaxLength(100)
+                    .HasColumnName("EMP_ENAME");
+
+                entity.Property(e => e.EmpName)
+                    .HasMaxLength(100)
+                    .HasColumnName("EMP_NAME");
+
+                entity.Property(e => e.ErpId)
+                    .HasMaxLength(10)
+                    .HasColumnName("ERP_ID");
+
+                entity.Property(e => e.Id)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("ID");
+
+                entity.Property(e => e.RegistDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("REGIST_DATE");
             });
 
             OnModelCreatingPartial(modelBuilder);

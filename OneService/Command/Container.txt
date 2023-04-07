@@ -1,0 +1,5 @@
+﻿
+
+docker build -f "D:\VSProject\OneService\OneService\Dockerfile" --force-rm -t oneservice  --label "com.microsoft.created-by=visual-studio" --label "com.microsoft.visual-studio.project-name=OneService" "D:\VSProject\OneService"
+docker tag oneservice:latest cloudjoan/oneservice:latest
+docker push cloudjoan/oneservice:latest
