@@ -1,0 +1,247 @@
+﻿@{
+	Layout = null;
+}
+
+<script>
+	$(document).ready(function () {
+		initTable();
+	});
+
+	function initTable() {
+		var buttonCommon = {
+			exportOptions: {
+				format: {
+					body: function (data, row, column, node) {
+						//替換&符號
+						var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+							translate = {
+								'nbsp': String.fromCharCode(160),
+								'amp': '&',
+								'quot': '"',
+								'lt': '<',
+								'gt': '>'
+							},
+							translator = function ($0, $1) {
+								return translate[$1];
+							};
+
+						if (typeof data === 'string')
+							data = data.replace(translate_re, translator);
+
+
+						if (column === 0 || column === 36) //去除連結的部份
+						{
+							var splitName = data.split(">");
+							var length = splitName.length;
+
+							if (length > 1) {
+								return data.split(">")[1].split("<")[0];
+							}
+							else {
+								return data;
+							}
+						}	
+						else if (column === 20) //將換行符號<br>換成excel可以識別的\n
+						{
+								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
+						}
+						else
+							return data;
+					}
+				}
+			}
+		};
+
+		$('#tableAll').DataTable({
+			language: {
+				"lengthMenu": "每頁顯示筆數 _MENU_ ",
+				"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+				"search": " 關鍵字篩選"
+			},
+			pageLength: 25,
+			responsive: true,
+			dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+			buttons: [
+				$.extend(true, {}, buttonCommon, {
+					extend: 'excelHtml5',
+					title: '服務總表_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+					text: '匯出Excel',
+					sheetName: '服務總表',
+					exportOptions: {
+						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56] //要顯示的欄位
+					},
+					customize: function (xlsx) {
+						addCustomNumberFormat(xlsx, '0');
+						formatTargetColumn(xlsx, 'A');						
+					}
+				}),
+			],
+		});
+
+		$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+	}
+
+	function addCustomNumberFormat(xlsx, numberFormat) {
+		// this adds a new custom number format to the Excel "styles" document:
+		var numFmtsElement = xlsx.xl['styles.xml'].getElementsByTagName('numFmts')[0];
+		// assume 6 custom number formats already exist, and next available ID is 176:
+		var numFmtElement = '<numFmt numFmtId="176" formatCode="' + numberFormat + '"/>';
+		$(numFmtsElement).append(numFmtElement);
+		$(numFmtsElement).attr("count", "7"); // increment the count
+
+		// now add a new "cellXfs" cell formatter, which uses our new number format (numFmt 176):
+		var celXfsElement = xlsx.xl['styles.xml'].getElementsByTagName('cellXfs');
+		var cellStyle = '<xf numFmtId="176" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"'
+			+ ' applyFont="1" applyFill="1" applyBorder="1"/>';
+		// this will be the 8th "xf" element - and will therefore have an index of "7", when we use it later:
+		$(celXfsElement).append(cellStyle);
+		$(celXfsElement).attr("count", "66"); //(1.2.3版)官方提供0-64共65種格式，在此自己新增加一種
+	}
+
+	function formatTargetColumn(xlsx, col) {
+		var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+		if (col == "A") {
+			$('row c[r^="' + col + '"]', sheet).attr('s', '65'); //使用自定義格式
+		}
+		else {
+			$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
+		}
+	}
+</script>
+
+<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+	<thead>
+		<tr>			
+			<th>SR_ID</th>
+			<th>說明</th>
+			<th>詳細描述</th>
+			<th>類型</th>
+			<th>類型說明</th>
+			<th>狀態說明</th>
+			<th>狀態</th>
+			<th>客戶ID</th>
+			<th>客戶名稱</th>
+			<th>報修人姓名</th>
+			<th>報修人地址</th>
+			<th>報修人電話</th>
+			<th>報修人手機</th>
+			<th>報修人Email</th>
+			<th>建立日期</th>
+			<th>處理方式</th>
+			<th>維護服務種類</th>
+			<th>報修大類</th>
+			<th>報修中類</th>
+			<th>報修小類</th>
+			<th>服務團隊</th>
+			<th>SQ人員</th>
+			<th>是否為二修</th>
+			<th>是否為APP結案</th>
+			<th>延遲結案原因</th>
+			<th>機器型號</th>
+			<th>Product Number</th>
+			<th>序號</th>
+			<th>接單時間</th>
+			<th>出發時間</th>
+			<th>到場時間</th>
+			<th>完成時間</th>
+			<th>工時(分鐘)</th>
+			<th>工程師ID</th>
+			<th>工程師姓名</th>
+			<th>處理紀錄</th>
+			<th>服務報告書</th>
+			<th>本次使用保固</th>
+			<th>保固代號</th>
+			<th>保固說明</th>
+			<th>保固開始</th>
+			<th>保固結束</th>
+			<th>回應條件</th>
+			<th>服務條件</th>
+			<th>合約編號</th>
+			<th>更換零件料號ID</th>
+			<th>料號說明</th>
+			<th>XC HP申請零件</th>
+			<th>OLDCT</th>
+			<th>NEWCT</th>
+			<th>HPCT</th>
+			<th>是否有人損</th>
+			<th>零件更換備註</th>
+			<th>計數器(IN)</th>
+			<th>計數器(OUT)</th>
+			<th>銷售單號</th>
+			<th>出貨單號</th>
+		</tr>
+	</thead>
+	<tbody>
+		@{
+			if (ViewBag.QueryToListBean != null)
+			{
+				int count = 0;
+				foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+				{
+					count++;
+					<tr id='tr@(count)'>
+						<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>						
+						<td>@Html.Raw(QueryInfo[2])</td>
+						<td>@Html.Raw(QueryInfo[3])</td>
+						<td>@Html.Raw(QueryInfo[4])</td>
+						<td>@Html.Raw(QueryInfo[5])</td>
+						<td>@Html.Raw(QueryInfo[6])</td>
+						<td>@Html.Raw(QueryInfo[7])</td>
+						<td>@Html.Raw(QueryInfo[8])</td>
+						<td>@Html.Raw(QueryInfo[9])</td>
+						<td>@Html.Raw(QueryInfo[10])</td>
+						<td>@Html.Raw(QueryInfo[11])</td>
+						<td>@Html.Raw(QueryInfo[12])</td>
+						<td>@Html.Raw(QueryInfo[13])</td>
+						<td>@Html.Raw(QueryInfo[14])</td>
+						<td>@Html.Raw(QueryInfo[15])</td>
+						<td>@Html.Raw(QueryInfo[16])</td>
+						<td>@Html.Raw(QueryInfo[17])</td>
+						<td>@Html.Raw(QueryInfo[18])</td>
+						<td>@Html.Raw(QueryInfo[19])</td>
+						<td>@Html.Raw(QueryInfo[20])</td>
+						<td>@Html.Raw(QueryInfo[21])</td>
+						<td>@Html.Raw(QueryInfo[22])</td>
+						<td>@Html.Raw(QueryInfo[23])</td>
+						<td>@Html.Raw(QueryInfo[24])</td>
+						<td>@Html.Raw(QueryInfo[25])</td>
+						<td>@Html.Raw(QueryInfo[26])</td>
+						<td>@Html.Raw(QueryInfo[27])</td>
+						<td>@Html.Raw(QueryInfo[28])</td>
+						<td>@Html.Raw(QueryInfo[29])</td>
+						<td>@Html.Raw(QueryInfo[30])</td>
+						<td>@Html.Raw(QueryInfo[31])</td>
+						<td>@Html.Raw(QueryInfo[32])</td>
+						<td>@Html.Raw(QueryInfo[33])</td>
+						<td>@Html.Raw(QueryInfo[34])</td>
+						<td>@Html.Raw(QueryInfo[35])</td>
+						<td>@Html.Raw(QueryInfo[36])</td>
+						<td><a href="@QueryInfo[37]" target="_blank">@QueryInfo[37]</a></td>
+						<td>@Html.Raw(QueryInfo[38])</td>
+						<td>@Html.Raw(QueryInfo[39])</td>
+						<td>@Html.Raw(QueryInfo[40])</td>
+						<td>@Html.Raw(QueryInfo[41])</td>
+						<td>@Html.Raw(QueryInfo[42])</td>
+						<td>@Html.Raw(QueryInfo[43])</td>
+						<td>@Html.Raw(QueryInfo[44])</td>
+						<td>@Html.Raw(QueryInfo[45])</td>
+						<td>@Html.Raw(QueryInfo[46])</td>
+						<td>@Html.Raw(QueryInfo[47])</td>
+						<td>@Html.Raw(QueryInfo[48])</td>
+						<td>@Html.Raw(QueryInfo[49])</td>
+						<td>@Html.Raw(QueryInfo[50])</td>
+						<td>@Html.Raw(QueryInfo[51])</td>
+						<td>@Html.Raw(QueryInfo[52])</td>
+						<td>@Html.Raw(QueryInfo[53])</td>
+						<td>@Html.Raw(QueryInfo[54])</td>
+						<td>@Html.Raw(QueryInfo[55])</td>
+						<td>@Html.Raw(QueryInfo[56])</td>
+						<td>@Html.Raw(QueryInfo[57])</td>
+					</tr>
+				}
+			}
+		}
+	</tbody>
+</table>
+

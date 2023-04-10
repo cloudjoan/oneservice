@@ -29,6 +29,7 @@ namespace OneService.Models
         public virtual DbSet<TbOneSrrepairType> TbOneSrrepairTypes { get; set; } = null!;
         public virtual DbSet<TbOneSrsqperson> TbOneSrsqpeople { get; set; } = null!;
         public virtual DbSet<TbOneSrteamMapping> TbOneSrteamMappings { get; set; } = null!;
+        public virtual DbSet<ViewOneSrreport> ViewOneSrreports { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -745,6 +746,225 @@ namespace OneService.Models
                 entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<ViewOneSrreport>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_ONE_SRREPORT");
+
+                entity.Property(e => e.CArriveTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cArriveTime");
+
+                entity.Property(e => e.CContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cContractID");
+
+                entity.Property(e => e.CCustomerId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cCustomerID");
+
+                entity.Property(e => e.CCustomerName)
+                    .HasMaxLength(35)
+                    .HasColumnName("cCustomerName");
+
+                entity.Property(e => e.CDelayReason)
+                    .HasMaxLength(255)
+                    .HasColumnName("cDelayReason");
+
+                entity.Property(e => e.CDesc)
+                    .HasMaxLength(255)
+                    .HasColumnName("cDesc");
+
+                entity.Property(e => e.CDescR)
+                    .HasMaxLength(255)
+                    .HasColumnName("cDesc_R");
+
+                entity.Property(e => e.CEngineerId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cEngineerID");
+
+                entity.Property(e => e.CEngineerName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cEngineerName");
+
+                entity.Property(e => e.CFinishTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cFinishTime");
+
+                entity.Property(e => e.CHpct).HasColumnName("cHPCT");
+
+                entity.Property(e => e.CIsAppclose)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cIsAPPClose");
+
+                entity.Property(e => e.CIsSecondFix)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cIsSecondFix");
+
+                entity.Property(e => e.CMaserviceType)
+                    .HasMaxLength(9)
+                    .HasColumnName("cMAServiceType");
+
+                entity.Property(e => e.CMaterialId).HasColumnName("cMaterialID");
+
+                entity.Property(e => e.CMaterialName).HasColumnName("cMaterialName");
+
+                entity.Property(e => e.CNewCt).HasColumnName("cNewCT");
+
+                entity.Property(e => e.CNotePr).HasColumnName("cNote_PR");
+
+                entity.Property(e => e.CNotes)
+                    .HasMaxLength(2000)
+                    .HasColumnName("cNotes");
+
+                entity.Property(e => e.COldCt).HasColumnName("cOldCT");
+
+                entity.Property(e => e.CPersonalDamage).HasColumnName("cPersonalDamage");
+
+                entity.Property(e => e.CReceiveTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cReceiveTime");
+
+                entity.Property(e => e.CRepairAddress)
+                    .HasMaxLength(110)
+                    .HasColumnName("cRepairAddress");
+
+                entity.Property(e => e.CRepairEmail)
+                    .HasMaxLength(200)
+                    .HasColumnName("cRepairEmail");
+
+                entity.Property(e => e.CRepairMobile)
+                    .HasMaxLength(50)
+                    .HasColumnName("cRepairMobile");
+
+                entity.Property(e => e.CRepairName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cRepairName");
+
+                entity.Property(e => e.CRepairPhone)
+                    .HasMaxLength(50)
+                    .HasColumnName("cRepairPhone");
+
+                entity.Property(e => e.CSerialId)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSerialID");
+
+                entity.Property(e => e.CSlaresp)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSLARESP");
+
+                entity.Property(e => e.CSlasrv)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSLASRV");
+
+                entity.Property(e => e.CSqpersonName)
+                    .HasMaxLength(100)
+                    .HasColumnName("cSQPersonName");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
+
+                entity.Property(e => e.CSrprocessWay)
+                    .HasMaxLength(4)
+                    .HasColumnName("cSRProcessWay");
+
+                entity.Property(e => e.CSrreport).HasColumnName("cSRReport");
+
+                entity.Property(e => e.CSrtype)
+                    .HasMaxLength(4)
+                    .HasColumnName("cSRType");
+
+                entity.Property(e => e.CSrtypeNote)
+                    .HasMaxLength(9)
+                    .HasColumnName("cSRTypeNote");
+
+                entity.Property(e => e.CSrtypeOne)
+                    .HasMaxLength(100)
+                    .HasColumnName("cSRTypeOne");
+
+                entity.Property(e => e.CSrtypeSec)
+                    .HasMaxLength(100)
+                    .HasColumnName("cSRTypeSec");
+
+                entity.Property(e => e.CSrtypeThr)
+                    .HasMaxLength(100)
+                    .HasColumnName("cSRTypeThr");
+
+                entity.Property(e => e.CStartTime)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cStartTime");
+
+                entity.Property(e => e.CStatus)
+                    .HasMaxLength(5)
+                    .HasColumnName("cStatus");
+
+                entity.Property(e => e.CStatusNote)
+                    .HasMaxLength(12)
+                    .HasColumnName("cStatusNote");
+
+                entity.Property(e => e.CTeamId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("cTeamID");
+
+                entity.Property(e => e.CWorkHours)
+                    .HasColumnType("numeric(6, 0)")
+                    .HasColumnName("cWorkHours");
+
+                entity.Property(e => e.CWtyedate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cWTYEDATE");
+
+                entity.Property(e => e.CWtyid)
+                    .HasMaxLength(40)
+                    .HasColumnName("cWTYID");
+
+                entity.Property(e => e.CWtyname)
+                    .HasMaxLength(8)
+                    .IsUnicode(false)
+                    .HasColumnName("cWTYName");
+
+                entity.Property(e => e.CWtysdate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cWTYSDATE");
+
+                entity.Property(e => e.CXchp).HasColumnName("cXCHP");
+
+                entity.Property(e => e.CountIn)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("CountIN");
+
+                entity.Property(e => e.CountOut)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("CountOUT");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Dn)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("DN");
+
+                entity.Property(e => e.Pid)
+                    .HasMaxLength(255)
+                    .HasColumnName("PID");
+
+                entity.Property(e => e.Pn)
+                    .HasMaxLength(50)
+                    .HasColumnName("PN");
+
+                entity.Property(e => e.So)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("SO");
             });
 
             OnModelCreatingPartial(modelBuilder);

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneService.Models;
+using OneService.Utils;
 using RestSharp;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
@@ -18,6 +19,8 @@ using System.Security.Policy;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 using Microsoft.CodeAnalysis;
 using System;
+using System.IO;
+using System.Diagnostics.Contracts;
 
 
 namespace OneService.Controllers
@@ -27,13 +30,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 登入者帳號
         /// </summary>
-        //string pLoginAccount = string.Empty;
-        //string pLoginAccount = @"etatung\elvis.chang";  //MIS
-        //string pLoginAccount = @"etatung\Allen.Chen";    //陳勁嘉(主管)
-        string pLoginAccount = @"etatung\Boyen.Chen";    //陳建良(主管)
-        //string pLoginAccount = @"etatung\Aniki.Huang";    //黃志豪(主管)
-        //string pLoginAccount = @"etatung\jack.hung";      //洪佑典(主管)
-        //string pLoginAccount = @"etatung\Steve.Guo";    //郭翔元
+        string pLoginAccount = string.Empty;
 
         /// <summary>全域變數</summary>
         string pMsg = "";
@@ -52,6 +49,11 @@ namespace OneService.Controllers
         /// 登入者是否為MIS(true.是 false.否)
         /// </summary>
         bool pIsMIS = false;
+
+        /// <summary>
+        /// 登入者是否為客服主管(true.是 false.否)
+        /// </summary>
+        bool pIsCSManager = false;
 
         /// <summary>
         /// 登入者是否為客服人員(true.是 false.否)
@@ -96,9 +98,429 @@ namespace OneService.Controllers
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
 
+        #region -----↓↓↓↓↓服務總表 ↓↓↓↓↓-----
+        /// <summary>
+        /// 個人客戶設定作業
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult SRReport()
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            #region 服務類型
+            var SRTypeList = new List<SelectListItem>()
+            {
+                new SelectListItem {Text="TSTI 一般服務", Value="ZSR1" },
+                new SelectListItem {Text="TSTI 裝機服務", Value="ZSR3" },
+                new SelectListItem {Text="TSTI 定維服務", Value="ZSR5" },                
+            };
+
+            ViewBag.ddl_SRType = SRTypeList;
+            #endregion
+
+            return View();
+        }
+
+        #region 服務總表查詢結果
+        /// <summary>
+        /// 個人客戶設定作業查詢結果
+        /// </summary>   
+        /// <param name="StartCreatedDate">建立日期(起)</param>
+        /// <param name="EndCreatedDate">建立日期(迄)</param>
+        /// <param name="StartFinishTime">完成時間(起)</param>
+        /// <param name="EndFinishTime">完成時間(迄)</param>
+        /// <param name="SRID">SRID</param>
+        /// <param name="CustomerID">客戶代號</param>
+        /// <param name="RepairName">報修人</param>
+        /// <param name="SRType">服務類型</param>
+        /// <param name="SerialID">序號</param>
+        /// <param name="ContractID">合約編號</param>
+        /// <returns></returns>
+        public IActionResult SRReportResult(string StartCreatedDate, string EndCreatedDate, string StartFinishTime, string EndFinishTime, string SRID, 
+                                          string CustomerID, string RepairName, string SRType, string SerialID, string ContractID)
+        {
+            StringBuilder tSQL = new StringBuilder();
+
+            bool tIsFormal = false;
+            string ttWhere = string.Empty;
+            string ttStrItem = string.Empty;
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+            string CreatedDate = string.Empty;
+            string tSRTeam = string.Empty;
+            string cReceiveTime = string.Empty;
+            string cStartTime = string.Empty;
+            string cArriveTime = string.Empty;
+            string cFinishTime = string.Empty;
+            string cWorkHours = string.Empty;
+            string cSRReportURL = string.Empty;
+            string cUsed = string.Empty;
+            string cWTYSDATE = string.Empty;
+            string cWTYEDATE = string.Empty;
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion       
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+            #endregion
+
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            #region 建立日期
+            if (!string.IsNullOrEmpty(StartCreatedDate))
+            {
+                ttWhere += "AND CreatedDate >= N'" + StartCreatedDate.Replace("/", "-") + "' ";
+            }
+
+            if (!string.IsNullOrEmpty(EndCreatedDate))
+            {
+                ttWhere += "AND CreatedDate <= N'" + EndCreatedDate.Replace("/", "-") + "' ";
+            }
+            #endregion
+
+            #region 完成時間
+            if (!string.IsNullOrEmpty(StartFinishTime))
+            {
+                ttWhere += "AND cFinishTime >= N'" + StartFinishTime.Replace("/", "-") + "' ";
+            }
+
+            if (!string.IsNullOrEmpty(EndFinishTime))
+            {
+                ttWhere += "AND cFinishTime <= N'" + EndFinishTime.Replace("/", "-") + "' ";
+            }
+            #endregion
+
+            #region SRID
+            if (!string.IsNullOrEmpty(SRID))
+            {
+                ttWhere += "AND cSRID LIKE N'%" + SRID + "%' ";
+            }
+            #endregion
+
+            #region 客戶代號
+            if (!string.IsNullOrEmpty(CustomerID))
+            {
+                ttWhere += "AND cCustomerID = '" + CustomerID + "' ";
+            }
+            #endregion
+
+            #region 報修人姓名
+            if (!string.IsNullOrEmpty(RepairName))
+            {
+                ttWhere += "AND cRepairName LIKE N'%" + RepairName.Trim() + "%' ";
+            }
+            #endregion
+
+            #region 服務類型
+            if (!string.IsNullOrEmpty(SRType))
+            {
+                ttStrItem = "";
+                string[] tAryLocation = SRType.TrimEnd(',').Split(',');
+
+                foreach (string tLocation in tAryLocation)
+                {
+                    ttStrItem += "N'" + tLocation + "',";
+                }
+
+                ttStrItem = ttStrItem.TrimEnd(',');
+
+                if (ttStrItem != "")
+                {
+                    ttWhere += "AND cSRType IN (" + ttStrItem + ") ";
+                }
+            }
+            #endregion 倉區
+
+            #region 序號
+            if (!string.IsNullOrEmpty(SerialID))
+            {
+                ttWhere += "AND cSerialID LIKE N'%" + SerialID + "%' ";
+            }
+            #endregion
+
+            #region 合約編號
+            if (!string.IsNullOrEmpty(ContractID))
+            {
+                ttWhere += "AND cContractID LIKE N'%" + ContractID + "%' ";
+            }
+            #endregion
+
+            //#region 狀態
+            //if (!string.IsNullOrEmpty(cStatus))
+            //{
+            //    ttWhere += "AND M.cStatus = N'" + cStatus + "' ";
+            //}
+            //#endregion
+
+          
+
+
+
+            //#region 客戶名稱
+            //if (!string.IsNullOrEmpty(cCustomerName))
+            //{
+            //    ttWhere += "AND M.cCustomerName LIKE N'%" + cCustomerName.Trim() + "%' ";
+            //}
+            //#endregion
+
+            //#region SRID
+            //if (!string.IsNullOrEmpty(cSRID))
+            //{
+            //    ttWhere += "AND M.cSRID LIKE N'%" + cSRID.Trim() + "%' ";
+            //}
+            //#endregion
+
+
+
+            //#region 報修管道
+            //if (!string.IsNullOrEmpty(cSRPathWay))
+            //{
+            //    ttWhere += "AND M.cSRPathWay = '" + cSRPathWay + "' ";
+            //}
+            //#endregion
+
+            //#region L2工程師ERPID
+            //if (!string.IsNullOrEmpty(cMainEngineerID))
+            //{
+            //    ttWhere += "AND M.cMainEngineerID = '" + cMainEngineerID + "' ";
+            //}
+            //#endregion
+
+            //#region 指派工程師ERPID
+            //if (!string.IsNullOrEmpty(cAssEngineerID))
+            //{
+            //    ttWhere += "AND M.cAssEngineerID LIKE N'%" + cAssEngineerID.Trim() + "%' ";
+            //}
+            //#endregion
+
+            //#region 技術主管ERPID
+            //if (!string.IsNullOrEmpty(cTechManagerID))
+            //{
+            //    ttWhere += "AND M.cTechManagerID LIKE N'%" + cTechManagerID.Trim() + "%' ";
+            //}
+            //#endregion
+
+            //#region 報修類別-大類
+            //if (!string.IsNullOrEmpty(cSRTypeOne))
+            //{
+            //    ttWhere += "AND M.cSRTypeOne = '" + cSRTypeOne + "' ";
+            //}
+            //#endregion
+
+            //#region 報修類別-中類
+            //if (!string.IsNullOrEmpty(cSRTypeSec))
+            //{
+            //    ttWhere += "AND M.cSRTypeSec = '" + cSRTypeSec + "' ";
+            //}
+            //#endregion
+
+            //#region 報修類別-小類
+            //if (!string.IsNullOrEmpty(cSRTypeThr))
+            //{
+            //    ttWhere += "AND M.cSRTypeThr = '" + cSRTypeThr + "' ";
+            //}
+            //#endregion
+
+            //#region 服務團隊
+            //if (!string.IsNullOrEmpty(cTeamID))
+            //{
+            //    ttStrItem = "";
+            //    string[] tAryTeam = cTeamID.TrimEnd(',').Split(',');
+
+            //    if (tAryTeam.Length >= 0)
+            //    {
+            //        ttStrItem = "AND (";
+            //    }
+
+            //    foreach (string tLocation in tAryTeam)
+            //    {
+            //        ttStrItem += " M.cTeamID like N'%" + tLocation + "%' or";
+            //    }
+
+            //    if (tAryTeam.Length >= 0)
+            //    {
+            //        if (ttStrItem.EndsWith("or"))
+            //        {
+            //            ttStrItem = ttStrItem.Substring(0, ttStrItem.Length - 2); //去除最後一個or  
+            //        }
+
+            //        ttStrItem += ") ";
+            //    }
+
+            //    ttWhere += ttStrItem;
+            //}
+            //#endregion 倉區
+
+            //#region 產品序號
+            //if (!string.IsNullOrEmpty(cSerialID))
+            //{
+            //    ttWhere += "AND (P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' or P.cNewSerialID LIKE N'%" + cSerialID.Trim() + "%') ";
+            //}
+            //#endregion
+
+            //#region 產品機器型號
+            //if (!string.IsNullOrEmpty(cMaterialName))
+            //{
+            //    ttWhere += "AND P.cMaterialName LIKE N'%" + cMaterialName.Trim() + "%' ";
+            //}
+            //#endregion
+
+            //#region Product Number
+            //if (!string.IsNullOrEmpty(cProductNumber))
+            //{
+            //    ttWhere += "AND P.cProductNumber LIKE N'%" + cProductNumber.Trim() + "%' ";
+            //}
+            //#endregion
+
+            //#region 若【產品序號】、【產品機器型號】、【Product Number】其中有一個，就要執行Join語法
+            //if (!string.IsNullOrEmpty(cSerialID) || !string.IsNullOrEmpty(cMaterialName) || !string.IsNullOrEmpty(cProductNumber))
+            //{
+            //    ttJoin = " left join TB_ONE_SRDetail_Product P on M.cSRID = P.cSRID";
+            //    ttWhere = "AND P.disabled = 0 " + ttWhere;
+            //}
+            //#endregion
+
+            #region 組待查詢清單
+
+            #region SQL語法
+            tSQL.AppendLine(" Select *");            
+            tSQL.AppendLine(" From VIEW_ONE_SRREPORT ");            
+            tSQL.AppendLine(" Where 1=1 " + ttWhere);
+            #endregion
+
+            DataTable dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
+
+            var tSRTeam_List = CMF.findSRTeamIDList(pCompanyCode, false);
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                string[] QueryInfo = new string[58];
+
+                CreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd");
+                tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
+                cReceiveTime = Convert.ToDateTime(dr["cReceiveTime"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cReceiveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
+                cStartTime = Convert.ToDateTime(dr["cStartTime"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cStartTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
+                cArriveTime = Convert.ToDateTime(dr["cArriveTime"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cArriveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
+                cFinishTime = Convert.ToDateTime(dr["cFinishTime"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cFinishTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
+                cWorkHours = dr["cWorkHours"].ToString() == "0" ? "" : dr["cWorkHours"].ToString();
+                cSRReportURL = CMF.findAttachUrl(dr["cSRReport"].ToString(), tAttachURLName);
+                cUsed = (dr["cWTYID"].ToString() != "" || dr["cWTYName"].ToString() != "") ? "Y" : "N";
+                cWTYSDATE = Convert.ToDateTime(dr["cWTYSDATE"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cWTYSDATE"].ToString()).ToString("yyyy-MM-dd");
+                cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");
+
+                QueryInfo[0] = dr["cSRID"].ToString();              //SR_ID
+                QueryInfo[1] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
+                QueryInfo[2] = dr["cDesc"].ToString();              //說明
+                QueryInfo[3] = dr["cNotes"].ToString();             //詳細描述
+                QueryInfo[4] = dr["cSRType"].ToString();            //類型
+                QueryInfo[5] = dr["cSRTypeNote"].ToString();        //類型說明
+                QueryInfo[6] = dr["cStatusNote"].ToString();        //狀態說明
+                QueryInfo[7] = dr["cStatus"].ToString();            //狀態
+                QueryInfo[8] = dr["cCustomerID"].ToString();        //客戶ID
+                QueryInfo[9] = dr["cCustomerName"].ToString();      //客戶名稱
+                QueryInfo[10] = dr["cRepairName"].ToString();       //報修人姓名
+                QueryInfo[11] = dr["cRepairAddress"].ToString();    //報修人地址
+                QueryInfo[12] = dr["cRepairPhone"].ToString();      //報修人電話
+                QueryInfo[13] = dr["cRepairMobile"].ToString();     //報修人手機
+                QueryInfo[14] = dr["cRepairEmail"].ToString();      //報修人Email
+                QueryInfo[15] = CreatedDate;                      //建立日期
+                QueryInfo[16] = dr["cSRProcessWay"].ToString();     //處理方式
+                QueryInfo[17] = dr["cMAServiceType"].ToString();    //維護服務種類
+                QueryInfo[18] = dr["cSRTypeOne"].ToString();        //報修大類
+                QueryInfo[19] = dr["cSRTypeSec"].ToString();        //報修中類
+                QueryInfo[20] = dr["cSRTypeThr"].ToString();        //報修小類
+                QueryInfo[21] = tSRTeam;                          //服務團隊
+                QueryInfo[22] = dr["cSQPersonName"].ToString();     //SQ人員
+                QueryInfo[23] = dr["cIsSecondFix"].ToString();      //是否為二修
+                QueryInfo[24] = dr["cIsAPPClose"].ToString();       //是否為APP結案
+                QueryInfo[25] = dr["cDelayReason"].ToString();      //延遲結案原因
+                QueryInfo[26] = dr["PID"].ToString();              //機器型號
+                QueryInfo[27] = dr["PN"].ToString();               //Product Number
+                QueryInfo[28] = dr["cSerialID"].ToString();         //序號
+                QueryInfo[29] = cReceiveTime;                     //接單時間
+                QueryInfo[30] = cStartTime;                       //出發時間
+                QueryInfo[31] = cArriveTime;                      //到場時間
+                QueryInfo[32] = cFinishTime;                      //完成時間
+                QueryInfo[33] = cWorkHours;                       //工時(分鐘)
+                QueryInfo[34] = dr["cEngineerID"].ToString();       //工程師ID
+                QueryInfo[35] = dr["cEngineerName"].ToString();     //工程師姓名
+                QueryInfo[36] = dr["cDesc_R"].ToString();          //處理紀錄
+                QueryInfo[37] = cSRReportURL;                     //服務報告書
+                QueryInfo[38] = cUsed;                            //本次使用保固
+                QueryInfo[39] = dr["cWTYID"].ToString();           //保固代號
+                QueryInfo[40] = dr["cWTYName"].ToString();         //保固說明
+                QueryInfo[41] = cWTYSDATE;                       //保固開始
+                QueryInfo[42] = cWTYEDATE;                       //保固結束
+                QueryInfo[43] = dr["cSLARESP"].ToString();         //回應條件
+                QueryInfo[44] = dr["cSLASRV"].ToString();          //服務條件
+                QueryInfo[45] = dr["cContractID"].ToString();      //合約編號
+                QueryInfo[46] = dr["cMaterialID"].ToString();      //更換零件料號ID
+                QueryInfo[47] = dr["cMaterialName"].ToString();    //料號說明
+                QueryInfo[48] = dr["cXCHP"].ToString();           //XC HP申請零件
+                QueryInfo[49] = dr["cOldCT"].ToString();          //OLDCT
+                QueryInfo[50] = dr["cNewCT"].ToString();          //NEWCT
+                QueryInfo[51] = dr["cHPCT"].ToString();           //HPCT
+                QueryInfo[52] = dr["cPersonalDamage"].ToString();  //是否有人損
+                QueryInfo[53] = dr["cNote_PR"].ToString();        //零件更換備註
+                QueryInfo[54] = dr["CountIN"].ToString();         //計數器(IN)
+                QueryInfo[55] = dr["CountOUT"].ToString();        //計數器(OUT)
+                QueryInfo[56] = dr["SO"].ToString();             //銷售單號
+                QueryInfo[57] = dr["DN"].ToString();             //出貨單號
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion       
+
+        #endregion -----↑↑↑↑↑服務總表 ↑↑↑↑↑-----   
+
         #region -----↓↓↓↓↓服務進度查詢 ↓↓↓↓↓-----
         public IActionResult QuerySRProgress()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             getLoginAccount();
 
             #region 取得登入人員資訊
@@ -429,6 +851,11 @@ namespace OneService.Controllers
         #region -----↓↓↓↓↓待辦清單 ↓↓↓↓↓-----
         public IActionResult ToDoList()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             try
             {
                 getLoginAccount();
@@ -482,6 +909,11 @@ namespace OneService.Controllers
         #region 一般服務index
         public IActionResult GenerallySR()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             getLoginAccount();
 
             #region 取得登入人員資訊
@@ -2228,6 +2660,11 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult SRTeamMapping()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             getLoginAccount();
 
             #region 取得登入人員資訊
@@ -2402,6 +2839,11 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult SRCustomerEmailMapping()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             getLoginAccount();
 
             #region 取得登入人員資訊
@@ -2602,6 +3044,11 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult SRSQPerson()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             getLoginAccount();
 
             #region 取得登入人員資訊
@@ -2800,6 +3247,11 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult SRPersonCustomer()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             getLoginAccount();
 
             #region 取得登入人員資訊
@@ -2999,6 +3451,11 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult SRRepairType()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             getLoginAccount();
 
             #region 取得登入人員資訊
@@ -3266,6 +3723,11 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult SRSerialChang()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
             getLoginAccount();
 
             #region 取得登入人員資訊
@@ -3388,13 +3850,25 @@ namespace OneService.Controllers
         /// </summary>
         public void getLoginAccount()
         {
-            //pLoginAccount = User.Identity.Name;
+            #region 測試用
+            //pLoginAccount = @"etatung\elvis.chang";     //MIS
+            //pLoginAccount = @"etatung\Allen.Chen";      //陳勁嘉(主管)
+            //pLoginAccount = @"etatung\Boyen.Chen";      //陳建良(主管)
+            //pLoginAccount = @"etatung\Aniki.Huang";     //黃志豪(主管)
+            //pLoginAccount = @"etatung\jack.hung";       //洪佑典(主管)
+            //pLoginAccount = @"etatung\Steve.Guo";       //郭翔元         
+            //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
+            #endregion
+
+            pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
 
             #region One Service相關帳號
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
-            pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
+            pIsCSManager = CMF.getIsCustomerServiceManager(pLoginAccount, pSysOperationID);
+            pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);            
 
             ViewBag.pIsMIS = pIsMIS;
+            ViewBag.pIsCSManager = pIsCSManager;
             ViewBag.pIsCS = pIsCS;
             #endregion            
         }
@@ -4360,6 +4834,24 @@ namespace OneService.Controllers
         public string APIURLName { get; set; }
         /// <summary>附件URL</summary>
         public string AttachURLName { get; set; }
+    }
+    #endregion
+
+    #region 取得附件相關資訊
+    public class SRATTACHINFO
+    {
+        /// <summary>附件GUID</summary>
+        public string ID { get; set; }
+        /// <summary>附件原始檔名(含副檔名)</summary>
+        public string FILE_ORG_NAME { get; set; }
+        /// <summary>附件檔名(GUID，含副檔名)</summary>
+        public string FILE_NAME { get; set; }
+        /// <summary>副檔名</summary>
+        public string FILE_EXT { get; set; }
+        /// <summary>附件檔案路徑URL</summary>
+        public string FILE_URL { get; set; }
+        /// <summary>新增日期</summary>
+        public string INSERT_TIME { get; set; }
     }
     #endregion
 

@@ -601,6 +601,75 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得附件/服務報告書URL(多筆以;號隔開)
+        /// <summary>
+        /// 取得附件/服務報告書URL(多筆以;號隔開)
+        /// </summary>
+        /// <param name="tAttach">附件GUID(多筆以,號隔開)</param>
+        /// <param name="tAttachURLName">附件URL站台名稱</param>
+        /// <returns></returns>
+        public string findAttachUrl(string tAttach, string tAttachURLName)
+        {
+            string reValue = string.Empty;
+
+            List<SRATTACHINFO> SR_List = findSRATTACHINFO(tAttach, tAttachURLName);
+
+            foreach (var bean in SR_List)
+            {
+                reValue += bean.FILE_URL + ";";
+            }
+
+            reValue = reValue.TrimEnd(';').Replace(";", "<br/>");            
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得附件相關資訊
+        /// <summary>
+        /// 取得附件相關資訊
+        /// </summary>
+        /// <param name="tAttach">附件GUID(多筆以,號隔開)</param>
+        /// <param name="tAttachURLName">附件URL站台名稱</param>
+        /// <returns></returns>
+        public List<SRATTACHINFO> findSRATTACHINFO(string tAttach, string tAttachURLName)
+        {
+            #region 範例Url
+            //http://tsticrmmbgw.etatung.com:8082/CSreport/a7f12260-0168-4cf8-a321-c2d410ac3536.txt
+            #endregion
+
+            tAttach = string.IsNullOrEmpty(tAttach) ? "" : tAttach;
+
+            List<SRATTACHINFO> tList = new List<SRATTACHINFO>();
+
+            string tURL = string.Empty;
+            string[] tAryAttach = tAttach.TrimEnd(',').Split(',');
+
+            foreach (string tKey in tAryAttach)
+            {
+                var bean = dbOne.TbOneDocuments.FirstOrDefault(x => x.Id.ToString() == tKey);
+
+                if (bean != null)
+                {
+                    SRATTACHINFO beanSR = new SRATTACHINFO();
+
+                    tURL = "http://" + tAttachURLName + "/CSreport/" + bean.FileName;
+
+                    beanSR.ID = tKey;
+                    beanSR.FILE_ORG_NAME = bean.FileOrgName;
+                    beanSR.FILE_NAME = bean.FileName;
+                    beanSR.FILE_EXT = bean.FileExt;
+                    beanSR.FILE_URL = tURL;
+                    beanSR.INSERT_TIME = bean.InsertTime;
+
+                    tList.Add(beanSR);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
         #region 呼叫BPM保固申請單並取得計費業務、發票號碼、發票日期
         /// <summary>
         /// 呼叫BPM保固申請單並取得計費業務、發票號碼、發票日期
@@ -1633,6 +1702,33 @@ namespace OneService.Controllers
             Guid tcID = new Guid(tSysOperationID); //全模組
 
             var bean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "CUSTOMERSERVICE");
+
+            if (bean != null)
+            {
+                if (bean.CValue.ToLower() == LoginAccount.ToLower())
+                {
+                    reValue = true;
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入者是否為客服主管
+        /// <summary>
+        /// 判斷登入者是否為客服主管
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+        /// <returns></returns>
+        public bool getIsCustomerServiceManager(string LoginAccount, string tSysOperationID)
+        {
+            bool reValue = false;
+
+            Guid tcID = new Guid(tSysOperationID); //全模組
+
+            var bean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "CUSTOMERSERVICEManager");
 
             if (bean != null)
             {

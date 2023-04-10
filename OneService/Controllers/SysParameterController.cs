@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneService.Models;
+using OneService.Utils;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
@@ -12,6 +13,32 @@ namespace OneService.Controllers
 	{        
         PSIPContext psipDb = new PSIPContext();
         TAIFContext bpmDB = new TAIFContext();
+        CommonFunction CMF = new CommonFunction();
+
+        /// <summary>
+        /// 登入者帳號
+        /// </summary>
+        string pLoginAccount = string.Empty;
+      
+        /// <summary>
+        /// 登入者是否為MIS(true.是 false.否)
+        /// </summary>
+        bool pIsMIS = false;
+
+        /// <summary>
+        /// 登入者是否為客服主管(true.是 false.否)
+        /// </summary>
+        bool pIsCSManager = false;
+
+        /// <summary>
+        /// 登入者是否為客服人員(true.是 false.否)
+        /// </summary>
+        bool pIsCS = false;      
+
+        /// <summary>
+        /// 程式作業編號檔系統ID(ALL，固定的GUID)
+        /// </summary>
+        string pSysOperationID = "F8EFC55F-FA77-4731-BB45-2F2147244A2D";
 
         #region -----資訊系統作業設定 Start-----
         /// <summary>
@@ -20,7 +47,14 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult OperationParameter()
 		{
-			return View();
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();
+
+            return View();
 		}
 
         #region 資訊系統作業設定查詢結果
@@ -220,6 +254,13 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult SysParameter()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();
+
             #region 程式作業編號檔系統ID清單
             var ModuleList = findModuleIDList();
 
@@ -538,6 +579,13 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult RoleParameter()
         {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();
+
             #region 程式作業編號檔系統ID清單
             var ModuleList = findModuleIDList();
 
@@ -745,6 +793,36 @@ namespace OneService.Controllers
         #endregion -----資訊系統角色權限作業設定 End-----
 
         #region -----共用參數 Start-----
+
+        #region 取得登入帳號權限
+        /// <summary>
+        /// 取得登入帳號權限
+        /// </summary>
+        public void getLoginAccount()
+        {
+            #region 測試用
+            //pLoginAccount = @"etatung\elvis.chang";     //MIS
+            //pLoginAccount = @"etatung\Allen.Chen";      //陳勁嘉(主管)
+            //pLoginAccount = @"etatung\Boyen.Chen";      //陳建良(主管)
+            //pLoginAccount = @"etatung\Aniki.Huang";     //黃志豪(主管)
+            //pLoginAccount = @"etatung\jack.hung";       //洪佑典(主管)
+            //pLoginAccount = @"etatung\Steve.Guo";       //郭翔元         
+            //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
+            #endregion
+
+            pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
+
+            #region One Service相關帳號
+            pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
+            pIsCSManager = CMF.getIsCustomerServiceManager(pLoginAccount, pSysOperationID);
+            pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
+
+            ViewBag.pIsMIS = pIsMIS;
+            ViewBag.pIsCSManager = pIsCSManager;
+            ViewBag.pIsCS = pIsCS;
+            #endregion            
+        }
+        #endregion
 
         #region 公司別轉換
         /// <summary>
