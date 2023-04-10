@@ -3,7 +3,7 @@ git init
 git add README.md
 git commit -m "first commit"
 git branch -M main
-git remote add origin https://github.com/cloudjoan/project_test.git
+git remote add origin https://github.com/cloudjoan/project_test.git(換成自己github/gitlab的連結)
 git push -u origin main
 
 #程式簽入
