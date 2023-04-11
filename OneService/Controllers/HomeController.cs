@@ -52,8 +52,8 @@ namespace OneService.Controllers
         {
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != null && HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == "true")
             {
-                return RedirectToAction("Index", "WorkingHours");
-            }
+				return RedirectToAction("ToDoList", "ServiceRequest");
+			}
             else
             {
                 ViewBag.errorMsg = HttpContext.Session.GetString(SessionKey.LOGIN_MESSAGE);
