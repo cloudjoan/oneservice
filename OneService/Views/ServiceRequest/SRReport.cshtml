@@ -9,6 +9,7 @@
 		$(document).ready(function () {
 			initTable();
 			CustSearch();
+			PeopleSearch();
 		});
 
 		function initTable() {
@@ -163,29 +164,88 @@
 			})
 		}
 
+		//Ajax用中文或英文姓名查詢人員帳號
+		function PeopleSearch() {
+			$(".Peoploe").unbind();
+
+			$(".Peoploe").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+							var ojbID = $(this).attr("id");
+
+							$.ajax({
+								url: '@Url.Action("AjaxfindEmployeeByKeyword", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: {
+									functionName: 'AjaxfindEmployeeByKeyword', keyword: keyword
+								},
+								success: function (result) {
+									objects = [];
+									$.each(result, function (i, idata) {
+										objects[i] = {
+											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
+											idx: i,
+											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉
+										};
+									});
+
+									//綁定foucs事件
+									obj.autocomplete({
+										source: objects
+									}).bind('focus', function () { obj.autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();
+								}
+							})
+
+						}
+					}
+				}
+			})
+		}
 		
 		//查詢
 		function Query() {
 			$("#waitingImg").show();
 
 			var tMsg = "";
-			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');	//建立日期(起)
-			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');		//建立日期(迄)
-			var tbx_cStartFinishTime = $('#tbx_cStartFinishTime');	//完成時間(起)
-			var tbx_cEndFinishTime = $('#tbx_cEndFinishTime');		//完成時間(迄)
-			var tbx_QuerySRID = $("#tbx_QuerySRID");				//SRID
-			var tbx_QueryCustomerID = $("#tbx_QueryCustomerID");		//客戶代號
-			var tbx_QueryRepairName = $("#tbx_QueryRepairName");		//報修人
-			var SRType = $("#ddl_SRType").val().join();			//服務類型
-			var tbx_QuerySerialID = $("#tbx_QuerySerialID");			//序號
-			var tbx_QueryContractID = $("#tbx_QueryContractID");		//合約編號
+			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//建立日期(起)
+			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');			//建立日期(迄)
+			var tbx_cStartFinishTime = $('#tbx_cStartFinishTime');		//完成時間(起)
+			var tbx_cEndFinishTime = $('#tbx_cEndFinishTime');			//完成時間(迄)
+			var tbx_QuerySRID = $("#tbx_QuerySRID");					//SRID
+			var tbx_QueryCustomerID = $("#tbx_QueryCustomerID");			//客戶代號
+			var tbx_QueryRepairName = $("#tbx_QueryRepairName");			//報修人
+			var tbx_QueryRepairAddress = $("#tbx_QueryRepairAddress");	//報修人地址			
+			var tbx_QuerySerialID = $("#tbx_QuerySerialID");				//序號
+			var tbx_QueryPID = $("#tbx_QueryPID");						//機器型號
+			var TeamID = $("#ddl_TeamID").val().join();				//服務團隊
+			var Status = $("#ddl_Status").val().join();				//狀態
+			var SRType = $("#ddl_SRType").val().join();				//服務類型
+			var tbx_QueryEngineerID = $("#tbx_QueryEngineerID");			//工程師ERPID
+			var tbx_QueryContractID = $("#tbx_QueryContractID");			//合約編號
+			var tbx_QuerySO = $("#tbx_QuerySO");						//銷售單號
+			var tbx_QueryXCHP = $("#tbx_QueryXCHP");					//XCHP
+			var tbx_QueryHPCT = $("#tbx_QueryHPCT");					//HPCT
+			var tbx_QueryMaterialID = $("#tbx_QueryMaterialID");			//更換零件料號ID
+			var tbx_QueryMaterialName = $("#tbx_QueryMaterialName");		//更換零件料號說明
+			var tbx_QueryOLDCT = $("#tbx_QueryOLDCT");					//OLDCT
+			var tbx_QueryNEWCT = $("#tbx_QueryNEWCT");					//NEWCT
+
 
 			if (tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" && tbx_cStartFinishTime.val() == "" && tbx_cEndFinishTime.val() == "" && 
-			    tbx_QuerySRID.val() == "" && tbx_QueryCustomerID.val() == "" && tbx_QueryRepairName.val() == "" && SRType == "" &&
-			    tbx_QuerySerialID.val() == "" && tbx_QueryContractID.val() == "") {
+			    tbx_QuerySRID.val() == "" && tbx_QueryCustomerID.val() == "" && tbx_QueryRepairName.val() == "" && tbx_QueryRepairAddress.val() == "" &&
+				tbx_QuerySerialID.val() == "" && tbx_QueryPID.val() == ""  && TeamID == "" && Status == "" && SRType == "" && tbx_QueryEngineerID.val() == "" &&
+				tbx_QueryContractID.val() == "" && tbx_QuerySO.val() == "" && tbx_QueryXCHP.val() == "" && tbx_QueryHPCT.val() == "" &&
+				tbx_QueryMaterialID.val() == "" && tbx_QueryMaterialName.val() == "" && tbx_QueryOLDCT.val() == "" && tbx_QueryNEWCT.val() == "") {
 				tMsg += "請至少輸入一項查詢條件！\n";
 			}
-
 			
 			if (tbx_cStartCreatedDate.val() != "" && tbx_cEndCreatedDate.val() != "") {
 
@@ -210,15 +270,17 @@
 			}
 			else {
 				searchSRReport(tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cStartFinishTime.val(), tbx_cEndFinishTime.val(),
-							   tbx_QuerySRID.val(), tbx_QueryCustomerID.val(), tbx_QueryRepairName.val(), SRType,
-							   tbx_QuerySerialID.val(), tbx_QueryContractID.val());
+					tbx_QuerySRID.val(), tbx_QueryCustomerID.val(), tbx_QueryRepairName.val(), tbx_QueryRepairAddress.val(),
+					tbx_QuerySerialID.val(), tbx_QueryPID.val(), TeamID, Status, SRType, tbx_QueryEngineerID.val(), tbx_QueryContractID.val(), tbx_QuerySO.val(),
+					tbx_QueryXCHP.val(), tbx_QueryHPCT.val(), tbx_QueryMaterialID.val(), tbx_QueryMaterialName.val(), tbx_QueryOLDCT.val(), tbx_QueryNEWCT.val());
 			}
 
 			return true;
 		}
 
 		//查詢結果
-		function searchSRReport(StartCreatedDate, EndCreatedDate, StartFinishTime, EndFinishTime, SRID, CustomerID, RepairName, SRType, SerialID, ContractID) {
+		function searchSRReport(StartCreatedDate, EndCreatedDate, StartFinishTime, EndFinishTime, SRID, CustomerID, RepairName, RepairAddress,
+			SerialID, PID, TeamID, Status, SRType, EngineerID, ContractID, SO, XCHP, HPCT, MaterialID, MaterialName, OLDCT, NEWCT) {
 			$("#dataDiv").html('');
 			$.ajax({
 				url: '@Url.Action("SRReportResult", "ServiceRequest")',
@@ -232,9 +294,21 @@
 					SRID: SRID,
 					CustomerID: CustomerID,
 					RepairName: RepairName,
-					SRType: SRType,
+					RepairAddress: RepairAddress,					
 					SerialID: SerialID,
-					ContractID: ContractID
+					PID: PID,
+					TeamID: TeamID,
+					Status: Status,
+					SRType: SRType,
+					EngineerID: EngineerID,
+					ContractID: ContractID,
+					SO: SO,
+					XCHP: XCHP, 
+					HPCT: HPCT,
+					MaterialID: MaterialID,
+					MaterialName: MaterialName, 
+					OLDCT: OLDCT,
+					NEWCT: NEWCT
 				},
 				success: function (result) {
 				},
@@ -254,10 +328,22 @@
 			$("#tbx_QuerySRID").val("");
 			$('#tbx_QueryCustomerID').val("");
 			$("#tbx_QueryRepairName").val("");
+			$("#tbx_QueryRepairAddress").val("");
 			$("#tbx_QuerySerialID").val("");
+			$("#tbx_QueryPID").val("");			
+			$("#tbx_QueryEngineerID").val("");
 			$("#tbx_QueryContractID").val("");
-
-			$("#ddl_SRType").val("").trigger('chosen:updated');	
+			$("#tbx_QuerySO").val("");
+			$("#tbx_QueryXCHP").val("");
+			$("#tbx_QueryHPCT").val("");
+			$("#tbx_QueryMaterialID").val("");
+			$("#tbx_QueryMaterialName").val("");
+			$("#tbx_QueryOLDCT").val("");
+			$("#tbx_QueryNEWCT").val("");
+			
+			$("#ddl_TeamID").val("").trigger('chosen:updated');
+			$("#ddl_Status").val("").trigger('chosen:updated');
+			$("#ddl_SRType").val("").trigger('chosen:updated');
 		}
 	</script>
 }
@@ -327,19 +413,79 @@
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QueryRepairName" name="tbx_QueryRepairName" class="form-control" placeholder="報修人">
 							</div>
-							<label class="col-lg-2 col-form-label">服務類型</label>
+							<label class="col-lg-2 col-form-label">報修人地址</label>
 							<div class="col-lg-4">
-								@Html.DropDownList("ddl_SRType", (IEnumerable<SelectListItem>)ViewBag.ddl_SRType, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務類型" })
-							</div>
+								<input type="text" id="tbx_QueryRepairAddress" name="tbx_QueryRepairAddress" class="form-control" placeholder="報修人地址關鍵字">
+							</div>							
 						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">序號</label>
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QuerySerialID" name="tbx_QuerySerialID" class="form-control" placeholder="序號">
 							</div>
+							<label class="col-lg-2 col-form-label">機器型號</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QueryPID" name="tbx_QueryPID" class="form-control" placeholder="機器型號">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">服務團隊</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_TeamID", (IEnumerable<SelectListItem>)ViewBag.ddl_TeamID, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務團隊" })
+							</div>
+							<label class="col-lg-2 col-form-label">狀態</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_Status", (IEnumerable<SelectListItem>)ViewBag.ddl_Status, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇狀態" })
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">服務類型</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_SRType", (IEnumerable<SelectListItem>)ViewBag.ddl_SRType, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務類型" })
+							</div>
+							<label class="col-lg-2 col-form-label">工程師ERPID</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QueryEngineerID" name="tbx_QueryEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+							</div>							
+						</div>
+						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">合約編號</label>
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QueryContractID" name="tbx_QueryContractID" class="form-control" placeholder="合約編號">
+							</div>
+							<label class="col-lg-2 col-form-label">銷售單號</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerySO" name="tbx_QuerySO" class="form-control" placeholder="銷售單號">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">XCHP</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QueryXCHP" name="tbx_QueryXCHP" class="form-control" placeholder="XCHP">
+							</div>
+							<label class="col-lg-2 col-form-label">HPCT</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QueryHPCT" name="tbx_QueryHPCT" class="form-control" placeholder="HPCT">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">更換零件料號ID</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QueryMaterialID" name="tbx_QueryMaterialID" class="form-control" placeholder="更換零件料號ID">
+							</div>
+							<label class="col-lg-2 col-form-label">更換零件料號說明</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QueryMaterialName" name="tbx_QueryMaterialName" class="form-control" placeholder="更換零件料號說明">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">OLDCT</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QueryOLDCT" name="tbx_QueryOLDCT" class="form-control" placeholder="OLDCT">
+							</div>
+							<label class="col-lg-2 col-form-label">NEWCT</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QueryNEWCT" name="tbx_QueryNEWCT" class="form-control" placeholder="NEWCT">
 							</div>
 						</div>
 						<div class="form-group row">
@@ -433,65 +579,65 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-														<tr id='tr@(count)'>
-															<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-															<td>@Html.Raw(QueryInfo[2])</td>
-															<td>@Html.Raw(QueryInfo[3])</td>
-															<td>@Html.Raw(QueryInfo[4])</td>
-															<td>@Html.Raw(QueryInfo[5])</td>
-															<td>@Html.Raw(QueryInfo[6])</td>
-															<td>@Html.Raw(QueryInfo[7])</td>
-															<td>@Html.Raw(QueryInfo[8])</td>
-															<td>@Html.Raw(QueryInfo[9])</td>
-															<td>@Html.Raw(QueryInfo[10])</td>
-															<td>@Html.Raw(QueryInfo[11])</td>
-															<td>@Html.Raw(QueryInfo[12])</td>
-															<td>@Html.Raw(QueryInfo[13])</td>
-															<td>@Html.Raw(QueryInfo[14])</td>
-															<td>@Html.Raw(QueryInfo[15])</td>
-															<td>@Html.Raw(QueryInfo[16])</td>
-															<td>@Html.Raw(QueryInfo[17])</td>
-															<td>@Html.Raw(QueryInfo[18])</td>
-															<td>@Html.Raw(QueryInfo[19])</td>
-															<td>@Html.Raw(QueryInfo[20])</td>
-															<td>@Html.Raw(QueryInfo[21])</td>
-															<td>@Html.Raw(QueryInfo[22])</td>
-															<td>@Html.Raw(QueryInfo[23])</td>
-															<td>@Html.Raw(QueryInfo[24])</td>
-															<td>@Html.Raw(QueryInfo[25])</td>
-															<td>@Html.Raw(QueryInfo[26])</td>
-															<td>@Html.Raw(QueryInfo[27])</td>
-															<td>@Html.Raw(QueryInfo[28])</td>
-															<td>@Html.Raw(QueryInfo[29])</td>
-															<td>@Html.Raw(QueryInfo[30])</td>
-															<td>@Html.Raw(QueryInfo[31])</td>
-															<td>@Html.Raw(QueryInfo[32])</td>
-															<td>@Html.Raw(QueryInfo[33])</td>
-															<td>@Html.Raw(QueryInfo[34])</td>
-															<td>@Html.Raw(QueryInfo[35])</td>
-															<td>@Html.Raw(QueryInfo[36])</td>
-															<td><a href="@QueryInfo[37]" target="_blank">@QueryInfo[37]</a></td>										
-															<td>@Html.Raw(QueryInfo[38])</td>
-															<td>@Html.Raw(QueryInfo[39])</td>
-															<td>@Html.Raw(QueryInfo[40])</td>
-															<td>@Html.Raw(QueryInfo[41])</td>
-															<td>@Html.Raw(QueryInfo[42])</td>
-															<td>@Html.Raw(QueryInfo[43])</td>
-															<td>@Html.Raw(QueryInfo[44])</td>
-															<td>@Html.Raw(QueryInfo[45])</td>
-															<td>@Html.Raw(QueryInfo[46])</td>
-															<td>@Html.Raw(QueryInfo[47])</td>
-															<td>@Html.Raw(QueryInfo[48])</td>
-															<td>@Html.Raw(QueryInfo[49])</td>
-															<td>@Html.Raw(QueryInfo[50])</td>
-															<td>@Html.Raw(QueryInfo[51])</td>
-															<td>@Html.Raw(QueryInfo[52])</td>
-															<td>@Html.Raw(QueryInfo[53])</td>
-															<td>@Html.Raw(QueryInfo[54])</td>
-															<td>@Html.Raw(QueryInfo[55])</td>
-															<td>@Html.Raw(QueryInfo[56])</td>
-															<td>@Html.Raw(QueryInfo[57])</td>
-														</tr>
+																				<tr id='tr@(count)'>
+																					<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+																					<td>@Html.Raw(QueryInfo[2])</td>
+																					<td>@Html.Raw(QueryInfo[3])</td>
+																					<td>@Html.Raw(QueryInfo[4])</td>
+																					<td>@Html.Raw(QueryInfo[5])</td>
+																					<td>@Html.Raw(QueryInfo[6])</td>
+																					<td>@Html.Raw(QueryInfo[7])</td>
+																					<td>@Html.Raw(QueryInfo[8])</td>
+																					<td>@Html.Raw(QueryInfo[9])</td>
+																					<td>@Html.Raw(QueryInfo[10])</td>
+																					<td>@Html.Raw(QueryInfo[11])</td>
+																					<td>@Html.Raw(QueryInfo[12])</td>
+																					<td>@Html.Raw(QueryInfo[13])</td>
+																					<td>@Html.Raw(QueryInfo[14])</td>
+																					<td>@Html.Raw(QueryInfo[15])</td>
+																					<td>@Html.Raw(QueryInfo[16])</td>
+																					<td>@Html.Raw(QueryInfo[17])</td>
+																					<td>@Html.Raw(QueryInfo[18])</td>
+																					<td>@Html.Raw(QueryInfo[19])</td>
+																					<td>@Html.Raw(QueryInfo[20])</td>
+																					<td>@Html.Raw(QueryInfo[21])</td>
+																					<td>@Html.Raw(QueryInfo[22])</td>
+																					<td>@Html.Raw(QueryInfo[23])</td>
+																					<td>@Html.Raw(QueryInfo[24])</td>
+																					<td>@Html.Raw(QueryInfo[25])</td>
+																					<td>@Html.Raw(QueryInfo[26])</td>
+																					<td>@Html.Raw(QueryInfo[27])</td>
+																					<td>@Html.Raw(QueryInfo[28])</td>
+																					<td>@Html.Raw(QueryInfo[29])</td>
+																					<td>@Html.Raw(QueryInfo[30])</td>
+																					<td>@Html.Raw(QueryInfo[31])</td>
+																					<td>@Html.Raw(QueryInfo[32])</td>
+																					<td>@Html.Raw(QueryInfo[33])</td>
+																					<td>@Html.Raw(QueryInfo[34])</td>
+																					<td>@Html.Raw(QueryInfo[35])</td>
+																					<td>@Html.Raw(QueryInfo[36])</td>
+																					<td><a href="@QueryInfo[37]" target="_blank">@QueryInfo[37]</a></td>										
+																					<td>@Html.Raw(QueryInfo[38])</td>
+																					<td>@Html.Raw(QueryInfo[39])</td>
+																					<td>@Html.Raw(QueryInfo[40])</td>
+																					<td>@Html.Raw(QueryInfo[41])</td>
+																					<td>@Html.Raw(QueryInfo[42])</td>
+																					<td>@Html.Raw(QueryInfo[43])</td>
+																					<td>@Html.Raw(QueryInfo[44])</td>
+																					<td>@Html.Raw(QueryInfo[45])</td>
+																					<td>@Html.Raw(QueryInfo[46])</td>
+																					<td>@Html.Raw(QueryInfo[47])</td>
+																					<td>@Html.Raw(QueryInfo[48])</td>
+																					<td>@Html.Raw(QueryInfo[49])</td>
+																					<td>@Html.Raw(QueryInfo[50])</td>
+																					<td>@Html.Raw(QueryInfo[51])</td>
+																					<td>@Html.Raw(QueryInfo[52])</td>
+																					<td>@Html.Raw(QueryInfo[53])</td>
+																					<td>@Html.Raw(QueryInfo[54])</td>
+																					<td>@Html.Raw(QueryInfo[55])</td>
+																					<td>@Html.Raw(QueryInfo[56])</td>
+																					<td>@Html.Raw(QueryInfo[57])</td>
+																				</tr>
 								}
 							}
 						}

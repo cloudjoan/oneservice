@@ -134,6 +134,16 @@ namespace OneService.Controllers
             ViewBag.ddl_SRType = SRTypeList;
             #endregion
 
+            #region 服務團隊
+            var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, false);
+            ViewBag.ddl_TeamID = SRTeamIDList;
+            #endregion
+
+            #region 狀態
+            var SRStatus = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRSTATUS", false);
+            ViewBag.ddl_Status = SRStatus;
+            #endregion
+
             return View();
         }
 
@@ -148,12 +158,26 @@ namespace OneService.Controllers
         /// <param name="SRID">SRID</param>
         /// <param name="CustomerID">客戶代號</param>
         /// <param name="RepairName">報修人</param>
-        /// <param name="SRType">服務類型</param>
+        /// <param name="RepairAddress">報修人地址</param>        
         /// <param name="SerialID">序號</param>
+        /// <param name="PID">機器型號</param>
+        /// <param name="TeamID">服務團隊</param>
+        /// <param name="Status">狀態</param>
+        /// <param name="SRType">服務類型</param>
+        /// <param name="EngineerID">工程師ERPID</param>
         /// <param name="ContractID">合約編號</param>
+        /// <param name="SO">銷售單號</param>
+        /// <param name="XCHP">XCHP</param>
+        /// <param name="HPCT">HPCT</param>
+        /// <param name="MaterialID">更換零件料號ID</param>
+        /// <param name="MaterialName">更換零件料號說明</param>        
+        /// <param name="OLDCT">OLDCT</param>
+        /// <param name="NEWCT">NEWCT</param>
         /// <returns></returns>
         public IActionResult SRReportResult(string StartCreatedDate, string EndCreatedDate, string StartFinishTime, string EndFinishTime, string SRID, 
-                                          string CustomerID, string RepairName, string SRType, string SerialID, string ContractID)
+                                          string CustomerID, string RepairName, string RepairAddress, string SerialID, string PID, string TeamID, 
+                                          string Status, string SRType, string EngineerID, string ContractID, string SO, string XCHP, string HPCT, 
+                                          string MaterialID, string MaterialName, string OLDCT, string NEWCT)
         {
             StringBuilder tSQL = new StringBuilder();
 
@@ -227,21 +251,92 @@ namespace OneService.Controllers
             #region SRID
             if (!string.IsNullOrEmpty(SRID))
             {
-                ttWhere += "AND cSRID LIKE N'%" + SRID + "%' ";
+                ttWhere += "AND cSRID LIKE N'%" + SRID + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region 客戶代號
             if (!string.IsNullOrEmpty(CustomerID))
             {
-                ttWhere += "AND cCustomerID = '" + CustomerID + "' ";
+                ttWhere += "AND cCustomerID = '" + CustomerID + "' " + Environment.NewLine;
             }
             #endregion
 
             #region 報修人姓名
             if (!string.IsNullOrEmpty(RepairName))
             {
-                ttWhere += "AND cRepairName LIKE N'%" + RepairName.Trim() + "%' ";
+                ttWhere += "AND cRepairName LIKE N'%" + RepairName.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 報修人地址
+            if (!string.IsNullOrEmpty(RepairAddress))
+            {
+                ttWhere += "AND cRepairAddress LIKE N'%" + RepairAddress + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 序號
+            if (!string.IsNullOrEmpty(SerialID))
+            {
+                ttWhere += "AND cSerialID LIKE N'%" + SerialID + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 機器型號
+            if (!string.IsNullOrEmpty(PID))
+            {
+                ttWhere += "AND PID LIKE N'%" + PID.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion           
+
+            #region 服務團隊
+            if (!string.IsNullOrEmpty(TeamID))
+            {
+                ttStrItem = "";
+                string[] tAryTeam = TeamID.TrimEnd(',').Split(',');
+
+                if (tAryTeam.Length >= 0)
+                {
+                    ttStrItem = "AND (";
+                }
+
+                foreach (string tTeam in tAryTeam)
+                {
+                    ttStrItem += " cTeamID like N'%" + tTeam + "%' or";
+                }
+
+                if (tAryTeam.Length >= 0)
+                {
+                    if (ttStrItem.EndsWith("or"))
+                    {
+                        ttStrItem = ttStrItem.Substring(0, ttStrItem.Length - 2); //去除最後一個or  
+                    }
+
+                    ttStrItem += ") ";
+                }
+
+                ttWhere += ttStrItem + Environment.NewLine;
+            }
+            #endregion
+
+            #region 狀態
+            if (!string.IsNullOrEmpty(Status))
+            {
+                ttStrItem = "";
+                string[] tAryStatus = Status.TrimEnd(',').Split(',');
+
+                foreach (string tStatus in tAryStatus)
+                {
+                    ttStrItem += "N'" + tStatus + "',";
+                }
+
+                ttStrItem = ttStrItem.TrimEnd(',');
+
+                if (ttStrItem != "")
+                {
+                    ttWhere += "AND cStatus IN (" + ttStrItem + ") " + Environment.NewLine;
+                }
             }
             #endregion
 
@@ -260,159 +355,73 @@ namespace OneService.Controllers
 
                 if (ttStrItem != "")
                 {
-                    ttWhere += "AND cSRType IN (" + ttStrItem + ") ";
+                    ttWhere += "AND cSRType IN (" + ttStrItem + ") " + Environment.NewLine;
                 }
             }
-            #endregion 倉區
+            #endregion
 
-            #region 序號
-            if (!string.IsNullOrEmpty(SerialID))
+            #region 工程師ERPID
+            if (!string.IsNullOrEmpty(EngineerID))
             {
-                ttWhere += "AND cSerialID LIKE N'%" + SerialID + "%' ";
+                ttWhere += "AND cEngineerID LIKE N'%" + EngineerID.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region 合約編號
             if (!string.IsNullOrEmpty(ContractID))
             {
-                ttWhere += "AND cContractID LIKE N'%" + ContractID + "%' ";
+                ttWhere += "AND cContractID LIKE N'%" + ContractID + "%' " + Environment.NewLine;
             }
             #endregion
 
-            //#region 狀態
-            //if (!string.IsNullOrEmpty(cStatus))
-            //{
-            //    ttWhere += "AND M.cStatus = N'" + cStatus + "' ";
-            //}
-            //#endregion
+            #region 銷售單號
+            if (!string.IsNullOrEmpty(SO))
+            {
+                ttWhere += "AND SO LIKE N'%" + SO.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
 
-          
+            #region XCHP
+            if (!string.IsNullOrEmpty(XCHP))
+            {
+                ttWhere += "AND cXCHP LIKE N'%" + XCHP.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
 
+            #region XCHP
+            if (!string.IsNullOrEmpty(HPCT))
+            {
+                ttWhere += "AND cHPCT LIKE N'%" + HPCT.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
 
+            #region 更換零件料號ID
+            if (!string.IsNullOrEmpty(MaterialID))
+            {
+                ttWhere += "AND cMaterialID LIKE N'%" + MaterialID.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
 
-            //#region 客戶名稱
-            //if (!string.IsNullOrEmpty(cCustomerName))
-            //{
-            //    ttWhere += "AND M.cCustomerName LIKE N'%" + cCustomerName.Trim() + "%' ";
-            //}
-            //#endregion
+            #region 更換零件料號說明
+            if (!string.IsNullOrEmpty(MaterialName))
+            {
+                ttWhere += "AND cMaterialName LIKE N'%" + MaterialName.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
 
-            //#region SRID
-            //if (!string.IsNullOrEmpty(cSRID))
-            //{
-            //    ttWhere += "AND M.cSRID LIKE N'%" + cSRID.Trim() + "%' ";
-            //}
-            //#endregion
+            #region OLDCT
+            if (!string.IsNullOrEmpty(OLDCT))
+            {
+                ttWhere += "AND cOldCT LIKE N'%" + OLDCT.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
 
-
-
-            //#region 報修管道
-            //if (!string.IsNullOrEmpty(cSRPathWay))
-            //{
-            //    ttWhere += "AND M.cSRPathWay = '" + cSRPathWay + "' ";
-            //}
-            //#endregion
-
-            //#region L2工程師ERPID
-            //if (!string.IsNullOrEmpty(cMainEngineerID))
-            //{
-            //    ttWhere += "AND M.cMainEngineerID = '" + cMainEngineerID + "' ";
-            //}
-            //#endregion
-
-            //#region 指派工程師ERPID
-            //if (!string.IsNullOrEmpty(cAssEngineerID))
-            //{
-            //    ttWhere += "AND M.cAssEngineerID LIKE N'%" + cAssEngineerID.Trim() + "%' ";
-            //}
-            //#endregion
-
-            //#region 技術主管ERPID
-            //if (!string.IsNullOrEmpty(cTechManagerID))
-            //{
-            //    ttWhere += "AND M.cTechManagerID LIKE N'%" + cTechManagerID.Trim() + "%' ";
-            //}
-            //#endregion
-
-            //#region 報修類別-大類
-            //if (!string.IsNullOrEmpty(cSRTypeOne))
-            //{
-            //    ttWhere += "AND M.cSRTypeOne = '" + cSRTypeOne + "' ";
-            //}
-            //#endregion
-
-            //#region 報修類別-中類
-            //if (!string.IsNullOrEmpty(cSRTypeSec))
-            //{
-            //    ttWhere += "AND M.cSRTypeSec = '" + cSRTypeSec + "' ";
-            //}
-            //#endregion
-
-            //#region 報修類別-小類
-            //if (!string.IsNullOrEmpty(cSRTypeThr))
-            //{
-            //    ttWhere += "AND M.cSRTypeThr = '" + cSRTypeThr + "' ";
-            //}
-            //#endregion
-
-            //#region 服務團隊
-            //if (!string.IsNullOrEmpty(cTeamID))
-            //{
-            //    ttStrItem = "";
-            //    string[] tAryTeam = cTeamID.TrimEnd(',').Split(',');
-
-            //    if (tAryTeam.Length >= 0)
-            //    {
-            //        ttStrItem = "AND (";
-            //    }
-
-            //    foreach (string tLocation in tAryTeam)
-            //    {
-            //        ttStrItem += " M.cTeamID like N'%" + tLocation + "%' or";
-            //    }
-
-            //    if (tAryTeam.Length >= 0)
-            //    {
-            //        if (ttStrItem.EndsWith("or"))
-            //        {
-            //            ttStrItem = ttStrItem.Substring(0, ttStrItem.Length - 2); //去除最後一個or  
-            //        }
-
-            //        ttStrItem += ") ";
-            //    }
-
-            //    ttWhere += ttStrItem;
-            //}
-            //#endregion 倉區
-
-            //#region 產品序號
-            //if (!string.IsNullOrEmpty(cSerialID))
-            //{
-            //    ttWhere += "AND (P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' or P.cNewSerialID LIKE N'%" + cSerialID.Trim() + "%') ";
-            //}
-            //#endregion
-
-            //#region 產品機器型號
-            //if (!string.IsNullOrEmpty(cMaterialName))
-            //{
-            //    ttWhere += "AND P.cMaterialName LIKE N'%" + cMaterialName.Trim() + "%' ";
-            //}
-            //#endregion
-
-            //#region Product Number
-            //if (!string.IsNullOrEmpty(cProductNumber))
-            //{
-            //    ttWhere += "AND P.cProductNumber LIKE N'%" + cProductNumber.Trim() + "%' ";
-            //}
-            //#endregion
-
-            //#region 若【產品序號】、【產品機器型號】、【Product Number】其中有一個，就要執行Join語法
-            //if (!string.IsNullOrEmpty(cSerialID) || !string.IsNullOrEmpty(cMaterialName) || !string.IsNullOrEmpty(cProductNumber))
-            //{
-            //    ttJoin = " left join TB_ONE_SRDetail_Product P on M.cSRID = P.cSRID";
-            //    ttWhere = "AND P.disabled = 0 " + ttWhere;
-            //}
-            //#endregion
+            #region NEWCT
+            if (!string.IsNullOrEmpty(NEWCT))
+            {
+                ttWhere += "AND cNewCT LIKE N'%" + NEWCT.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
 
             #region 組待查詢清單
 
@@ -740,9 +749,9 @@ namespace OneService.Controllers
                     ttStrItem = "AND (";
                 }
 
-                foreach (string tLocation in tAryTeam)
+                foreach (string tTeam in tAryTeam)
                 {
-                    ttStrItem += " M.cTeamID like N'%" + tLocation + "%' or";
+                    ttStrItem += " M.cTeamID like N'%" + tTeam + "%' or";
                 }                
 
                 if (tAryTeam.Length >= 0)
@@ -757,7 +766,7 @@ namespace OneService.Controllers
 
                 ttWhere += ttStrItem;
             }
-            #endregion 倉區
+            #endregion
 
             #region 產品序號
             if (!string.IsNullOrEmpty(cSerialID))
