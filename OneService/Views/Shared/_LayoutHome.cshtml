@@ -141,9 +141,9 @@
 							<li><a href="@Url.Action("ToDoList", "ServiceRequest")"> <i class="fa fa-window-restore"></i> 待辦清單</a></li>
 							<li><a href="@Url.Action("GenerallySR", "ServiceRequest")" target="_blank"> <i class="fa fa-wrench"></i> 一般服務</a></li>
 							<li><a href="dashboard_2.html"> <i class="fa fa-cogs"></i> 裝機服務(施工中)</a></li>
-							<li><a href="dashboard_3.html"> <i class="fa fa-calendar-check-o"></i> 定維服務(施工中)</a></li>
-							<li><a href="@Url.Action("SRReport", "ServiceRequest")"> <i class="fa fa-list-ul"></i> 服務總表</a></li>							
-							<li><a href="@Url.Action("QuerySRProgress", "ServiceRequest")" target="_blank"> <i class="fa fa-hourglass-half"></i> 服務進度查詢</a></li>							
+							<li><a href="dashboard_3.html"> <i class="fa fa-calendar-check-o"></i> 定維服務(施工中)</a></li>							
+							<li><a href="@Url.Action("QuerySRProgress", "ServiceRequest")"> <i class="fa fa-hourglass-half"></i> 服務進度查詢</a></li>							
+							<li><a href="@Url.Action("SRReport", "ServiceRequest")"> <i class="fa fa-list-ul"></i> 服務總表</a></li>
 							<li @(ViewBag.pIsMIS == true ? "" : "style=display:none;")><a href="@Url.Action("SRPersonCustomer", "ServiceRequest")"> <i class="fa fa-cog"></i> 個人客戶設定作業</a></li>
 							<li @(ViewBag.pIsMIS == true ? "" : "style=display:none;")><a href="@Url.Action("SRTeamMapping", "ServiceRequest")"> <i class="fa fa-cog"></i> 服務團隊對照組織設定作業</a></li>
 							<li @(ViewBag.pIsMIS == true ? "" : "style=display:none;")><a href="@Url.Action("SRCustomerEmailMapping", "ServiceRequest")"> <i class="fa fa-cog"></i> 客戶Email對照設定作業</a></li>							
@@ -165,9 +165,9 @@
 					<li class="active" @(ViewBag.pIsMIS == true ? "" : "hidden='hidden'")>
 						<a href="index.html"><i class="fa fa-calendar-o"></i> <span class="nav-label">資訊系統帳號與權限設定項目檢核表</span> <span class="fa arrow"></span></a>
 						<ul class="nav nav-second-level">
-							<li><a href="@Url.Action("OperationParameter", "SysParameter")" target="_blank"><i class="fa fa-clock-o"></i> 資訊系統作業設定</a></li>
-							<li><a href="@Url.Action("SysParameter", "SysParameter")" target="_blank"><i class="fa fa-clock-o"></i> 資訊系統參數設定</a></li>
-							<li><a href="@Url.Action("RoleParameter", "SysParameter")" target="_blank"><i class="fa fa-clock-o"></i> 資訊系統角色權限設定</a></li>
+							<li><a href="@Url.Action("OperationParameter", "SysParameter")"><i class="fa fa-clock-o"></i> 資訊系統作業設定</a></li>
+							<li><a href="@Url.Action("SysParameter", "SysParameter")"><i class="fa fa-clock-o"></i> 資訊系統參數設定</a></li>
+							<li><a href="@Url.Action("RoleParameter", "SysParameter")"><i class="fa fa-clock-o"></i> 資訊系統角色權限設定</a></li>
 						</ul>
 					</li>
 				</ul>

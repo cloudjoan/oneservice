@@ -885,16 +885,28 @@ namespace OneService.Models
                     .HasColumnName("cSRTypeNote");
 
                 entity.Property(e => e.CSrtypeOne)
-                    .HasMaxLength(100)
+                    .HasMaxLength(20)
                     .HasColumnName("cSRTypeOne");
 
-                entity.Property(e => e.CSrtypeSec)
+                entity.Property(e => e.CSrtypeOneNote)
                     .HasMaxLength(100)
+                    .HasColumnName("cSRTypeOneNote");
+
+                entity.Property(e => e.CSrtypeSec)
+                    .HasMaxLength(20)
                     .HasColumnName("cSRTypeSec");
 
-                entity.Property(e => e.CSrtypeThr)
+                entity.Property(e => e.CSrtypeSecNote)
                     .HasMaxLength(100)
+                    .HasColumnName("cSRTypeSecNote");
+
+                entity.Property(e => e.CSrtypeThr)
+                    .HasMaxLength(20)
                     .HasColumnName("cSRTypeThr");
+
+                entity.Property(e => e.CSrtypeThrNote)
+                    .HasMaxLength(100)
+                    .HasColumnName("cSRTypeThrNote");
 
                 entity.Property(e => e.CStartTime)
                     .HasColumnType("datetime")

@@ -144,6 +144,23 @@ namespace OneService.Controllers
             ViewBag.ddl_Status = SRStatus;
             #endregion
 
+            #region 報修類別
+            //大類
+            var SRTypeOneList = CMF.findFirstKINDList();
+
+            //中類
+            var SRTypeSecList = new List<SelectListItem>();
+            SRTypeSecList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            //小類
+            var SRTypeThrList = new List<SelectListItem>();
+            SRTypeThrList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            ViewBag.SRTypeOneList = SRTypeOneList;
+            ViewBag.SRTypeSecList = SRTypeSecList;
+            ViewBag.SRTypeThrList = SRTypeThrList;
+            #endregion
+
             return View();
         }
 
@@ -173,11 +190,14 @@ namespace OneService.Controllers
         /// <param name="MaterialName">更換零件料號說明</param>        
         /// <param name="OLDCT">OLDCT</param>
         /// <param name="NEWCT">NEWCT</param>
+        /// <param name="cSRTypeOne">報修類別-大類</param>
+        /// <param name="cSRTypeSec">報修類別-中類</param>
+        /// <param name="cSRTypeThr">報修類別-小類</param>
         /// <returns></returns>
         public IActionResult SRReportResult(string StartCreatedDate, string EndCreatedDate, string StartFinishTime, string EndFinishTime, string SRID, 
                                           string CustomerID, string RepairName, string RepairAddress, string SerialID, string PID, string TeamID, 
                                           string Status, string SRType, string EngineerID, string ContractID, string SO, string XCHP, string HPCT, 
-                                          string MaterialID, string MaterialName, string OLDCT, string NEWCT)
+                                          string MaterialID, string MaterialName, string OLDCT, string NEWCT, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr)
         {
             StringBuilder tSQL = new StringBuilder();
 
@@ -190,6 +210,7 @@ namespace OneService.Controllers
             string tAttachURLName = string.Empty;
             string CreatedDate = string.Empty;
             string tSRTeam = string.Empty;
+            string cNotes = string.Empty;
             string cReceiveTime = string.Empty;
             string cStartTime = string.Empty;
             string cArriveTime = string.Empty;
@@ -344,11 +365,11 @@ namespace OneService.Controllers
             if (!string.IsNullOrEmpty(SRType))
             {
                 ttStrItem = "";
-                string[] tAryLocation = SRType.TrimEnd(',').Split(',');
+                string[] tArySRType = SRType.TrimEnd(',').Split(',');
 
-                foreach (string tLocation in tAryLocation)
+                foreach (string tSRType in tArySRType)
                 {
-                    ttStrItem += "N'" + tLocation + "',";
+                    ttStrItem += "N'" + tSRType + "',";
                 }
 
                 ttStrItem = ttStrItem.TrimEnd(',');
@@ -423,6 +444,27 @@ namespace OneService.Controllers
             }
             #endregion
 
+            #region 報修類別-大類
+            if (!string.IsNullOrEmpty(cSRTypeOne))
+            {
+                ttWhere += "AND cSRTypeOne = '" + cSRTypeOne + "' ";
+            }
+            #endregion
+
+            #region 報修類別-中類
+            if (!string.IsNullOrEmpty(cSRTypeSec))
+            {
+                ttWhere += "AND cSRTypeSec = '" + cSRTypeSec + "' ";
+            }
+            #endregion
+
+            #region 報修類別-小類
+            if (!string.IsNullOrEmpty(cSRTypeThr))
+            {
+                ttWhere += "AND cSRTypeThr = '" + cSRTypeThr + "' ";
+            }
+            #endregion
+
             #region 組待查詢清單
 
             #region SQL語法
@@ -441,20 +483,21 @@ namespace OneService.Controllers
 
                 CreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd");
                 tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
-                cReceiveTime = Convert.ToDateTime(dr["cReceiveTime"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cReceiveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
-                cStartTime = Convert.ToDateTime(dr["cStartTime"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cStartTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
-                cArriveTime = Convert.ToDateTime(dr["cArriveTime"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cArriveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
-                cFinishTime = Convert.ToDateTime(dr["cFinishTime"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cFinishTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
+                cNotes = dr["cNotes"].ToString().Replace("\r\n", "<br/>");
+                cReceiveTime = Convert.ToDateTime(dr["cReceiveTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cReceiveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
+                cStartTime = Convert.ToDateTime(dr["cStartTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cStartTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
+                cArriveTime = Convert.ToDateTime(dr["cArriveTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cArriveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
+                cFinishTime = Convert.ToDateTime(dr["cFinishTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cFinishTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cWorkHours = dr["cWorkHours"].ToString() == "0" ? "" : dr["cWorkHours"].ToString();
                 cSRReportURL = CMF.findAttachUrl(dr["cSRReport"].ToString(), tAttachURLName);
                 cUsed = (dr["cWTYID"].ToString() != "" || dr["cWTYName"].ToString() != "") ? "Y" : "N";
-                cWTYSDATE = Convert.ToDateTime(dr["cWTYSDATE"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cWTYSDATE"].ToString()).ToString("yyyy-MM-dd");
-                cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == DateTime.MinValue ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");
+                cWTYSDATE = Convert.ToDateTime(dr["cWTYSDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYSDATE"].ToString()).ToString("yyyy-MM-dd");
+                cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");
 
                 QueryInfo[0] = dr["cSRID"].ToString();              //SR_ID
                 QueryInfo[1] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
                 QueryInfo[2] = dr["cDesc"].ToString();              //說明
-                QueryInfo[3] = dr["cNotes"].ToString();             //詳細描述
+                QueryInfo[3] = cNotes;                             //詳細描述
                 QueryInfo[4] = dr["cSRType"].ToString();            //類型
                 QueryInfo[5] = dr["cSRTypeNote"].ToString();        //類型說明
                 QueryInfo[6] = dr["cStatusNote"].ToString();        //狀態說明
@@ -469,9 +512,9 @@ namespace OneService.Controllers
                 QueryInfo[15] = CreatedDate;                      //建立日期
                 QueryInfo[16] = dr["cSRProcessWay"].ToString();     //處理方式
                 QueryInfo[17] = dr["cMAServiceType"].ToString();    //維護服務種類
-                QueryInfo[18] = dr["cSRTypeOne"].ToString();        //報修大類
-                QueryInfo[19] = dr["cSRTypeSec"].ToString();        //報修中類
-                QueryInfo[20] = dr["cSRTypeThr"].ToString();        //報修小類
+                QueryInfo[18] = dr["cSRTypeOneNote"].ToString();    //報修大類
+                QueryInfo[19] = dr["cSRTypeSecNote"].ToString();    //報修中類
+                QueryInfo[20] = dr["cSRTypeThrNote"].ToString();    //報修小類
                 QueryInfo[21] = tSRTeam;                          //服務團隊
                 QueryInfo[22] = dr["cSQPersonName"].ToString();     //SQ人員
                 QueryInfo[23] = dr["cIsSecondFix"].ToString();      //是否為二修
@@ -555,6 +598,21 @@ namespace OneService.Controllers
 
             var model = new ViewModelQuerySRProgress();
 
+            #region 服務案件種類
+            var ListSRCaseType = findSRIDTypeList(false);
+            ViewBag.ddl_cSRCaseType = ListSRCaseType;
+            #endregion
+
+            #region 狀態
+            var SRStatus = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRSTATUS", false);
+            ViewBag.ddl_cStatus = SRStatus;
+            #endregion
+
+            #region 報修管道
+            var ListSRPathWay = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPATH", false);
+            ViewBag.ddl_cSRPathWay = ListSRPathWay;
+            #endregion
+
             #region 服務團隊
             var selectTeamList = CMF.findSRTeamIDList(pCompanyCode, false);
             ViewBag.ddl_cTeamID = selectTeamList;
@@ -571,11 +629,11 @@ namespace OneService.Controllers
             //小類
             var SRTypeThrList = new List<SelectListItem>();
             SRTypeThrList.Add(new SelectListItem { Text = " ", Value = "" });
-            #endregion
 
             ViewBag.SRTypeOneList = SRTypeOneList;
             ViewBag.SRTypeSecList = SRTypeSecList;
             ViewBag.SRTypeThrList = SRTypeThrList;
+            #endregion
 
             return View(model);
         }
@@ -620,8 +678,8 @@ namespace OneService.Controllers
             string ttWhere = string.Empty;
             string ttJoin = string.Empty;
             string ttStrItem = string.Empty;
-            string tSRPathWay = string.Empty;           //報修管理
-            string tStatus = string.Empty;              //狀態
+            string tSRPathWayNote = string.Empty;       //報修管道
+            string tStatusNote = string.Empty;          //狀態
             string tSRType = string.Empty;              //報修類別
             string tSRProductSerial = string.Empty;     //產品序號資訊
             string tSRTeam = string.Empty;              //服務團隊
@@ -638,14 +696,50 @@ namespace OneService.Controllers
             #region 服務案件種類
             if (!string.IsNullOrEmpty(cSRCaseType))
             {
-                ttWhere += "AND M.cSRID LIKE N'%" + cSRCaseType + "%' ";
+                ttStrItem = "";
+                string[] tArySRCaseType = cSRCaseType.TrimEnd(',').Split(',');
+
+                if (tArySRCaseType.Length >= 0)
+                {
+                    ttStrItem = "AND (";
+                }
+
+                foreach (string tSRCaseType in tArySRCaseType)
+                {
+                    ttStrItem += " M.cSRID like N'%" + tSRCaseType + "%' or";
+                }
+
+                if (tArySRCaseType.Length >= 0)
+                {
+                    if (ttStrItem.EndsWith("or"))
+                    {
+                        ttStrItem = ttStrItem.Substring(0, ttStrItem.Length - 2); //去除最後一個or  
+                    }
+
+                    ttStrItem += ") ";
+                }
+
+                ttWhere += ttStrItem + Environment.NewLine;
             }
             #endregion
 
             #region 狀態
             if (!string.IsNullOrEmpty(cStatus))
             {
-                ttWhere += "AND M.cStatus = N'" + cStatus + "' ";
+                ttStrItem = "";
+                string[] tAryStatus = cStatus.TrimEnd(',').Split(',');
+
+                foreach (string tStatus in tAryStatus)
+                {
+                    ttStrItem += "N'" + tStatus + "',";
+                }
+
+                ttStrItem = ttStrItem.TrimEnd(',');
+
+                if (ttStrItem != "")
+                {
+                    ttWhere += "AND M.cStatus IN (" + ttStrItem + ") " + Environment.NewLine;
+                }
             }
             #endregion
 
@@ -664,77 +758,90 @@ namespace OneService.Controllers
             #region 客戶代號
             if (!string.IsNullOrEmpty(cCustomerID))
             {
-                ttWhere += "AND M.cCustomerID = '" + cCustomerID + "' ";
+                ttWhere += "AND M.cCustomerID = '" + cCustomerID + "' " + Environment.NewLine;
             }
             #endregion
 
             #region 客戶名稱
             if (!string.IsNullOrEmpty(cCustomerName))
             {
-                ttWhere += "AND M.cCustomerName LIKE N'%" + cCustomerName.Trim() + "%' ";
+                ttWhere += "AND M.cCustomerName LIKE N'%" + cCustomerName.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region SRID
             if (!string.IsNullOrEmpty(cSRID))
             {
-                ttWhere += "AND M.cSRID LIKE N'%" + cSRID.Trim() + "%' ";
+                ttWhere += "AND M.cSRID LIKE N'%" + cSRID.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region 報修人姓名
             if (!string.IsNullOrEmpty(cRepairName))
             {
-                ttWhere += "AND M.cRepairName LIKE N'%" + cRepairName.Trim() + "%' ";
+                ttWhere += "AND M.cRepairName LIKE N'%" + cRepairName.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region 報修管道
             if (!string.IsNullOrEmpty(cSRPathWay))
             {
-                ttWhere += "AND M.cSRPathWay = '" + cSRPathWay + "' ";
+                ttStrItem = "";
+                string[] tArySRPathWay = cSRPathWay.TrimEnd(',').Split(',');
+
+                foreach (string tSRPathWay in tArySRPathWay)
+                {
+                    ttStrItem += "N'" + tSRPathWay + "',";
+                }
+
+                ttStrItem = ttStrItem.TrimEnd(',');
+
+                if (ttStrItem != "")
+                {
+                    ttWhere += "AND M.cSRPathWay IN (" + ttStrItem + ") " + Environment.NewLine;
+                }
             }
-            #endregion
+            #endregion          
 
             #region L2工程師ERPID
             if (!string.IsNullOrEmpty(cMainEngineerID))
             {
-                ttWhere += "AND M.cMainEngineerID = '" + cMainEngineerID + "' ";
+                ttWhere += "AND M.cMainEngineerID = '" + cMainEngineerID + "' " + Environment.NewLine;
             }
             #endregion
 
             #region 指派工程師ERPID
             if (!string.IsNullOrEmpty(cAssEngineerID))
             {
-                ttWhere += "AND M.cAssEngineerID LIKE N'%" + cAssEngineerID.Trim() + "%' ";
+                ttWhere += "AND M.cAssEngineerID LIKE N'%" + cAssEngineerID.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region 技術主管ERPID
             if (!string.IsNullOrEmpty(cTechManagerID))
             {
-                ttWhere += "AND M.cTechManagerID LIKE N'%" + cTechManagerID.Trim() + "%' ";
+                ttWhere += "AND M.cTechManagerID LIKE N'%" + cTechManagerID.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region 報修類別-大類
             if (!string.IsNullOrEmpty(cSRTypeOne))
             {
-                ttWhere += "AND M.cSRTypeOne = '" + cSRTypeOne + "' ";
+                ttWhere += "AND M.cSRTypeOne = '" + cSRTypeOne + "' " + Environment.NewLine;
             }
             #endregion
 
             #region 報修類別-中類
             if (!string.IsNullOrEmpty(cSRTypeSec))
             {
-                ttWhere += "AND M.cSRTypeSec = '" + cSRTypeSec + "' ";
+                ttWhere += "AND M.cSRTypeSec = '" + cSRTypeSec + "' " + Environment.NewLine;
             }
             #endregion
 
             #region 報修類別-小類
             if (!string.IsNullOrEmpty(cSRTypeThr))
             {
-                ttWhere += "AND M.cSRTypeThr = '" + cSRTypeThr + "' ";
+                ttWhere += "AND M.cSRTypeThr = '" + cSRTypeThr + "' " + Environment.NewLine;
             }
             #endregion
 
@@ -764,28 +871,28 @@ namespace OneService.Controllers
                     ttStrItem += ") ";
                 }
 
-                ttWhere += ttStrItem;
+                ttWhere += ttStrItem + Environment.NewLine;
             }
             #endregion
 
             #region 產品序號
             if (!string.IsNullOrEmpty(cSerialID))
             {
-                ttWhere += "AND (P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' or P.cNewSerialID LIKE N'%" + cSerialID.Trim() + "%') ";
+                ttWhere += "AND (P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' or P.cNewSerialID LIKE N'%" + cSerialID.Trim() + "%') " + Environment.NewLine;
             }
             #endregion
 
             #region 產品機器型號
             if (!string.IsNullOrEmpty(cMaterialName))
             {
-                ttWhere += "AND P.cMaterialName LIKE N'%" + cMaterialName.Trim() + "%' ";
+                ttWhere += "AND P.cMaterialName LIKE N'%" + cMaterialName.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region Product Number
             if (!string.IsNullOrEmpty(cProductNumber))
             {
-                ttWhere += "AND P.cProductNumber LIKE N'%" + cProductNumber.Trim() + "%' ";
+                ttWhere += "AND P.cProductNumber LIKE N'%" + cProductNumber.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
@@ -816,8 +923,8 @@ namespace OneService.Controllers
 
             foreach (DataRow dr in dtProgress.Rows)
             {
-                tSRPathWay = CMF.TransSysParameterByList(tSRPathWay_List, dr["cSRPathWay"].ToString());
-                tStatus = CMF.TransSysParameterByList(tSRStatus_List, dr["cStatus"].ToString());
+                tSRPathWayNote = CMF.TransSysParameterByList(tSRPathWay_List, dr["cSRPathWay"].ToString());
+                tStatusNote = CMF.TransSysParameterByList(tSRStatus_List, dr["cStatus"].ToString());
                 tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
                 tSRType = CMF.TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
                 tSRProductSerial = CMF.TransProductSerial(dr["Products"].ToString());
@@ -835,14 +942,14 @@ namespace OneService.Controllers
                 QueryInfo[3] = dr["cDesc"].ToString();          //說明
                 QueryInfo[4] = tSRProductSerial;               //產品序號資訊
                 QueryInfo[5] = tSRTeam;                        //服務團隊
-                QueryInfo[6] = tSRPathWay;                     //報修管道
+                QueryInfo[6] = tSRPathWayNote;                 //報修管道
                 QueryInfo[7] = tSRType;                        //報修類別                
                 QueryInfo[8] = tMainEngineerID;                //L2工程師ERPID
                 QueryInfo[9] = tMainEngineerName;              //L2工程師姓名
                 QueryInfo[10] = tTechManagerID;                 //技術主管ERPID                    
                 QueryInfo[11] = tCreatedDate;                  //派單日期
                 QueryInfo[12] = tModifiedDate;                 //最後編輯日期
-                QueryInfo[13] = tStatus;                       //狀態                
+                QueryInfo[13] = tStatusNote;                   //狀態                
                 QueryInfo[14] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
 
                 QueryToList.Add(QueryInfo);
@@ -2041,12 +2148,17 @@ namespace OneService.Controllers
         /// <summary>
         /// 取得服務案件種類說明
         /// </summary>        
+        /// <param name="cEmptyOption">是否要產生「空白」選項(True.要 false.不要)</param>
         /// <returns></returns>
-        static public List<SelectListItem> findSRIDTypeList()
+        static public List<SelectListItem> findSRIDTypeList(bool cEmptyOption)
         {
             var tList = new List<SelectListItem>();
 
-            tList.Add(new SelectListItem { Text = "", Value = "" });
+            if (cEmptyOption)
+            {
+                tList.Add(new SelectListItem { Text = "", Value = "" });
+            }
+
             tList.Add(new SelectListItem { Text = "61_一般服務", Value = "61" });
             tList.Add(new SelectListItem { Text = "63_裝機服務", Value = "63" });
             tList.Add(new SelectListItem { Text = "65_定維服務", Value = "65" });
@@ -4650,7 +4762,7 @@ namespace OneService.Controllers
 
             #region 服務案件種類代號
             public string ddl_cSRCaseType { get; set; }
-            public List<SelectListItem> ListSRCaseType = findSRIDTypeList();
+            public List<SelectListItem> ListSRCaseType = findSRIDTypeList(true);
             #endregion
 
             #region 報修管道

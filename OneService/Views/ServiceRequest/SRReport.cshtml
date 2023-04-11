@@ -46,9 +46,19 @@
 									return data;
 								}
 							}
-							else if (column === 20) //將換行符號<br>換成excel可以識別的\n
+							else if (column === 2 || column === 20) //將換行符號<br>換成excel可以識別的\n
 							{
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
+							}
+							else if (column === 11 || column === 12)
+							{
+								if (data.substr(0, 1) == "0")  //若電話或手機，第一碼為0開頭時，前面要多加'，0才不會消失
+								{
+									return "'" + data;
+								}
+								else {
+									return data;
+								}
 							}
 							else
 								return data;
@@ -76,8 +86,13 @@
 							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56] //要顯示的欄位
 						},
 						customize: function (xlsx) {
-							addCustomNumberFormat(xlsx, '0');
+							addCustomNumberFormat(xlsx, '0');		//自定義格式為【0】
+							addCustomNumberFormat_Text(xlsx, '@@');	//自定義格式為【文字】
 							formatTargetColumn(xlsx, 'A');
+							formatTargetColumn(xlsx, 'B');
+							formatTargetColumn(xlsx, 'C');
+							formatTargetColumn(xlsx, 'L');
+							formatTargetColumn(xlsx, 'M');
 						}
 					}),
 				],
@@ -103,16 +118,36 @@
 			$(celXfsElement).attr("count", "66"); //(1.2.3版)官方提供0-64共65種格式，在此自己新增加一種
 		}
 
-		function formatTargetColumn(xlsx, col) {
-			var sheet = xlsx.xl.worksheets['sheet1.xml'];
+		function addCustomNumberFormat_Text(xlsx, numberFormat) {
+		// this adds a new custom number format to the Excel "styles" document:
+		var numFmtsElement = xlsx.xl['styles.xml'].getElementsByTagName('numFmts')[0];
+		// assume 6 custom number formats already exist, and next available ID is 176:
+		var numFmtElement = '<numFmt numFmtId="177" formatCode="' + numberFormat + '"/>';
+		$(numFmtsElement).append(numFmtElement);
+		$(numFmtsElement).attr("count", "8"); // increment the count
 
-			if (col == "A") {
-				$('row c[r^="' + col + '"]', sheet).attr('s', '65'); //使用自定義格式
-			}
-			else {
-				$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
-			}
+		// now add a new "cellXfs" cell formatter, which uses our new number format (numFmt 176):
+		var celXfsElement = xlsx.xl['styles.xml'].getElementsByTagName('cellXfs');
+		var cellStyle = '<xf numFmtId="177" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"'
+			+ ' applyFont="1" applyFill="1" applyBorder="1"/>';
+		// this will be the 8th "xf" element - and will therefore have an index of "7", when we use it later:
+		$(celXfsElement).append(cellStyle);
+		$(celXfsElement).attr("count", "67"); //(1.2.3版)官方提供0-64共65種格式，在此自己新增加一種
+	}
+
+	function formatTargetColumn(xlsx, col) {
+		var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+		if (col == "A") {
+			$('row c[r^="' + col + '"]', sheet).attr('s', '65'); //使用自定義格式【0】
 		}
+		else if (col == "B" || col == "C" || col == "L" || col == "M") {
+			$('row c[r^="' + col + '"]', sheet).attr('s', '66'); //使用自定義格式【文字】
+		}
+		else {
+			$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
+		}
+	}
 
 		//SAP客戶代號/客戶名稱查詢
 		//compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
@@ -209,6 +244,55 @@
 				}
 			})
 		}
+
+		//-----↓↓↓↓↓報修類別 ↓↓↓↓↓-----
+		//第一階(大類) onChange
+		function onChangecSRTypeOne() {
+
+			//先清空下拉選單選項，才不會一直append
+			$('#ddl_cSRTypeSec').empty();
+			$('#ddl_cSRTypeThr').empty();
+
+			$.ajax({
+				url: '@Url.Action("findSRTypeSecList", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					keyword: $('#ddl_cSRTypeOne').val(),
+				},
+				success: function (result) {
+					$.each(result, function (index, obj) {
+						$("#ddl_cSRTypeSec").append(
+							$('<option></option>').val(obj.value).html(obj.text)
+						);
+					});
+				}
+			});
+		}
+
+		//第二階(中類) onChange
+		function onChangecSRTypeSec() {
+
+			//先清空下拉選單選項，才不會一直append
+			$('#ddl_cSRTypeThr').empty();
+
+			$.ajax({
+				url: '@Url.Action("findSRTypeThrList", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					keyword: $('#ddl_cSRTypeSec').val(),
+				},
+				success: function (result) {
+					$.each(result, function (index, obj) {
+						$("#ddl_cSRTypeThr").append(
+							$('<option></option>').val(obj.value).html(obj.text)
+						);
+					});
+				}
+			});
+		}
+		//-----↑↑↑↑↑報修類別 ↑↑↑↑↑-----
 		
 		//查詢
 		function Query() {
@@ -237,13 +321,17 @@
 			var tbx_QueryMaterialName = $("#tbx_QueryMaterialName");		//更換零件料號說明
 			var tbx_QueryOLDCT = $("#tbx_QueryOLDCT");					//OLDCT
 			var tbx_QueryNEWCT = $("#tbx_QueryNEWCT");					//NEWCT
-
+			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');					//報修類別-大類
+			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');					//報修類別-中類
+			var ddl_cSRTypeThr = $('#ddl_cSRTypeThr');					//報修類別-小類
 
 			if (tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" && tbx_cStartFinishTime.val() == "" && tbx_cEndFinishTime.val() == "" && 
 			    tbx_QuerySRID.val() == "" && tbx_QueryCustomerID.val() == "" && tbx_QueryRepairName.val() == "" && tbx_QueryRepairAddress.val() == "" &&
 				tbx_QuerySerialID.val() == "" && tbx_QueryPID.val() == ""  && TeamID == "" && Status == "" && SRType == "" && tbx_QueryEngineerID.val() == "" &&
 				tbx_QueryContractID.val() == "" && tbx_QuerySO.val() == "" && tbx_QueryXCHP.val() == "" && tbx_QueryHPCT.val() == "" &&
-				tbx_QueryMaterialID.val() == "" && tbx_QueryMaterialName.val() == "" && tbx_QueryOLDCT.val() == "" && tbx_QueryNEWCT.val() == "") {
+				tbx_QueryMaterialID.val() == "" && tbx_QueryMaterialName.val() == "" && tbx_QueryOLDCT.val() == "" && tbx_QueryNEWCT.val() == "" && ddl_cSRTypeOne.val() == "" &&
+				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
+				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
 				tMsg += "請至少輸入一項查詢條件！\n";
 			}
 			
@@ -272,7 +360,8 @@
 				searchSRReport(tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cStartFinishTime.val(), tbx_cEndFinishTime.val(),
 					tbx_QuerySRID.val(), tbx_QueryCustomerID.val(), tbx_QueryRepairName.val(), tbx_QueryRepairAddress.val(),
 					tbx_QuerySerialID.val(), tbx_QueryPID.val(), TeamID, Status, SRType, tbx_QueryEngineerID.val(), tbx_QueryContractID.val(), tbx_QuerySO.val(),
-					tbx_QueryXCHP.val(), tbx_QueryHPCT.val(), tbx_QueryMaterialID.val(), tbx_QueryMaterialName.val(), tbx_QueryOLDCT.val(), tbx_QueryNEWCT.val());
+					tbx_QueryXCHP.val(), tbx_QueryHPCT.val(), tbx_QueryMaterialID.val(), tbx_QueryMaterialName.val(), tbx_QueryOLDCT.val(), tbx_QueryNEWCT.val(),
+					ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val());
 			}
 
 			return true;
@@ -280,7 +369,7 @@
 
 		//查詢結果
 		function searchSRReport(StartCreatedDate, EndCreatedDate, StartFinishTime, EndFinishTime, SRID, CustomerID, RepairName, RepairAddress,
-			SerialID, PID, TeamID, Status, SRType, EngineerID, ContractID, SO, XCHP, HPCT, MaterialID, MaterialName, OLDCT, NEWCT) {
+			SerialID, PID, TeamID, Status, SRType, EngineerID, ContractID, SO, XCHP, HPCT, MaterialID, MaterialName, OLDCT, NEWCT, cSRTypeOne, cSRTypeSec, cSRTypeThr) {
 			$("#dataDiv").html('');
 			$.ajax({
 				url: '@Url.Action("SRReportResult", "ServiceRequest")',
@@ -308,7 +397,10 @@
 					MaterialID: MaterialID,
 					MaterialName: MaterialName, 
 					OLDCT: OLDCT,
-					NEWCT: NEWCT
+					NEWCT: NEWCT,
+					cSRTypeOne: cSRTypeOne,
+					cSRTypeSec: cSRTypeSec,
+					cSRTypeThr: cSRTypeThr
 				},
 				success: function (result) {
 				},
@@ -344,6 +436,9 @@
 			$("#ddl_TeamID").val("").trigger('chosen:updated');
 			$("#ddl_Status").val("").trigger('chosen:updated');
 			$("#ddl_SRType").val("").trigger('chosen:updated');
+			$('#ddl_cSRTypeOne').val("");
+			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
+			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
 		}
 	</script>
 }
@@ -489,6 +584,14 @@
 							</div>
 						</div>
 						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">報修類別</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_cSRTypeOne", (IEnumerable<SelectListItem>)ViewBag.SRTypeOneList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeOne();" })
+								@Html.DropDownList("ddl_cSRTypeSec", (IEnumerable<SelectListItem>)ViewBag.SRTypeSecList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeSec();" })
+								@Html.DropDownList("ddl_cSRTypeThr", (IEnumerable<SelectListItem>)ViewBag.SRTypeThrList, new { @class = "form-control" })
+							</div>							
+						</div>				
+						<div class="form-group row">
 							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
 							<button class="btn btn-default btn-lg" type="button" onclick="clearSRReport();"><i class="fa fa-trash"></i> 清 除 </button>
 							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
@@ -579,65 +682,65 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-																				<tr id='tr@(count)'>
-																					<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-																					<td>@Html.Raw(QueryInfo[2])</td>
-																					<td>@Html.Raw(QueryInfo[3])</td>
-																					<td>@Html.Raw(QueryInfo[4])</td>
-																					<td>@Html.Raw(QueryInfo[5])</td>
-																					<td>@Html.Raw(QueryInfo[6])</td>
-																					<td>@Html.Raw(QueryInfo[7])</td>
-																					<td>@Html.Raw(QueryInfo[8])</td>
-																					<td>@Html.Raw(QueryInfo[9])</td>
-																					<td>@Html.Raw(QueryInfo[10])</td>
-																					<td>@Html.Raw(QueryInfo[11])</td>
-																					<td>@Html.Raw(QueryInfo[12])</td>
-																					<td>@Html.Raw(QueryInfo[13])</td>
-																					<td>@Html.Raw(QueryInfo[14])</td>
-																					<td>@Html.Raw(QueryInfo[15])</td>
-																					<td>@Html.Raw(QueryInfo[16])</td>
-																					<td>@Html.Raw(QueryInfo[17])</td>
-																					<td>@Html.Raw(QueryInfo[18])</td>
-																					<td>@Html.Raw(QueryInfo[19])</td>
-																					<td>@Html.Raw(QueryInfo[20])</td>
-																					<td>@Html.Raw(QueryInfo[21])</td>
-																					<td>@Html.Raw(QueryInfo[22])</td>
-																					<td>@Html.Raw(QueryInfo[23])</td>
-																					<td>@Html.Raw(QueryInfo[24])</td>
-																					<td>@Html.Raw(QueryInfo[25])</td>
-																					<td>@Html.Raw(QueryInfo[26])</td>
-																					<td>@Html.Raw(QueryInfo[27])</td>
-																					<td>@Html.Raw(QueryInfo[28])</td>
-																					<td>@Html.Raw(QueryInfo[29])</td>
-																					<td>@Html.Raw(QueryInfo[30])</td>
-																					<td>@Html.Raw(QueryInfo[31])</td>
-																					<td>@Html.Raw(QueryInfo[32])</td>
-																					<td>@Html.Raw(QueryInfo[33])</td>
-																					<td>@Html.Raw(QueryInfo[34])</td>
-																					<td>@Html.Raw(QueryInfo[35])</td>
-																					<td>@Html.Raw(QueryInfo[36])</td>
-																					<td><a href="@QueryInfo[37]" target="_blank">@QueryInfo[37]</a></td>										
-																					<td>@Html.Raw(QueryInfo[38])</td>
-																					<td>@Html.Raw(QueryInfo[39])</td>
-																					<td>@Html.Raw(QueryInfo[40])</td>
-																					<td>@Html.Raw(QueryInfo[41])</td>
-																					<td>@Html.Raw(QueryInfo[42])</td>
-																					<td>@Html.Raw(QueryInfo[43])</td>
-																					<td>@Html.Raw(QueryInfo[44])</td>
-																					<td>@Html.Raw(QueryInfo[45])</td>
-																					<td>@Html.Raw(QueryInfo[46])</td>
-																					<td>@Html.Raw(QueryInfo[47])</td>
-																					<td>@Html.Raw(QueryInfo[48])</td>
-																					<td>@Html.Raw(QueryInfo[49])</td>
-																					<td>@Html.Raw(QueryInfo[50])</td>
-																					<td>@Html.Raw(QueryInfo[51])</td>
-																					<td>@Html.Raw(QueryInfo[52])</td>
-																					<td>@Html.Raw(QueryInfo[53])</td>
-																					<td>@Html.Raw(QueryInfo[54])</td>
-																					<td>@Html.Raw(QueryInfo[55])</td>
-																					<td>@Html.Raw(QueryInfo[56])</td>
-																					<td>@Html.Raw(QueryInfo[57])</td>
-																				</tr>
+									<tr id='tr@(count)'>
+										<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+										<td>@Html.Raw(QueryInfo[2])</td>
+										<td>@Html.Raw(QueryInfo[3])</td>
+										<td>@Html.Raw(QueryInfo[4])</td>
+										<td>@Html.Raw(QueryInfo[5])</td>
+										<td>@Html.Raw(QueryInfo[6])</td>
+										<td>@Html.Raw(QueryInfo[7])</td>
+										<td>@Html.Raw(QueryInfo[8])</td>
+										<td>@Html.Raw(QueryInfo[9])</td>
+										<td>@Html.Raw(QueryInfo[10])</td>
+										<td>@Html.Raw(QueryInfo[11])</td>
+										<td>@Html.Raw(QueryInfo[12])</td>
+										<td>@Html.Raw(QueryInfo[13])</td>
+										<td>@Html.Raw(QueryInfo[14])</td>
+										<td>@Html.Raw(QueryInfo[15])</td>
+										<td>@Html.Raw(QueryInfo[16])</td>
+										<td>@Html.Raw(QueryInfo[17])</td>
+										<td>@Html.Raw(QueryInfo[18])</td>
+										<td>@Html.Raw(QueryInfo[19])</td>
+										<td>@Html.Raw(QueryInfo[20])</td>
+										<td>@Html.Raw(QueryInfo[21])</td>
+										<td>@Html.Raw(QueryInfo[22])</td>
+										<td>@Html.Raw(QueryInfo[23])</td>
+										<td>@Html.Raw(QueryInfo[24])</td>
+										<td>@Html.Raw(QueryInfo[25])</td>
+										<td>@Html.Raw(QueryInfo[26])</td>
+										<td>@Html.Raw(QueryInfo[27])</td>
+										<td>@Html.Raw(QueryInfo[28])</td>
+										<td>@Html.Raw(QueryInfo[29])</td>
+										<td>@Html.Raw(QueryInfo[30])</td>
+										<td>@Html.Raw(QueryInfo[31])</td>
+										<td>@Html.Raw(QueryInfo[32])</td>
+										<td>@Html.Raw(QueryInfo[33])</td>
+										<td>@Html.Raw(QueryInfo[34])</td>
+										<td>@Html.Raw(QueryInfo[35])</td>
+										<td>@Html.Raw(QueryInfo[36])</td>
+										<td><a href="@QueryInfo[37]" target="_blank">@QueryInfo[37]</a></td>										
+										<td>@Html.Raw(QueryInfo[38])</td>
+										<td>@Html.Raw(QueryInfo[39])</td>
+										<td>@Html.Raw(QueryInfo[40])</td>
+										<td>@Html.Raw(QueryInfo[41])</td>
+										<td>@Html.Raw(QueryInfo[42])</td>
+										<td>@Html.Raw(QueryInfo[43])</td>
+										<td>@Html.Raw(QueryInfo[44])</td>
+										<td>@Html.Raw(QueryInfo[45])</td>
+										<td>@Html.Raw(QueryInfo[46])</td>
+										<td>@Html.Raw(QueryInfo[47])</td>
+										<td>@Html.Raw(QueryInfo[48])</td>
+										<td>@Html.Raw(QueryInfo[49])</td>
+										<td>@Html.Raw(QueryInfo[50])</td>
+										<td>@Html.Raw(QueryInfo[51])</td>
+										<td>@Html.Raw(QueryInfo[52])</td>
+										<td>@Html.Raw(QueryInfo[53])</td>
+										<td>@Html.Raw(QueryInfo[54])</td>
+										<td>@Html.Raw(QueryInfo[55])</td>
+										<td>@Html.Raw(QueryInfo[56])</td>
+										<td>@Html.Raw(QueryInfo[57])</td>
+									</tr>
 								}
 							}
 						}

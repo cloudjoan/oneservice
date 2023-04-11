@@ -28,8 +28,11 @@ namespace OneService.Models
         public string CSrprocessWay { get; set; } = null!;
         public string CMaserviceType { get; set; } = null!;
         public string CSrtypeOne { get; set; } = null!;
+        public string CSrtypeOneNote { get; set; } = null!;
         public string CSrtypeSec { get; set; } = null!;
+        public string CSrtypeSecNote { get; set; } = null!;
         public string CSrtypeThr { get; set; } = null!;
+        public string CSrtypeThrNote { get; set; } = null!;
         public string Pid { get; set; } = null!;
         public string Pn { get; set; } = null!;
         public string CSerialId { get; set; } = null!;
