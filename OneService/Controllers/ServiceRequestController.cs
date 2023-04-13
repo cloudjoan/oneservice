@@ -686,6 +686,7 @@ namespace OneService.Controllers
             string tMainEngineerID = string.Empty;      //L2工程師ERPID
             string tMainEngineerName = string.Empty;    //L2工程師姓名            
             string tTechManagerID = string.Empty;       //技術主管ERPID
+            string tCreatedUserName = string.Empty;     //派單人員
             string tCreatedDate = string.Empty;         //派單日期
             string tModifiedDate = string.Empty;        //最後編輯日期            
 
@@ -931,26 +932,29 @@ namespace OneService.Controllers
                 tMainEngineerID = string.IsNullOrEmpty(dr["cMainEngineerID"].ToString()) ? "" : dr["cMainEngineerID"].ToString();
                 tMainEngineerName = string.IsNullOrEmpty(dr["cMainEngineerName"].ToString()) ? "" : dr["cMainEngineerName"].ToString();
                 tTechManagerID = string.IsNullOrEmpty(dr["cTechManagerID"].ToString()) ? "" : dr["cTechManagerID"].ToString();
+                tCreatedUserName = string.IsNullOrEmpty(dr["CreatedUserName"].ToString()) ? "" : dr["CreatedUserName"].ToString();
                 tCreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
 
-                string[] QueryInfo = new string[15];                
+                string[] QueryInfo = new string[17];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
-                QueryInfo[1] = dr["cCustomerName"].ToString();   //客戶
-                QueryInfo[2] = dr["cRepairName"].ToString();     //客戶報修人
-                QueryInfo[3] = dr["cDesc"].ToString();          //說明
-                QueryInfo[4] = tSRProductSerial;               //產品序號資訊
-                QueryInfo[5] = tSRTeam;                        //服務團隊
-                QueryInfo[6] = tSRPathWayNote;                 //報修管道
-                QueryInfo[7] = tSRType;                        //報修類別                
-                QueryInfo[8] = tMainEngineerID;                //L2工程師ERPID
-                QueryInfo[9] = tMainEngineerName;              //L2工程師姓名
-                QueryInfo[10] = tTechManagerID;                 //技術主管ERPID                    
-                QueryInfo[11] = tCreatedDate;                  //派單日期
-                QueryInfo[12] = tModifiedDate;                 //最後編輯日期
-                QueryInfo[13] = tStatusNote;                   //狀態                
-                QueryInfo[14] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
+                QueryInfo[1] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
+                QueryInfo[2] = dr["cCustomerName"].ToString();   //客戶
+                QueryInfo[3] = dr["cRepairName"].ToString();     //客戶報修人
+                QueryInfo[4] = dr["cDesc"].ToString();          //說明
+                QueryInfo[5] = dr["cDelayReason"].ToString();    //延遲結案原因
+                QueryInfo[6] = tSRProductSerial;               //產品序號資訊
+                QueryInfo[7] = tSRTeam;                        //服務團隊
+                QueryInfo[8] = tSRPathWayNote;                 //報修管道
+                QueryInfo[9] = tSRType;                        //報修類別                
+                QueryInfo[10] = tMainEngineerID;               //L2工程師ERPID
+                QueryInfo[11] = tMainEngineerName;             //L2工程師姓名
+                QueryInfo[12] = tTechManagerID;                //技術主管ERPID                    
+                QueryInfo[13] = tCreatedUserName;              //派單人員
+                QueryInfo[14] = tCreatedDate;                  //派單日期
+                QueryInfo[15] = tModifiedDate;                 //最後編輯日期
+                QueryInfo[16] = tStatusNote;                   //狀態                
 
                 QueryToList.Add(QueryInfo);
             }
