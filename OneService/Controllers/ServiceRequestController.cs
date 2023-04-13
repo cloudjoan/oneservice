@@ -650,6 +650,7 @@ namespace OneService.Controllers
         /// <param name="cCustomerID">客戶代號</param>
         /// <param name="cCustomerName">客戶名稱</param>
         /// <param name="cSRID">SRID</param>
+        /// <param name="CreatedUserName">派單人員</param>
         /// <param name="cRepairName">報修人姓名</param>
         /// <param name="cSRPathWay">報修管道</param>
         /// <param name="cMainEngineerID">L2工程師ERPID</param>
@@ -664,7 +665,7 @@ namespace OneService.Controllers
         /// <param name="cProductNumber">Product Number</param>
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
-                                                 string cCustomerID, string cCustomerName, string cSRID, string cRepairName, string cSRPathWay, string cMainEngineerID, 
+                                                 string cCustomerID, string cCustomerName, string cSRID, string CreatedUserName, string cRepairName, string cSRPathWay, string cMainEngineerID, 
                                                  string cAssEngineerID, string cTechManagerID, string cTeamID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
                                                  string cSerialID, string cMaterialName, string cProductNumber)
         {            
@@ -774,6 +775,13 @@ namespace OneService.Controllers
             if (!string.IsNullOrEmpty(cSRID))
             {
                 ttWhere += "AND M.cSRID LIKE N'%" + cSRID.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 派單人員
+            if (!string.IsNullOrEmpty(CreatedUserName))
+            {
+                ttWhere += "AND M.CreatedUserName LIKE N'%" + CreatedUserName.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
