@@ -1942,9 +1942,14 @@ namespace OneService.Controllers
                     }
                     else
                     {
+                        if (string.IsNullOrEmpty(tLog))
+                        {
+                            tLog = "報修資訊主檔無變更！";
+                        }
+
                         #region 紀錄修改log
                         TbOneLog logBean = new TbOneLog
-                        {
+                        {                            
                             CSrid = pSRID,
                             EventName = "SaveGenerallySR",
                             Log = tLog,
