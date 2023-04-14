@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "9lAxS5GVwRmvygG9a4nTIjom2q+y3M4HcYbXNI1oxqU=",
+  "Hash": "SHXFbfg2EEZ4pVa/31sEOuz5wU9iAm77UWg5i7axGtM=",
   "Source": "OneService",
   "BasePath": "_content/OneService",
   "Mode": "Default",
@@ -2395,6 +2395,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\files\\6757e3f8-e05b-4500-ac86-bd20cbb147be.txt"
+    },
+    {
+      "Identity": "D:\\GIT\\oneservice\\OneService\\wwwroot\\files\\b4d3f01d-b938-475f-9124-81da786b2691.png",
+      "SourceId": "OneService",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\GIT\\oneservice\\OneService\\wwwroot\\",
+      "BasePath": "_content/OneService",
+      "RelativePath": "files/b4d3f01d-b938-475f-9124-81da786b2691.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\files\\b4d3f01d-b938-475f-9124-81da786b2691.png"
     },
     {
       "Identity": "D:\\GIT\\oneservice\\OneService\\wwwroot\\files\\cc8ec610-0f61-443e-b6a3-cf35a8c45000.PDF",

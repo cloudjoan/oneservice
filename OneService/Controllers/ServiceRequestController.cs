@@ -1242,8 +1242,36 @@ namespace OneService.Controllers
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
             string tAttachURLName = string.Empty;
+            string tLog = string.Empty;
+
             string OldCStatus = string.Empty;
+            string OldCCustomerName = string.Empty;            
+            string OldCCustomerId = string.Empty;
+            string OldCDesc = string.Empty;
+            string OldCNotes = string.Empty;
+            string OldCAttachement = string.Empty;
+            string OldCMaserviceType = string.Empty;
+            string OldCSrtypeOne = string.Empty;
+            string OldCSrtypeSec = string.Empty;
+            string OldCSrtypeThr = string.Empty;
+            string OldCSrpathWay = string.Empty;
+            string OldCSrprocessWay = string.Empty;
+            string OldCDelayReason = string.Empty;
+            string OldCIsSecondFix = string.Empty;
+            string OldCRepairName = string.Empty;
+            string OldCRepairAddress = string.Empty;
+            string OldCRepairPhone = string.Empty;
+            string OldCRepairMobile = string.Empty;
+            string OldCRepairEmail = string.Empty;
+            string OldCTeamId = string.Empty;
+            string OldCSqpersonId = string.Empty;
+            string OldCSqpersonName = string.Empty;
+            string OldCSalesName = string.Empty;
+            string OldCSalesId = string.Empty;
+            string OldCMainEngineerName = string.Empty;
             string OldCMainEngineerId = string.Empty;
+            string OldCAssEngineerId = string.Empty;
+            string OldCTechManagerId = string.Empty;
 
             string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
             string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
@@ -1483,11 +1511,95 @@ namespace OneService.Controllers
                 }
                 else
                 {
-                    #region 修改主檔                    
-                    //主表資料
-                    OldCStatus = beanNowM.CStatus;
-                    OldCMainEngineerId = beanNowM.CMainEngineerId;
+                    #region 修改主檔
 
+                    #region 紀錄舊值
+                    OldCStatus = beanNowM.CStatus;
+                    tLog += CMF.getNewAndOldLog("狀態", OldCStatus, CStatus);
+
+                    OldCCustomerName = beanNowM.CCustomerName;
+                    tLog += CMF.getNewAndOldLog("客戶名稱", OldCCustomerName, CCustomerName);
+
+                    OldCCustomerId = beanNowM.CCustomerId;
+                    tLog += CMF.getNewAndOldLog("客戶ID", OldCCustomerId, CCustomerId);
+
+                    OldCDesc = beanNowM.CDesc;
+                    tLog += CMF.getNewAndOldLog("說明", OldCDesc, CDesc);
+
+                    OldCNotes = beanNowM.CNotes;
+                    tLog += CMF.getNewAndOldLog("詳細描述", OldCNotes, CNotes);
+
+                    OldCAttachement = beanNowM.CAttachement;
+                    tLog += CMF.getNewAndOldLog("檢附文件", OldCAttachement, CAttach);
+
+                    OldCMaserviceType = beanNowM.CMaserviceType;
+                    tLog += CMF.getNewAndOldLog("維護服務種類", OldCMaserviceType, CMaserviceType);
+
+                    OldCSrtypeOne = beanNowM.CSrtypeOne;
+                    tLog += CMF.getNewAndOldLog("報修類別(大類)", OldCSrtypeOne, CSrtypeOne);
+
+                    OldCSrtypeSec = beanNowM.CSrtypeSec;
+                    tLog += CMF.getNewAndOldLog("報修類別(中類)", OldCSrtypeSec, CSrtypeSec);
+
+                    OldCSrtypeThr = beanNowM.CSrtypeThr;
+                    tLog += CMF.getNewAndOldLog("報修類別(中類)", OldCSrtypeThr, CSrtypeThr);
+
+                    OldCSrpathWay = beanNowM.CSrpathWay;
+                    tLog += CMF.getNewAndOldLog("報修管道", OldCSrpathWay, CSrpathWay);
+
+                    OldCSrprocessWay = beanNowM.CSrprocessWay;
+                    tLog += CMF.getNewAndOldLog("處理方式", OldCSrprocessWay, CSrprocessWay);
+
+                    OldCDelayReason = beanNowM.CDelayReason;
+                    tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
+
+                    OldCIsSecondFix = beanNowM.CIsSecondFix;
+                    tLog += CMF.getNewAndOldLog("是否為二修", OldCIsSecondFix, CIsSecondFix);
+
+                    OldCRepairName = beanNowM.CRepairName;
+                    tLog += CMF.getNewAndOldLog("姓名(報修人)", OldCRepairName, CRepairName);
+
+                    OldCRepairAddress = beanNowM.CRepairAddress;
+                    tLog += CMF.getNewAndOldLog("地址(報修人)", OldCRepairAddress, CRepairAddress);
+
+                    OldCRepairPhone = beanNowM.CRepairPhone;
+                    tLog += CMF.getNewAndOldLog("電話(報修人)", OldCRepairPhone, CRepairPhone);
+
+                    OldCRepairMobile = beanNowM.CRepairMobile;
+                    tLog += CMF.getNewAndOldLog("手機(報修人)", OldCRepairMobile, CRepairMobile);
+
+                    OldCRepairEmail = beanNowM.CRepairEmail;
+                    tLog += CMF.getNewAndOldLog("Email(報修人)", OldCRepairEmail, CRepairEmail);
+
+                    OldCTeamId = beanNowM.CTeamId;
+                    tLog += CMF.getNewAndOldLog("服務團隊", OldCTeamId, CTeamId);
+
+                    OldCSqpersonId = beanNowM.CSqpersonId;
+                    tLog += CMF.getNewAndOldLog("SQ人員ID", OldCSqpersonId, CSqpersonId);
+
+                    OldCSqpersonName = beanNowM.CSqpersonName;
+                    tLog += CMF.getNewAndOldLog("SQ人員名稱", OldCSqpersonName, CSqpersonName);
+
+                    OldCSalesName = beanNowM.CSalesName;
+                    tLog += CMF.getNewAndOldLog("計費業務姓名", OldCSalesName, CSalesName);
+
+                    OldCSalesId = beanNowM.CSalesId;
+                    tLog += CMF.getNewAndOldLog("計費業務ERPID", OldCSalesId, CSalesId);
+
+                    OldCMainEngineerName = beanNowM.CMainEngineerName;
+                    tLog += CMF.getNewAndOldLog("L2工程師姓名", OldCMainEngineerName, CMainEngineerName);
+
+                    OldCMainEngineerId = beanNowM.CMainEngineerId;
+                    tLog += CMF.getNewAndOldLog("L2工程師ERPID", OldCMainEngineerId, CMainEngineerId);
+
+                    OldCAssEngineerId = beanNowM.CAssEngineerId;
+                    tLog += CMF.getNewAndOldLog("指派工程師ERPID", OldCAssEngineerId, CAssEngineerId);
+
+                    OldCTechManagerId = beanNowM.CTechManagerId;
+                    tLog += CMF.getNewAndOldLog("技術主管ERPID", OldCTechManagerId, CTechManagerId);
+                    #endregion
+
+                    //主表資料
                     beanNowM.CStatus = CStatus;
                     beanNowM.CCustomerName = CCustomerName;
                     beanNowM.CCustomerId = CCustomerId;                    
@@ -1530,7 +1642,16 @@ namespace OneService.Controllers
                     #region -----↓↓↓↓↓客戶聯絡窗口資訊↓↓↓↓↓-----
 
                     #region 刪除明細                    
-                    dbOne.TbOneSrdetailContacts.RemoveRange(dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+                    //dbOne.TbOneSrdetailContacts.RemoveRange(dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+
+                    var beansDCon = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    foreach(var beanDCon in beansDCon)
+                    {
+                        beanDCon.Disabled = 1;
+                        beanDCon.ModifiedDate = DateTime.Now;
+                        beanDCon.ModifiedUserName = LoginUser_Name;
+                    }
                     #endregion
 
                     #region 新增【客戶聯絡窗口資訊】明細
@@ -1567,7 +1688,16 @@ namespace OneService.Controllers
                     #region -----↓↓↓↓↓產品序號資訊↓↓↓↓↓-----
 
                     #region 刪除明細                    
-                    dbOne.TbOneSrdetailProducts.RemoveRange(dbOne.TbOneSrdetailProducts.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+                    //dbOne.TbOneSrdetailProducts.RemoveRange(dbOne.TbOneSrdetailProducts.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+
+                    var beansDPro = dbOne.TbOneSrdetailProducts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    foreach (var beanDPro in beansDPro)
+                    {
+                        beanDPro.Disabled = 1;
+                        beanDPro.ModifiedDate = DateTime.Now;
+                        beanDPro.ModifiedUserName = LoginUser_Name;
+                    }
                     #endregion
 
                     #region 新增明細
@@ -1606,7 +1736,7 @@ namespace OneService.Controllers
                     #region -----↓↓↓↓↓保固SLA資訊↓↓↓↓↓-----
 
                     #region 刪除明細
-                    dbOne.TbOneSrdetailWarranties.RemoveRange(dbOne.TbOneSrdetailWarranties.Where(x => x.CSrid == pSRID));
+                    dbOne.TbOneSrdetailWarranties.RemoveRange(dbOne.TbOneSrdetailWarranties.Where(x => x.CSrid == pSRID));                    
                     #endregion
 
                     #region 新增明細
@@ -1664,7 +1794,16 @@ namespace OneService.Controllers
                     #region -----↓↓↓↓↓處理與工時紀錄↓↓↓↓↓-----
 
                     #region 刪除明細
-                    dbOne.TbOneSrdetailRecords.RemoveRange(dbOne.TbOneSrdetailRecords.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+                    //dbOne.TbOneSrdetailRecords.RemoveRange(dbOne.TbOneSrdetailRecords.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+
+                    var beansDRec = dbOne.TbOneSrdetailRecords.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    foreach (var beanDRec in beansDRec)
+                    {
+                        beanDRec.Disabled = 1;
+                        beanDRec.ModifiedDate = DateTime.Now;
+                        beanDRec.ModifiedUserName = LoginUser_Name;
+                    }
                     #endregion
 
                     #region 新增明細
@@ -1726,7 +1865,16 @@ namespace OneService.Controllers
                     #region -----↓↓↓↓↓零件更換資訊↓↓↓↓↓-----
 
                     #region 刪除明細                   
-                    dbOne.TbOneSrdetailPartsReplaces.RemoveRange(dbOne.TbOneSrdetailPartsReplaces.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+                    //dbOne.TbOneSrdetailPartsReplaces.RemoveRange(dbOne.TbOneSrdetailPartsReplaces.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+
+                    var beansDPar = dbOne.TbOneSrdetailPartsReplaces.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    foreach (var beanDPar in beansDPar)
+                    {
+                        beanDPar.Disabled = 1;
+                        beanDPar.ModifiedDate = DateTime.Now;
+                        beanDPar.ModifiedUserName = LoginUser_Name;
+                    }
                     #endregion
 
                     #region 新增明細
@@ -1799,7 +1947,7 @@ namespace OneService.Controllers
                         {
                             CSrid = pSRID,
                             EventName = "SaveGenerallySR",
-                            Log = "SR狀態_舊值: " + OldCStatus + "; 新值: " + CStatus,
+                            Log = tLog,
                             CreatedUserName = LoginUser_Name,
                             CreatedDate = DateTime.Now
                         };

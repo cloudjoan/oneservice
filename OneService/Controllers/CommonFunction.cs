@@ -2484,6 +2484,30 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region log紀錄(新、舊值對照)
+        /// <summary>
+        /// log紀錄(新、舊值對照)
+        /// </summary>
+        /// <param name="tFieldName">欄位名稱</param>
+        /// <param name="tOldValue">舊值</param>
+        /// <param name="tNewValue">新值</param>
+        /// <returns></returns>
+        public string getNewAndOldLog(string tFieldName, string tOldValue , string tNewValue)
+        {
+            string tLog = string.Empty;
+
+            tOldValue = string.IsNullOrEmpty(tOldValue) ? "" : tOldValue;
+            tNewValue = string.IsNullOrEmpty(tNewValue) ? "" : tNewValue;
+
+            if (tOldValue != tNewValue)
+            {
+                tLog = tFieldName + "_舊值【 " + tOldValue + "】 新值【 " + tNewValue + "】" + Environment.NewLine;
+            }
+
+            return tLog;
+        }
+        #endregion
+
         #region 寫log 
         /// <summary>
         /// 寫log
