@@ -407,10 +407,15 @@
 				Msg += "您未下拉選取【業務祕書】，請輸入關鍵字後再重新選取！\n";
 			}
 
-             //明細判斷
-			if ($("#tablePR tr").length == 1) {
-				Msg += "請至少新增一筆【產品序號資訊】明細！\n";
+            //明細判斷
+			if ($("#tableCO tr").length == 1) {
+				Msg += "請至少新增一筆【客戶聯絡窗口資訊】明細！\n";
 			}			
+
+			//明細判斷
+			if ($("#tableMI tr").length == 1) {
+				Msg += "請至少新增一筆【物料訊息資訊】明細！\n";
+			}		
 
 			//【聯絡人窗口資訊】明細檢查
 			Msg += checkDetail_CO();
@@ -492,10 +497,10 @@
 			$.each(trs, function (i, itr) {
 				var tds = $(itr).find('td');				
 				var objRowNumber = tds.eq(0).children();			//項次
-				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)
-				var objMaterialID = tds.eq(2).children();			//物料代號
-				var objMaterialName = tds.eq(3).children();		//料號說明
-				var objQuantity = tds.eq(4).children();			//數量				
+				var objMaterialID = tds.eq(1).children().eq(0);	//物料代號
+				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
+				var objMaterialName = tds.eq(2).children();		//料號說明
+				var objQuantity = tds.eq(3).children();			//數量				
 
 				if (objMaterialID.val() != undefined) {
                     if (objDisabled.val() == "0")
@@ -532,7 +537,7 @@
 				var objRowNumber = tds.eq(0).children();			//項次
 				var objSerialID = tds.eq(1).children().eq(0);		//序號
 				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
-				var objMaterialID = tds.eq(2).children();			//物料代號
+				//var objMaterialID = tds.eq(2).children();			//物料代號
 
 				if (objSerialID.val() != undefined) {                    
 					if (objDisabled.val() == "0"){
@@ -540,9 +545,9 @@
 							Msg += "明細【序號回報資訊】「項次：" + objRowNumber.html() + "」的【序號】不得為空！\n";
 						}						
 
-						if (objMaterialName.val() == "") {
-							Msg += "明細【序號回報資訊】「項次：" + objRowNumber.html() + "」的【物料代號】不得為空！\n";
-						}						
+						//if (objMaterialID.val() == "") {
+						//	Msg += "明細【序號回報資訊】「項次：" + objRowNumber.html() + "」的【物料代號】不得為空！\n";
+						//}						
 					}
                 }				
 			})			
@@ -1855,7 +1860,7 @@
 
 		//組物料代號
 		function SetMIMaterialID() {
-			var reValue = "<td><input type='text' name='tbx_MIcMaterialID' id='tbx_MIcMaterialID" + trMaterialNoCount + "' class='form-control material' style='width:150px;' placeholder='請輸入料號或料號說明的關鍵字'></td>";
+			var reValue = "<td><input type='text' name='tbx_MIcMaterialID' id='tbx_MIcMaterialID" + trMaterialNoCount + "' class='form-control material' style='width:150px;' placeholder='請輸入料號或料號說明的關鍵字'>";
 			    reValue += "<input type='hidden' name='hid_MIcDisabled' id='hid_MIcDisabled" + trMaterialNoCount + "' value='0'></td>";
 			return reValue;
 		}
@@ -1880,19 +1885,19 @@
 
 		//組製造商零件號碼
 		function SetMIMFPNumber() {
-			var reValue = "<td><input type='text' name='tbx_MIcMFPNumber' id='tbx_MIcMFPNumber" + trMaterialNoCount + "' class='form-control' style='width:100px;' placeholder='製造商零件號碼' readonly></td>";
+			var reValue = "<td><input type='text' name='tbx_MIcMFPNumber' id='tbx_MIcMFPNumber" + trMaterialNoCount + "' class='form-control' style='width:150px;' placeholder='製造商零件號碼' readonly></td>";
 			return reValue;
 		}
 
 		//組廠牌
 		function SetMIBrand() {
-			var reValue = "<td><input type='text' name='tbx_MIcBrand' id='tbx_MIcBrand" + trMaterialNoCount + "' class='form-control' style='width:100px;' placeholder='廠牌' readonly></td>";
+			var reValue = "<td><input type='text' name='tbx_MIcBrand' id='tbx_MIcBrand" + trMaterialNoCount + "' class='form-control' style='width:150px;' placeholder='廠牌' readonly></td>";
 			return reValue;
 		}
 
 		//組產品階層
 		function SetMIProductHierarchy() {
-			var reValue = "<td><input type='text' name='tbx_MIcProductHierarchy' id='tbx_MIcProductHierarchy" + trMaterialNoCount + "' class='form-control' style='width:100px;' placeholder='產品階層' readonly></td>";
+			var reValue = "<td><input type='text' name='tbx_MIcProductHierarchy' id='tbx_MIcProductHierarchy" + trMaterialNoCount + "' class='form-control' style='width:150px;' placeholder='產品階層' readonly></td>";
 			return reValue;
 		}
 
@@ -2603,7 +2608,7 @@
 										</div>										
 									</div>									
 									<div class="form-group row">
-										<label class="col-lg-2 col-form-label">L2工程師</label>
+										<label class="col-lg-2 col-form-label">*L2工程師</label>
 										<div class="col-lg-4">
 											<input type="text" id="tbx_cMainEngineerName" name="tbx_cMainEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMainEngineerName">
 											<input type="hidden" id="hid_cMainEngineerID" name="hid_cMainEngineerID" value="@ViewBag.cMainEngineerID" />
@@ -2720,13 +2725,13 @@
 																				<textarea rows="3" class="form-control" style='width:200px;' placeholder="基本內文" name="tbx_MIcNote" title="@bean.CBasicContent" readonly>@bean.CBasicContent</textarea>
 																			</td>																
 																			<td>
-																				<input type='text' name='tbx_MIcMFPNumber' @("id=tbx_MIcMFPNumber" + count) class='form-control' style='width:100px;' placeholder='製造商零件號碼' value="@bean.CMfpnumber" title="@bean.CMfpnumber" disabled>
+																				<input type='text' name='tbx_MIcMFPNumber' @("id=tbx_MIcMFPNumber" + count) class='form-control' style='width:150px;' placeholder='製造商零件號碼' value="@bean.CMfpnumber" title="@bean.CMfpnumber" disabled>
 																			</td>
 																			<td>
-																				<input type='text' name='tbx_MIcBrand' @("id=tbx_MIcBrand" + count) class='form-control' style='width:100px;' placeholder='廠牌' value="@bean.CBrand" title="@bean.CBrand" disabled>
+																				<input type='text' name='tbx_MIcBrand' @("id=tbx_MIcBrand" + count) class='form-control' style='width:150px;' placeholder='廠牌' value="@bean.CBrand" title="@bean.CBrand" disabled>
 																			</td>
 																			<td>
-																				<input type='text' name='tbx_MIcProductHierarchy' @("id=tbx_MIcProductHierarchy" + count) class='form-control' style='width:100px;' placeholder='產品階層' value="@bean.CProductHierarchy" title="@bean.CProductHierarchy" disabled>
+																				<input type='text' name='tbx_MIcProductHierarchy' @("id=tbx_MIcProductHierarchy" + count) class='form-control' style='width:150px;' placeholder='產品階層' value="@bean.CProductHierarchy" title="@bean.CProductHierarchy" disabled>
 																			</td>
 																			<td>
 																				<button name="btn_MaterialDel" class='btn btn-danger' type='button' onclick="DelDetailItem_Material('trMaterialNo@(count)', '@(count)')" ;><i class='fa fa-trash'></i></button>
