@@ -11,6 +11,7 @@ namespace OneService.Models
         public string? CDesc { get; set; }
         public string? CNotes { get; set; }
         public string? CAttachement { get; set; }
+        public string? CAttachementStockNo { get; set; }
         public string? CStatus { get; set; }
         public string? CMaserviceType { get; set; }
         public string? CDelayReason { get; set; }
@@ -35,6 +36,10 @@ namespace OneService.Models
         public string? CSqpersonName { get; set; }
         public string? CSalesId { get; set; }
         public string? CSalesName { get; set; }
+        public string? CSecretaryId { get; set; }
+        public string? CSecretaryName { get; set; }
+        public string? CSalesNo { get; set; }
+        public string? CShipmentNo { get; set; }
         public Guid? CSystemGuid { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }

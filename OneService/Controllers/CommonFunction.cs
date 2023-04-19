@@ -2049,6 +2049,41 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得物料廠牌
+        /// <summary>
+        /// 取得物料廠牌
+        /// </summary>
+        /// <param name="tMaterialID">物料代號</param>        
+        /// <param name="tMVKE_PRODH">產品階層</param>
+        public string findMATERIALBRAND(string tMaterialID, string tMVKE_PRODH)
+        {
+            string reValue = String.Empty;                        
+
+            #region 取得廠牌
+            if (tMVKE_PRODH != "")
+            {
+                var beanF = dbProxy.F0005s.FirstOrDefault(x => x.Modt == "MM" && x.Alias == "ProHierarchy" &&
+                                                            x.Codet == "3" && x.Codets == tMVKE_PRODH.Substring(3, 3));
+
+                if (beanF != null)
+                {
+                    reValue = beanF.Dsc1;
+                }
+                else
+                {
+                    reValue = "Other";
+                }
+            }
+            else
+            {
+                reValue = "Other";
+            }
+            #endregion
+
+            return reValue;
+        }
+        #endregion
+
         #region 取得裝機號碼(83 or 63)
         /// <summary>
         /// 取得裝機號碼(83 or 63)

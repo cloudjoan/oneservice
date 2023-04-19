@@ -20,9 +20,11 @@ namespace OneService.Models
         public virtual DbSet<TbOneLog> TbOneLogs { get; set; } = null!;
         public virtual DbSet<TbOneSrcustomerEmailMapping> TbOneSrcustomerEmailMappings { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailContact> TbOneSrdetailContacts { get; set; } = null!;
+        public virtual DbSet<TbOneSrdetailMaterialInfo> TbOneSrdetailMaterialInfos { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailPartsReplace> TbOneSrdetailPartsReplaces { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailProduct> TbOneSrdetailProducts { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailRecord> TbOneSrdetailRecords { get; set; } = null!;
+        public virtual DbSet<TbOneSrdetailSerialFeedback> TbOneSrdetailSerialFeedbacks { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailWarranty> TbOneSrdetailWarranties { get; set; } = null!;
         public virtual DbSet<TbOneSridformat> TbOneSridformats { get; set; } = null!;
         public virtual DbSet<TbOneSrmain> TbOneSrmains { get; set; } = null!;
@@ -188,6 +190,53 @@ namespace OneService.Models
                 entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
             });
 
+            modelBuilder.Entity<TbOneSrdetailMaterialInfo>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRDetail_MaterialInfo");
+
+                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20230418-143506");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CBasicContent).HasColumnName("cBasicContent");
+
+                entity.Property(e => e.CBrand)
+                    .HasMaxLength(80)
+                    .HasColumnName("cBrand");
+
+                entity.Property(e => e.CMaterialId)
+                    .HasMaxLength(40)
+                    .HasColumnName("cMaterialID");
+
+                entity.Property(e => e.CMaterialName)
+                    .HasMaxLength(255)
+                    .HasColumnName("cMaterialName");
+
+                entity.Property(e => e.CMfpnumber)
+                    .HasMaxLength(50)
+                    .HasColumnName("cMFPNumber");
+
+                entity.Property(e => e.CProductHierarchy)
+                    .HasMaxLength(18)
+                    .HasColumnName("cProductHierarchy");
+
+                entity.Property(e => e.CQuantity).HasColumnName("cQuantity");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
             modelBuilder.Entity<TbOneSrdetailPartsReplace>(entity =>
             {
                 entity.HasKey(e => e.CId);
@@ -215,7 +264,7 @@ namespace OneService.Models
                     .HasColumnName("cMaterialID");
 
                 entity.Property(e => e.CMaterialName)
-                    .HasMaxLength(40)
+                    .HasMaxLength(255)
                     .HasColumnName("cMaterialName");
 
                 entity.Property(e => e.CNewCt)
@@ -368,6 +417,43 @@ namespace OneService.Models
                 entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
             });
 
+            modelBuilder.Entity<TbOneSrdetailSerialFeedback>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRDetail_SerialFeedback");
+
+                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20230418-143520");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CConfigReport).HasColumnName("cConfigReport");
+
+                entity.Property(e => e.CMaterialId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cMaterialID");
+
+                entity.Property(e => e.CMaterialName)
+                    .HasMaxLength(255)
+                    .HasColumnName("cMaterialName");
+
+                entity.Property(e => e.CSerialId)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSerialID");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
             modelBuilder.Entity<TbOneSrdetailWarranty>(entity =>
             {
                 entity.HasKey(e => e.CId);
@@ -493,6 +579,8 @@ namespace OneService.Models
 
                 entity.Property(e => e.CAttachement).HasColumnName("cAttachement");
 
+                entity.Property(e => e.CAttachementStockNo).HasColumnName("cAttachementStockNo");
+
                 entity.Property(e => e.CCustomerId)
                     .HasMaxLength(10)
                     .HasColumnName("cCustomerID");
@@ -562,6 +650,22 @@ namespace OneService.Models
                 entity.Property(e => e.CSalesName)
                     .HasMaxLength(40)
                     .HasColumnName("cSalesName");
+
+                entity.Property(e => e.CSalesNo)
+                    .HasMaxLength(30)
+                    .HasColumnName("cSalesNo");
+
+                entity.Property(e => e.CSecretaryId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSecretaryID");
+
+                entity.Property(e => e.CSecretaryName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSecretaryName");
+
+                entity.Property(e => e.CShipmentNo)
+                    .HasMaxLength(30)
+                    .HasColumnName("cShipmentNo");
 
                 entity.Property(e => e.CSqpersonId)
                     .HasMaxLength(6)

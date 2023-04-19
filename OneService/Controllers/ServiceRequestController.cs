@@ -86,6 +86,11 @@ namespace OneService.Controllers
         static string pOperationID_GenerallySR = "869FC989-1049-4266-ABDE-69A9B07BCD0A";
 
         /// <summary>
+        /// 程式作業編號檔系統ID(裝機服務)
+        /// </summary>
+        static string pOperationID_InstallSR = "3B6FF77B-DAF4-4C2D-957A-6C28CE054D75";
+
+        /// <summary>
         /// 公司別(T012、T016、C069、T022)
         /// </summary>
         static string pCompanyCode = string.Empty;
@@ -1174,14 +1179,14 @@ namespace OneService.Controllers
                 #endregion
 
                 #region 取得工時紀錄檔資訊(明細)
-                var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CEngineerId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+                var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
                 
                 ViewBag.Detailbean_Record = beansRecord;
                 ViewBag.trRecordNo = beansRecord.Count();
                 #endregion
 
                 #region 取得零件更換資訊(明細)
-                var beansParts = dbOne.TbOneSrdetailPartsReplaces.OrderBy(x => x.CMaterialId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+                var beansParts = dbOne.TbOneSrdetailPartsReplaces.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
                 
                 ViewBag.Detailbean_Parts = beansParts;
                 ViewBag.trPartsNo = beansParts.Count();
@@ -2937,7 +2942,953 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----    
+        #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----   
+
+        #region -----↓↓↓↓↓裝機服務 ↓↓↓↓↓-----
+
+        #region 裝機服務index
+        public IActionResult InstallSR()
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
+            ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
+            ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
+            ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
+            ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
+            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
+            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+            ViewBag.cLoginUser_IsManager = EmpBean.IsManager;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            var model = new ViewModel_Install();
+
+            #region Request參數            
+            if (HttpContext.Request.Query["SRID"].FirstOrDefault() != null)
+            {
+                pSRID = HttpContext.Request.Query["SRID"].FirstOrDefault();
+            }
+            #endregion
+
+            #region 報修類別
+            //大類
+            var SRTypeOneList = CMF.findFirstKINDList();
+
+            //中類
+            var SRTypeSecList = new List<SelectListItem>();
+            SRTypeSecList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            //小類
+            var SRTypeThrList = new List<SelectListItem>();
+            SRTypeThrList.Add(new SelectListItem { Text = " ", Value = "" });
+            #endregion
+
+            #region 取得服務團隊清單
+            var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, true);
+            #endregion
+
+            #region 取得SRID
+            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
+
+            if (beanM != null)
+            {
+                //記錄目前GUID，用來判斷更新的先後順序
+                ViewBag.pGUID = beanM.CSystemGuid.ToString();
+
+                //判斷登入者是否可以編輯服務案件
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, EmpBean.EmployeeERPID, pIsMIS, pIsCS);
+
+                #region 裝機資訊
+                ViewBag.cSRID = beanM.CSrid;
+                ViewBag.cCustomerID = beanM.CCustomerId;
+                ViewBag.cCustomerName = beanM.CCustomerName;
+                ViewBag.cDesc = beanM.CDesc;
+                ViewBag.cNotes = beanM.CNotes;
+                ViewBag.cAttachement = beanM.CAttachement;
+                ViewBag.cAttachementStockNo = beanM.CAttachementStockNo;                
+                ViewBag.cDelayReason = beanM.CDelayReason;
+                ViewBag.cSalesNo = beanM.CSalesNo;
+                ViewBag.cShipmentNo = beanM.CShipmentNo;
+                ViewBag.pStatus = beanM.CStatus;
+
+                ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+                #endregion
+
+                #region 報修類別
+                if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                {
+                    SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
+                }
+
+                if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
+                {
+                    SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
+                    SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
+                }
+
+                if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
+                {
+                    SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
+                    SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
+                }
+                #endregion              
+
+                #region 服務團隊
+                ViewBag.cTeamID = beanM.CTeamId;
+                ViewBag.cMainEngineerID = beanM.CMainEngineerId;
+                ViewBag.cMainEngineerName = beanM.CMainEngineerName;
+                ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                ViewBag.cSalesID = beanM.CSalesId;
+                ViewBag.cSalesName = beanM.CSalesName;
+                ViewBag.cSecretaryID = beanM.CSecretaryId;
+                ViewBag.cSecretaryName = beanM.CSecretaryName;                
+                #endregion
+
+                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
+
+                #region 取得客戶聯絡人資訊(明細)
+                var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                ViewBag.Detailbean_Contact = beansContact;
+                ViewBag.trContactNo = beansContact.Count();
+                #endregion
+
+                #region 取得物料訊息檔資訊(明細)
+                var beansMaterial = dbOne.TbOneSrdetailMaterialInfos.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);                
+
+                ViewBag.Detailbean_Material = beansMaterial;
+                ViewBag.trMaterialNo = beansMaterial.Count();
+                #endregion
+
+                #region 取得序號回報檔資訊(明細)
+                var beansSerial = dbOne.TbOneSrdetailSerialFeedbacks.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);                
+
+                ViewBag.Detailbean_Serial = beansSerial;
+                ViewBag.trSerialNo = beansSerial.Count();
+                #endregion
+
+                #region 取得工時紀錄檔資訊(明細)
+                var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                ViewBag.Detailbean_Record = beansRecord;
+                ViewBag.trRecordNo = beansRecord.Count();
+                #endregion               
+            }
+            else
+            {
+                ViewBag.cSRID = "";                
+                ViewBag.pStatus = "E0001";      //新建
+                ViewBag.cDelayReason = "";      //空值
+                ViewBag.cSalesNo = "";          //空值
+                ViewBag.cShipmentNo = "";       //空值
+            }
+            #endregion
+
+            #region 指派Option值
+            model.ddl_cStatus = ViewBag.pStatus;                //設定狀態            
+            model.ddl_cCustomerType = ViewBag.cCustomerType;     //客戶類型(P.個人 C.法人)
+            #endregion
+
+            ViewBag.SRTypeOneList = SRTypeOneList;
+            ViewBag.SRTypeSecList = SRTypeSecList;
+            ViewBag.SRTypeThrList = SRTypeThrList;
+            ViewBag.SRTeamIDList = SRTeamIDList;
+
+            ViewBag.pOperationID = pOperationID_InstallSR;
+            ViewBag.pIsCanEditSR = pIsCanEditSR.ToString();  //登入者是否可以編輯服務案件
+
+            return View(model);
+        }
+        #endregion
+
+        #region 儲存裝機服務
+        /// <summary>
+        /// 儲存裝機服務
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult SaveInstallSR(IFormCollection formCollection)
+        {
+            //getLoginAccount();
+
+            //CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            //EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            //pLoginName = EmpBean.EmployeeCName;
+
+            //pSRID = formCollection["hid_cSRID"].FirstOrDefault();
+
+            //bool tIsFormal = false;
+            //string tBPMURLName = string.Empty;
+            //string tAPIURLName = string.Empty;
+            //string tPSIPURLName = string.Empty;
+            //string tAttachURLName = string.Empty;
+            //string tLog = string.Empty;
+
+            //string OldCStatus = string.Empty;
+            //string OldCCustomerName = string.Empty;
+            //string OldCCustomerId = string.Empty;
+            //string OldCDesc = string.Empty;
+            //string OldCNotes = string.Empty;
+            //string OldCAttachement = string.Empty;
+            //string OldCMaserviceType = string.Empty;
+            //string OldCSrtypeOne = string.Empty;
+            //string OldCSrtypeSec = string.Empty;
+            //string OldCSrtypeThr = string.Empty;
+            //string OldCSrpathWay = string.Empty;
+            //string OldCSrprocessWay = string.Empty;
+            //string OldCDelayReason = string.Empty;
+            //string OldCIsSecondFix = string.Empty;
+            //string OldCRepairName = string.Empty;
+            //string OldCRepairAddress = string.Empty;
+            //string OldCRepairPhone = string.Empty;
+            //string OldCRepairMobile = string.Empty;
+            //string OldCRepairEmail = string.Empty;
+            //string OldCTeamId = string.Empty;
+            //string OldCSqpersonId = string.Empty;
+            //string OldCSqpersonName = string.Empty;
+            //string OldCSalesName = string.Empty;
+            //string OldCSalesId = string.Empty;
+            //string OldCMainEngineerName = string.Empty;
+            //string OldCMainEngineerId = string.Empty;
+            //string OldCAssEngineerId = string.Empty;
+            //string OldCTechManagerId = string.Empty;
+
+            //string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
+            //string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
+            //string CCustomerId = formCollection["hid_cCustomerID"].FirstOrDefault();
+            //string CDesc = formCollection["tbx_cDesc"].FirstOrDefault();
+            //string CNotes = formCollection["tbx_cNotes"].FirstOrDefault();
+            //string CAttach = formCollection["hid_filezone_1"].FirstOrDefault();
+            //string CMaserviceType = formCollection["ddl_cMAServiceType"].FirstOrDefault();
+            //string CSrtypeOne = formCollection["ddl_cSRTypeOne"].FirstOrDefault();
+            //string CSrtypeSec = formCollection["ddl_cSRTypeSec"].FirstOrDefault();
+            //string CSrtypeThr = formCollection["ddl_cSRTypeThr"].FirstOrDefault();
+            //string CSrpathWay = formCollection["ddl_cSRPathWay"].FirstOrDefault();
+            //string CSrprocessWay = formCollection["ddl_cSRProcessWay"].FirstOrDefault();
+            //string CRepairEmail = formCollection["tbx_cRepairEmail"].FirstOrDefault();
+            //string CIsSecondFix = formCollection["ddl_cIsSecondFix"].FirstOrDefault();
+            //string CRepairName = formCollection["tbx_cRepairName"].FirstOrDefault();
+            //string CRepairAddress = formCollection["tbx_cRepairAddress"].FirstOrDefault();
+            //string CRepairPhone = formCollection["tbx_cRepairPhone"].FirstOrDefault();
+            //string CRepairMobile = formCollection["tbx_cRepairMobile"].FirstOrDefault();
+            //string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
+            //string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
+            //string CSqpersonId = formCollection["hid_cSQPersonID"].FirstOrDefault();
+            //string CSqpersonName = formCollection["tbx_cSQPersonName"].FirstOrDefault();
+            //string CSalesName = formCollection["tbx_cSalesName"].FirstOrDefault();
+            //string CSalesId = formCollection["hid_cSalesID"].FirstOrDefault();
+            //string CMainEngineerName = formCollection["tbx_cMainEngineerName"].FirstOrDefault();
+            //string CMainEngineerId = formCollection["hid_cMainEngineerID"].FirstOrDefault();
+            //string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();
+            //string CTechManagerId = formCollection["hid_cTechManagerID"].FirstOrDefault();
+            //string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
+
+            //SRCondition srCon = new SRCondition();
+            //SRMain_GENERALSRSTATUS_INPUT beanIN = new SRMain_GENERALSRSTATUS_INPUT();
+
+            //try
+            //{
+            //    #region 取得系統位址參數相關資訊
+            //    SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            //    tIsFormal = ParaBean.IsFormal;
+
+            //    tBPMURLName = ParaBean.BPMURLName;
+            //    tPSIPURLName = ParaBean.PSIPURLName;
+            //    tAPIURLName = ParaBean.APIURLName;
+            //    tAttachURLName = ParaBean.AttachURLName;
+            //    #endregion
+
+            //    var beanNowM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
+
+            //    if (beanNowM == null)
+            //    {
+            //        #region 新增主檔
+            //        TbOneSrmain beanM = new TbOneSrmain();
+
+            //        srCon = SRCondition.ADD;
+
+            //        //主表資料
+            //        beanM.CSrid = pSRID;
+            //        beanM.CStatus = "E0005";    //新增時先預設為L3.處理中
+            //        beanM.CCustomerName = CCustomerName;
+            //        beanM.CCustomerId = CCustomerId;
+            //        beanM.CDesc = CDesc;
+            //        beanM.CNotes = CNotes;
+            //        beanM.CAttachement = CAttach;
+            //        beanM.CMaserviceType = CMaserviceType;
+            //        beanM.CSrtypeOne = CSrtypeOne;
+            //        beanM.CSrtypeSec = CSrtypeSec;
+            //        beanM.CSrtypeThr = CSrtypeThr;
+            //        beanM.CSrpathWay = CSrpathWay;
+            //        beanM.CSrprocessWay = CSrprocessWay;
+            //        beanM.CDelayReason = CDelayReason;
+            //        beanM.CIsSecondFix = CIsSecondFix;
+            //        beanM.CRepairName = CRepairName;
+            //        beanM.CRepairAddress = CRepairAddress;
+            //        beanM.CRepairPhone = CRepairPhone;
+            //        beanM.CRepairMobile = CRepairMobile;
+            //        beanM.CRepairEmail = CRepairEmail;
+            //        beanM.CTeamId = CTeamId;
+            //        beanM.CSqpersonId = CSqpersonId;
+            //        beanM.CSqpersonName = CSqpersonName;
+            //        beanM.CSalesName = CSalesName;
+            //        beanM.CSalesId = CSalesId;
+            //        beanM.CMainEngineerName = CMainEngineerName;
+            //        beanM.CMainEngineerId = CMainEngineerId;
+            //        beanM.CAssEngineerId = CAssEngineerId;
+            //        beanM.CTechManagerId = CTechManagerId;
+            //        beanM.CSystemGuid = Guid.NewGuid();
+            //        beanM.CIsAppclose = "";
+
+            //        beanM.CreatedDate = DateTime.Now;
+            //        beanM.CreatedUserName = LoginUser_Name;
+
+            //        dbOne.TbOneSrmains.Add(beanM);
+            //        #endregion
+
+            //        #region 新增【客戶聯絡窗口資訊】明細
+            //        string[] COcContactName = formCollection["tbx_COcContactName"];
+            //        string[] COcContactAddress = formCollection["tbx_COcContactAddress"];
+            //        string[] COcContactPhone = formCollection["tbx_COcContactPhone"];
+            //        string[] COcContactMobile = formCollection["tbx_COcContactMobile"];
+            //        string[] COcContactEmail = formCollection["tbx_COcContactEmail"];
+
+            //        int countCO = COcContactName.Length;
+
+            //        for (int i = 0; i < countCO; i++)
+            //        {
+            //            TbOneSrdetailContact beanD = new TbOneSrdetailContact();
+
+            //            beanD.CSrid = pSRID;
+            //            beanD.CContactName = COcContactName[i];
+            //            beanD.CContactAddress = COcContactAddress[i];
+            //            beanD.CContactPhone = COcContactPhone[i];
+            //            beanD.CContactMobile = COcContactMobile[i];
+            //            beanD.CContactEmail = COcContactEmail[i];
+            //            beanD.Disabled = 0;
+
+            //            beanD.CreatedDate = DateTime.Now;
+            //            beanD.CreatedUserName = LoginUser_Name;
+
+            //            dbOne.TbOneSrdetailContacts.Add(beanD);
+            //        }
+            //        #endregion
+
+            //        #region 新增【產品序號資訊】明細
+            //        string[] PRcSerialID = formCollection["tbx_PRcSerialID"];
+            //        string[] PRcMaterialID = formCollection["hid_PRcMaterialID"];
+            //        string[] PRcMaterialName = formCollection["tbx_PRcMaterialName"];
+            //        string[] PRcSerialNumber = formCollection["tbx_PRcProductNumber"];
+            //        string[] PRcNewSerialID = formCollection["tbx_PRcNewSerialID"];
+            //        string[] PRcInstallID = formCollection["tbx_PRcInstallID"];
+
+            //        int countPR = PRcSerialID.Length;
+
+            //        for (int i = 0; i < countPR; i++)
+            //        {
+            //            TbOneSrdetailProduct beanD = new TbOneSrdetailProduct();
+
+            //            beanD.CSrid = pSRID;
+            //            beanD.CSerialId = PRcSerialID[i];
+            //            beanD.CMaterialId = PRcMaterialID[i];
+            //            beanD.CMaterialName = PRcMaterialName[i];
+            //            beanD.CProductNumber = PRcProductNumber[i];
+            //            beanD.CNewSerialId = PRcNewSerialID[i];
+            //            beanD.CInstallId = PRcInstallID[i];
+            //            beanD.Disabled = 0;
+
+            //            beanD.CreatedDate = DateTime.Now;
+            //            beanD.CreatedUserName = LoginUser_Name;
+
+            //            dbOne.TbOneSrdetailProducts.Add(beanD);
+            //        }
+            //        #endregion
+
+            //        #region 新增【保固SLA資訊】明細
+            //        string[] WAcSerialID = formCollection["hidcSerialID"];
+            //        string[] WAcWTYID = formCollection["hidcWTYID"];
+            //        string[] WAcWTYName = formCollection["hidcWTYName"];
+            //        string[] WAcWTYSDATE = formCollection["hidcWTYSDATE"];
+            //        string[] WAcWTYEDATE = formCollection["hidcWTYEDATE"];
+            //        string[] WAcSLARESP = formCollection["hidcSLARESP"];
+            //        string[] WAcSLASRV = formCollection["hidcSLASRV"];
+            //        string[] WAcContractID = formCollection["hidcContractID"];
+            //        string[] WAcSUB_CONTRACTID = formCollection["hidcSUB_CONTRACTID"];
+            //        string[] WAcBPMFormNo = formCollection["hidcBPMFormNo"];
+            //        string[] WAcAdvice = formCollection["hidcAdvice"];
+            //        string[] WACheckUsed = formCollection["hid_CheckUsed"];
+
+            //        int countWA = WAcSerialID.Length;
+
+            //        for (int i = 0; i < countWA; i++)
+            //        {
+            //            TbOneSrdetailWarranty beanD = new TbOneSrdetailWarranty();
+
+            //            beanD.CSrid = pSRID;
+            //            beanD.CSerialId = WAcSerialID[i];
+            //            beanD.CWtyid = WAcWTYID[i];
+            //            beanD.CWtyname = WAcWTYName[i];
+
+            //            if (WAcWTYSDATE[i] != "")
+            //            {
+            //                beanD.CWtysdate = Convert.ToDateTime(WAcWTYSDATE[i]);
+            //            }
+
+            //            if (WAcWTYEDATE[i] != "")
+            //            {
+            //                beanD.CWtyedate = Convert.ToDateTime(WAcWTYEDATE[i]);
+            //            }
+
+            //            beanD.CSlaresp = WAcSLARESP[i];
+            //            beanD.CSlasrv = WAcSLASRV[i];
+            //            beanD.CContractId = WAcContractID[i];
+            //            beanD.CSubContractId = WAcSUB_CONTRACTID[i];
+            //            beanD.CBpmformNo = WAcBPMFormNo[i];
+            //            beanD.CAdvice = WAcAdvice[i];
+            //            beanD.CUsed = WACheckUsed[i];
+
+            //            beanD.CreatedDate = DateTime.Now;
+            //            beanD.CreatedUserName = LoginUser_Name;
+
+            //            dbOne.TbOneSrdetailWarranties.Add(beanD);
+            //        }
+            //        #endregion                    
+
+            //        int result = dbOne.SaveChanges();
+
+            //        if (result <= 0)
+            //        {
+            //            pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(新建)" + Environment.NewLine;
+            //            CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, LoginUser_Name);
+            //        }
+            //        else
+            //        {
+            //            #region 紀錄修改log
+            //            TbOneLog logBean = new TbOneLog
+            //            {
+            //                CSrid = pSRID,
+            //                EventName = "SaveGenerallySR",
+            //                Log = "SR狀態_舊值: " + OldCStatus + "; 新值: " + CStatus,
+            //                CreatedUserName = LoginUser_Name,
+            //                CreatedDate = DateTime.Now
+            //            };
+
+            //            dbOne.TbOneLogs.Add(logBean);
+            //            dbOne.SaveChanges();
+            //            #endregion
+
+            //            #region call ONE SERVICE（一般服務案件）狀態更新接口來寄送Mail
+            //            beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+            //            beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+            //            beanIN.IV_SRID = pSRID;
+            //            beanIN.IV_STATUS = "E0005|ADD"; //新建但狀態是L3處理中
+            //            beanIN.IV_APIURLName = tAPIURLName;
+
+            //            CMF.GetAPI_GenerallySRSTATUS_Update(beanIN);
+            //            #endregion
+            //        }
+            //    }
+            //    else
+            //    {
+            //        #region 修改主檔
+
+            //        #region 紀錄舊值
+            //        OldCStatus = beanNowM.CStatus;
+            //        tLog += CMF.getNewAndOldLog("狀態", OldCStatus, CStatus);
+
+            //        OldCCustomerName = beanNowM.CCustomerName;
+            //        tLog += CMF.getNewAndOldLog("客戶名稱", OldCCustomerName, CCustomerName);
+
+            //        OldCCustomerId = beanNowM.CCustomerId;
+            //        tLog += CMF.getNewAndOldLog("客戶ID", OldCCustomerId, CCustomerId);
+
+            //        OldCDesc = beanNowM.CDesc;
+            //        tLog += CMF.getNewAndOldLog("說明", OldCDesc, CDesc);
+
+            //        OldCNotes = beanNowM.CNotes;
+            //        tLog += CMF.getNewAndOldLog("詳細描述", OldCNotes, CNotes);
+
+            //        OldCAttachement = beanNowM.CAttachement;
+            //        tLog += CMF.getNewAndOldLog("檢附文件", OldCAttachement, CAttach);
+
+            //        OldCMaserviceType = beanNowM.CMaserviceType;
+            //        tLog += CMF.getNewAndOldLog("維護服務種類", OldCMaserviceType, CMaserviceType);
+
+            //        OldCSrtypeOne = beanNowM.CSrtypeOne;
+            //        tLog += CMF.getNewAndOldLog("報修類別(大類)", OldCSrtypeOne, CSrtypeOne);
+
+            //        OldCSrtypeSec = beanNowM.CSrtypeSec;
+            //        tLog += CMF.getNewAndOldLog("報修類別(中類)", OldCSrtypeSec, CSrtypeSec);
+
+            //        OldCSrtypeThr = beanNowM.CSrtypeThr;
+            //        tLog += CMF.getNewAndOldLog("報修類別(中類)", OldCSrtypeThr, CSrtypeThr);
+
+            //        OldCSrpathWay = beanNowM.CSrpathWay;
+            //        tLog += CMF.getNewAndOldLog("報修管道", OldCSrpathWay, CSrpathWay);
+
+            //        OldCSrprocessWay = beanNowM.CSrprocessWay;
+            //        tLog += CMF.getNewAndOldLog("處理方式", OldCSrprocessWay, CSrprocessWay);
+
+            //        OldCDelayReason = beanNowM.CDelayReason;
+            //        tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
+
+            //        OldCIsSecondFix = beanNowM.CIsSecondFix;
+            //        tLog += CMF.getNewAndOldLog("是否為二修", OldCIsSecondFix, CIsSecondFix);
+
+            //        OldCRepairName = beanNowM.CRepairName;
+            //        tLog += CMF.getNewAndOldLog("姓名(報修人)", OldCRepairName, CRepairName);
+
+            //        OldCRepairAddress = beanNowM.CRepairAddress;
+            //        tLog += CMF.getNewAndOldLog("地址(報修人)", OldCRepairAddress, CRepairAddress);
+
+            //        OldCRepairPhone = beanNowM.CRepairPhone;
+            //        tLog += CMF.getNewAndOldLog("電話(報修人)", OldCRepairPhone, CRepairPhone);
+
+            //        OldCRepairMobile = beanNowM.CRepairMobile;
+            //        tLog += CMF.getNewAndOldLog("手機(報修人)", OldCRepairMobile, CRepairMobile);
+
+            //        OldCRepairEmail = beanNowM.CRepairEmail;
+            //        tLog += CMF.getNewAndOldLog("Email(報修人)", OldCRepairEmail, CRepairEmail);
+
+            //        OldCTeamId = beanNowM.CTeamId;
+            //        tLog += CMF.getNewAndOldLog("服務團隊", OldCTeamId, CTeamId);
+
+            //        OldCSqpersonId = beanNowM.CSqpersonId;
+            //        tLog += CMF.getNewAndOldLog("SQ人員ID", OldCSqpersonId, CSqpersonId);
+
+            //        OldCSqpersonName = beanNowM.CSqpersonName;
+            //        tLog += CMF.getNewAndOldLog("SQ人員名稱", OldCSqpersonName, CSqpersonName);
+
+            //        OldCSalesName = beanNowM.CSalesName;
+            //        tLog += CMF.getNewAndOldLog("計費業務姓名", OldCSalesName, CSalesName);
+
+            //        OldCSalesId = beanNowM.CSalesId;
+            //        tLog += CMF.getNewAndOldLog("計費業務ERPID", OldCSalesId, CSalesId);
+
+            //        OldCMainEngineerName = beanNowM.CMainEngineerName;
+            //        tLog += CMF.getNewAndOldLog("L2工程師姓名", OldCMainEngineerName, CMainEngineerName);
+
+            //        OldCMainEngineerId = beanNowM.CMainEngineerId;
+            //        tLog += CMF.getNewAndOldLog("L2工程師ERPID", OldCMainEngineerId, CMainEngineerId);
+
+            //        OldCAssEngineerId = beanNowM.CAssEngineerId;
+            //        tLog += CMF.getNewAndOldLog("指派工程師ERPID", OldCAssEngineerId, CAssEngineerId);
+
+            //        OldCTechManagerId = beanNowM.CTechManagerId;
+            //        tLog += CMF.getNewAndOldLog("技術主管ERPID", OldCTechManagerId, CTechManagerId);
+            //        #endregion
+
+            //        //主表資料
+            //        beanNowM.CStatus = CStatus;
+            //        beanNowM.CCustomerName = CCustomerName;
+            //        beanNowM.CCustomerId = CCustomerId;
+            //        beanNowM.CDesc = CDesc;
+            //        beanNowM.CNotes = CNotes;
+            //        beanNowM.CAttachement = CAttach;
+            //        beanNowM.CMaserviceType = CMaserviceType;
+            //        beanNowM.CSrtypeOne = CSrtypeOne;
+            //        beanNowM.CSrtypeSec = CSrtypeSec;
+            //        beanNowM.CSrtypeThr = CSrtypeThr;
+            //        beanNowM.CSrpathWay = CSrpathWay;
+            //        beanNowM.CSrprocessWay = CSrprocessWay;
+            //        beanNowM.CDelayReason = CDelayReason;
+            //        beanNowM.CIsSecondFix = CIsSecondFix;
+            //        beanNowM.CRepairName = CRepairName;
+            //        beanNowM.CRepairAddress = CRepairAddress;
+            //        beanNowM.CRepairPhone = CRepairPhone;
+            //        beanNowM.CRepairMobile = CRepairMobile;
+            //        beanNowM.CRepairEmail = CRepairEmail;
+            //        beanNowM.CTeamId = CTeamId;
+            //        beanNowM.CSqpersonId = CSqpersonId;
+            //        beanNowM.CSqpersonName = CSqpersonName;
+            //        beanNowM.CSalesName = CSalesName;
+            //        beanNowM.CSalesId = CSalesId;
+            //        beanNowM.CMainEngineerName = CMainEngineerName;
+            //        beanNowM.CMainEngineerId = CMainEngineerId;
+            //        beanNowM.CAssEngineerId = CAssEngineerId;
+            //        beanNowM.CTechManagerId = CTechManagerId;
+            //        beanNowM.CSystemGuid = Guid.NewGuid();
+
+            //        if (CStatus == "E0006") //完修
+            //        {
+            //            beanNowM.CIsAppclose = "N";
+            //        }
+
+            //        beanNowM.ModifiedDate = DateTime.Now;
+            //        beanNowM.ModifiedUserName = LoginUser_Name;
+            //        #endregion
+
+            //        #region -----↓↓↓↓↓客戶聯絡窗口資訊↓↓↓↓↓-----
+
+            //        #region 刪除明細                    
+            //        //dbOne.TbOneSrdetailContacts.RemoveRange(dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+
+            //        var beansDCon = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+            //        foreach (var beanDCon in beansDCon)
+            //        {
+            //            beanDCon.Disabled = 1;
+            //            beanDCon.ModifiedDate = DateTime.Now;
+            //            beanDCon.ModifiedUserName = LoginUser_Name;
+            //        }
+            //        #endregion
+
+            //        #region 新增【客戶聯絡窗口資訊】明細
+            //        string[] COcContactName = formCollection["tbx_COcContactName"];
+            //        string[] COcContactAddress = formCollection["tbx_COcContactAddress"];
+            //        string[] COcContactPhone = formCollection["tbx_COcContactPhone"];
+            //        string[] COcContactMobile = formCollection["tbx_COcContactMobile"];
+            //        string[] COcContactEmail = formCollection["tbx_COcContactEmail"];
+            //        string[] COcDisabled = formCollection["hid_COcDisabled"];
+
+            //        int countCO = COcContactName.Length;
+
+            //        for (int i = 0; i < countCO; i++)
+            //        {
+            //            TbOneSrdetailContact beanD = new TbOneSrdetailContact();
+
+            //            beanD.CSrid = pSRID;
+            //            beanD.CContactName = COcContactName[i];
+            //            beanD.CContactAddress = COcContactAddress[i];
+            //            beanD.CContactPhone = COcContactPhone[i];
+            //            beanD.CContactMobile = COcContactMobile[i];
+            //            beanD.CContactEmail = COcContactEmail[i];
+            //            beanD.Disabled = int.Parse(COcDisabled[i]);
+
+            //            beanD.CreatedDate = DateTime.Now;
+            //            beanD.CreatedUserName = LoginUser_Name;
+
+            //            dbOne.TbOneSrdetailContacts.Add(beanD);
+            //        }
+            //        #endregion
+
+            //        #endregion -----↑↑↑↑↑客戶聯絡窗口資訊 ↑↑↑↑↑-----
+
+            //        #region -----↓↓↓↓↓產品序號資訊↓↓↓↓↓-----
+
+            //        #region 刪除明細                    
+            //        //dbOne.TbOneSrdetailProducts.RemoveRange(dbOne.TbOneSrdetailProducts.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+
+            //        var beansDPro = dbOne.TbOneSrdetailProducts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+            //        foreach (var beanDPro in beansDPro)
+            //        {
+            //            beanDPro.Disabled = 1;
+            //            beanDPro.ModifiedDate = DateTime.Now;
+            //            beanDPro.ModifiedUserName = LoginUser_Name;
+            //        }
+            //        #endregion
+
+            //        #region 新增明細
+            //        string[] PRcSerialID = formCollection["tbx_PRcSerialID"];
+            //        string[] PRcMaterialID = formCollection["hid_PRcMaterialID"];
+            //        string[] PRcMaterialName = formCollection["tbx_PRcMaterialName"];
+            //        string[] PRcProductNumber = formCollection["tbx_PRcProductNumber"];
+            //        string[] PRcNewSerialID = formCollection["tbx_PRcNewSerialID"];
+            //        string[] PRcInstallID = formCollection["tbx_PRcInstallID"];
+            //        string[] PRcDisabled = formCollection["hid_PRcDisabled"];
+
+            //        int countPR = PRcSerialID.Length;
+
+            //        for (int i = 0; i < countPR; i++)
+            //        {
+            //            TbOneSrdetailProduct beanD = new TbOneSrdetailProduct();
+
+            //            beanD.CSrid = pSRID;
+            //            beanD.CSerialId = PRcSerialID[i];
+            //            beanD.CMaterialId = PRcMaterialID[i];
+            //            beanD.CMaterialName = PRcMaterialName[i];
+            //            beanD.CProductNumber = PRcProductNumber[i];
+            //            beanD.CNewSerialId = PRcNewSerialID[i];
+            //            beanD.CInstallId = PRcInstallID[i];
+            //            beanD.Disabled = int.Parse(PRcDisabled[i]);
+
+            //            beanD.CreatedDate = DateTime.Now;
+            //            beanD.CreatedUserName = LoginUser_Name;
+
+            //            dbOne.TbOneSrdetailProducts.Add(beanD);
+            //        }
+            //        #endregion
+
+            //        #endregion -----↑↑↑↑↑產品序號資訊 ↑↑↑↑↑-----
+
+            //        #region -----↓↓↓↓↓保固SLA資訊↓↓↓↓↓-----
+
+            //        #region 刪除明細
+            //        dbOne.TbOneSrdetailWarranties.RemoveRange(dbOne.TbOneSrdetailWarranties.Where(x => x.CSrid == pSRID));
+            //        #endregion
+
+            //        #region 新增明細
+            //        string[] WAcSerialID = formCollection["hidcSerialID"];
+            //        string[] WAcWTYID = formCollection["hidcWTYID"];
+            //        string[] WAcWTYName = formCollection["hidcWTYName"];
+            //        string[] WAcWTYSDATE = formCollection["hidcWTYSDATE"];
+            //        string[] WAcWTYEDATE = formCollection["hidcWTYEDATE"];
+            //        string[] WAcSLARESP = formCollection["hidcSLARESP"];
+            //        string[] WAcSLASRV = formCollection["hidcSLASRV"];
+            //        string[] WAcContractID = formCollection["hidcContractID"];
+            //        string[] WAcSUB_CONTRACTID = formCollection["hidcSUB_CONTRACTID"];
+            //        string[] WAcBPMFormNo = formCollection["hidcBPMFormNo"];
+            //        string[] WAcAdvice = formCollection["hidcAdvice"];
+            //        string[] WACheckUsed = formCollection["hid_CheckUsed"];
+
+            //        int countWA = WAcSerialID.Length;
+
+            //        for (int i = 0; i < countWA; i++)
+            //        {
+            //            TbOneSrdetailWarranty beanD = new TbOneSrdetailWarranty();
+
+            //            beanD.CSrid = pSRID;
+            //            beanD.CSerialId = WAcSerialID[i];
+            //            beanD.CWtyid = WAcWTYID[i];
+            //            beanD.CWtyname = WAcWTYName[i];
+
+            //            if (WAcWTYSDATE[i] != "")
+            //            {
+            //                beanD.CWtysdate = Convert.ToDateTime(WAcWTYSDATE[i]);
+            //            }
+
+            //            if (WAcWTYEDATE[i] != "")
+            //            {
+            //                beanD.CWtyedate = Convert.ToDateTime(WAcWTYEDATE[i]);
+            //            }
+
+            //            beanD.CSlaresp = WAcSLARESP[i];
+            //            beanD.CSlasrv = WAcSLASRV[i];
+            //            beanD.CContractId = WAcContractID[i];
+            //            beanD.CSubContractId = WAcSUB_CONTRACTID[i];
+            //            beanD.CBpmformNo = WAcBPMFormNo[i];
+            //            beanD.CAdvice = WAcAdvice[i];
+            //            beanD.CUsed = WACheckUsed[i];
+
+            //            beanD.CreatedDate = DateTime.Now;
+            //            beanD.CreatedUserName = LoginUser_Name;
+
+            //            dbOne.TbOneSrdetailWarranties.Add(beanD);
+            //        }
+            //        #endregion
+
+            //        #endregion -----↑↑↑↑↑保固SLA資訊 ↑↑↑↑↑-----
+
+            //        #region -----↓↓↓↓↓處理與工時紀錄↓↓↓↓↓-----
+
+            //        #region 刪除明細
+            //        //dbOne.TbOneSrdetailRecords.RemoveRange(dbOne.TbOneSrdetailRecords.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+
+            //        var beansDRec = dbOne.TbOneSrdetailRecords.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+            //        foreach (var beanDRec in beansDRec)
+            //        {
+            //            beanDRec.Disabled = 1;
+            //            beanDRec.ModifiedDate = DateTime.Now;
+            //            beanDRec.ModifiedUserName = LoginUser_Name;
+            //        }
+            //        #endregion
+
+            //        #region 新增明細
+            //        string[] REcEngineerName = formCollection["tbx_REcEngineerName"];
+            //        string[] REcEngineerID = formCollection["hid_REcEngineerID"];
+            //        string[] REcReceiveTime = formCollection["tbx_REcReceiveTime"];
+            //        string[] REcStartTime = formCollection["tbx_REcStartTime"];
+            //        string[] REcArriveTime = formCollection["tbx_REcArriveTime"];
+            //        string[] REcFinishTime = formCollection["tbx_REcFinishTime"];
+            //        string[] REcWorkHours = formCollection["tbx_REcWorkHours"];
+            //        string[] REcDesc = formCollection["tbx_REcDesc"];
+            //        string[] REcSRReport = formCollection["hid_filezoneRE"];
+            //        string[] REcDisabled = formCollection["hid_REcDisabled"];
+
+            //        int countRE = REcEngineerName.Length;
+
+            //        for (int i = 0; i < countRE; i++)
+            //        {
+            //            TbOneSrdetailRecord beanD = new TbOneSrdetailRecord();
+
+            //            beanD.CSrid = pSRID;
+            //            beanD.CEngineerName = REcEngineerName[i];
+            //            beanD.CEngineerId = REcEngineerID[i];
+
+            //            if (REcReceiveTime[i] != "")
+            //            {
+            //                beanD.CReceiveTime = Convert.ToDateTime(REcReceiveTime[i]);
+            //            }
+
+            //            if (REcStartTime[i] != "")
+            //            {
+            //                beanD.CStartTime = Convert.ToDateTime(REcStartTime[i]);
+            //            }
+
+            //            if (REcArriveTime[i] != "")
+            //            {
+            //                beanD.CArriveTime = Convert.ToDateTime(REcArriveTime[i]);
+            //            }
+
+            //            if (REcFinishTime[i] != "")
+            //            {
+            //                beanD.CFinishTime = Convert.ToDateTime(REcFinishTime[i]);
+            //            }
+
+            //            beanD.CWorkHours = decimal.Parse(REcWorkHours[i]);
+            //            beanD.CDesc = REcDesc[i];
+            //            beanD.CSrreport = REcSRReport[i];
+            //            beanD.Disabled = int.Parse(REcDisabled[i]);
+
+            //            beanD.CreatedDate = DateTime.Now;
+            //            beanD.CreatedUserName = LoginUser_Name;
+
+            //            dbOne.TbOneSrdetailRecords.Add(beanD);
+            //        }
+            //        #endregion
+
+            //        #endregion -----↑↑↑↑↑處理與工時紀錄 ↑↑↑↑↑-----
+
+            //        #region -----↓↓↓↓↓零件更換資訊↓↓↓↓↓-----
+
+            //        #region 刪除明細                   
+            //        //dbOne.TbOneSrdetailPartsReplaces.RemoveRange(dbOne.TbOneSrdetailPartsReplaces.Where(x => x.Disabled == 0 && x.CSrid == pSRID));
+
+            //        var beansDPar = dbOne.TbOneSrdetailPartsReplaces.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+            //        foreach (var beanDPar in beansDPar)
+            //        {
+            //            beanDPar.Disabled = 1;
+            //            beanDPar.ModifiedDate = DateTime.Now;
+            //            beanDPar.ModifiedUserName = LoginUser_Name;
+            //        }
+            //        #endregion
+
+            //        #region 新增明細
+            //        string[] PAcXCHP = formCollection["tbx_PAcXCHP"];
+            //        string[] PAcMaterialID = formCollection["tbx_PAcMaterialID"];
+            //        string[] PAcMaterialName = formCollection["tbx_PAcMaterialName"];
+            //        string[] PAcOldCT = formCollection["tbx_PAcOldCT"];
+            //        string[] PAcNewCT = formCollection["tbx_PAcNewCT"];
+            //        string[] PAcHPCT = formCollection["tbx_PAcHPCT"];
+            //        string[] PAcNewUEFI = formCollection["tbx_PAcNewUEFI"];
+            //        string[] PAcStandbySerialID = formCollection["tbx_PAcStandbySerialID"];
+            //        string[] PAcHPCaseID = formCollection["tbx_PAcHPCaseID"];
+            //        string[] PAcArriveDate = formCollection["tbx_PAcArriveDate"];
+            //        string[] PAcReturnDate = formCollection["tbx_PAcReturnDate"];
+            //        string[] PAcPersonalDamage = formCollection["ddl_PAcPersonalDamage"];
+            //        string[] PAcNote = formCollection["tbx_PAcNote"];
+            //        string[] PAcDisabled = formCollection["hid_PAcDisabled"];
+
+            //        int countPA = PAcMaterialID.Length;
+
+            //        for (int i = 0; i < countPA; i++)
+            //        {
+            //            TbOneSrdetailPartsReplace beanD = new TbOneSrdetailPartsReplace();
+
+            //            beanD.CSrid = pSRID;
+            //            beanD.CXchp = PAcXCHP[i];
+            //            beanD.CMaterialId = PAcMaterialID[i];
+            //            beanD.CMaterialName = PAcMaterialName[i];
+            //            beanD.COldCt = PAcOldCT[i];
+            //            beanD.CNewCt = PAcNewCT[i];
+            //            beanD.CHpct = PAcHPCT[i];
+            //            beanD.CNewUefi = PAcNewUEFI[i];
+            //            beanD.CStandbySerialId = PAcStandbySerialID[i];
+            //            beanD.CHpcaseId = PAcHPCaseID[i];
+
+            //            if (PAcArriveDate[i] != "")
+            //            {
+            //                beanD.CArriveDate = Convert.ToDateTime(PAcArriveDate[i]);
+            //            }
+
+            //            if (PAcReturnDate[i] != "")
+            //            {
+            //                beanD.CReturnDate = Convert.ToDateTime(PAcReturnDate[i]);
+            //            }
+
+            //            beanD.CPersonalDamage = PAcPersonalDamage[i];
+            //            beanD.CNote = PAcNote[i];
+            //            beanD.Disabled = int.Parse(PAcDisabled[i]);
+
+            //            beanD.CreatedDate = DateTime.Now;
+            //            beanD.CreatedUserName = LoginUser_Name;
+
+            //            dbOne.TbOneSrdetailPartsReplaces.Add(beanD);
+            //        }
+            //        #endregion
+
+            //        #endregion -----↑↑↑↑↑零件更換資訊 ↑↑↑↑↑-----
+
+            //        int result = dbOne.SaveChanges();
+
+            //        if (result <= 0)
+            //        {
+            //            pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(編輯)" + Environment.NewLine;
+            //            CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, LoginUser_Name);
+            //        }
+            //        else
+            //        {
+            //            if (string.IsNullOrEmpty(tLog))
+            //            {
+            //                tLog = "報修資訊主檔無變更！";
+            //            }
+
+            //            #region 紀錄修改log
+            //            TbOneLog logBean = new TbOneLog
+            //            {
+            //                CSrid = pSRID,
+            //                EventName = "SaveGenerallySR",
+            //                Log = tLog,
+            //                CreatedUserName = LoginUser_Name,
+            //                CreatedDate = DateTime.Now
+            //            };
+
+            //            dbOne.TbOneLogs.Add(logBean);
+            //            dbOne.SaveChanges();
+            //            #endregion
+
+            //            #region call ONE SERVICE（一般服務案件）狀態更新接口來寄送Mail
+            //            string TempStatus = CStatus;
+
+            //            if (OldCMainEngineerId != CMainEngineerId)
+            //            {
+            //                TempStatus = CStatus + "|TRANS"; //轉單
+            //            }
+
+            //            beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+            //            beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+            //            beanIN.IV_SRID = pSRID;
+            //            beanIN.IV_STATUS = TempStatus;
+            //            beanIN.IV_APIURLName = tAPIURLName;
+
+            //            CMF.GetAPI_GenerallySRSTATUS_Update(beanIN);
+            //            #endregion
+            //        }
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
+            //    pMsg += " 失敗行數：" + ex.ToString();
+
+            //    CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, LoginUser_Name);
+            //}
+
+            return RedirectToAction("finishForm");
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑裝機服務 ↑↑↑↑↑-----   
 
         #region -----↓↓↓↓↓服務團隊對照組織設定作業 ↓↓↓↓↓-----
         /// <summary>
@@ -4593,6 +5544,32 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region Ajax取得物料相關資訊
+        /// <summary>
+        /// Ajax取得物料相關資訊
+        /// </summary>
+        /// <param name="ProdID">料號</param>        
+        /// <returns></returns>
+        public IActionResult findMaterialInfo(string ProdID)
+        {
+            MaterialInfo ProBean = new MaterialInfo();
+
+            var bean = dbProxy.Materials.FirstOrDefault(x => x.MaraMatnr.Contains(ProdID.Trim()));
+
+            if (bean != null)
+            {
+                ProBean.MaterialID = bean.MaraMatnr;
+                ProBean.MaterialName = bean.MaktTxza1Zf;
+                ProBean.MFPNumber = bean.MaraMfrpn;
+                ProBean.BasicContent = string.IsNullOrEmpty(bean.BasicContent) ? "" : bean.BasicContent;
+                ProBean.ProductHierarchy = bean.MvkeProdh;
+                ProBean.Brand = CMF.findMATERIALBRAND(bean.MaraMatnr, bean.MvkeProdh);
+            }
+
+            return Json(ProBean);
+        }
+        #endregion
+
         #region Ajax取得BOM表查詢結果
         /// <summary>
         /// BOM表查詢結果
@@ -4869,6 +5846,36 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region DropDownList選項Class(裝機服務)
+        /// <summary>
+        /// DropDownList選項Class(裝機服務)
+        /// </summary>
+        public class ViewModel_Install
+        {
+            #region 狀態
+            public string ddl_cStatus { get; set; }
+
+            //不抓DB參數的設定
+            //public List<SelectListItem> ListStatus { get; } = new List<SelectListItem>
+            //{                
+            //    new SelectListItem { Value = "E0001", Text = "新建" },
+            //    new SelectListItem { Value = "E0008", Text = "裝機中" },
+            //    new SelectListItem { Value = "E0009", Text = "維修/DOA" },
+            //    new SelectListItem { Value = "E00010", Text = "裝機完成" },            
+            //    new SelectListItem { Value = "E0014", Text = "駁回" },
+            //    new SelectListItem { Value = "E0015", Text = "取消" },                
+            //};
+
+            public List<SelectListItem> ListStatus = findSysParameterList(pOperationID_InstallSR, "OTHER", pCompanyCode, "SRSTATUS", false);
+            #endregion           
+
+            #region 客戶類型
+            public string ddl_cCustomerType { get; set; }
+            public List<SelectListItem> ListCustomerType = findCustomerTypeList();
+            #endregion
+        }
+        #endregion
+
         #region DropDownList選項Class(客戶Email對照設定作業)
         /// <summary>
         /// DropDownList選項Class(客戶Email對照設定作業)
@@ -4946,9 +5953,7 @@ namespace OneService.Controllers
             /// <summary>料號</summary>
             public string ProdID { get; set; }
             /// <summary>料號說明</summary>
-            public string Product { get; set; }
-            /// <summary>製造商零件號碼</summary>
-            public string MFRPN { get; set; }
+            public string Product { get; set; }            
             /// <summary>裝機號碼</summary>
             public string InstallNo { get; set; }
         }
@@ -5106,6 +6111,25 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----  
     }
+
+    #region 物料相關資訊
+    /// <summary>物料相關資訊</summary>
+    public struct MaterialInfo
+    {        
+        /// <summary>料號</summary>
+        public string MaterialID { get; set; }
+        /// <summary>料號說明</summary>
+        public string MaterialName { get; set; }
+        /// <summary>製造商零件號碼</summary>
+        public string MFPNumber { get; set; }
+        /// <summary>基本內文</summary>
+        public string BasicContent { get; set; }
+        /// <summary>廠牌</summary>
+        public string Brand { get; set; }
+        /// <summary>廠品階層</summary>
+        public string ProductHierarchy { get; set; }        
+    }
+    #endregion
 
     #region 取得系統位址參數相關資訊
     public class SRSYSPARAINFO
