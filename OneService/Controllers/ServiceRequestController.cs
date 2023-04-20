@@ -128,12 +128,12 @@ namespace OneService.Controllers
             pCompanyCode = EmpBean.BUKRS;
             #endregion
 
-            #region 服務類型
+            #region 服務案件類型
             var SRTypeList = new List<SelectListItem>()
             {
-                new SelectListItem {Text="TSTI 一般服務", Value="ZSR1" },
-                new SelectListItem {Text="TSTI 裝機服務", Value="ZSR3" },
-                new SelectListItem {Text="TSTI 定維服務", Value="ZSR5" },                
+                new SelectListItem {Text="61_一般服務", Value="ZSR1" },
+                new SelectListItem {Text="63_裝機服務", Value="ZSR3" },
+                new SelectListItem {Text="65_定維服務", Value="ZSR5" },                
             };
 
             ViewBag.ddl_SRType = SRTypeList;
@@ -214,6 +214,7 @@ namespace OneService.Controllers
             string tPSIPURLName = string.Empty;
             string tAttachURLName = string.Empty;
             string CreatedDate = string.Empty;
+            string tSRIDUrl = string.Empty;
             string tSRTeam = string.Empty;
             string cNotes = string.Empty;
             string cReceiveTime = string.Empty;
@@ -487,6 +488,7 @@ namespace OneService.Controllers
                 string[] QueryInfo = new string[58];
 
                 CreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd");
+                tSRIDUrl = CMF.findSRIDUrl(dr["cSRID"].ToString());
                 tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
                 cNotes = dr["cNotes"].ToString().Replace("\r\n", "<br/>");
                 cReceiveTime = Convert.ToDateTime(dr["cReceiveTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cReceiveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
@@ -500,7 +502,7 @@ namespace OneService.Controllers
                 cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");
 
                 QueryInfo[0] = dr["cSRID"].ToString();              //SR_ID
-                QueryInfo[1] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
+                QueryInfo[1] = tSRIDUrl;                           //服務案件URL
                 QueryInfo[2] = dr["cDesc"].ToString();              //說明
                 QueryInfo[3] = cNotes;                             //詳細描述
                 QueryInfo[4] = dr["cSRType"].ToString();            //類型
@@ -684,6 +686,8 @@ namespace OneService.Controllers
             string ttWhere = string.Empty;
             string ttJoin = string.Empty;
             string ttStrItem = string.Empty;
+            string tSRIDUrl = string.Empty;             //服務案件URL
+            string tSRContactName = string.Empty;       //客戶聯絡人
             string tSRPathWayNote = string.Empty;       //報修管道
             string tStatusNote = string.Empty;          //狀態
             string tSRType = string.Empty;              //報修類別
@@ -697,6 +701,7 @@ namespace OneService.Controllers
             string tModifiedDate = string.Empty;        //最後編輯日期            
 
             var tSRTeam_List = CMF.findSRTeamIDList(cCompanyID, false);
+            var tSRContact_List = CMF.findSRDetailContactList();            
             List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
             List<TbOneSysParameter> tSRStatus_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRSTATUS");
 
@@ -937,6 +942,8 @@ namespace OneService.Controllers
 
             foreach (DataRow dr in dtProgress.Rows)
             {
+                tSRIDUrl = CMF.findSRIDUrl(dr["cSRID"].ToString());
+                tSRContactName = CMF.TransSRDetailContactName(tSRContact_List, dr["cSRID"].ToString());
                 tSRPathWayNote = CMF.TransSysParameterByList(tSRPathWay_List, dr["cSRPathWay"].ToString());
                 tStatusNote = CMF.TransSysParameterByList(tSRStatus_List, dr["cStatus"].ToString());
                 tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
@@ -949,25 +956,26 @@ namespace OneService.Controllers
                 tCreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
 
-                string[] QueryInfo = new string[17];                
+                string[] QueryInfo = new string[18];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
-                QueryInfo[1] = "../ServiceRequest/GenerallySR?SRID=" + QueryInfo[0];
+                QueryInfo[1] = tSRIDUrl;                       //服務案件URL
                 QueryInfo[2] = dr["cCustomerName"].ToString();   //客戶
                 QueryInfo[3] = dr["cRepairName"].ToString();     //客戶報修人
-                QueryInfo[4] = dr["cDesc"].ToString();          //說明
-                QueryInfo[5] = dr["cDelayReason"].ToString();    //延遲結案原因
-                QueryInfo[6] = tSRProductSerial;               //產品序號資訊
-                QueryInfo[7] = tSRTeam;                        //服務團隊
-                QueryInfo[8] = tSRPathWayNote;                 //報修管道
-                QueryInfo[9] = tSRType;                        //報修類別                
-                QueryInfo[10] = tMainEngineerID;               //L2工程師ERPID
-                QueryInfo[11] = tMainEngineerName;             //L2工程師姓名
-                QueryInfo[12] = tTechManagerID;                //技術主管ERPID                    
-                QueryInfo[13] = tCreatedUserName;              //派單人員
-                QueryInfo[14] = tCreatedDate;                  //派單日期
-                QueryInfo[15] = tModifiedDate;                 //最後編輯日期
-                QueryInfo[16] = tStatusNote;                   //狀態                
+                QueryInfo[4] = tSRContactName;                 //客戶聯絡人
+                QueryInfo[5] = dr["cDesc"].ToString();          //說明
+                QueryInfo[6] = dr["cDelayReason"].ToString();    //延遲結案原因
+                QueryInfo[7] = tSRProductSerial;               //產品序號資訊
+                QueryInfo[8] = tSRTeam;                        //服務團隊
+                QueryInfo[9] = tSRPathWayNote;                 //報修管道
+                QueryInfo[10] = tSRType;                       //報修類別                
+                QueryInfo[11] = tMainEngineerID;               //L2工程師ERPID
+                QueryInfo[12] = tMainEngineerName;             //L2工程師姓名
+                QueryInfo[13] = tTechManagerID;                //技術主管ERPID                    
+                QueryInfo[14] = tCreatedUserName;              //派單人員
+                QueryInfo[15] = tCreatedDate;                  //派單日期
+                QueryInfo[16] = tModifiedDate;                 //最後編輯日期
+                QueryInfo[17] = tStatusNote;                   //狀態                
 
                 QueryToList.Add(QueryInfo);
             }

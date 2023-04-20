@@ -311,7 +311,7 @@
 			var tbx_QueryPID = $("#tbx_QueryPID");						//機器型號
 			var TeamID = $("#ddl_TeamID").val().join();				//服務團隊
 			var Status = $("#ddl_Status").val().join();				//狀態
-			var SRType = $("#ddl_SRType").val().join();				//服務類型
+			var SRType = $("#ddl_SRType").val().join();				//服務案件種類
 			var tbx_QueryEngineerID = $("#tbx_QueryEngineerID");			//工程師ERPID
 			var tbx_QueryContractID = $("#tbx_QueryContractID");			//合約編號
 			var tbx_QuerySO = $("#tbx_QuerySO");						//銷售單號
@@ -534,9 +534,9 @@
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">服務類型</label>
+							<label class="col-lg-2 col-form-label">服務案件種類</label>
 							<div class="col-lg-4">
-								@Html.DropDownList("ddl_SRType", (IEnumerable<SelectListItem>)ViewBag.ddl_SRType, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務類型" })
+								@Html.DropDownList("ddl_SRType", (IEnumerable<SelectListItem>)ViewBag.ddl_SRType, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務案件種類" })								
 							</div>
 							<label class="col-lg-2 col-form-label">工程師ERPID</label>
 							<div class="col-lg-4">

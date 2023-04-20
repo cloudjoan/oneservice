@@ -1307,6 +1307,12 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----
 
+        #region -----↓↓↓↓↓裝機服務 ↓↓↓↓↓-----
+
+      
+
+        #endregion -----↑↑↑↑↑裝機服務 ↑↑↑↑↑-----
+
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
         #region 取得登入者資訊
@@ -1637,6 +1643,41 @@ namespace OneService.Controllers
 
         /// <summary>來源表單</summary>
         public string BPMNo { get; set; }
+        }
+        #endregion
+
+        #region 取得客戶聯絡資訊檔清單
+        /// <summary>
+        /// 取得客戶聯絡資訊檔清單
+        /// </summary>
+        /// <returns></returns>
+        public List<TbOneSrdetailContact> findSRDetailContactList()
+        {
+            var beans = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0).ToList();
+
+            return beans;
+        }
+        #endregion
+
+        #region 取得客戶聯絡資訊檔的聯絡人名稱By List
+        /// <summary>
+        /// 取得客戶聯絡資訊檔的聯絡人名稱By List
+        /// </summary>
+        /// <param name="tList">服務團隊清單</param>
+        /// <param name="tSRID">SRID</param>
+        /// <returns></returns>
+        public string TransSRDetailContactName(List<TbOneSrdetailContact> tList, string tSRID)
+        {
+            string reValue = string.Empty;
+
+            var beans = tList.Where(x => x.CSrid == tSRID);
+
+            foreach (var bean in beans)
+            {
+                reValue += bean.CContactName + "<br/>";
+            }
+
+            return reValue;
         }
         #endregion
 
@@ -2160,6 +2201,35 @@ namespace OneService.Controllers
             if (bean != null)
             {
                 reValue = bean.CTeamOldName;
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得OneService服務案件URL
+        /// <summary>
+        /// 取得OneService服務案件URL
+        /// </summary>
+        /// <param name="cSRID">SRID</param>
+        /// <returns></returns>
+        public string findSRIDUrl(string cSRID)
+        {
+            string reValue = string.Empty;
+
+            switch (cSRID.Substring(0, 2))
+            {
+                case "61":  //一般服務
+                    reValue = "../ServiceRequest/GenerallySR?SRID=" + cSRID;
+                    break;
+
+                case "63":  //裝機服務
+                    reValue = "../ServiceRequest/InstallSR?SRID=" + cSRID;
+                    break;
+
+                case "65":  //定維服務
+                    reValue = "../ServiceRequest/MaintainSR?SRID=" + cSRID;
+                    break;
             }
 
             return reValue;
