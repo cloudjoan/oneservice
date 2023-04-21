@@ -40,10 +40,10 @@
 								data = data.replace(translate_re, translator);
 
 							//將換行符號<br>換成excel可以識別的\n
-							if (column === 5) {
+							if (column === 3 || column === 6) {
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 							}
-							else if (column === 8) {
+							else if (column === 9) {
 								return data.split("</button>")[0].split(">").pop(); //pop()代表取最後一個
                             }
 							else return data;
@@ -78,7 +78,8 @@
 							formatTargetColumn(xlsx, 'F');
 							formatTargetColumn(xlsx, 'G');
 							formatTargetColumn(xlsx, 'H');
-							formatTargetColumn(xlsx, 'I');							
+							formatTargetColumn(xlsx, 'I');
+							formatTargetColumn(xlsx, 'J');
 						}
 					}),
 				],
@@ -88,12 +89,13 @@
 					{ "width": "32px", "targets": 0 },   //SRID
 					{ "width": "32px", "targets": 1 },   //客戶
 					{ "width": "32px", "targets": 2 },   //客戶報修人
-					{ "width": "100px", "targets": 3 },   //說明
-					{ "width": "32px", "targets": 4 },   //報修管道
-					{ "width": "32px", "targets": 5 },  //報修類別
-					{ "width": "32px", "targets": 6 },  //L2工程師
-					{ "width": "60px", "targets": 7 },   //最後編輯日期
-					{ "width": "32px", "targets": 8 },   //狀態
+					{ "width": "32px", "targets": 3 },   //客戶聯絡人
+					{ "width": "100px", "targets": 4 },   //說明
+					{ "width": "32px", "targets": 5 },   //報修管道
+					{ "width": "32px", "targets": 6 },  //報修類別
+					{ "width": "32px", "targets": 7 },  //L2工程師
+					{ "width": "60px", "targets": 8 },   //最後編輯日期
+					{ "width": "32px", "targets": 9 },   //狀態
 				],
 			});
 
@@ -185,7 +187,10 @@
 							<option value='L2處理中'>L2處理中</option>
 							<option value='報價中'>報價中</option>
 							<option value='3rd Party處理中'>3rd Party處理中</option>
+							<option value='技術支援升級'>技術支援升級</option>
 							<option value='L3處理中'>L3處理中</option>
+							<option value='裝機中'>裝機中</option>
+							<option value='維修/DOA'>維修/DOA</option>
 							<option value='HPGCSN 申請'>HPGCSN 申請</option>
 							<option value='HPGCSN 完成'>HPGCSN 完成</option>
 							<option value='駁回'>駁回</option>
@@ -198,6 +203,7 @@
 								<th>SRID</th>
 								<th>客戶</th>
 								<th>客戶報修人</th>
+								<th>客戶聯絡人</th>
 								<th>說明</th>
 								<th>報修管道</th>
 								<th>報修類別</th>
@@ -209,9 +215,9 @@
 						<tbody>
 							@{
 							int count = 0;
-							if (ViewBag.SRIDList_GenerallySR != null)
+							if (ViewBag.SRIDToDoList != null)
 							{
-								foreach (string[] CheckInfo in ViewBag.SRIDList_GenerallySR)
+								foreach (string[] CheckInfo in ViewBag.SRIDToDoList)
 								{
 									string tERPID = ViewBag.cLoginUser_ERPID;
 
@@ -230,6 +236,7 @@
 										<td>@CheckInfo[0]</td>
 										<td>@CheckInfo[1]</td>
 										<td>@CheckInfo[2]</td>
+										<td>@Html.Raw(CheckInfo[11])</td>
 										<td>@CheckInfo[3]</td>
 										<td>@CheckInfo[4]</td>
 										<td>@Html.Raw(CheckInfo[5])</td>
@@ -265,6 +272,21 @@
 													tClass = "btn btn-success";
 													tTypeName = "L3處理中";
 												}
+												else if (CheckInfo[10] == "E0007")
+												{
+													tClass = "btn btn-success";
+													tTypeName = "技術支援升級";
+												}
+												else if (CheckInfo[10] == "E0008")
+												{
+													tClass = "btn btn-success";
+													tTypeName = "裝機中";
+												}
+												else if (CheckInfo[10] == "E0009")
+												{
+													tClass = "btn btn-success";
+													tTypeName = "維修/DOA";
+												}
 												else if (CheckInfo[10] == "E0012")
 												{
 													tClass = "btn btn-success";
@@ -280,10 +302,26 @@
 													tClass = "btn btn-info";
 													tTypeName = "駁回";
 												}
-											}
-											<button class='@tClass' type="button" onclick="window.open('@Url.Action("GenerallySR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
-												@tTypeName
-											</button>
+
+												if (CheckInfo[0].Substring(0,2) == "61")
+												{
+													<button class='@tClass' type="button" onclick="window.open('@Url.Action("GenerallySR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
+														@tTypeName
+													</button>
+												}
+												else if (CheckInfo[0].Substring(0, 2) == "63")
+												{
+													<button class='@tClass' type="button" onclick="window.open('@Url.Action("InstallSR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
+														@tTypeName
+													</button>
+												}
+												else if (CheckInfo[0].Substring(0, 2) == "65")
+												{
+													<button class='@tClass' type="button" onclick="window.open('@Url.Action("MaintainSR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
+														@tTypeName
+													</button>
+												}
+											}											
 										</td>
 									</tr>
 								}

@@ -91,6 +91,11 @@ namespace OneService.Controllers
         static string pOperationID_InstallSR = "3B6FF77B-DAF4-4C2D-957A-6C28CE054D75";
 
         /// <summary>
+        /// 程式作業編號檔系統ID(定維服務)
+        /// </summary>
+        static string pOperationID_MaintainSR = "5B80D6AB-9143-4916-9273-ADFAEA9A61ED";
+
+        /// <summary>
         /// 公司別(T012、T016、C069、T022)
         /// </summary>
         static string pCompanyCode = string.Empty;
@@ -1028,9 +1033,9 @@ namespace OneService.Controllers
                 List<string> tSRTeamList = CMF.findSRTeamMappingList(EmpBean.CostCenterID, EmpBean.DepartmentNO);
 
                 //取得登入人員所有要負責的SRID                
-                List<string[]> SRIDList_GenerallySR = CMF.findSRIDList(pOperationID_GenerallySR, pCompanyCode, pIsManager, EmpBean.EmployeeERPID, tSRTeamList, "61");
+                List<string[]> SRIDToDoList = CMF.findSRIDList(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode, pIsManager, EmpBean.EmployeeERPID, tSRTeamList);
 
-                ViewBag.SRIDList_GenerallySR = SRIDList_GenerallySR;
+                ViewBag.SRIDToDoList = SRIDToDoList;
                 #endregion
             }
             catch (Exception ex)
@@ -1317,7 +1322,7 @@ namespace OneService.Controllers
             string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
 
             SRCondition srCon = new SRCondition();
-            SRMain_GENERALSRSTATUS_INPUT beanIN = new SRMain_GENERALSRSTATUS_INPUT();
+            SRMain_SRSTATUS_INPUT beanIN = new SRMain_SRSTATUS_INPUT();
 
             try
             {
@@ -1511,14 +1516,14 @@ namespace OneService.Controllers
                         dbOne.SaveChanges();
                         #endregion
 
-                        #region call ONE SERVICE（一般服務案件）狀態更新接口來寄送Mail
+                        #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
                         beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = "E0005|ADD"; //新建但狀態是L3處理中
                         beanIN.IV_APIURLName = tAPIURLName;
 
-                        CMF.GetAPI_GenerallySRSTATUS_Update(beanIN);
+                        CMF.GetAPI_SRSTATUS_Update(beanIN);
                         #endregion
                     }
                 }
@@ -1974,7 +1979,7 @@ namespace OneService.Controllers
                         dbOne.SaveChanges();
                         #endregion
 
-                        #region call ONE SERVICE（一般服務案件）狀態更新接口來寄送Mail
+                        #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
                         string TempStatus = CStatus;
 
                         if (OldCMainEngineerId != CMainEngineerId)
@@ -1988,7 +1993,7 @@ namespace OneService.Controllers
                         beanIN.IV_STATUS = TempStatus;
                         beanIN.IV_APIURLName = tAPIURLName;
 
-                        CMF.GetAPI_GenerallySRSTATUS_Update(beanIN);
+                        CMF.GetAPI_SRSTATUS_Update(beanIN);
                         #endregion
                     }
                 }
@@ -3195,7 +3200,7 @@ namespace OneService.Controllers
             string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
 
             SRCondition srCon = new SRCondition();
-            SRMain_GENERALSRSTATUS_INPUT beanIN = new SRMain_GENERALSRSTATUS_INPUT();
+            SRMain_SRSTATUS_INPUT beanIN = new SRMain_SRSTATUS_INPUT();
 
             try
             {
@@ -3361,14 +3366,14 @@ namespace OneService.Controllers
                         dbOne.SaveChanges();
                         #endregion
 
-                        #region call ONE SERVICE（一般服務案件）狀態更新接口來寄送Mail
+                        #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
                         beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = "E0001"; //新建
                         beanIN.IV_APIURLName = tAPIURLName;
 
-                        //CMF.GetAPI_GenerallySRSTATUS_Update(beanIN);
+                        CMF.GetAPI_SRSTATUS_Update(beanIN);
                         #endregion
                     }
                 }
@@ -3721,7 +3726,7 @@ namespace OneService.Controllers
                         beanIN.IV_STATUS = TempStatus;
                         beanIN.IV_APIURLName = tAPIURLName;
 
-                        //CMF.GetAPI_GenerallySRSTATUS_Update(beanIN);
+                        CMF.GetAPI_SRSTATUS_Update(beanIN);
                         #endregion
                     }
                 }
@@ -6078,9 +6083,9 @@ namespace OneService.Controllers
     }
     #endregion
 
-    #region 一般服務案件狀態更新INPUT資訊
-    /// <summary>一般服務案件狀態更新INPUT資訊</summary>
-    public struct SRMain_GENERALSRSTATUS_INPUT
+    #region 服務案件(一般/裝機/定維)狀態更新INPUT資訊
+    /// <summary>服務案件(一般/裝機/定維)狀態更新INPUT資訊</summary>
+    public struct SRMain_SRSTATUS_INPUT
     {
         /// <summary>修改者員工編號ERPID</summary>
         public string IV_LOGINEMPNO { get; set; }
@@ -6095,9 +6100,9 @@ namespace OneService.Controllers
     }
     #endregion
 
-    #region 一般服務案件狀態更新OUTPUT資訊
-    /// <summary>一般服務案件狀態更新OUTPUT資訊</summary>
-    public struct SRMain_GENERALSRSTATUS_OUTPUT
+    #region 服務案件(一般/裝機/定維)狀態更新OUTPUT資訊
+    /// <summary>服務案件(一般/裝機/定維)狀態更新OUTPUT資訊</summary>
+    public struct SRMain_SRSTATUS_OUTPUT
     {
         /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
         public string EV_MSGT { get; set; }

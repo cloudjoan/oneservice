@@ -52,32 +52,21 @@ namespace OneService.Controllers
         /// <summary>
         /// 取得登入人員所有要負責的SRID
         /// </summary>
-        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cOperationID_GenerallySR">程式作業編號檔系統ID(一般)</param>
+        /// <param name="cOperationID_InstallSR">程式作業編號檔系統ID(裝機)</param>
+        /// <param name="cOperationID_MaintainSR">程式作業編號檔系統ID(定維)</param>
         /// <param name="cCompanyID">公司別</param>
         /// <param name="IsManager">true.管理員 false.非管理員</param>
         /// <param name="tERPID">登入人員ERPID</param>
-        /// <param name="tTeamList">可觀看服務團隊清單</param>
-        /// <param name="tType">61.一般服務 63.裝機服務...</param>
+        /// <param name="tTeamList">可觀看服務團隊清單</param>        
         /// <returns></returns>
-        public List<string[]> findSRIDList(string cOperationID, string cCompanyID, bool IsManager, string tERPID, List<string> tTeamList, string tType)
+        public List<string[]> findSRIDList(string cOperationID_GenerallySR, string cOperationID_InstallSR, string cOperationID_MaintainSR, 
+                                         string cCompanyID, bool IsManager, string tERPID, List<string> tTeamList)
         {            
 
             List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
 
-            switch(tType)
-            {
-                case "61":  //一般服務
-                    SRIDUserToList = getSRIDLis_Generally(cOperationID, cCompanyID, IsManager, tERPID, tTeamList);
-                    break;
-
-                case "63":  //裝機服務
-
-                    break;
-
-                case "65":  //定維服務
-
-                    break;
-            }
+            SRIDUserToList = getSRIDToDoList(cOperationID_GenerallySR, cOperationID_InstallSR, cOperationID_MaintainSR, cCompanyID, IsManager, tERPID, tTeamList);
 
             return SRIDUserToList;
         }
@@ -87,16 +76,20 @@ namespace OneService.Controllers
         /// <summary>
         /// 取得一般服務SRID負責清單
         /// </summary>
-        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cOperationID_GenerallySR">程式作業編號檔系統ID(一般)</param>
+        /// <param name="cOperationID_InstallSR">程式作業編號檔系統ID(裝機)</param>
+        /// <param name="cOperationID_MaintainSR">程式作業編號檔系統ID(定維)</param>
         /// <param name="cCompanyID">公司別</param>
         /// <param name="IsManager">true.管理員 false.非管理員</param>
         /// <param name="tERPID">登入人員ERPID</param>
         /// <param name="tTeamList">可觀看服務團隊清單</param>
         /// <returns></returns>
-        private List<string[]> getSRIDLis_Generally(string cOperationID, string cCompanyID, bool IsManager, string tERPID, List<string> tTeamList)
+        private List<string[]> getSRIDToDoList(string cOperationID_GenerallySR, string cOperationID_InstallSR, string cOperationID_MaintainSR, 
+                                             string cCompanyID, bool IsManager, string tERPID, List<string> tTeamList)
         {
             List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
 
+            string tSRContactName = string.Empty;       //客戶聯絡人
             string tSRPathWay = string.Empty;           //報修管理
             string tSRType = string.Empty;              //報修類別
             string tMainEngineerID = string.Empty;      //L2工程師ERPID
@@ -104,8 +97,10 @@ namespace OneService.Controllers
             string cTechManagerID = string.Empty;      //技術主管ERPID            
             string tModifiedDate = string.Empty;        //修改日期
 
+            var tSRContact_List = findSRDetailContactList();
+
             List<TbOneSrmain> beans = new List<TbOneSrmain>();
-            List<TbOneSysParameter> tSRPathWay_List = findSysParameterALLDescription(cOperationID, "OTHER", cCompanyID, "SRPATH");            
+            List<TbOneSysParameter> tSRPathWay_List = findSysParameterALLDescription(cOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
 
             if (IsManager)
             {
@@ -113,7 +108,7 @@ namespace OneService.Controllers
 
                 string tSQL = @"select * from TB_ONE_SRMain
                                    where 
-                                   (cStatus <> 'E0015' and cStatus <> 'E0006') and 
+                                   (cStatus <> 'E0015' and cStatus <> 'E0006' and cStatus <> 'E0010') and 
                                    (
                                         (
                                             (CMainEngineerId = '{0}') or (cTechManagerID like '%{0}%')
@@ -127,6 +122,7 @@ namespace OneService.Controllers
 
                 foreach (DataRow dr in dt.Rows)
                 {
+                    tSRContactName = TransSRDetailContactName(tSRContact_List, dr["cSRID"].ToString());
                     tSRPathWay = TransSysParameterByList(tSRPathWay_List, dr["cSRPathWay"].ToString());
                     tSRType = TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
                     tMainEngineerID = dr["cMainEngineerID"].ToString();
@@ -135,7 +131,7 @@ namespace OneService.Controllers
                     tModifiedDate = dr["ModifiedDate"].ToString() != "" ? Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss") : "";
 
                     #region 組待處理服務
-                    string[] ProcessInfo = new string[11];
+                    string[] ProcessInfo = new string[12];
 
                     ProcessInfo[0] = dr["cSRID"].ToString();             //SRID
                     ProcessInfo[1] = dr["cCustomerName"].ToString();      //客戶
@@ -148,6 +144,7 @@ namespace OneService.Controllers
                     ProcessInfo[8] = cTechManagerID;                    //技術主管ERPID                    
                     ProcessInfo[9] = tModifiedDate;                     //最後編輯日期
                     ProcessInfo[10] = dr["cStatus"].ToString();           //狀態
+                    ProcessInfo[11] = tSRContactName;                   //客戶聯絡人
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -155,10 +152,11 @@ namespace OneService.Controllers
             }
             else
             {
-                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006") && (x.CMainEngineerId == tERPID || x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID))).ToList();
+                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006" && x.CStatus != "E0010") && (x.CMainEngineerId == tERPID || x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID))).ToList();
 
                 foreach (var bean in beans)
                 {
+                    tSRContactName = TransSRDetailContactName(tSRContact_List, bean.CSrid);
                     tSRPathWay = TransSysParameterByList(tSRPathWay_List, bean.CSrpathWay);                    
                     tSRType = TransSRType(bean.CSrtypeOne, bean.CSrtypeSec, bean.CSrtypeThr);
                     tMainEngineerID = string.IsNullOrEmpty(bean.CMainEngineerId) ? "" : bean.CMainEngineerId;
@@ -167,7 +165,7 @@ namespace OneService.Controllers
                     tModifiedDate = bean.ModifiedDate == null ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
 
                     #region 組待處理服務
-                    string[] ProcessInfo = new string[11];
+                    string[] ProcessInfo = new string[12];
 
                     ProcessInfo[0] = bean.CSrid;            //SRID
                     ProcessInfo[1] = bean.CCustomerName;     //客戶
@@ -180,6 +178,7 @@ namespace OneService.Controllers
                     ProcessInfo[8] = cTechManagerID;       //技術主管ERPID                    
                     ProcessInfo[9] = tModifiedDate;        //最後編輯日期
                     ProcessInfo[10] = bean.CStatus;         //狀態
+                    ProcessInfo[11] = tSRContactName;      //客戶聯絡人
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -1247,20 +1246,20 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region call ONE SERVICE（一般服務案件）狀態更新接口
+        #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口
         /// <summary>
-        /// call ONE SERVICE（一般服務案件）狀態更新接口
+        /// call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口
         /// </summary>
         /// <param name="beanIN"></param>
-        public SRMain_GENERALSRSTATUS_OUTPUT GetAPI_GenerallySRSTATUS_Update(SRMain_GENERALSRSTATUS_INPUT beanIN)
+        public SRMain_SRSTATUS_OUTPUT GetAPI_SRSTATUS_Update(SRMain_SRSTATUS_INPUT beanIN)
         {
-            SRMain_GENERALSRSTATUS_OUTPUT OUTBean = new SRMain_GENERALSRSTATUS_OUTPUT();
+            SRMain_SRSTATUS_OUTPUT OUTBean = new SRMain_SRSTATUS_OUTPUT();
 
             string pMsg = string.Empty;
 
             try
             {
-                string tURL = beanIN.IV_APIURLName + "/API/API_GENERALSRSTATUS_UPDATE";
+                string tURL = beanIN.IV_APIURLName + "/API/API_SRSTATUS_UPDATE";
 
                 var client = new RestClient(tURL);
 
@@ -1286,20 +1285,20 @@ namespace OneService.Controllers
 
                 if (OUTBean.EV_MSGT == "Y")
                 {
-                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE（一般服務案件）狀態更新接口成功";                    
+                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口成功";                    
                 }
                 else
                 {
-                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE（一般服務案件）狀態更新接口失敗，原因:" + OUTBean.EV_MSG;                    
+                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口失敗，原因:" + OUTBean.EV_MSG;                    
                 }               
             }
             catch (Exception ex)
             {
-                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE（一般服務案件）狀態更新接口失敗，原因:" + ex.Message + Environment.NewLine;
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口失敗，原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();                
             }
 
-            writeToLog(beanIN.IV_SRID, "GetAPI_GenerallySRSTATUS_Update", pMsg, beanIN.IV_LOGINEMPNAME);
+            writeToLog(beanIN.IV_SRID, "GetAPI_SRSTATUS_Update", pMsg, beanIN.IV_LOGINEMPNAME);
 
             return OUTBean;
         }
@@ -2261,7 +2260,76 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion               
+        #endregion
+
+        #region 取得服務狀態清單
+        /// <summary>
+        /// 取得服務狀態清單
+        /// </summary>
+        /// <param name="cOperationID_GenerallySR">程式作業編號檔系統ID(一般)</param>
+        /// <param name="cOperationID_InstallSR">程式作業編號檔系統ID(裝機)</param>
+        /// <param name="cOperationID_MaintainSR">程式作業編號檔系統ID(定維)</param>
+        /// <param name="cCompanyID">公司別</param>
+        /// <returns></returns>
+        public List<SelectListItem> findSRStatus(string cOperationID_GenerallySR, string cOperationID_InstallSR, string cOperationID_MaintainSR, string cCompanyID)
+        {
+            List<SelectListItem> ListTempStatus = new List<SelectListItem>();
+
+            List<SelectListItem> ListStatus_Gen = findSysParameterListItem(cOperationID_GenerallySR, "OTHER", cCompanyID, "SRSTATUS", false);   //一般服務
+            List<SelectListItem> ListStatus_Ins = findSysParameterListItem(cOperationID_InstallSR, "OTHER", cCompanyID, "SRSTATUS", false);     //裝機服務
+            List<SelectListItem> ListStatus_Man = findSysParameterListItem(cOperationID_MaintainSR, "OTHER", cCompanyID, "SRSTATUS", false);    //定維服務
+
+            ListTempStatus = findSRStatus(ListTempStatus, ListStatus_Gen);
+            ListTempStatus = findSRStatus(ListTempStatus, ListStatus_Ins);
+            ListTempStatus = findSRStatus(ListTempStatus, ListStatus_Man);
+
+            return ListTempStatus;
+        }
+        #endregion
+
+        #region 取得服務狀態清單
+        /// <summary>
+        /// 取得服務狀態清單
+        /// </summary>
+        /// <param name="ListOriStatus">來源的清單</param>
+        /// <param name="ListInputStatus">傳入卻比對的清單</param>
+        public List<SelectListItem> findSRStatus(List<SelectListItem> ListOriStatus, List<SelectListItem> ListInputStatus)
+        {
+            List<SelectListItem> ListTempStatus = new List<SelectListItem>();
+            ListTempStatus.AddRange(ListOriStatus);
+
+            if (ListTempStatus.Count == 0)
+            {
+                foreach (var beanG in ListInputStatus)
+                {
+                    ListTempStatus.Add(new SelectListItem { Text = beanG.Text, Value = beanG.Value });
+                }
+            }
+            else
+            {
+                foreach (var beanG in ListInputStatus)
+                {
+                    bool tIsMatch = false;
+
+                    foreach (var bean in ListOriStatus)
+                    {
+                        if (beanG.Value == bean.Value)
+                        {
+                            tIsMatch = true;
+                            break;
+                        }
+                    }
+
+                    if (!tIsMatch) //不符合才新增
+                    {
+                        ListTempStatus.Add(new SelectListItem { Text = beanG.Text, Value = beanG.Value });
+                    }
+                }
+            }
+
+            return ListTempStatus;
+        }
+        #endregion       
 
         #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
         /// <summary>
