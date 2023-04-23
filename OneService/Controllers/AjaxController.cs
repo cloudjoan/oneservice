@@ -121,7 +121,11 @@ namespace OneService.Controllers
                 case "findCrmOppByOppNo":
                     contentObj = proxyDB.TbCrmOppHeads.FirstOrDefault(x => x.CrmOppNo == OppNoFormat(keyword));
                     break;
-                default:
+
+				case "findCrmOppByKeyword":
+					contentObj = psipDB.ViewProPjOppInfos.Where(x => x.CrmOppNo.Contains(keyword) || x.OppDescription.Contains(keyword));
+					break;
+				default:
                     break;
             }
 

@@ -11,6 +11,10 @@ using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Signing;
 using OneService.Utils;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using NPOI.XSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.HSSF.UserModel;
+using Org.BouncyCastle.Utilities;
 
 namespace OneService.Controllers
 {
@@ -21,6 +25,7 @@ namespace OneService.Controllers
         TAIFContext bpmDB = new TAIFContext();
         MCSWorkflowContext eipDB = new MCSWorkflowContext();
         CommonFunction CMF = new CommonFunction();
+        ERP_PROXY_DBContext proxyDB = new ERP_PROXY_DBContext();
 
         /// <summary>
         /// 登入者帳號
@@ -447,13 +452,137 @@ namespace OneService.Controllers
             return "";
         }
 
-        #endregion
+		#endregion
 
-        #region 取得登入帳號權限
-        /// <summary>
-        /// 取得登入帳號權限
-        /// </summary>
-        public void getLoginAccount()
+		#region 匯出工時Excel
+		public IActionResult ExportExcel()
+		{
+			 // 建立 Excel 工作簿
+            IWorkbook workbook = new XSSFWorkbook();
+            ISheet sheet = workbook.CreateSheet("Sheet1");
+
+            // 填充表格
+            IRow headerRow = sheet.CreateRow(0);
+			headerRow.CreateCell(0).SetCellValue("");
+			headerRow.CreateCell(1).SetCellValue("工時類型(輸入代號):\nB(專案導入)\nC(內部作業)\nD(專業服務)");
+            headerRow.CreateCell(2).SetCellValue("任務活動(輸入代號):\n");
+			headerRow.CreateCell(3).SetCellValue("專案(商機號碼):");
+			headerRow.CreateCell(4).SetCellValue("工作說明              ");
+			headerRow.CreateCell(5).SetCellValue("時間起");
+			headerRow.CreateCell(6).SetCellValue("時間訖");
+
+			XSSFCellStyle cs = (XSSFCellStyle)workbook.CreateCellStyle();
+            cs.WrapText = true; // 設定換行
+
+            headerRow.Cells[0].CellStyle = cs;
+
+            IRow dataRow = sheet.CreateRow(1);
+			dataRow.CreateCell(0).SetCellValue("範例格式(請刪除行！)");
+			dataRow.CreateCell(1).SetCellValue("A");
+            dataRow.CreateCell(2).SetCellValue("B");
+			dataRow.CreateCell(3).SetCellValue("153");
+			dataRow.CreateCell(4).SetCellValue("協助專案推進");
+			dataRow.CreateCell(5).SetCellValue("2023-01-01 10:00");
+			dataRow.CreateCell(6).SetCellValue("2023-01-01 18:30");
+
+            //自動調格式長度
+			//for (int j = 0; j < 4; j++) sheet.AutoSizeColumn(j);
+
+			// 將工作簿寫入 MemoryStream
+			MemoryStream stream = new MemoryStream();
+            workbook.Write(stream, true);
+            stream.Flush();
+            stream.Position = 0;
+
+            // 回傳 Excel 檔案
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "WH_Format.xlsx");
+		}
+
+		#endregion
+
+		#region 匯入工時Excel
+
+		[HttpPost]
+		public IActionResult ImportExcel(IFormFile file)
+		{
+			using (var stream = file.OpenReadStream())
+			{
+				var workbook = new XSSFWorkbook(stream);
+				var sheet = workbook.GetSheetAt(0);
+
+				for (int i = 1; i <= sheet.LastRowNum; i++)
+				{
+                    try
+                    {
+						
+						TbWorkingHoursMain bean = new TbWorkingHoursMain();
+						var row = sheet.GetRow(i);
+						bean.UserName = HttpContext.Session.GetString(SessionKey.USER_NAME);
+						bean.UserErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
+						bean.Whtype = row.GetCell(1).StringCellValue;
+						bean.ActType = row.GetCell(2).StringCellValue;
+						bean.CrmOppNo = row.GetCell(3).StringCellValue;
+						bean.WhDescript = row.GetCell(4).StringCellValue;
+						bean.StartTime = row.GetCell(5).StringCellValue;
+						bean.EndTime = row.GetCell(6).StringCellValue;
+						bean.InsertTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+						bean.ModifyUser = HttpContext.Session.GetString(SessionKey.USER_NAME);
+
+                        if(!string.IsNullOrEmpty(bean.CrmOppNo))
+                        {
+							var oppBean = proxyDB.TbCrmOppHeads.FirstOrDefault(x => x.CrmOppNo == OppNoFormat(bean.CrmOppNo));
+                            bean.CrmOppNo = oppBean.CrmOppNo;
+                            bean.CrmOppName = oppBean.CrmOppNo + " - " + oppBean.OppDescription; 
+						}
+
+						//計算工時分鐘數
+						DateTime startTime = Convert.ToDateTime(bean.StartTime);
+						DateTime endTime = Convert.ToDateTime(bean.EndTime);
+						TimeSpan ts = endTime - startTime;
+						bean.Labor = Convert.ToInt32(ts.TotalMinutes);
+
+						bean.ActType = string.IsNullOrEmpty(bean.ActType) ? "L" : bean.ActType;
+
+						psipDB.TbWorkingHoursMains.Add(bean);
+
+						//如果有商機跟專案管理的話，就需加入專案管理的工時計算
+						if (!string.IsNullOrEmpty(bean.CrmOppNo))
+						{
+                            int prId = 0;
+							var pjInfoBean = psipDB.TbProPjinfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
+
+							//取得MileStone
+							string ms = GetMileStone(bean.CrmOppNo, bean.StartTime, bean.EndTime);
+
+							var workHours = Math.Ceiling((decimal)bean.Labor / 60);
+
+							//int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
+							var _prId = SavePjRecord(prId, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours.ToString(), "", "", bean.WhDescript, "");
+
+							bean.PrId = _prId;
+						}
+
+						psipDB.SaveChanges();
+					}
+					catch(Exception e)
+                    {
+                        System.Diagnostics.Debug.WriteLine(e.Message);
+                    }
+
+				}
+			}
+
+			return RedirectToAction("CreateWH");
+		}
+
+		#endregion
+
+
+		#region 取得登入帳號權限
+		/// <summary>
+		/// 取得登入帳號權限
+		/// </summary>
+		public void getLoginAccount()
         {
             #region 測試用
             //pLoginAccount = @"etatung\elvis.chang";     //MIS

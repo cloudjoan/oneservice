@@ -28,6 +28,7 @@ namespace OneService.Models
         public virtual DbSet<TbProTask> TbProTasks { get; set; } = null!;
         public virtual DbSet<TbWhType> TbWhTypes { get; set; } = null!;
         public virtual DbSet<TbWorkingHoursMain> TbWorkingHoursMains { get; set; } = null!;
+        public virtual DbSet<ViewProPjOppInfo> ViewProPjOppInfos { get; set; } = null!;
         public virtual DbSet<ViewProSupportEmp> ViewProSupportEmps { get; set; } = null!;
         public virtual DbSet<ViewWorkingHour> ViewWorkingHours { get; set; } = null!;
 
@@ -558,6 +559,21 @@ namespace OneService.Models
                 entity.Property(e => e.Whtype)
                     .HasMaxLength(10)
                     .HasColumnName("WHType");
+            });
+
+            modelBuilder.Entity<ViewProPjOppInfo>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("VIEW_PRO_PJ_OPP_INFO");
+
+                entity.Property(e => e.CrmOppNo)
+                    .HasMaxLength(10)
+                    .HasColumnName("CRM_OPP_NO");
+
+                entity.Property(e => e.OppDescription)
+                    .HasMaxLength(200)
+                    .HasColumnName("OPP_DESCRIPTION");
             });
 
             modelBuilder.Entity<ViewProSupportEmp>(entity =>

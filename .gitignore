@@ -9,3 +9,6 @@
 /OneService/bin
 /OneService/obj
 /.vs
+bin
+obj
+.vs

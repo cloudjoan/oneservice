@@ -1,10 +1,10 @@
 ﻿#如果沒有ef指令的話，就要先執行這一行：dotnet tool install --global dotnet-ef
 
 #PSIP 
-dotnet ef dbcontext scaffold "Server=172.31.7.66;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -t TB_PRO_PJINFO -t TB_PRO_SUPPORT_EMP -t VIEW_WORKING_HOURS -t VIEW_PRO_SUPPORT_EMP -t TB_WhType -f
+dotnet ef dbcontext scaffold "Server=172.31.7.66;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -t TB_PRO_PJINFO -t TB_PRO_SUPPORT_EMP -t VIEW_WORKING_HOURS -t VIEW_PRO_SUPPORT_EMP -t TB_WhType -t VIEW_PRO_PJ_OPP_INFO -f
 
 #PSIP-QAS
-dotnet ef dbcontext scaffold "Server=172.31.7.67;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_PIS_INSTALLMaterial -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -t TB_PRO_PJINFO -t TB_PRO_SUPPORT_EMP -t VIEW_WORKING_HOURS -t VIEW_PRO_SUPPORT_EMP -t TB_WhType -f
+dotnet ef dbcontext scaffold "Server=172.31.7.67;Database=PSIP;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_PRO_TASK -t TB_BULLETIN_ITEM -t TB_ONE_OperationParameter -t TB_ONE_RoleParameter -t TB_ONE_SysParameter -t TB_PIS_INSTALLMaterial -t TB_WorkingHoursMain -t TB_PRO_PJ_RECORD -t TB_PRO_MILESTONE -t TB_PRO_PJINFO -t TB_PRO_SUPPORT_EMP -t VIEW_WORKING_HOURS -t VIEW_PRO_SUPPORT_EMP -t TB_WhType -t VIEW_PRO_PJ_OPP_INFO -f
 dotnet ef dbcontext scaffold "Server=172.31.7.67;Database=TSTI-ONE;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_ONE_SRRepairType -t TB_ONE_SRIDFormat -t TB_ONE_SRMain -t TB_ONE_SRDetail_Product -t TB_ONE_SRDetail_Warranty -t TB_ONE_SRTeamMapping -t TB_ONE_LOG -t TB_ONE_SRSQPerson -t TB_ONE_SRDetail_PartsReplace -t TB_ONE_SRDetail_Record -t TB_ONE_DOCUMENT -t TB_ONE_SRCustomerEmailMapping -t TB_ONE_SRDetail_Contact -t VIEW_ONE_SRREPORT -t TB_ONE_SRDetail_MaterialInfo -t TB_ONE_SRDetail_SerialFeedback -f
 
 #ONE-Service

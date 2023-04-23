@@ -29,7 +29,47 @@
 @section js_section{
 	<script>
 		$(document).ready(function(){
-			
+
+			$("#tbx_CrmOppNo").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13) {
+						var keyword = $(this).val();
+						var obj = $(this);
+						$.ajax({
+							url: '@Url.Action("AjaxHandler", "Ajax")',
+							type: 'post',
+							dataType: 'json',
+							data: { functionName: 'findCrmOppByKeyword', keyword: keyword },
+							success: function (result) {
+								objects = [];
+								$.each(result, function (i, idata) {
+									objects[i] = {
+										label: idata.CrmOppNo + " - " + idata.OppDescription,
+										idx: i,
+										value: idata.CrmOppNo,
+										oppDesc: idata.CrmOppNo + " - " + idata.OppDescription
+									};
+								});
+
+								//綁定foucs事件
+								obj.autocomplete({
+									source: objects,
+									select: function (event, ui) {
+										$("#hid_CrmOppName").val(ui.item.oppDesc);
+										$("#lb_CrmOppName").html(ui.item.oppDesc);
+									}
+								}).bind('focus', function () { $(this).autocomplete("search"); });
+
+								//開啟autocomplete選單
+								obj.focus();
+							}
+						})
+					}
+
+				}
+			});
+
 		});
 
 		function GetWHById(id) {
@@ -103,6 +143,7 @@
 				}
 			})
 		}
+
 
 		function setCrmOppName(){
 			$("#hid_CrmOppName").val($("#ddl_CrmOppNo").find(":selected").text());
@@ -223,7 +264,7 @@
 						</div>
 						
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label"> 專案（商機）：</label>
+							<label class="col-lg-2 col-form-label"> 已指派專案（商機）：</label>
 							<div class="col-lg-4">
 								<select id="ddl_CrmOppNo" name="ddl_CrmOppNo" class="form-control" onchange="setCrmOppName()">
 									<option value="">選擇商機/專案</option>
@@ -233,8 +274,16 @@
 									}
 								</select>
 							</div>
-							<label class="col-lg-2 col-form-label" id="lb_CrmOppName" ></label>
+							
 							<input type="hidden" id="hid_CrmOppName" name="hid_CrmOppName" />
+						</div>
+
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label"> 未指派專案（商機）：</label>
+							<div class="col-lg-2">
+								<input type="text" id="tbx_CrmOppNo" name="tbx_CrmOppNo" class="form-control" placeholder="請輸入商機關鍵字" />
+							</div>
+							<label class="col-lg-4 col-form-label" id="lb_CrmOppName" style="color:blue"></label>
 						</div>
 
 						<div class="form-group row">
@@ -293,6 +342,17 @@
 							<i class="fa fa-search"></i> 查 詢
 						</button>
 					</form>
+					<hr/>
+
+				<form method="post" enctype="multipart/form-data" id="import-form" action="@Url.Action("ImportExcel","WorkingHours")">
+					<div class="form-group">
+					
+						<input type="file" name="file" id="file" class="form-control-file">
+						<a class="btn btn-info btn-lg" href="@Url.Action("ExportExcel", "WorkingHours")"><i class="fa fa-file-excel"></i> 匯出Excel格式 </a>
+						<button class="btn btn-primary btn-lg" type="submit"><i class="fa fa-file-excel"></i> 匯入Excel </button>
+					</div>
+				</form>
+
 				</div>
 			</div>
 		</div>

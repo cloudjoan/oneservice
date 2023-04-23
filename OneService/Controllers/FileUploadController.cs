@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NPOI.XSSF.UserModel;
 using System.Web;
 
 namespace OneService.Controllers
@@ -55,7 +56,7 @@ namespace OneService.Controllers
         }
 
 
-        public struct CkFileBean
+		public struct CkFileBean
         {
             public int uploaded;
             public string fileName;
