@@ -224,13 +224,20 @@
 								{
 									string tERPID = ViewBag.cLoginUser_ERPID;
 
-										//判斷是主管且狀態非【新建】
+									//判斷是主管且狀態非【新建】
 									if (ViewBag.pIsManager && CheckInfo[13] != "E0001")
 									{
-										//判斷是主管且【不為L2工程師】且【也不為技術主管】才跳過
-										if (tERPID != CheckInfo[7] && CheckInfo[10].IndexOf(tERPID) == -1)
-										{
-											continue;
+										//判斷是主管且【不為L2工程師】
+										if (tERPID != CheckInfo[7])
+										{											
+											if (CheckInfo[10].IndexOf(tERPID) == -1) //【不為技術主管】才跳過
+											{
+												continue;
+											}
+											else if (CheckInfo[10].IndexOf(tERPID) >= 0 && CheckInfo[13] != "E0007") //【為技術主管但非E0007(技術支援升級)】才跳過
+											{
+												continue;
+											}
 										}
 									}
 
