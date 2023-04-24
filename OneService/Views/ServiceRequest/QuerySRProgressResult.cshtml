@@ -41,7 +41,7 @@
 								return data;
 							}
 						}
-						else if (column === 3 || column === 5 || column === 6 || column === 7 || column === 9) //將換行符號<br>換成excel可以識別的\n
+						else if (column === 3 || column === 5 || column === 6 || column === 7 || column === 9 || column === 11) //將換行符號<br>換成excel可以識別的\n
 						{
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 						}
@@ -68,7 +68,7 @@
 					text: '匯出Excel',
 					sheetName: '服務進度查詢作業',
 					exportOptions: {
-						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] //要顯示的欄位
+						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						addCustomNumberFormat(xlsx, '0');
@@ -87,6 +87,7 @@
 						formatTargetColumn(xlsx, 'M');
 						formatTargetColumn(xlsx, 'N');
 						formatTargetColumn(xlsx, 'O');
+						formatTargetColumn(xlsx, 'P');
 					}
 				}),
 			],
@@ -140,6 +141,7 @@
 			<th>報修管道</th>
 			<th>報修類別</th>
 			<th>L2工程師</th>
+			<th>指派工程師</th>
 			<th>派單人員</th>
 			<th>派單日期</th>
 			<th>最後編輯日期</th>
@@ -164,10 +166,11 @@
 						<td>@Html.Raw(QueryInfo[9])</td>
 						<td>@Html.Raw(QueryInfo[10])</td>
 						<td>@Html.Raw(QueryInfo[12])</td>
-						<td>@Html.Raw(QueryInfo[14])</td>
+						<td>@Html.Raw(QueryInfo[13])</td>
 						<td>@Html.Raw(QueryInfo[15])</td>
 						<td>@Html.Raw(QueryInfo[16])</td>
 						<td>@Html.Raw(QueryInfo[17])</td>
+						<td>@Html.Raw(QueryInfo[18])</td>
 					</tr>
 				}
 			}

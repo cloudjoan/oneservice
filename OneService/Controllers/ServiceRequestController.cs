@@ -21,7 +21,8 @@ using Microsoft.CodeAnalysis;
 using System;
 using System.IO;
 using System.Diagnostics.Contracts;
-
+using NuGet.Packaging.Core;
+using System.Runtime.ConstrainedExecution;
 
 namespace OneService.Controllers
 {
@@ -691,24 +692,29 @@ namespace OneService.Controllers
             string ttWhere = string.Empty;
             string ttJoin = string.Empty;
             string ttStrItem = string.Empty;
+            string tTempERPID = string.Empty;            
             string tSRIDUrl = string.Empty;             //服務案件URL
             string tSRContactName = string.Empty;       //客戶聯絡人
             string tSRPathWayNote = string.Empty;       //報修管道
-            string tStatusNote = string.Empty;          //狀態
+            string tSTATUSDESC = string.Empty;          //狀態
             string tSRType = string.Empty;              //報修類別
             string tSRProductSerial = string.Empty;     //產品序號資訊
             string tSRTeam = string.Empty;              //服務團隊
             string tMainEngineerID = string.Empty;      //L2工程師ERPID
-            string tMainEngineerName = string.Empty;    //L2工程師姓名            
-            string tTechManagerID = string.Empty;       //技術主管ERPID
+            string tMainEngineerName = string.Empty;    //L2工程師姓名
+            string tAssEngineerName = string.Empty;     //指派工程師姓名
+            string tTechManagerName = string.Empty;     //技術主管姓名
             string tCreatedUserName = string.Empty;     //派單人員
             string tCreatedDate = string.Empty;         //派單日期
-            string tModifiedDate = string.Empty;        //最後編輯日期            
+            string tModifiedDate = string.Empty;        //最後編輯日期                          
+
+            List<string> tListAssAndTech = new List<string>();                          //記錄所有指派工程師和所有技術主管的ERPID
+            Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();  //記錄所有指派工程師和所有技術主管的<ERPID,中、英文姓名>
 
             var tSRTeam_List = CMF.findSRTeamIDList(cCompanyID, false);
             var tSRContact_List = CMF.findSRDetailContactList();            
             List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
-            List<TbOneSysParameter> tSRStatus_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRSTATUS");
+            List<SelectListItem> ListStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, cCompanyID);
 
             #region 服務案件種類
             if (!string.IsNullOrEmpty(cSRCaseType))
@@ -945,23 +951,41 @@ namespace OneService.Controllers
             dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
             dtProgress = CMF.DistinctTable(dt);
 
+            #region 先取得所有指派工程師和技術主管的ERPID
+            foreach (DataRow dr in dtProgress.Rows)
+            {
+                #region 指派工程師
+                CMF.findListAssAndTech(ref tListAssAndTech, dr["cAssEngineerID"].ToString());
+                #endregion
+
+                #region 技術主管
+                CMF.findListAssAndTech(ref tListAssAndTech, dr["cTechManagerID"].ToString());                
+                #endregion
+            }
+            #endregion
+
+            #region 再取得所有指派工程師和技術主管的中文姓名
+            tDicAssAndTech = CMF.findListEmployeeInfo(tListAssAndTech);
+            #endregion
+
             foreach (DataRow dr in dtProgress.Rows)
             {
                 tSRIDUrl = CMF.findSRIDUrl(dr["cSRID"].ToString());
                 tSRContactName = CMF.TransSRDetailContactName(tSRContact_List, dr["cSRID"].ToString());
                 tSRPathWayNote = CMF.TransSysParameterByList(tSRPathWay_List, dr["cSRPathWay"].ToString());
-                tStatusNote = CMF.TransSysParameterByList(tSRStatus_List, dr["cStatus"].ToString());
+                tSTATUSDESC = CMF.TransSRSTATUS(ListStatus, dr["cStatus"].ToString());
                 tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
                 tSRType = CMF.TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
                 tSRProductSerial = CMF.TransProductSerial(dr["Products"].ToString());
                 tMainEngineerID = string.IsNullOrEmpty(dr["cMainEngineerID"].ToString()) ? "" : dr["cMainEngineerID"].ToString();
                 tMainEngineerName = string.IsNullOrEmpty(dr["cMainEngineerName"].ToString()) ? "" : dr["cMainEngineerName"].ToString();
-                tTechManagerID = string.IsNullOrEmpty(dr["cTechManagerID"].ToString()) ? "" : dr["cTechManagerID"].ToString();
+                tAssEngineerName = CMF.TransEmployeeName(tDicAssAndTech, dr["cAssEngineerID"].ToString());
+                tTechManagerName = CMF.TransEmployeeName(tDicAssAndTech, dr["cTechManagerID"].ToString());
                 tCreatedUserName = string.IsNullOrEmpty(dr["CreatedUserName"].ToString()) ? "" : dr["CreatedUserName"].ToString();
                 tCreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
 
-                string[] QueryInfo = new string[18];                
+                string[] QueryInfo = new string[19];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
                 QueryInfo[1] = tSRIDUrl;                       //服務案件URL
@@ -976,11 +1000,12 @@ namespace OneService.Controllers
                 QueryInfo[10] = tSRType;                       //報修類別                
                 QueryInfo[11] = tMainEngineerID;               //L2工程師ERPID
                 QueryInfo[12] = tMainEngineerName;             //L2工程師姓名
-                QueryInfo[13] = tTechManagerID;                //技術主管ERPID                    
-                QueryInfo[14] = tCreatedUserName;              //派單人員
-                QueryInfo[15] = tCreatedDate;                  //派單日期
-                QueryInfo[16] = tModifiedDate;                 //最後編輯日期
-                QueryInfo[17] = tStatusNote;                   //狀態                
+                QueryInfo[13] = tAssEngineerName;              //指派工程師姓名
+                QueryInfo[14] = tTechManagerName;              //技術主管姓名
+                QueryInfo[15] = tCreatedUserName;              //派單人員
+                QueryInfo[16] = tCreatedDate;                  //派單日期
+                QueryInfo[17] = tModifiedDate;                 //最後編輯日期
+                QueryInfo[18] = tSTATUSDESC;                   //狀態                
 
                 QueryToList.Add(QueryInfo);
             }
@@ -3243,7 +3268,7 @@ namespace OneService.Controllers
                     beanM.CTeamId = CTeamId;
                     beanM.CMainEngineerName = CMainEngineerName;
                     beanM.CMainEngineerId = CMainEngineerId;
-                    beanM.CAssEngineerId = CAssEngineerId;
+                    beanM.CAssEngineerId = CAssEngineerId;                    
                     beanM.CSalesName = CSalesName;
                     beanM.CSalesId = CSalesId;
                     beanM.CSecretaryName = CSecretaryName;
@@ -3253,6 +3278,21 @@ namespace OneService.Controllers
                     beanM.CIsAppclose = "";
                     beanM.CreatedDate = DateTime.Now;
                     beanM.CreatedUserName = LoginUser_Name;
+
+                    #region 未用到的欄位
+                    beanM.CRepairName = "";
+                    beanM.CRepairAddress = "";
+                    beanM.CRepairPhone = "";
+                    beanM.CRepairMobile = "";
+                    beanM.CRepairEmail = "";
+                    beanM.CMaserviceType = "";
+                    beanM.CSrpathWay = "";
+                    beanM.CSrprocessWay = "";
+                    beanM.CIsSecondFix = "";
+                    beanM.CTechManagerId = "";
+                    beanM.CSqpersonId = "";
+                    beanM.CSqpersonName = "";
+                    #endregion
 
                     dbOne.TbOneSrmains.Add(beanM);
                     #endregion
@@ -4949,6 +4989,7 @@ namespace OneService.Controllers
             //pLoginAccount = @"etatung\Aniki.Huang";     //黃志豪(主管)
             //pLoginAccount = @"etatung\jack.hung";       //洪佑典(主管)
             //pLoginAccount = @"etatung\Steve.Guo";       //郭翔元         
+            //pLoginAccount = @"etatung\Wenjui.Chan";     //詹文瑞        
             //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
             #endregion
 
