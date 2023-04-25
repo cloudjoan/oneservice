@@ -472,11 +472,13 @@ namespace OneService.Controllers
 			headerRow.CreateCell(6).SetCellValue("時間訖");
 
 			XSSFCellStyle cs = (XSSFCellStyle)workbook.CreateCellStyle();
+           
             cs.WrapText = true; // 設定換行
 
-            headerRow.Cells[0].CellStyle = cs;
+            headerRow.Cells[1].CellStyle = cs;
+			headerRow.Cells[2].CellStyle = cs;
 
-            IRow dataRow = sheet.CreateRow(1);
+			IRow dataRow = sheet.CreateRow(1);
 			dataRow.CreateCell(0).SetCellValue("範例格式(請刪除行！)");
 			dataRow.CreateCell(1).SetCellValue("A");
             dataRow.CreateCell(2).SetCellValue("B");
@@ -486,7 +488,7 @@ namespace OneService.Controllers
 			dataRow.CreateCell(6).SetCellValue("2023-01-01 18:30");
 
             //自動調格式長度
-			//for (int j = 0; j < 4; j++) sheet.AutoSizeColumn(j);
+            //for (int j = 0; j < 4; j++) sheet.AutoSizeColumn(j);
 
 			// 將工作簿寫入 MemoryStream
 			MemoryStream stream = new MemoryStream();
