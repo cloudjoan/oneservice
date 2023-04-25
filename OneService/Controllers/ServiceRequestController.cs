@@ -3292,6 +3292,7 @@ namespace OneService.Controllers
                     beanM.CTechManagerId = "";
                     beanM.CSqpersonId = "";
                     beanM.CSqpersonName = "";
+                    beanM.CIsAppclose = "";
                     #endregion
 
                     dbOne.TbOneSrmains.Add(beanM);
@@ -4982,12 +4983,14 @@ namespace OneService.Controllers
         /// </summary>
         public void getLoginAccount()
         {
-            #region 測試用
-            //pLoginAccount = @"etatung\elvis.chang";     //MIS
+            #region 測試用            
             //pLoginAccount = @"etatung\Allen.Chen";      //陳勁嘉(主管)
             //pLoginAccount = @"etatung\Boyen.Chen";      //陳建良(主管)
             //pLoginAccount = @"etatung\Aniki.Huang";     //黃志豪(主管)
             //pLoginAccount = @"etatung\jack.hung";       //洪佑典(主管)
+            //pLoginAccount = @"etatung\Allen.Tang";      //湯文華(業務主管)
+            //pLoginAccount = @"etatung\Sam.Lee";         //李思霖(業務)
+            //pLoginAccount = @"etatung\Julia.Hsu";       //徐瑄辰(祕書)
             //pLoginAccount = @"etatung\Steve.Guo";       //郭翔元         
             //pLoginAccount = @"etatung\Wenjui.Chan";     //詹文瑞        
             //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯

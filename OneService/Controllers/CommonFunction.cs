@@ -95,8 +95,10 @@ namespace OneService.Controllers
             string tMainEngineerID = string.Empty;      //L2工程師ERPID
             string tMainEngineerName = string.Empty;    //L2工程師姓名            
             string tAssEngineerName = string.Empty;     //指派工程師姓名
-            string cTechManagerID = string.Empty;       //技術主管ERPID            
+            string tTechManagerID = string.Empty;       //技術主管ERPID            
             string tTechManagerName = string.Empty;     //技術主管姓名
+            string tSalesID = string.Empty;             //業務人員ERPID
+            string tSecretaryID = string.Empty;         //業務祕書ERPID
             string tModifiedDate = string.Empty;        //修改日期
 
             List<string> tListAssAndTech = new List<string>();                          //記錄所有指派工程師和所有技術主管的ERPID
@@ -116,7 +118,7 @@ namespace OneService.Controllers
                                    (cStatus <> 'E0015' and cStatus <> 'E0006' and cStatus <> 'E0010') and 
                                    (
                                         (
-                                            (CMainEngineerId = '{0}') or (cTechManagerID like '%{0}%')
+                                            (CMainEngineerId = '{0}') or (cSalesID = '{0}') or (cSecretaryID = '{0}') or (cTechManagerID like '%{0}%')
                                         )
                                         {1}
                                    )";
@@ -151,11 +153,13 @@ namespace OneService.Controllers
                     tMainEngineerName = dr["cMainEngineerName"].ToString();
                     tAssEngineerName = TransEmployeeName(tDicAssAndTech, dr["cAssEngineerID"].ToString());
                     tTechManagerName = TransEmployeeName(tDicAssAndTech, dr["cTechManagerID"].ToString());
-                    cTechManagerID = dr["cTechManagerID"].ToString();
+                    tTechManagerID = dr["cTechManagerID"].ToString();
+                    tSalesID = dr["cSalesID"].ToString();
+                    tSecretaryID = dr["cSecretaryID"].ToString();
                     tModifiedDate = dr["ModifiedDate"].ToString() != "" ? Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss") : "";
 
                     #region 組待處理服務
-                    string[] ProcessInfo = new string[14];
+                    string[] ProcessInfo = new string[16];
 
                     ProcessInfo[0] = dr["cSRID"].ToString();             //SRID
                     ProcessInfo[1] = dr["cCustomerName"].ToString();      //客戶
@@ -167,10 +171,12 @@ namespace OneService.Controllers
                     ProcessInfo[7] = tMainEngineerID;                   //L2工程師ERPID
                     ProcessInfo[8] = tMainEngineerName;                 //L2工程師姓名
                     ProcessInfo[9] = tAssEngineerName;                  //指派工程師姓名
-                    ProcessInfo[10] = cTechManagerID;                   //技術主管ERPID
+                    ProcessInfo[10] = tTechManagerID;                   //技術主管ERPID
                     ProcessInfo[11] = tTechManagerName;                 //技術主管姓名
-                    ProcessInfo[12] = tModifiedDate;                    //最後編輯日期
-                    ProcessInfo[13] = dr["cStatus"].ToString();           //狀態                    
+                    ProcessInfo[12] = tSalesID;                         //業務人員ERPID
+                    ProcessInfo[13] = tSecretaryID;                     //業務祕書ERPID
+                    ProcessInfo[14] = tModifiedDate;                    //最後編輯日期
+                    ProcessInfo[15] = dr["cStatus"].ToString();           //狀態                    
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -178,7 +184,9 @@ namespace OneService.Controllers
             }
             else
             {
-                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006" && x.CStatus != "E0010") && (x.CMainEngineerId == tERPID || x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID))).ToList();
+                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006" && x.CStatus != "E0010") && 
+                                                    (x.CMainEngineerId == tERPID || x.CSalesId == tERPID || x.CSecretaryId == tERPID || x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID))
+                                              ).ToList();
 
                 #region 先取得所有指派工程師和技術主管的ERPID
                 foreach (var bean in beans)
@@ -206,11 +214,13 @@ namespace OneService.Controllers
                     tMainEngineerName = string.IsNullOrEmpty(bean.CMainEngineerName) ? "" : bean.CMainEngineerName;                    
                     tAssEngineerName = TransEmployeeName(tDicAssAndTech, bean.CAssEngineerId);
                     tTechManagerName = TransEmployeeName(tDicAssAndTech, bean.CTechManagerId);
-                    cTechManagerID = string.IsNullOrEmpty(bean.CTechManagerId) ? "" : bean.CTechManagerId;
+                    tTechManagerID = string.IsNullOrEmpty(bean.CTechManagerId) ? "" : bean.CTechManagerId;
+                    tSalesID = string.IsNullOrEmpty(bean.CSalesId) ? "" : bean.CSalesId;
+                    tSecretaryID = string.IsNullOrEmpty(bean.CSecretaryId) ? "" : bean.CSecretaryId;
                     tModifiedDate = bean.ModifiedDate == null ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
 
                     #region 組待處理服務
-                    string[] ProcessInfo = new string[14];
+                    string[] ProcessInfo = new string[16];
 
                     ProcessInfo[0] = bean.CSrid;            //SRID
                     ProcessInfo[1] = bean.CCustomerName;     //客戶
@@ -222,10 +232,12 @@ namespace OneService.Controllers
                     ProcessInfo[7] = tMainEngineerID;      //L2工程師ERPID
                     ProcessInfo[8] = tMainEngineerName;    //L2工程師姓名
                     ProcessInfo[9] = tAssEngineerName;     //指派工程師姓名
-                    ProcessInfo[10] = cTechManagerID;      //技術主管ERPID
-                    ProcessInfo[11] = tTechManagerName;    //技術主管姓名                    
-                    ProcessInfo[12] = tModifiedDate;       //最後編輯日期
-                    ProcessInfo[13] = bean.CStatus;         //狀態                    
+                    ProcessInfo[10] = tTechManagerID;      //技術主管ERPID
+                    ProcessInfo[11] = tTechManagerName;    //技術主管姓名
+                    ProcessInfo[12] = tSalesID;            //業務人員ERPID
+                    ProcessInfo[13] = tSecretaryID;        //業務祕書ERPID
+                    ProcessInfo[14] = tModifiedDate;       //最後編輯日期
+                    ProcessInfo[15] = bean.CStatus;         //狀態                    
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -1968,6 +1980,37 @@ namespace OneService.Controllers
                             {
                                 reValue = true;
                                 break;
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region 【裝機服務】業務人員/業務祕書新建狀態才可編輯
+                    if (!reValue)
+                    {
+                        if (beanM.CSrid.Substring(0, 2) == "63") //裝機服務
+                        {
+                            if (beanM.CStatus == "E0001") //新建
+                            {
+                                #region 業務人員
+                                if (beanM.CSalesId != null)
+                                {
+                                    if (beanM.CSalesId == tLoginERPID)
+                                    {
+                                        reValue = true;
+                                    }
+                                }
+                                #endregion
+
+                                #region 業務祕書
+                                if (beanM.CSecretaryId != null)
+                                {
+                                    if (beanM.CSecretaryId == tLoginERPID)
+                                    {
+                                        reValue = true;
+                                    }
+                                }
+                                #endregion
                             }
                         }
                     }

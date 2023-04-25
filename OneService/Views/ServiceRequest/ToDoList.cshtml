@@ -225,7 +225,7 @@
 									string tERPID = ViewBag.cLoginUser_ERPID;
 
 									//判斷是主管且狀態非【新建】
-									if (ViewBag.pIsManager && CheckInfo[13] != "E0001")
+									if (ViewBag.pIsManager && CheckInfo[15] != "E0001")
 									{
 										//判斷是主管且【不為L2工程師】
 										if (tERPID != CheckInfo[7])
@@ -234,10 +234,23 @@
 											{
 												continue;
 											}
-											else if (CheckInfo[10].IndexOf(tERPID) >= 0 && CheckInfo[13] != "E0007") //【為技術主管但非E0007(技術支援升級)】才跳過
+											else if (CheckInfo[10].IndexOf(tERPID) >= 0 && CheckInfo[15] != "E0007") //【為技術主管但非E0007(技術支援升級)】才跳過
 											{
 												continue;
 											}
+										}
+									}
+
+									//判斷是業務人員/業務祕書且狀態非【新建】
+									if (CheckInfo[15] != "E0001")
+									{
+										if (tERPID == CheckInfo[12]) //業務人員
+										{
+											continue;
+										}
+										else if (tERPID == CheckInfo[13]) //業務祕書
+										{
+											continue;
 										}
 									}
 
@@ -252,63 +265,63 @@
 										<td>@Html.Raw(CheckInfo[6])</td>
 										<td>@CheckInfo[8]</td>
 										<td>@Html.Raw(CheckInfo[9])</td>
-										<td>@CheckInfo[12]</td>
+										<td>@CheckInfo[14]</td>
 										<td>
 											@{
 												string tTypeName = string.Empty;
 												string tClass = string.Empty;
 
-												if (CheckInfo[13] == "E0001")
+												if (CheckInfo[15] == "E0001")
 												{
 													tClass = "btn btn-info";
 													tTypeName = "新建";
 												}
-												else if (CheckInfo[13] == "E0002")
+												else if (CheckInfo[15] == "E0002")
 												{
 													tClass = "btn btn-primary";
 													tTypeName = "L2處理中";
 												}
-												else if (CheckInfo[13] == "E0003")
+												else if (CheckInfo[15] == "E0003")
 												{
 													tClass = "btn btn-primary";
 													tTypeName = "報價中";
 												}
-												else if (CheckInfo[13] == "E0004")
+												else if (CheckInfo[15] == "E0004")
 												{
 													tClass = "btn btn-primary";
 													tTypeName = "3rd Party處理中";
 												}
-												else if (CheckInfo[13] == "E0005")
+												else if (CheckInfo[15] == "E0005")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "L3處理中";
 												}
-												else if (CheckInfo[13] == "E0007")
+												else if (CheckInfo[15] == "E0007")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "技術支援升級";
 												}
-												else if (CheckInfo[13] == "E0008")
+												else if (CheckInfo[15] == "E0008")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "裝機中";
 												}
-												else if (CheckInfo[13] == "E0009")
+												else if (CheckInfo[15] == "E0009")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "維修/DOA";
 												}
-												else if (CheckInfo[13] == "E0012")
+												else if (CheckInfo[15] == "E0012")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "HPGCSN 申請";
 												}
-												else if (CheckInfo[13] == "E0013")
+												else if (CheckInfo[15] == "E0013")
 												{
 													tClass = "btn btn-success";
 													tTypeName = "HPGCSN 完成";
 												}
-												else if (CheckInfo[13] == "E0014")
+												else if (CheckInfo[15] == "E0014")
 												{
 													tClass = "btn btn-info";
 													tTypeName = "駁回";
