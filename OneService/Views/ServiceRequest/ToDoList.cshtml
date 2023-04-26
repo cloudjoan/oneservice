@@ -224,24 +224,7 @@
 								{
 									string tERPID = ViewBag.cLoginUser_ERPID;
 
-									//判斷是主管且狀態非【新建】
-									if (ViewBag.pIsManager && CheckInfo[15] != "E0001")
-									{
-										//判斷是主管且【不為L2工程師】
-										if (tERPID != CheckInfo[7])
-										{											
-											if (CheckInfo[10].IndexOf(tERPID) == -1) //【不為技術主管】才跳過
-											{
-												continue;
-											}
-											else if (CheckInfo[10].IndexOf(tERPID) >= 0 && CheckInfo[15] != "E0007") //【為技術主管但非E0007(技術支援升級)】才跳過
-											{
-												continue;
-											}
-										}
-									}
-
-									//判斷是業務人員/業務祕書且狀態非【新建】
+									//狀態非【新建】時的判斷
 									if (CheckInfo[15] != "E0001")
 									{
 										if (tERPID == CheckInfo[12]) //業務人員
@@ -252,7 +235,36 @@
 										{
 											continue;
 										}
-									}
+
+										if (CheckInfo[10] != "")
+										{
+											if (CheckInfo[15] == "E0007") //若狀態【E0007.技術支援升級】
+											{
+												if (CheckInfo[10].IndexOf(tERPID) == -1) //【不為技術主管】才跳過
+												{
+													continue;
+												}
+											}
+											else
+											{
+												if (CheckInfo[10].IndexOf(tERPID) >= 0) //【為技術主管但非E0007(技術支援升級)】才跳過
+												{
+													continue;
+												}
+											}											
+										}
+
+										if (ViewBag.pIsManager) //若是主管時
+										{
+											if (CheckInfo[15] != "E0007") //若狀態非【E0007.技術支援升級】
+											{
+												if (tERPID != CheckInfo[7]) //非【L2工程師】才跳過
+												{
+													continue;
+												}
+											}
+										}
+									}									
 
 									count++;
 									<tr id='trManager@(count)'>
