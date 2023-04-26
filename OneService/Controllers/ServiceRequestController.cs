@@ -6062,7 +6062,7 @@ namespace OneService.Controllers
         /// <summary>新增日期</summary>
         public string INSERT_TIME { get; set; }
     }
-    #endregion
+    #endregion   
 
     #region 服務案件執行條件
     /// <summary>

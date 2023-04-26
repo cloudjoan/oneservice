@@ -618,7 +618,7 @@ namespace OneService.Controllers
         /// 取得服務團隊清單
         /// </summary>
         /// <param name="pCompanyCode">公司別(T012、T016、C069、T022)</param>
-        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
+        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>        
         /// <returns></returns>
         public List<SelectListItem> findSRTeamIDList(string pCompanyCode, bool cEmptyOption)
         {
@@ -626,17 +626,11 @@ namespace OneService.Controllers
 
             string tKEY = string.Empty;
             string tNAME = string.Empty;
+            string tSRVID = "SRV." + pCompanyCode.Substring(2, 2);
 
-            List<TbOneSrteamMapping> TeamList = new List<TbOneSrteamMapping>();
-            
-            if (pCompanyCode == "T016")
-            {
-                TeamList = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && (x.CTeamOldId.Contains("SRV.1217") || x.CTeamOldId.Contains("SRV.1227") || x.CTeamOldId.Contains("SRV.1237"))).ToList();
-            }
-            else
-            {
-                TeamList = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && !(x.CTeamOldId.Contains("SRV.1217") || x.CTeamOldId.Contains("SRV.1227") || x.CTeamOldId.Contains("SRV.1237"))).ToList();
-            }
+            List<TbOneSrteamMapping> TeamList = new List<TbOneSrteamMapping>();          
+
+            TeamList = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && (x.CTeamOldId.Contains(tSRVID))).ToList();
 
             var tList = new List<SelectListItem>();
 
