@@ -147,7 +147,7 @@ namespace OneService.Controllers
                 bean = psipDB.TbWorkingHoursMains.Find(int.Parse(formCollection["Id"]));
                 bean.Whtype = formCollection["ddl_WHType"].ToString();
                 bean.ActType = formCollection["ddl_ActType"].ToString();
-                bean.CrmOppNo = formCollection["ddl_CrmOppNo"].ToString();
+                bean.CrmOppNo = formCollection["hid_CrmOppNo"].ToString();
                 bean.CrmOppName = formCollection["hid_CrmOppName"].ToString();
                 bean.WhDescript = formCollection["tbx_WhDescript"].ToString();
                 bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();
@@ -171,7 +171,7 @@ namespace OneService.Controllers
                 bean.UserErpId = formCollection["hid_UserErpId"].ToString();
                 bean.Whtype = formCollection["ddl_WHType"].ToString();
                 bean.ActType = formCollection["ddl_ActType"].ToString();
-                bean.CrmOppNo = formCollection["ddl_CrmOppNo"].ToString();
+                bean.CrmOppNo = formCollection["hid_CrmOppNo"].ToString();
                 bean.CrmOppName = formCollection["hid_CrmOppName"].ToString();
                 bean.WhDescript = formCollection["tbx_WhDescript"].ToString();
                 bean.StartTime = formCollection["tbx_StartDate"].ToString() + " " + formCollection["hid_StartTime"].ToString();
@@ -480,8 +480,8 @@ namespace OneService.Controllers
 
 			IRow dataRow = sheet.CreateRow(1);
 			dataRow.CreateCell(0).SetCellValue("範例格式(請刪除行！)");
-			dataRow.CreateCell(1).SetCellValue("A");
-            dataRow.CreateCell(2).SetCellValue("B");
+			dataRow.CreateCell(1).SetCellValue("B");
+            dataRow.CreateCell(2).SetCellValue("D");
 			dataRow.CreateCell(3).SetCellValue("153");
 			dataRow.CreateCell(4).SetCellValue("協助專案推進");
 			dataRow.CreateCell(5).SetCellValue("2023-01-01 10:00");
@@ -507,7 +507,24 @@ namespace OneService.Controllers
 		[HttpPost]
 		public IActionResult ImportExcel(IFormFile file)
 		{
-            if(file != null)
+			Dictionary<string, string> whTypeDict = new Dictionary<string, string>();
+			Dictionary<string, string> actTypeDict = new Dictionary<string, string>();
+
+			whTypeDict.Add("B", "B.專案導入");
+			whTypeDict.Add("C", "C.內部作業");
+			whTypeDict.Add("D", "D.專業服務");
+
+			actTypeDict.Add("D", "會議");
+			actTypeDict.Add("E", "需求訪談");
+			actTypeDict.Add("F", "分析/設計");
+			actTypeDict.Add("G", "開發/測試");
+			actTypeDict.Add("H", "佈版/版控");
+			actTypeDict.Add("I", "教育訓練");
+			actTypeDict.Add("J", "前置準備");
+			actTypeDict.Add("K", "查修/維運");
+			actTypeDict.Add("L", "文書處理");
+
+			if (file != null)
             {
 				using (var stream = file.OpenReadStream())
 				{
@@ -531,16 +548,29 @@ namespace OneService.Controllers
                             switch (row.GetCell(5).CellType)
                             {
                                 case CellType.Numeric:
-                                    break;
+									bean.StartTime = string.Format("{0:yyyy-MM-dd HH:mm}", DateTime.FromOADate(row.GetCell(5).NumericCellValue));
+									break;
                                 case CellType.String:
-                                    break;
+									bean.StartTime = string.Format("{0:yyyy-MM-dd HH:mm}", Convert.ToDateTime(row.GetCell(5).StringCellValue));
+									break;
 
                                 default:
                                     break;
                             }
-                                
-							bean.StartTime = string.Format("{0:yyyy-MM-dd HH:mm}", Convert.ToDateTime(row.GetCell(5).StringCellValue));
-							bean.EndTime = string.Format("{0:yyyy-MM-dd HH:mm}", Convert.ToDateTime(row.GetCell(6).StringCellValue));
+
+							switch (row.GetCell(6).CellType)
+							{
+								case CellType.Numeric:
+									bean.EndTime = string.Format("{0:yyyy-MM-dd HH:mm}", DateTime.FromOADate(row.GetCell(6).NumericCellValue));
+									break;
+								case CellType.String:
+									bean.EndTime = string.Format("{0:yyyy-MM-dd HH:mm}", Convert.ToDateTime(row.GetCell(6).StringCellValue));
+									break;
+
+								default:
+									break;
+							}
+
 							bean.InsertTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
 							bean.ModifyUser = HttpContext.Session.GetString(SessionKey.USER_NAME);
 
@@ -558,6 +588,13 @@ namespace OneService.Controllers
 							bean.Labor = Convert.ToInt32(ts.TotalMinutes);
 
 							bean.ActType = string.IsNullOrEmpty(bean.ActType) ? "L" : bean.ActType;
+
+                            //檢查資料是否合規
+                            //工時類型、任務活動代碼不存在的話，就不匯入
+                            if (!whTypeDict.ContainsKey(bean.Whtype)) continue;
+							if (!actTypeDict.ContainsKey(bean.ActType)) continue;
+                            //工時<=0也不匯入
+                            if(bean.Labor <= 0) continue;
 
 							psipDB.TbWorkingHoursMains.Add(bean);
 
