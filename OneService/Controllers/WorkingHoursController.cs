@@ -507,73 +507,87 @@ namespace OneService.Controllers
 		[HttpPost]
 		public IActionResult ImportExcel(IFormFile file)
 		{
-			using (var stream = file.OpenReadStream())
-			{
-				var workbook = new XSSFWorkbook(stream);
-				var sheet = workbook.GetSheetAt(0);
-
-				for (int i = 1; i <= sheet.LastRowNum; i++)
+            if(file != null)
+            {
+				using (var stream = file.OpenReadStream())
 				{
-                    try
-                    {
-						
-						TbWorkingHoursMain bean = new TbWorkingHoursMain();
-						var row = sheet.GetRow(i);
-						bean.UserName = HttpContext.Session.GetString(SessionKey.USER_NAME);
-						bean.UserErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
-						bean.Whtype = row.GetCell(1).StringCellValue;
-						bean.ActType = row.GetCell(2).StringCellValue;
-						bean.CrmOppNo = row.GetCell(3).StringCellValue;
-						bean.WhDescript = row.GetCell(4).StringCellValue;
-						bean.StartTime = row.GetCell(5).StringCellValue;
-						bean.EndTime = row.GetCell(6).StringCellValue;
-						bean.InsertTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
-						bean.ModifyUser = HttpContext.Session.GetString(SessionKey.USER_NAME);
+					var workbook = new XSSFWorkbook(stream);
+					var sheet = workbook.GetSheetAt(0);
 
-                        if(!string.IsNullOrEmpty(bean.CrmOppNo))
-                        {
-							var oppBean = proxyDB.TbCrmOppHeads.FirstOrDefault(x => x.CrmOppNo == OppNoFormat(bean.CrmOppNo));
-                            bean.CrmOppNo = oppBean.CrmOppNo;
-                            bean.CrmOppName = oppBean.CrmOppNo + " - " + oppBean.OppDescription; 
-						}
-
-						//計算工時分鐘數
-						DateTime startTime = Convert.ToDateTime(bean.StartTime);
-						DateTime endTime = Convert.ToDateTime(bean.EndTime);
-						TimeSpan ts = endTime - startTime;
-						bean.Labor = Convert.ToInt32(ts.TotalMinutes);
-
-						bean.ActType = string.IsNullOrEmpty(bean.ActType) ? "L" : bean.ActType;
-
-						psipDB.TbWorkingHoursMains.Add(bean);
-
-						//如果有商機跟專案管理的話，就需加入專案管理的工時計算
-						if (!string.IsNullOrEmpty(bean.CrmOppNo))
+					for (int i = 1; i <= sheet.LastRowNum; i++)
+					{
+						try
 						{
-                            int prId = 0;
-							var pjInfoBean = psipDB.TbProPjinfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
 
-							//取得MileStone
-							string ms = GetMileStone(bean.CrmOppNo, bean.StartTime, bean.EndTime);
+							TbWorkingHoursMain bean = new TbWorkingHoursMain();
+							var row = sheet.GetRow(i);
+							bean.UserName = HttpContext.Session.GetString(SessionKey.USER_NAME);
+							bean.UserErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
+							bean.Whtype = row.GetCell(1).StringCellValue;
+							bean.ActType = row.GetCell(2).StringCellValue;
+							bean.CrmOppNo = row.GetCell(3).StringCellValue;
+							bean.WhDescript = row.GetCell(4).StringCellValue;
+                            
+                            switch (row.GetCell(5).CellType)
+                            {
+                                case CellType.Numeric:
+                                    break;
+                                case CellType.String:
+                                    break;
 
-							var workHours = Math.Ceiling((decimal)bean.Labor / 60);
+                                default:
+                                    break;
+                            }
+                                
+							bean.StartTime = string.Format("{0:yyyy-MM-dd HH:mm}", Convert.ToDateTime(row.GetCell(5).StringCellValue));
+							bean.EndTime = string.Format("{0:yyyy-MM-dd HH:mm}", Convert.ToDateTime(row.GetCell(6).StringCellValue));
+							bean.InsertTime = String.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
+							bean.ModifyUser = HttpContext.Session.GetString(SessionKey.USER_NAME);
 
-							//int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
-							var _prId = SavePjRecord(prId, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours.ToString(), "", "", bean.WhDescript, "");
+							if (!string.IsNullOrEmpty(bean.CrmOppNo))
+							{
+								var oppBean = proxyDB.TbCrmOppHeads.FirstOrDefault(x => x.CrmOppNo == OppNoFormat(bean.CrmOppNo));
+								bean.CrmOppNo = oppBean.CrmOppNo;
+								bean.CrmOppName = oppBean.CrmOppNo + " - " + oppBean.OppDescription;
+							}
 
-							bean.PrId = _prId;
+							//計算工時分鐘數
+							DateTime startTime = Convert.ToDateTime(bean.StartTime);
+							DateTime endTime = Convert.ToDateTime(bean.EndTime);
+							TimeSpan ts = endTime - startTime;
+							bean.Labor = Convert.ToInt32(ts.TotalMinutes);
+
+							bean.ActType = string.IsNullOrEmpty(bean.ActType) ? "L" : bean.ActType;
+
+							psipDB.TbWorkingHoursMains.Add(bean);
+
+							//如果有商機跟專案管理的話，就需加入專案管理的工時計算
+							if (!string.IsNullOrEmpty(bean.CrmOppNo))
+							{
+								int prId = 0;
+								var pjInfoBean = psipDB.TbProPjinfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
+
+								//取得MileStone
+								string ms = GetMileStone(bean.CrmOppNo, bean.StartTime, bean.EndTime);
+
+								var workHours = Math.Ceiling((decimal)bean.Labor / 60);
+
+								//int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
+								var _prId = SavePjRecord(prId, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours.ToString(), "", "", bean.WhDescript, "");
+
+								bean.PrId = _prId;
+							}
+
+							psipDB.SaveChanges();
+						}
+						catch (Exception e)
+						{
+							System.Diagnostics.Debug.WriteLine(e.Message);
 						}
 
-						psipDB.SaveChanges();
 					}
-					catch(Exception e)
-                    {
-                        System.Diagnostics.Debug.WriteLine(e.Message);
-                    }
-
 				}
 			}
-
 			return RedirectToAction("CreateWH");
 		}
 
