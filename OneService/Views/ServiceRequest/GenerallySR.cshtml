@@ -461,7 +461,11 @@
 				Msg += "您未下拉選取【L2工程師】，請輸入關鍵字後再重新選取！\n";
 			}
 
-             //明細判斷
+            //明細判斷
+			if ($("#tableCO tr").length == 1) {
+				Msg += "請至少新增一筆【客戶聯絡窗口資訊】明細！\n";
+			}			
+
 			if ($("#tablePR tr").length == 1) {
 				Msg += "請至少新增一筆【產品序號資訊】明細！\n";
 			}			
@@ -3226,7 +3230,7 @@
 							<div class="ibox ">
 								<div class="ibox-title">
 									<h5>
-										客戶報修窗口資訊
+										*客戶報修窗口資訊
 										<button id="btn_addRepairInfo" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_AddContactInfo_onclick();">
 											<i class="fa fa-user-plus" style="margin-right: 5px;"></i>
 											<span style="font-weight: bold; margin: 5px;">新增窗口</span>
@@ -3284,7 +3288,7 @@
 							<div class="ibox ">
 								<div class="ibox-title">
 									<h5>
-										客戶聯絡窗口資訊
+										*客戶聯絡窗口資訊
 										<button type="button" class="btn btn-success" onclick="AddDetailItem_Contact('tableCO');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>										
 										<button id="btn_addContactInfo" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_AddContactInfo_onclick();">
 											<i class="fa fa-user-plus" style="margin-right: 5px;"></i>
@@ -3388,7 +3392,7 @@
 							<div class="ibox ">
 								<div class="ibox-title">
 									<h5>
-										產品序號資訊
+										*產品序號資訊
 										<button type="button" class="btn btn-success" onclick="AddDetailItem_Product('tablePR');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
 									</h5>
 									<div class="ibox-tools">

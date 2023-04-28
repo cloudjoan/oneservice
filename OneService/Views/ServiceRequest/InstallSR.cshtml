@@ -422,8 +422,7 @@
 			if ($("#tableCO tr").length == 1) {
 				Msg += "請至少新增一筆【客戶聯絡窗口資訊】明細！\n";
 			}			
-
-			//明細判斷
+			
 			if ($("#tableMI tr").length == 1) {
 				Msg += "請至少新增一筆【物料訊息資訊】明細！\n";
 			}		
@@ -2500,7 +2499,7 @@
 							<div class="ibox ">
 								<div class="ibox-title">
 									<h5>
-										客戶聯絡窗口資訊
+										*客戶聯絡窗口資訊
 										<button type="button" class="btn btn-success" onclick="AddDetailItem_Contact('tableCO');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>										
 										<button id="btn_addContactInfo" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_AddContactInfo_onclick();">
 											<i class="fa fa-user-plus" style="margin-right: 5px;"></i>
@@ -2637,7 +2636,7 @@
 							<div class="ibox ">
 								<div class="ibox-title">
 									<h5>
-										物料訊息資訊
+										*物料訊息資訊
 										<button type="button" class="btn btn-success" onclick="AddDetailItem_Material('tableMI');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
 									</h5>
 									<div class="ibox-tools">
