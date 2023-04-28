@@ -233,6 +233,8 @@ namespace OneService.Controllers
             string cWTYSDATE = string.Empty;
             string cWTYEDATE = string.Empty;
 
+            getLoginAccount();
+
             #region 取得登入人員資訊
             CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
             EmpBean = CMF.findEmployeeInfo(pLoginAccount);
