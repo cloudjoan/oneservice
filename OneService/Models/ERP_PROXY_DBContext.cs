@@ -25,6 +25,7 @@ namespace OneService.Models
         public virtual DbSet<Stockall> Stockalls { get; set; } = null!;
         public virtual DbSet<TbCrmOppHead> TbCrmOppHeads { get; set; } = null!;
         public virtual DbSet<TbMailContent> TbMailContents { get; set; } = null!;
+        public virtual DbSet<TbSrReport> TbSrReports { get; set; } = null!;
         public virtual DbSet<ViewCustomer2> ViewCustomer2s { get; set; } = null!;
         public virtual DbSet<ViewCustomerandpersonal> ViewCustomerandpersonals { get; set; } = null!;
         public virtual DbSet<ViewMaterialByComp> ViewMaterialByComps { get; set; } = null!;
@@ -1016,6 +1017,316 @@ namespace OneService.Models
                     .HasMaxLength(50)
                     .HasColumnName("MAIL_TYPE")
                     .HasComment("郵件類型");
+            });
+
+            modelBuilder.Entity<TbSrReport>(entity =>
+            {
+                entity.ToTable("TB_SR_REPORT");
+
+                entity.HasComment("服務請求總表");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.Address)
+                    .HasMaxLength(60)
+                    .HasColumnName("ADDRESS")
+                    .HasComment("地址");
+
+                entity.Property(e => e.Arrive)
+                    .HasMaxLength(20)
+                    .HasColumnName("ARRIVE")
+                    .HasComment("到場");
+
+                entity.Property(e => e.Backupsn)
+                    .HasMaxLength(300)
+                    .HasColumnName("BACKUPSN");
+
+                entity.Property(e => e.Changepart)
+                    .HasMaxLength(1000)
+                    .HasColumnName("CHANGEPART");
+
+                entity.Property(e => e.Contact)
+                    .HasMaxLength(40)
+                    .HasColumnName("CONTACT")
+                    .HasComment("聯絡人");
+
+                entity.Property(e => e.Contactid)
+                    .HasMaxLength(10)
+                    .HasColumnName("CONTACTID")
+                    .HasComment("聯絡人ID");
+
+                entity.Property(e => e.Contract)
+                    .HasMaxLength(20)
+                    .HasColumnName("CONTRACT")
+                    .HasComment("合約編號");
+
+                entity.Property(e => e.Countin)
+                    .HasMaxLength(20)
+                    .HasColumnName("COUNTIN")
+                    .HasComment("計數器(IN)");
+
+                entity.Property(e => e.Countout)
+                    .HasMaxLength(20)
+                    .HasColumnName("COUNTOUT")
+                    .HasComment("計數器(OUT)");
+
+                entity.Property(e => e.Create)
+                    .HasMaxLength(20)
+                    .HasColumnName("CREATE_");
+
+                entity.Property(e => e.Csrid)
+                    .HasMaxLength(40)
+                    .HasColumnName("CSRID")
+                    .HasComment("服務報告ID");
+
+                entity.Property(e => e.Csrlink)
+                    .HasMaxLength(100)
+                    .HasColumnName("CSRLINK")
+                    .HasComment("服務報告書連結");
+
+                entity.Property(e => e.Customer)
+                    .HasMaxLength(40)
+                    .HasColumnName("CUSTOMER")
+                    .HasComment("客戶名稱");
+
+                entity.Property(e => e.Customerid)
+                    .HasMaxLength(10)
+                    .HasColumnName("CUSTOMERID")
+                    .HasComment("客戶ID");
+
+                entity.Property(e => e.Dealway)
+                    .HasMaxLength(20)
+                    .HasColumnName("DEALWAY")
+                    .HasComment("處理方式");
+
+                entity.Property(e => e.Depart)
+                    .HasMaxLength(20)
+                    .HasColumnName("DEPART");
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(40)
+                    .HasColumnName("DESCRIPTION")
+                    .HasComment("說明");
+
+                entity.Property(e => e.Dn)
+                    .HasMaxLength(20)
+                    .HasColumnName("DN")
+                    .HasComment("出貨單號");
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(250)
+                    .HasColumnName("EMAIL");
+
+                entity.Property(e => e.Engineer)
+                    .HasMaxLength(40)
+                    .HasColumnName("ENGINEER")
+                    .HasComment("工程師姓名");
+
+                entity.Property(e => e.Engineerid)
+                    .HasMaxLength(20)
+                    .HasColumnName("ENGINEERID")
+                    .HasComment("工程師ID");
+
+                entity.Property(e => e.Finish)
+                    .HasMaxLength(20)
+                    .HasColumnName("FINISH")
+                    .HasComment("服務結束");
+
+                entity.Property(e => e.Hardware)
+                    .HasMaxLength(2)
+                    .HasColumnName("HARDWARE");
+
+                entity.Property(e => e.Hpct)
+                    .HasMaxLength(1000)
+                    .HasColumnName("HPCT");
+
+                entity.Property(e => e.Hpxc)
+                    .HasMaxLength(300)
+                    .HasColumnName("HPXC");
+
+                entity.Property(e => e.InsertTime)
+                    .HasMaxLength(22)
+                    .HasColumnName("INSERT_TIME")
+                    .HasComment("建立時間");
+
+                entity.Property(e => e.Labor)
+                    .HasMaxLength(20)
+                    .HasColumnName("LABOR");
+
+                entity.Property(e => e.Mobile)
+                    .HasMaxLength(30)
+                    .HasColumnName("MOBILE")
+                    .HasComment("手機");
+
+                entity.Property(e => e.Newct)
+                    .HasMaxLength(1000)
+                    .HasColumnName("NEWCT");
+
+                entity.Property(e => e.Oa)
+                    .HasMaxLength(20)
+                    .HasColumnName("OA");
+
+                entity.Property(e => e.ObjectId)
+                    .HasMaxLength(10)
+                    .HasColumnName("OBJECT_ID")
+                    .HasComment("服務請求id");
+
+                entity.Property(e => e.Oldct)
+                    .HasMaxLength(1000)
+                    .HasColumnName("OLDCT");
+
+                entity.Property(e => e.Other)
+                    .HasMaxLength(2)
+                    .HasColumnName("OTHER");
+
+                entity.Property(e => e.Pid)
+                    .HasMaxLength(40)
+                    .HasColumnName("PID");
+
+                entity.Property(e => e.Pn)
+                    .HasMaxLength(40)
+                    .HasColumnName("PN");
+
+                entity.Property(e => e.Problem)
+                    .HasMaxLength(2048)
+                    .HasColumnName("PROBLEM");
+
+                entity.Property(e => e.ProcessType)
+                    .HasMaxLength(4)
+                    .HasColumnName("PROCESS_TYPE")
+                    .HasComment("類型");
+
+                entity.Property(e => e.ProcessTypeText)
+                    .HasMaxLength(40)
+                    .HasColumnName("PROCESS_TYPE_TEXT")
+                    .HasComment("類型說明");
+
+                entity.Property(e => e.Reason)
+                    .HasMaxLength(60)
+                    .HasColumnName("REASON")
+                    .HasComment("延遲原因");
+
+                entity.Property(e => e.Refix)
+                    .HasMaxLength(2)
+                    .HasColumnName("REFIX")
+                    .HasComment("二修");
+
+                entity.Property(e => e.Replace)
+                    .HasMaxLength(2)
+                    .HasColumnName("REPLACE");
+
+                entity.Property(e => e.Reset)
+                    .HasMaxLength(2)
+                    .HasColumnName("RESET");
+
+                entity.Property(e => e.Restore)
+                    .HasMaxLength(2)
+                    .HasColumnName("RESTORE_");
+
+                entity.Property(e => e.Rkind1)
+                    .HasMaxLength(40)
+                    .HasColumnName("RKIND1")
+                    .HasComment("報修類別");
+
+                entity.Property(e => e.Rkind2)
+                    .HasMaxLength(40)
+                    .HasColumnName("RKIND2")
+                    .HasComment("報修大類");
+
+                entity.Property(e => e.Rkind3)
+                    .HasMaxLength(40)
+                    .HasColumnName("RKIND3")
+                    .HasComment("報修代碼");
+
+                entity.Property(e => e.Sales)
+                    .HasMaxLength(40)
+                    .HasColumnName("SALES")
+                    .HasComment("業務例外");
+
+                entity.Property(e => e.Shop)
+                    .HasMaxLength(40)
+                    .HasColumnName("SHOP");
+
+                entity.Property(e => e.Slaresp)
+                    .HasMaxLength(20)
+                    .HasColumnName("SLARESP")
+                    .HasComment("回應條件");
+
+                entity.Property(e => e.Slasrv)
+                    .HasMaxLength(20)
+                    .HasColumnName("SLASRV")
+                    .HasComment("服務條件");
+
+                entity.Property(e => e.Sn)
+                    .HasMaxLength(40)
+                    .HasColumnName("SN");
+
+                entity.Property(e => e.So)
+                    .HasMaxLength(20)
+                    .HasColumnName("SO")
+                    .HasComment("銷售單號");
+
+                entity.Property(e => e.Software)
+                    .HasMaxLength(2)
+                    .HasColumnName("SOFTWARE");
+
+                entity.Property(e => e.Solution)
+                    .HasMaxLength(2048)
+                    .HasColumnName("SOLUTION")
+                    .HasComment("SOLUTION");
+
+                entity.Property(e => e.Sq)
+                    .HasMaxLength(40)
+                    .HasColumnName("SQ");
+
+                entity.Property(e => e.Srvkind)
+                    .HasMaxLength(20)
+                    .HasColumnName("SRVKIND")
+                    .HasComment("維護服務種類");
+
+                entity.Property(e => e.Srvteam)
+                    .HasMaxLength(50)
+                    .HasColumnName("SRVTEAM")
+                    .HasComment("服務團隊");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(5)
+                    .HasColumnName("STATUS")
+                    .HasComment("狀態");
+
+                entity.Property(e => e.StatusText)
+                    .HasMaxLength(40)
+                    .HasColumnName("STATUS_TEXT")
+                    .HasComment("狀態說明");
+
+                entity.Property(e => e.Tel)
+                    .HasMaxLength(30)
+                    .HasColumnName("TEL")
+                    .HasComment("電話");
+
+                entity.Property(e => e.Unit)
+                    .HasMaxLength(20)
+                    .HasColumnName("UNIT")
+                    .HasComment("維護服務單位");
+
+                entity.Property(e => e.WtyEnd)
+                    .HasMaxLength(20)
+                    .HasColumnName("WTY_END")
+                    .HasComment("保固結束");
+
+                entity.Property(e => e.WtyStart)
+                    .HasMaxLength(20)
+                    .HasColumnName("WTY_START")
+                    .HasComment("保固開始");
+
+                entity.Property(e => e.Wtydesc)
+                    .HasMaxLength(40)
+                    .HasColumnName("WTYDESC")
+                    .HasComment("保固描述");
+
+                entity.Property(e => e.Wtyid)
+                    .HasMaxLength(40)
+                    .HasColumnName("WTYID");
             });
 
             modelBuilder.Entity<ViewCustomer2>(entity =>

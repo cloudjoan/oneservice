@@ -5408,7 +5408,7 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult findMaterialBySerial(string IV_SERIAL)
         {
-            var beans = dbProxy.Stockalls.Where(x => x.IvSerial.Contains(IV_SERIAL.Trim()));
+            var beans = dbProxy.Stockalls.Where(x => x.IvSerial.Contains(IV_SERIAL.Trim())).Take(30);
 
             List<SerialMaterialInfo> tList = new List<SerialMaterialInfo>();
 

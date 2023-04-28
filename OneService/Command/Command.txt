@@ -14,10 +14,10 @@ dotnet ef dbcontext scaffold "Server=172.31.7.54;Database=TSTI-ONE;User=TSTI-ONE
 dotnet ef dbcontext scaffold "Server=172.31.7.50;Database=TAIF;User=BPM;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t tblEmployee -t tblDepartment -t tblForm_Guarantee_Pop -f
 
 #PROXY DB
-dotnet ef dbcontext scaffold "Server=172.31.7.40;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_CRM_OPP_HEAD  -f
+dotnet ef dbcontext scaffold "Server=172.31.7.40;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_CRM_OPP_HEAD -t MATERIAL -t VIEW_CUSTOMER_2 -t CUSTOMER_Contact -t PostalaAddressAndCode -t STOCKALL -t VIEW_MATERIAL_ByComp -t F4501 -t F0005 -t TB_MAIL_CONTENT -t PERSONAL_Contact -t VIEW_CUSTOMERANDPERSONAL  -t TB_SR_REPORT -f
 
 #PROXY-QAS
-dotnet ef dbcontext scaffold "Server=172.31.7.119;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_CRM_OPP_HEAD -t MATERIAL -t VIEW_CUSTOMER_2 -t CUSTOMER_Contact -t PostalaAddressAndCode -t STOCKALL -t VIEW_MATERIAL_ByComp -t F4501 -t F0005 -t TB_MAIL_CONTENT -t PERSONAL_Contact -t VIEW_CUSTOMERANDPERSONAL -f
+dotnet ef dbcontext scaffold "Server=172.31.7.119;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_CRM_OPP_HEAD -t MATERIAL -t VIEW_CUSTOMER_2 -t CUSTOMER_Contact -t PostalaAddressAndCode -t STOCKALL -t VIEW_MATERIAL_ByComp -t F4501 -t F0005 -t TB_MAIL_CONTENT -t PERSONAL_Contact -t VIEW_CUSTOMERANDPERSONAL  -t TB_SR_REPORT -f
 
 #EIP
 dotnet ef dbcontext scaffold "Server=172.31.7.26;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -t VIEW_EMP_INFO -t VIEW_EMP_INFO_WITHOUT_LEAVE -t VIEW_DEPT_MGR -f
