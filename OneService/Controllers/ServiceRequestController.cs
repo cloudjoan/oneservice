@@ -137,9 +137,9 @@ namespace OneService.Controllers
             #region 服務案件類型
             var SRTypeList = new List<SelectListItem>()
             {
-                new SelectListItem {Text="61_一般服務", Value="ZSR1" },
-                new SelectListItem {Text="63_裝機服務", Value="ZSR3" },
-                new SelectListItem {Text="65_定維服務", Value="ZSR5" },                
+                new SelectListItem {Text="ZSR1_一般服務", Value="ZSR1" },
+                new SelectListItem {Text="ZSR3_裝機服務", Value="ZSR3" },
+                new SelectListItem {Text="ZSR5_定維服務", Value="ZSR5" },                
             };
 
             ViewBag.ddl_SRType = SRTypeList;
@@ -2369,9 +2369,9 @@ namespace OneService.Controllers
                 tList.Add(new SelectListItem { Text = "", Value = "" });
             }
 
-            tList.Add(new SelectListItem { Text = "61_一般服務", Value = "61" });
-            tList.Add(new SelectListItem { Text = "63_裝機服務", Value = "63" });
-            tList.Add(new SelectListItem { Text = "65_定維服務", Value = "65" });
+            tList.Add(new SelectListItem { Text = "ZSR1_一般服務", Value = "61" });
+            tList.Add(new SelectListItem { Text = "ZSR3_裝機服務", Value = "63" });
+            tList.Add(new SelectListItem { Text = "ZSR5_定維服務", Value = "65" });
 
             return tList;           
         }
