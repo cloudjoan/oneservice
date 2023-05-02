@@ -2450,6 +2450,7 @@ namespace OneService.Controllers
             ListTempStatus = findSRStatus(ListTempStatus, ListStatus_Gen);
             ListTempStatus = findSRStatus(ListTempStatus, ListStatus_Ins);
             ListTempStatus = findSRStatus(ListTempStatus, ListStatus_Man);
+            ListTempStatus = ListTempStatus.OrderBy(x => x.Value).ToList();
 
             return ListTempStatus;
         }

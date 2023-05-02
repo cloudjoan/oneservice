@@ -151,8 +151,8 @@ namespace OneService.Controllers
             #endregion
 
             #region 狀態
-            var SRStatus = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRSTATUS", false);
-            ViewBag.ddl_Status = SRStatus;
+            List<SelectListItem> ListStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode);
+            ViewBag.ddl_Status = ListStatus;
             #endregion
 
             #region 報修類別
@@ -619,8 +619,8 @@ namespace OneService.Controllers
             #endregion
 
             #region 狀態
-            var SRStatus = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRSTATUS", false);
-            ViewBag.ddl_cStatus = SRStatus;
+            List<SelectListItem> ListStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode);
+            ViewBag.ddl_cStatus = ListStatus;
             #endregion
 
             #region 報修管道
