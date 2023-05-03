@@ -54,7 +54,7 @@
 			PeopleSearch();				//Ajax用中文或英文姓名查詢人員帳號
 			SQPersonSearch();			//Ajax用關鍵字查詢SQ人員			
 			getpjTeam();				//取得服務團隊
-			getpjAssEngineer();			//取得指派工程師	
+			getpjAssEngineer();			//取得協助工程師	
 			getpjTechManager();			//取得技術主管	
 			getSRDetail_Warranty();		//取得保固SLA明細Table(非新建或駁回狀態)			
 		});		
@@ -104,7 +104,7 @@
 				}
             })			
 
-			//顯示指派工程師設定popup
+			//顯示協助工程師設定popup
             $('#btn_pjAssEngineer').click(function () {
                 $('#dialog_pjAssEngineer').modal('show');
             })
@@ -374,8 +374,8 @@
 			var tbx_cRepairEmail	= $("#tbx_cRepairEmail");			//Email(報修人)			
 
 			var hid_cTeamID = $("#hid_cTeamID");					//服務團隊
-			var tbx_cMainEngineerName = $("#tbx_cMainEngineerName");	//L2工程師
-			var hid_cMainEngineerID = $("#hid_cMainEngineerID");		//L2工程師ERPID
+			var tbx_cMainEngineerName = $("#tbx_cMainEngineerName");	//主要工程師
+			var hid_cMainEngineerID = $("#hid_cMainEngineerID");		//主要工程師ERPID
 
 			if (ddl_cStatus.val() == "") {
 				Msg += "請選擇【狀態】！\n";
@@ -454,11 +454,11 @@
 			}
 
 			if (tbx_cMainEngineerName.val() == "") {
-				Msg += "【L2工程師】不得為空！\n";
+				Msg += "【主要工程師】不得為空！\n";
 			}
 
 			if (hid_cMainEngineerID.val() == "") {
-				Msg += "您未下拉選取【L2工程師】，請輸入關鍵字後再重新選取！\n";
+				Msg += "您未下拉選取【主要工程師】，請輸入關鍵字後再重新選取！\n";
 			}
 
             //明細判斷
@@ -1817,13 +1817,13 @@
         }
 		//-----↑↑↑↑↑服務團隊 ↑↑↑↑↑-----
 
-		//-----↓↓↓↓↓指派工程師 ↓↓↓↓↓-----
-        //修改指派工程師
+		//-----↓↓↓↓↓協助工程師 ↓↓↓↓↓-----
+        //修改協助工程師
         function savepjAssEngineer() {
             var hid_cAssEngineerID = $("#hid_cAssEngineerID");
 
 			if ($("#hid_pjAssEngineerAcc").val() == "") {
-                alert("請輸入指派工程師姓名");
+                alert("請輸入協助工程師姓名");
             }
             else {
 					$("#btn_savepjAssEngineer").hide();
@@ -1854,7 +1854,7 @@
             }
         }
 
-        //取得指派工程師
+        //取得協助工程師
         function getpjAssEngineer() {
             $("#hid_pjAssEngineerAcc").val("");
             $("#tbx_pjAssEngineerName").val("");
@@ -1912,12 +1912,12 @@
 			});
         }
 
-        //刪除指派工程師
+        //刪除協助工程師
         function deletepjAssEngineer(obj) {
             var pjAssEngineerAcc = $(obj).parent().parent().find(".hidpjAssEngineerAcc").val();
 			var hid_cAssEngineerID = $("#hid_cAssEngineerID");
 
-            if (confirm("確認刪除此指派工程師？")) {
+            if (confirm("確認刪除此協助工程師？")) {
                 $.ajax({
 					url: '@Url.Action("DeletepjAssEngineer", "ServiceRequest")',
 					type: 'post',
@@ -1939,7 +1939,7 @@
 				});
             }
         }
-		//-----↑↑↑↑↑指派工程師 ↑↑↑↑↑-----
+		//-----↑↑↑↑↑協助工程師 ↑↑↑↑↑-----
 
 		//-----↓↓↓↓↓技術主管 ↓↓↓↓↓-----
         //修改技術主管
@@ -3556,17 +3556,17 @@
 										</div>										
 									</div>									
 									<div class="form-group row">
-										<label class="col-lg-2 col-form-label">*L2工程師</label>
+										<label class="col-lg-2 col-form-label">*主要工程師</label>
 										<div class="col-lg-4">
 											<input type="text" id="tbx_cMainEngineerName" name="tbx_cMainEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMainEngineerName">
 											<input type="hidden" id="hid_cMainEngineerID" name="hid_cMainEngineerID" value="@ViewBag.cMainEngineerID" />
 										</div>										
 									</div>
 									<div class="form-group row">
-										<label class="col-lg-2 col-form-label">指派工程師</label>
+										<label class="col-lg-2 col-form-label">協助工程師</label>
 										<div class="col-lg-10 col-sm-10 input-group">
 											<input type="hidden" id="hid_cAssEngineerID" name="hid_cAssEngineerID" value="@ViewBag.cAssEngineerID">
-											<input id="tbx_cAssEngineerName" name="tbx_cAssEngineerName" type="text" class="form-control labelDisabled" placeholder="指派工程師姓名" disabled>
+											<input id="tbx_cAssEngineerName" name="tbx_cAssEngineerName" type="text" class="form-control labelDisabled" placeholder="協助工程師姓名" disabled>
 											<div class="input-group-append">
 												<button id="btn_pjAssEngineer" class="btn btn-primary" type="button">
 													<i class="fa fa-user-plus" aria-hidden="true"></i>
@@ -4128,19 +4128,19 @@
 		</div>
 	</div>
 
-	<!--指派工程師彈出視窗-->
+	<!--協助工程師彈出視窗-->
 	<div class="modal fade" id="dialog_pjAssEngineer" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<label class="col-form-label"><i class="fa fa-users"></i> 指派工程師設定</label>
+					<label class="col-form-label"><i class="fa fa-users"></i> 協助工程師設定</label>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
 				<div class="modal-body">
 					<div class="form-group row">						
-						<label class="col-lg-2 col-form-label">指派工程師姓名</label>
+						<label class="col-lg-2 col-form-label">協助工程師姓名</label>
 						<div class="input-group col-sm-10 col-lg-6" style="height: 36px;">
 							<input type="hidden" id="hid_pjAssEngineerAcc" />
 							<input type="text" id="tbx_pjAssEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">

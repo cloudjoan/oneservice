@@ -92,17 +92,17 @@ namespace OneService.Controllers
             string tSRContactName = string.Empty;       //客戶聯絡人
             string tSRPathWay = string.Empty;           //報修管理
             string tSRType = string.Empty;              //報修類別
-            string tMainEngineerID = string.Empty;      //L2工程師ERPID
-            string tMainEngineerName = string.Empty;    //L2工程師姓名            
-            string tAssEngineerName = string.Empty;     //指派工程師姓名
+            string tMainEngineerID = string.Empty;      //主要工程師ERPID
+            string tMainEngineerName = string.Empty;    //主要工程師姓名            
+            string tAssEngineerName = string.Empty;     //協助工程師姓名
             string tTechManagerID = string.Empty;       //技術主管ERPID            
             string tTechManagerName = string.Empty;     //技術主管姓名
             string tSalesID = string.Empty;             //業務人員ERPID
             string tSecretaryID = string.Empty;         //業務祕書ERPID
             string tModifiedDate = string.Empty;        //修改日期
 
-            List<string> tListAssAndTech = new List<string>();                          //記錄所有指派工程師和所有技術主管的ERPID
-            Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();  //記錄所有指派工程師和所有技術主管的<ERPID,中、英文姓名>
+            List<string> tListAssAndTech = new List<string>();                          //記錄所有協助工程師和所有技術主管的ERPID
+            Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();  //記錄所有協助工程師和所有技術主管的<ERPID,中、英文姓名>
 
             var tSRContact_List = findSRDetailContactList();
 
@@ -127,10 +127,10 @@ namespace OneService.Controllers
 
                 DataTable dt = getDataTableByDb(tSQL, "dbOne");
 
-                #region 先取得所有指派工程師和技術主管的ERPID
+                #region 先取得所有協助工程師和技術主管的ERPID
                 foreach (DataRow dr in dt.Rows)
                 {
-                    #region 指派工程師
+                    #region 協助工程師
                     findListAssAndTech(ref tListAssAndTech, dr["cAssEngineerID"].ToString());
                     #endregion
 
@@ -140,7 +140,7 @@ namespace OneService.Controllers
                 }
                 #endregion
 
-                #region 再取得所有指派工程師和技術主管的中文姓名
+                #region 再取得所有協助工程師和技術主管的中文姓名
                 tDicAssAndTech = findListEmployeeInfo(tListAssAndTech);
                 #endregion
 
@@ -168,9 +168,9 @@ namespace OneService.Controllers
                     ProcessInfo[4] = dr["cDesc"].ToString();             //說明
                     ProcessInfo[5] = tSRPathWay;                        //報修管道
                     ProcessInfo[6] = tSRType;                           //報修類別
-                    ProcessInfo[7] = tMainEngineerID;                   //L2工程師ERPID
-                    ProcessInfo[8] = tMainEngineerName;                 //L2工程師姓名
-                    ProcessInfo[9] = tAssEngineerName;                  //指派工程師姓名
+                    ProcessInfo[7] = tMainEngineerID;                   //主要工程師ERPID
+                    ProcessInfo[8] = tMainEngineerName;                 //主要工程師姓名
+                    ProcessInfo[9] = tAssEngineerName;                  //協助工程師姓名
                     ProcessInfo[10] = tTechManagerID;                   //技術主管ERPID
                     ProcessInfo[11] = tTechManagerName;                 //技術主管姓名
                     ProcessInfo[12] = tSalesID;                         //業務人員ERPID
@@ -188,10 +188,10 @@ namespace OneService.Controllers
                                                     (x.CMainEngineerId == tERPID || x.CSalesId == tERPID || x.CSecretaryId == tERPID || x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID))
                                               ).ToList();
 
-                #region 先取得所有指派工程師和技術主管的ERPID
+                #region 先取得所有協助工程師和技術主管的ERPID
                 foreach (var bean in beans)
                 {
-                    #region 指派工程師
+                    #region 協助工程師
                     findListAssAndTech(ref tListAssAndTech, bean.CAssEngineerId);
                     #endregion
 
@@ -201,7 +201,7 @@ namespace OneService.Controllers
                 }
                 #endregion
 
-                #region 再取得所有指派工程師和技術主管的中文姓名
+                #region 再取得所有協助工程師和技術主管的中文姓名
                 tDicAssAndTech = findListEmployeeInfo(tListAssAndTech);
                 #endregion
 
@@ -229,9 +229,9 @@ namespace OneService.Controllers
                     ProcessInfo[4] = bean.CDesc;            //說明
                     ProcessInfo[5] = tSRPathWay;           //報修管道
                     ProcessInfo[6] = tSRType;              //報修類別
-                    ProcessInfo[7] = tMainEngineerID;      //L2工程師ERPID
-                    ProcessInfo[8] = tMainEngineerName;    //L2工程師姓名
-                    ProcessInfo[9] = tAssEngineerName;     //指派工程師姓名
+                    ProcessInfo[7] = tMainEngineerID;      //主要工程師ERPID
+                    ProcessInfo[8] = tMainEngineerName;    //主要工程師姓名
+                    ProcessInfo[9] = tAssEngineerName;     //協助工程師姓名
                     ProcessInfo[10] = tTechManagerID;      //技術主管ERPID
                     ProcessInfo[11] = tTechManagerName;    //技術主管姓名
                     ProcessInfo[12] = tSalesID;            //業務人員ERPID
@@ -433,9 +433,9 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 取得所有指派工程師和技術主管的ERPID清單
+        #region 取得所有協助工程師和技術主管的ERPID清單
         /// <summary>
-        /// 取得所有指派工程師和技術主管的ERPID清單
+        /// 取得所有協助工程師和技術主管的ERPID清單
         /// </summary>
         /// <param name="tList">ERPID清單</param>
         /// <param name="tOriERPID">傳入的ERPID</param>
@@ -1932,7 +1932,7 @@ namespace OneService.Controllers
         {
             bool reValue = false;
 
-            //服務團隊主管、L2工程師、指派工程師、技術主管
+            //服務團隊主管、主要工程師、協助工程師、技術主管
             var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == tSRID);
 
             if (beanM != null)
@@ -1948,7 +1948,7 @@ namespace OneService.Controllers
                 }
                 else
                 {
-                    #region L2工程師可編輯
+                    #region 主要工程師可編輯
                     if (beanM.CMainEngineerId != null)
                     {
                         if (beanM.CMainEngineerId == tLoginERPID)
@@ -2023,9 +2023,9 @@ namespace OneService.Controllers
                             }
                         }
                     }                    
-                    else //非L2處理中狀態(指派工程師都可以編輯)
+                    else //非L2處理中狀態(協助工程師都可以編輯)
                     {
-                        #region 指派工程師
+                        #region 協助工程師
                         if (beanM.CStatus != "E0002")
                         {
                             if (beanM.CAssEngineerId != null)

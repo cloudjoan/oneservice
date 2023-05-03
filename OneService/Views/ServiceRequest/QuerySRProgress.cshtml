@@ -284,8 +284,8 @@
 			var tbx_CreatedUserName = $('#tbx_CreatedUserName');			//派單人員
 			var tbx_cRepairName = $('#tbx_cRepairName');				//報修人姓名			
 			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道
-			var tbx_cMainEngineerID = $('#tbx_cMainEngineerID');			//L2工程師ERPID
-			var tbx_cAssEngineerID = $('#tbx_cAssEngineerID');			//指派工程師ERPID
+			var tbx_cMainEngineerID = $('#tbx_cMainEngineerID');			//主要工程師ERPID
+			var tbx_cAssEngineerID = $('#tbx_cAssEngineerID');			//協助工程師ERPID
 			var tbx_cTechManagerID = $('#tbx_cTechManagerID');			//技術主管ERPID
 			var cTeamID = $("#ddl_cTeamID").val().join();			    //服務團隊
 
@@ -486,13 +486,13 @@
 							<div class="col-lg-4">								
 								@Html.DropDownList("ddl_cSRPathWay", (IEnumerable<SelectListItem>)ViewBag.ddl_cSRPathWay, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇報修管道" })
 							</div>
-							<label class="col-lg-2 col-form-label">L2工程師ERPID</label>
+							<label class="col-lg-2 col-form-label">主要工程師ERPID</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cMainEngineerID" id="tbx_cMainEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">指派工程師ERPID</label>
+							<label class="col-lg-2 col-form-label">協助工程師ERPID</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cAssEngineerID" id="tbx_cAssEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
 							</div>
@@ -564,8 +564,8 @@
 								<th>服務團隊</th>
 								<th>報修管道</th>
 								<th>報修類別</th>
-								<th>L2工程師</th>
-								<th>指派工程師</th>
+								<th>主要工程師</th>
+								<th>協助工程師</th>
 								<th>派單人員</th>
 								<th>派單日期</th>
 								<th>最後編輯日期</th>

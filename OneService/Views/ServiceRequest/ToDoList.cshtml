@@ -94,8 +94,8 @@
 					{ "width": "100px", "targets": 4 },  //說明
 					{ "width": "32px", "targets": 5 },   //報修管道
 					{ "width": "32px", "targets": 6 },   //報修類別
-					{ "width": "32px", "targets": 7 },   //L2工程師
-					{ "width": "32px", "targets": 8 },   //指派工程師
+					{ "width": "32px", "targets": 7 },   //主要工程師
+					{ "width": "32px", "targets": 8 },   //協助工程師
 					{ "width": "60px", "targets": 9 },   //最後編輯日期
 					{ "width": "32px", "targets": 10 },  //狀態
 				],
@@ -209,8 +209,8 @@
 								<th>說明</th>
 								<th>報修管道</th>
 								<th>報修類別</th>
-								<th>L2工程師</th>
-								<th>指派工程師</th>
+								<th>主要工程師</th>
+								<th>協助工程師</th>
 								<th>最後編輯日期</th>
 								<th>狀態</th>
 							</tr>
@@ -258,7 +258,7 @@
 										{
 											if (CheckInfo[15] != "E0007") //若狀態非【E0007.技術支援升級】
 											{
-												if (tERPID != CheckInfo[7]) //非【L2工程師】才跳過
+												if (tERPID != CheckInfo[7]) //非【主要工程師】才跳過
 												{
 													continue;
 												}

@@ -668,8 +668,8 @@ namespace OneService.Controllers
         /// <param name="CreatedUserName">派單人員</param>
         /// <param name="cRepairName">報修人姓名</param>
         /// <param name="cSRPathWay">報修管道</param>
-        /// <param name="cMainEngineerID">L2工程師ERPID</param>
-        /// <param name="cAssEngineerID">指派工程師ERPID</param>
+        /// <param name="cMainEngineerID">主要工程師ERPID</param>
+        /// <param name="cAssEngineerID">協助工程師ERPID</param>
         /// <param name="cTechManagerID">技術主管ERPID</param>
         /// <param name="cTeamID">服務團隊</param>
         /// <param name="cSRTypeOne">報修類別-大類</param>
@@ -702,16 +702,16 @@ namespace OneService.Controllers
             string tSRType = string.Empty;              //報修類別
             string tSRProductSerial = string.Empty;     //產品序號資訊
             string tSRTeam = string.Empty;              //服務團隊
-            string tMainEngineerID = string.Empty;      //L2工程師ERPID
-            string tMainEngineerName = string.Empty;    //L2工程師姓名
-            string tAssEngineerName = string.Empty;     //指派工程師姓名
+            string tMainEngineerID = string.Empty;      //主要工程師ERPID
+            string tMainEngineerName = string.Empty;    //主要工程師姓名
+            string tAssEngineerName = string.Empty;     //協助工程師姓名
             string tTechManagerName = string.Empty;     //技術主管姓名
             string tCreatedUserName = string.Empty;     //派單人員
             string tCreatedDate = string.Empty;         //派單日期
             string tModifiedDate = string.Empty;        //最後編輯日期                          
 
-            List<string> tListAssAndTech = new List<string>();                          //記錄所有指派工程師和所有技術主管的ERPID
-            Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();  //記錄所有指派工程師和所有技術主管的<ERPID,中、英文姓名>
+            List<string> tListAssAndTech = new List<string>();                          //記錄所有協助工程師和所有技術主管的ERPID
+            Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();  //記錄所有協助工程師和所有技術主管的<ERPID,中、英文姓名>
 
             var tSRTeam_List = CMF.findSRTeamIDList(cCompanyID, false);
             var tSRContact_List = CMF.findSRDetailContactList();            
@@ -835,14 +835,14 @@ namespace OneService.Controllers
             }
             #endregion          
 
-            #region L2工程師ERPID
+            #region 主要工程師ERPID
             if (!string.IsNullOrEmpty(cMainEngineerID))
             {
                 ttWhere += "AND M.cMainEngineerID = '" + cMainEngineerID + "' " + Environment.NewLine;
             }
             #endregion
 
-            #region 指派工程師ERPID
+            #region 協助工程師ERPID
             if (!string.IsNullOrEmpty(cAssEngineerID))
             {
                 ttWhere += "AND M.cAssEngineerID LIKE N'%" + cAssEngineerID.Trim() + "%' " + Environment.NewLine;
@@ -953,10 +953,10 @@ namespace OneService.Controllers
             dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
             dtProgress = CMF.DistinctTable(dt);
 
-            #region 先取得所有指派工程師和技術主管的ERPID
+            #region 先取得所有協助工程師和技術主管的ERPID
             foreach (DataRow dr in dtProgress.Rows)
             {
-                #region 指派工程師
+                #region 協助工程師
                 CMF.findListAssAndTech(ref tListAssAndTech, dr["cAssEngineerID"].ToString());
                 #endregion
 
@@ -966,7 +966,7 @@ namespace OneService.Controllers
             }
             #endregion
 
-            #region 再取得所有指派工程師和技術主管的中文姓名
+            #region 再取得所有協助工程師和技術主管的中文姓名
             tDicAssAndTech = CMF.findListEmployeeInfo(tListAssAndTech);
             #endregion
 
@@ -1000,9 +1000,9 @@ namespace OneService.Controllers
                 QueryInfo[8] = tSRTeam;                        //服務團隊
                 QueryInfo[9] = tSRPathWayNote;                 //報修管道
                 QueryInfo[10] = tSRType;                       //報修類別                
-                QueryInfo[11] = tMainEngineerID;               //L2工程師ERPID
-                QueryInfo[12] = tMainEngineerName;             //L2工程師姓名
-                QueryInfo[13] = tAssEngineerName;              //指派工程師姓名
+                QueryInfo[11] = tMainEngineerID;               //主要工程師ERPID
+                QueryInfo[12] = tMainEngineerName;             //主要工程師姓名
+                QueryInfo[13] = tAssEngineerName;              //協助工程師姓名
                 QueryInfo[14] = tTechManagerName;              //技術主管姓名
                 QueryInfo[15] = tCreatedUserName;              //派單人員
                 QueryInfo[16] = tCreatedDate;                  //派單日期
@@ -1632,13 +1632,13 @@ namespace OneService.Controllers
                     tLog += CMF.getNewAndOldLog("計費業務ERPID", OldCSalesId, CSalesId);
 
                     OldCMainEngineerName = beanNowM.CMainEngineerName;
-                    tLog += CMF.getNewAndOldLog("L2工程師姓名", OldCMainEngineerName, CMainEngineerName);
+                    tLog += CMF.getNewAndOldLog("主要工程師姓名", OldCMainEngineerName, CMainEngineerName);
 
                     OldCMainEngineerId = beanNowM.CMainEngineerId;
-                    tLog += CMF.getNewAndOldLog("L2工程師ERPID", OldCMainEngineerId, CMainEngineerId);
+                    tLog += CMF.getNewAndOldLog("主要工程師ERPID", OldCMainEngineerId, CMainEngineerId);
 
                     OldCAssEngineerId = beanNowM.CAssEngineerId;
-                    tLog += CMF.getNewAndOldLog("指派工程師ERPID", OldCAssEngineerId, CAssEngineerId);
+                    tLog += CMF.getNewAndOldLog("協助工程師ERPID", OldCAssEngineerId, CAssEngineerId);
 
                     OldCTechManagerId = beanNowM.CTechManagerId;
                     tLog += CMF.getNewAndOldLog("技術主管ERPID", OldCTechManagerId, CTechManagerId);
@@ -2577,12 +2577,12 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 修改指派工程師
+        #region 修改協助工程師
         /// <summary>
-        /// 修改指派工程師
+        /// 修改協助工程師
         /// </summary>
-        /// <param name="cAssEngineerID">目前的指派工程師ERPID(;號隔開)</param>
-        /// <param name="cAssEngineerAcc">欲修改的指派工程師ERPID</param>
+        /// <param name="cAssEngineerID">目前的協助工程師ERPID(;號隔開)</param>
+        /// <param name="cAssEngineerAcc">欲修改的協助工程師ERPID</param>
         /// <returns></returns>
         public IActionResult SavepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
         {
@@ -2606,7 +2606,7 @@ namespace OneService.Controllers
 
                     if (oldAssEngineerAcc.Contains(cAssEngineerAcc))
                     {
-                        reValue = "Error：指派工程師已存在，請重新輸入！";
+                        reValue = "Error：協助工程師已存在，請重新輸入！";
                     }
                     else
                     {
@@ -2617,7 +2617,7 @@ namespace OneService.Controllers
                         {
                             CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "": ViewBag.cSRID,
                             EventName = "SavepjAssEngineer",
-                            Log = "修改指派工程師_舊值: " + oldAssEngineerAcc + "; 新值: " + reValue,
+                            Log = "修改協助工程師_舊值: " + oldAssEngineerAcc + "; 新值: " + reValue,
                             CreatedUserName = ViewBag.empEngName,
                             CreatedDate = DateTime.Now
                         };
@@ -2641,17 +2641,17 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 取得指派工程師
+        #region 取得協助工程師
         /// <summary>
-        /// 取得指派工程師
+        /// 取得協助工程師
         /// </summary>
-        /// <param name="cAssEngineerID">指派工程師ERPID(;號隔開)</param>
+        /// <param name="cAssEngineerID">協助工程師ERPID(;號隔開)</param>
         /// <returns></returns>
         public IActionResult GetpjAssEngineer(string cAssEngineerID)
         {            
             List<AssEngineerInfo> liAssEngineerInfo = new List<AssEngineerInfo>();
 
-            string tEmpName = string.Empty; //指派工程師姓名(中文姓名+英文姓名)
+            string tEmpName = string.Empty; //協助工程師姓名(中文姓名+英文姓名)
 
             if (!string.IsNullOrEmpty(cAssEngineerID))
             {
@@ -2686,12 +2686,12 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 刪除指派工程師
+        #region 刪除協助工程師
         /// <summary>
-        /// 刪除指派工程師
+        /// 刪除協助工程師
         /// </summary>
-        /// <param name="cAssEngineerID">目前的指派工程師ERPID(;號隔開)</param>
-        /// <param name="cAssEngineerAcc">欲刪除的指派工程師ERPID</param>
+        /// <param name="cAssEngineerID">目前的協助工程師ERPID(;號隔開)</param>
+        /// <param name="cAssEngineerAcc">欲刪除的協助工程師ERPID</param>
         /// <returns></returns>
         public IActionResult DeletepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
         {
@@ -2733,7 +2733,7 @@ namespace OneService.Controllers
                     {
                         CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
                         EventName = "DeletepjAssEngineer",
-                        Log = "刪除指派工程師_舊值: " + cAssEngineerID + "; 新值: " + reValue,
+                        Log = "刪除協助工程師_舊值: " + cAssEngineerID + "; 新值: " + reValue,
                         CreatedUserName = ViewBag.empEngName,
                         CreatedDate = DateTime.Now
                     };
@@ -3468,13 +3468,13 @@ namespace OneService.Controllers
                     tLog += CMF.getNewAndOldLog("服務團隊", OldCTeamId, CTeamId);
 
                     OldCMainEngineerName = beanNowM.CMainEngineerName;
-                    tLog += CMF.getNewAndOldLog("L2工程師姓名", OldCMainEngineerName, CMainEngineerName);
+                    tLog += CMF.getNewAndOldLog("主要工程師姓名", OldCMainEngineerName, CMainEngineerName);
 
                     OldCMainEngineerId = beanNowM.CMainEngineerId;
-                    tLog += CMF.getNewAndOldLog("L2工程師ERPID", OldCMainEngineerId, CMainEngineerId);
+                    tLog += CMF.getNewAndOldLog("主要工程師ERPID", OldCMainEngineerId, CMainEngineerId);
 
                     OldCAssEngineerId = beanNowM.CAssEngineerId;
-                    tLog += CMF.getNewAndOldLog("指派工程師ERPID", OldCAssEngineerId, CAssEngineerId);
+                    tLog += CMF.getNewAndOldLog("協助工程師ERPID", OldCAssEngineerId, CAssEngineerId);
 
                     OldCSalesName = beanNowM.CSalesName;
                     tLog += CMF.getNewAndOldLog("業務人員", OldCSalesName, CSalesName);
@@ -5920,8 +5920,8 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 指派工程師資訊
-        /// <summary>指派工程師資訊</summary>
+        #region 協助工程師資訊
+        /// <summary>協助工程師資訊</summary>
         public class AssEngineerInfo
         {
             public int ID { get; private set; }
@@ -6078,7 +6078,7 @@ namespace OneService.Controllers
         ADD,
 
         /// <summary>
-        /// 轉派L2工程師
+        /// 轉派主要工程師
         /// </summary>
         TRANS,
 
