@@ -1418,25 +1418,29 @@ namespace OneService.Controllers
                     string[] COcContactPhone = formCollection["tbx_COcContactPhone"];
                     string[] COcContactMobile = formCollection["tbx_COcContactMobile"];
                     string[] COcContactEmail = formCollection["tbx_COcContactEmail"];
+                    string[] COcDisabled = formCollection["hid_COcDisabled"];
 
                     int countCO = COcContactName.Length;
 
                     for (int i = 0; i < countCO; i++)
                     {
-                        TbOneSrdetailContact beanD = new TbOneSrdetailContact();
+                        if (COcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailContact beanD = new TbOneSrdetailContact();
 
-                        beanD.CSrid = pSRID;
-                        beanD.CContactName = COcContactName[i];
-                        beanD.CContactAddress = COcContactAddress[i];
-                        beanD.CContactPhone = COcContactPhone[i];
-                        beanD.CContactMobile = COcContactMobile[i];
-                        beanD.CContactEmail = COcContactEmail[i];
-                        beanD.Disabled = 0;
+                            beanD.CSrid = pSRID;
+                            beanD.CContactName = COcContactName[i];
+                            beanD.CContactAddress = COcContactAddress[i];
+                            beanD.CContactPhone = COcContactPhone[i];
+                            beanD.CContactMobile = COcContactMobile[i];
+                            beanD.CContactEmail = COcContactEmail[i];
+                            beanD.Disabled = 0;
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailContacts.Add(beanD);
+                            dbOne.TbOneSrdetailContacts.Add(beanD);
+                        }
                     }
                     #endregion
 
@@ -1447,26 +1451,30 @@ namespace OneService.Controllers
                     string[] PRcProductNumber = formCollection["tbx_PRcProductNumber"];
                     string[] PRcNewSerialID = formCollection["tbx_PRcNewSerialID"];
                     string[] PRcInstallID = formCollection["tbx_PRcInstallID"];
+                    string[] PRcDisabled = formCollection["hid_PRcDisabled"];
 
                     int countPR = PRcSerialID.Length;
 
                     for (int i = 0; i < countPR; i++)
                     {
-                        TbOneSrdetailProduct beanD = new TbOneSrdetailProduct();
+                        if (PRcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailProduct beanD = new TbOneSrdetailProduct();
 
-                        beanD.CSrid = pSRID;
-                        beanD.CSerialId = PRcSerialID[i];
-                        beanD.CMaterialId = PRcMaterialID[i];
-                        beanD.CMaterialName = PRcMaterialName[i];
-                        beanD.CProductNumber = PRcProductNumber[i];
-                        beanD.CNewSerialId = PRcNewSerialID[i];
-                        beanD.CInstallId = PRcInstallID[i];
-                        beanD.Disabled = 0;
+                            beanD.CSrid = pSRID;
+                            beanD.CSerialId = PRcSerialID[i];
+                            beanD.CMaterialId = PRcMaterialID[i];
+                            beanD.CMaterialName = PRcMaterialName[i];
+                            beanD.CProductNumber = PRcProductNumber[i];
+                            beanD.CNewSerialId = PRcNewSerialID[i];
+                            beanD.CInstallId = PRcInstallID[i];
+                            beanD.Disabled = 0;
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailProducts.Add(beanD);
+                            dbOne.TbOneSrdetailProducts.Add(beanD);
+                        }
                     }
                     #endregion
 
@@ -2485,7 +2493,9 @@ namespace OneService.Controllers
         {
             List<SRTeamInfo> liSRTeamInfo = new List<SRTeamInfo>();
 
-            string tEmpName = string.Empty; //服務團隊姓名(中文姓名+英文姓名)            
+            string tEmpName = string.Empty;     //服務團隊姓名(中文姓名+英文姓名)            
+            string tDeptID = string.Empty;      //對應該部門ID
+            string tDeptName = string.Empty;    //對應該部門名稱
 
             if (!string.IsNullOrEmpty(cTeamID))
             {
@@ -2493,17 +2503,23 @@ namespace OneService.Controllers
                 int pmId = 0;
                 foreach (var AssAcc in liAssAcc)
                 {
+                    tEmpName = "";
+                    tDeptID = "";
+                    tDeptName = "";
+
                     pmId++;
                     if (string.IsNullOrEmpty(AssAcc)) continue;
 
-                    var qPm = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamOldId == AssAcc);
-                    if (qPm != null)
+                    var qPms = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamNewId).Where(x => x.Disabled == 0 && x.CTeamOldId == AssAcc);
+                    foreach(var qPm in qPms)
                     {
-                        tEmpName = qPm.CTeamOldId + " " + qPm.CTeamOldName;
-
-                        SRTeamInfo pmBean = new SRTeamInfo(pmId, AssAcc, tEmpName, qPm.CTeamNewId, qPm.CTeamNewName);
-                        liSRTeamInfo.Add(pmBean);
+                        tEmpName = qPm.CTeamOldId + " " + qPm.CTeamOldName; //因為是同一個服務團隊，所以只取一個就行了
+                        tDeptID += qPm.CTeamNewId + "</br>";
+                        tDeptName += qPm.CTeamNewName + "</br>";
                     }
+
+                    SRTeamInfo pmBean = new SRTeamInfo(pmId, AssAcc, tEmpName, tDeptID, tDeptName);
+                    liSRTeamInfo.Add(pmBean);
                 }
             }
 
@@ -3306,25 +3322,29 @@ namespace OneService.Controllers
                     string[] COcContactPhone = formCollection["tbx_COcContactPhone"];
                     string[] COcContactMobile = formCollection["tbx_COcContactMobile"];
                     string[] COcContactEmail = formCollection["tbx_COcContactEmail"];
+                    string[] COcDisabled = formCollection["hid_COcDisabled"];
 
                     int countCO = COcContactName.Length;
 
                     for (int i = 0; i < countCO; i++)
                     {
-                        TbOneSrdetailContact beanD = new TbOneSrdetailContact();
+                        if (COcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailContact beanD = new TbOneSrdetailContact();
 
-                        beanD.CSrid = pSRID;
-                        beanD.CContactName = COcContactName[i];
-                        beanD.CContactAddress = COcContactAddress[i];
-                        beanD.CContactPhone = COcContactPhone[i];
-                        beanD.CContactMobile = COcContactMobile[i];
-                        beanD.CContactEmail = COcContactEmail[i];
-                        beanD.Disabled = 0;
+                            beanD.CSrid = pSRID;
+                            beanD.CContactName = COcContactName[i];
+                            beanD.CContactAddress = COcContactAddress[i];
+                            beanD.CContactPhone = COcContactPhone[i];
+                            beanD.CContactMobile = COcContactMobile[i];
+                            beanD.CContactEmail = COcContactEmail[i];
+                            beanD.Disabled = 0;
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailContacts.Add(beanD);
+                            dbOne.TbOneSrdetailContacts.Add(beanD);
+                        }
                     }
                     #endregion
 
@@ -3336,27 +3356,31 @@ namespace OneService.Controllers
                     string[] MIcMFPNumber = formCollection["tbx_MIcMFPNumber"];
                     string[] MIcBrand = formCollection["tbx_MIcBrand"];
                     string[] MIcProductHierarchy = formCollection["tbx_MIcProductHierarchy"];
+                    string[] MIcDisabled = formCollection["hid_MIcDisabled"];
 
                     int countMI = MIcMaterialID.Length;
 
                     for (int i = 0; i < countMI; i++)
                     {
-                        TbOneSrdetailMaterialInfo beanD = new TbOneSrdetailMaterialInfo();
+                        if (MIcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailMaterialInfo beanD = new TbOneSrdetailMaterialInfo();
 
-                        beanD.CSrid = pSRID;                        
-                        beanD.CMaterialId = MIcMaterialID[i];
-                        beanD.CMaterialName = MIcMaterialName[i];
-                        beanD.CQuantity = int.Parse(MIcQuantity[i]);
-                        beanD.CBasicContent = MIcBasicContent[i];
-                        beanD.CMfpnumber = MIcMFPNumber[i];
-                        beanD.CBrand = MIcBrand[i];
-                        beanD.CProductHierarchy = MIcProductHierarchy[i];
-                        beanD.Disabled = 0;
+                            beanD.CSrid = pSRID;
+                            beanD.CMaterialId = MIcMaterialID[i];
+                            beanD.CMaterialName = MIcMaterialName[i];
+                            beanD.CQuantity = int.Parse(MIcQuantity[i]);
+                            beanD.CBasicContent = MIcBasicContent[i];
+                            beanD.CMfpnumber = MIcMFPNumber[i];
+                            beanD.CBrand = MIcBrand[i];
+                            beanD.CProductHierarchy = MIcProductHierarchy[i];
+                            beanD.Disabled = 0;
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailMaterialInfos.Add(beanD);
+                            dbOne.TbOneSrdetailMaterialInfos.Add(beanD);
+                        }
                     }
                     #endregion
 
@@ -3365,24 +3389,28 @@ namespace OneService.Controllers
                     string[] SFcMaterialID = formCollection["tbx_SFcMaterialID"];
                     string[] SFcMaterialName = formCollection["tbx_SFcMaterialName"];
                     string[] SFcConfigReport = formCollection["hid_filezoneSF"];
+                    string[] SFcDisabled = formCollection["hid_SFcDisabled"];
 
                     int countSF = SFcSerialID.Length;
 
                     for (int i = 0; i < countSF; i++)
                     {
-                        TbOneSrdetailSerialFeedback beanD = new TbOneSrdetailSerialFeedback();
+                        if (SFcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailSerialFeedback beanD = new TbOneSrdetailSerialFeedback();
 
-                        beanD.CSrid = pSRID;
-                        beanD.CSerialId = SFcSerialID[i];
-                        beanD.CMaterialId = SFcMaterialID[i];
-                        beanD.CMaterialName = SFcMaterialName[i];
-                        beanD.CConfigReport = SFcConfigReport[i];
-                        beanD.Disabled = 0;
+                            beanD.CSrid = pSRID;
+                            beanD.CSerialId = SFcSerialID[i];
+                            beanD.CMaterialId = SFcMaterialID[i];
+                            beanD.CMaterialName = SFcMaterialName[i];
+                            beanD.CConfigReport = SFcConfigReport[i];
+                            beanD.Disabled = 0;
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailSerialFeedbacks.Add(beanD);
+                            dbOne.TbOneSrdetailSerialFeedbacks.Add(beanD);
+                        }
                     }
                     #endregion                    
 
