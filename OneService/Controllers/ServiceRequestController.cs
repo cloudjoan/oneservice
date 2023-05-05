@@ -1542,7 +1542,7 @@ namespace OneService.Controllers
                         {
                             CSrid = pSRID,
                             EventName = "SaveGenerallySR",
-                            Log = "SR狀態_舊值: " + OldCStatus + "; 新值: " + CStatus,
+                            Log = "新增成功！",
                             CreatedUserName = LoginUser_Name,
                             CreatedDate = DateTime.Now
                         };
@@ -3428,7 +3428,7 @@ namespace OneService.Controllers
                         {
                             CSrid = pSRID,
                             EventName = "SaveInstallSR",
-                            Log = "SR狀態_舊值: " + OldCStatus + "; 新值: " + CStatus,
+                            Log = "新增成功！",
                             CreatedUserName = LoginUser_Name,
                             CreatedDate = DateTime.Now
                         };
@@ -5712,6 +5712,68 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 查詢更改歷史記錄
+        /// <summary>
+        /// 查詢更改歷史記錄
+        /// </summary>
+        /// <param name="cSRID">SRID</param>
+        /// <returns></returns>
+        public IActionResult GetHistoryLog(string cSRID)
+        {
+            OneLogInfo beanOne = new OneLogInfo();
+
+            string EventName = string.Empty;
+            
+            switch(cSRID.Substring(0,2))
+            {
+                case "61":
+                    EventName = "SaveGenerallySR";
+                    break;
+
+                case "63":
+                    EventName = "SaveInstallSR";
+                    break;
+
+                case "65":
+                    EventName = "SaveMaintainSR";
+                    break;
+            }
+
+            //歷史記錄資訊(共用)
+            var SROneLog = dbOne.TbOneLogs.OrderByDescending(x => x.CreatedDate).Where(x => x.CSrid == cSRID && x.EventName == EventName).ToList();
+
+            //客戶聯絡人資訊(共用)
+            var SRDetailContact = dbOne.TbOneSrdetailContacts.OrderByDescending(x => x.ModifiedDate).Where(x => x.CSrid == cSRID && x.Disabled == 1).ToList();
+
+            //處理與工程紀錄資訊(共用)
+            var SRDetailRecord = dbOne.TbOneSrdetailRecords.OrderByDescending(x => x.ModifiedDate).Where(x => x.CSrid == cSRID && x.Disabled == 1).ToList();
+
+            //產品與序號資訊(一般)
+            var SRDetailProduct = dbOne.TbOneSrdetailProducts.OrderByDescending(x => x.ModifiedDate).Where(x => x.CSrid == cSRID && x.Disabled == 1).ToList();
+
+            //零件更換資訊(一般)
+            var SRDetailPartsReplace = dbOne.TbOneSrdetailPartsReplaces.OrderByDescending(x => x.ModifiedDate).Where(x => x.CSrid == cSRID && x.Disabled == 1).ToList();
+
+            //物料訊息資訊(裝機)
+            var SRDetailMaterialInfo = dbOne.TbOneSrdetailMaterialInfos.OrderByDescending(x => x.ModifiedDate).Where(x => x.CSrid == cSRID && x.Disabled == 1).ToList();
+
+            //序號回報資訊(裝機)
+            var SRDetailSerialFeedback = dbOne.TbOneSrdetailSerialFeedbacks.OrderByDescending(x => x.ModifiedDate).Where(x => x.CSrid == cSRID && x.Disabled == 1).ToList();
+
+            #region 新增
+            beanOne.SROneLog = SROneLog;
+            beanOne.SRDetailContact = SRDetailContact;
+            beanOne.SRDetailRecord = SRDetailRecord;
+            beanOne.SRDetailProduct = SRDetailProduct;
+            beanOne.SRDetailPartsReplace = SRDetailPartsReplace;
+            beanOne.SRDetailPartsReplace = SRDetailPartsReplace;
+            beanOne.SRDetailSerialFeedback = SRDetailSerialFeedback;
+            #endregion
+
+            return Json(beanOne);
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----    
 
         #region -----↓↓↓↓↓自定義Class ↓↓↓↓↓-----     
@@ -6040,6 +6102,29 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----  
     }
+
+    #region 更改歷史記錄相關資訊
+    public class OneLogInfo
+    {
+        /// <summary>歷史記錄資訊(共用)</summary>
+        public List<TbOneLog> SROneLog { get; set; }
+
+        /// <summary>客戶聯絡人資訊(共用)</summary>
+        public List<TbOneSrdetailContact> SRDetailContact { get; set; }
+        /// <summary>處理與工程紀錄資訊(共用)</summary>
+        public List<TbOneSrdetailRecord> SRDetailRecord { get; set; }
+
+        /// <summary>產品與序號資訊(一般)</summary>
+        public List<TbOneSrdetailProduct> SRDetailProduct { get; set; }
+        /// <summary>零件更換資訊(一般)</summary>
+        public List<TbOneSrdetailPartsReplace> SRDetailPartsReplace { get; set; }
+
+        /// <summary>物料訊息資訊(裝機)</summary>
+        public List<TbOneSrdetailMaterialInfo> SRDetailMaterialInfo { get; set; }
+        /// <summary>序號回報資訊(裝機)</summary>
+        public List<TbOneSrdetailSerialFeedback> SRDetailSerialFeedback { get; set; }
+    }
+    #endregion
 
     #region 物料相關資訊
     /// <summary>物料相關資訊</summary>
