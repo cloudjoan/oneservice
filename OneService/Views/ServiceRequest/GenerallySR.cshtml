@@ -381,11 +381,12 @@
 					$.each(result.srOneLog, function (i, bean) {
                         if (bean != null) {                    
 							var tDate = TransDate(bean.createdDate);
+							var strLog = bean.log.replace(/\n/g,"<br />");
 
                             listOneLog += '<tr>'                                
                                 + "<td style='vertical-align: left;'>" + bean.cSrid + "</td>"
                                 + "<td style='vertical-align: left;'>" + bean.eventName + "</td>"
-                                + "<td style='vertical-align: left;'>" + bean.log + "</td>"
+                                + "<td style='vertical-align: left;'>" + strLog + "</td>"
                                 + "<td style='vertical-align: left;'>" + tDate + "</td>"
                                 + "<td style='vertical-align: left;'>" + bean.createdUserName + "</td>"                                
                             + "</tr>";
