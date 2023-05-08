@@ -3083,7 +3083,7 @@ namespace OneService.Controllers
                 ViewBag.pStatus = beanM.CStatus;
 
                 ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
-                #endregion
+                #endregion                
 
                 #region 報修類別
                 if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
