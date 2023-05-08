@@ -5766,7 +5766,7 @@ namespace OneService.Controllers
             beanOne.SRDetailRecord = SRDetailRecord;
             beanOne.SRDetailProduct = SRDetailProduct;
             beanOne.SRDetailPartsReplace = SRDetailPartsReplace;
-            beanOne.SRDetailPartsReplace = SRDetailPartsReplace;
+            beanOne.SRDetailMaterialInfo = SRDetailMaterialInfo;
             beanOne.SRDetailSerialFeedback = SRDetailSerialFeedback;
             #endregion
 

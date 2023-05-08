@@ -537,7 +537,7 @@
                             + "				<th>完成時間</th>"  
 							+ "				<th>工時(分鐘)</th>"  
 							+ "				<th>處理紀錄</th>"  
-							+ "				<th>服務報告書/附件</th>"  
+							+ "				<th>服務報告書</th>"  
 							+ "				<th>異動時間</th>"
                             + "				<th>異動人員</th>"
                             + "				</tr></thead><tbody>"
@@ -3409,16 +3409,16 @@
 						@{
 							if (ViewBag.cSRID != "")
 							{
-																			<div class="form-group row">
-																				<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
-																					<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
-																				</button>
-																				<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
-																				&nbsp;&nbsp;&nbsp;&nbsp;
-																				<button id="btn_ShowHistoryLog" class="btn btn-success btn-lg" type="button">
-																					<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
-																				</button>
-																			</div>
+								<div class="form-group row">
+									<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
+										<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
+									</button>
+									<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="btn_ShowHistoryLog" class="btn btn-success btn-lg" type="button">
+										<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
+									</button>
+								</div>
 							}
 						}
 
@@ -4444,27 +4444,6 @@
 				<div class="modal-footer">
 					<button id="BtnCancel" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">取消</button>
 					<button id="BtnSave" type="button" class="btn btn-lg btn-primary" data-dismiss="modal" onclick="onclickBtnSave();">確認</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!--更改歷史記錄彈出視窗-->
-	<div class="modal fade" id="dialog_ShowHistoryLog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-lg" role="document" style="max-width:80%">
-			<div class="modal-content">
-				<div class="modal-header">
-					<label class="col-form-label"><i class="fa fa-users"></i> 更改歷程記錄</label>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					
-				</div>
-				<hr style="border: 1px solid lightgray; width: 98%;" />
-				<div class="modal-body" id="tb_ShowHistoryLog" style="overflow: scroll;">
-
 				</div>
 			</div>
 		</div>

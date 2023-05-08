@@ -82,7 +82,13 @@
 					$("#btn_savepjEditContact").hide();
 					cleanpjeditContact();
 				}
-            })			
+            })		
+			
+			//查詢更改歷史記錄popup
+            $('#btn_ShowHistoryLog').click(function () {                
+				getHistoryLog();			//顯示更改歷史記錄
+				$('#dialog_ShowHistoryLog').modal('show');				
+            })
 
 			//顯示協助工程師設定popup
             $('#btn_pjAssEngineer').click(function () {
@@ -105,10 +111,14 @@
 
 				$("#btn_submit").show();
 				$("#btn_Edit").hide();
+				$("#btn_ShowHistoryLog").hide();
 			}
 			else
 			{
 				disabledPopup("#form1", true);
+
+				$("#btn_ShowHistoryLog").show();
+				$("#btn_ShowHistoryLog").prop('disabled', false);
 
 				$("#btn_submit").hide();
 
@@ -230,7 +240,7 @@
 		//要略過的清單(button)
 		function checkButtonSkipList(tID)
 		{
-			var ArrayList = ["btn_addContactInfo", "btn_editContactInfo", "btn_pjTeam", "btn_pjAssEngineer"];
+			var ArrayList = ["btn_ShowHistoryLog", "btn_addContactInfo", "btn_editContactInfo", "btn_pjTeam", "btn_pjAssEngineer"];
 			return SkiptList(tID, ArrayList);
 		}
 
@@ -257,6 +267,295 @@
 			});
 
 			return tIsExits;
+		}
+
+		//更改歷史記錄動態載入時，要呼叫此方法，頁籤才可以收合
+		function callCollapse()
+		{
+			// Collapse ibox function
+			$('.collapse-linkZ').on('click', function (e) {
+				e.preventDefault();
+				var ibox = $(this).closest('div.ibox');
+				var button = $(this).find('i');
+				var content = ibox.children('.ibox-content');
+				content.slideToggle(200);
+				button.toggleClass('fa-chevron-up').toggleClass('fa-chevron-down');
+				ibox.toggleClass('').toggleClass('border-bottom');
+				setTimeout(function () {
+					ibox.resize();
+					ibox.find('[id^=map-]').resize();
+				}, 50);
+			});			
+		}
+
+		//呼叫日期轉換
+		function TransDate(Obj)
+		{
+			if (Obj != null)
+			{
+				return getDateString(new Date(Obj));
+			}
+
+			return "";
+		}
+
+		//日期Format(補0)
+		function pad(v){
+			return (v<10)?'0'+v:v
+		}		
+
+		//日期Format
+		function getDateString(d){		 
+			try {
+				  var year = d.getFullYear();
+				  var month = pad(d.getMonth()+1);
+				  var day = pad(d.getDate());
+				  var hour = pad(d.getHours());
+				  var min = pad(d.getMinutes());
+				  var sec = pad(d.getSeconds());	
+		  
+				  return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+			}
+			catch (e) {
+				return "";
+			}
+		}
+
+		//查詢更改歷史記錄
+		function getHistoryLog()
+		{
+			var cSRID = $("input[name='hid_cSRID']").val();			//SRID
+            
+			$.ajax({
+				url: '@Url.Action("GetHistoryLog", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+                data: {                    
+					cSRID : cSRID
+                },
+                success: function (result) {
+                    var ALLList = ""
+					var listOneLog = "";
+					var listContact = "";
+					var listMaterial = "";
+					var listFeedBack = "";
+					var listRecord = "";					
+					
+					//↓↓↓↓↓歷史記錄資訊(共用) ↓↓↓↓↓/
+					$.each(result.srOneLog, function (i, bean) {
+                        if (bean != null) {                    
+							var tDate = TransDate(bean.createdDate);
+							var strLog = bean.log.replace(/\n/g,"<br />");
+
+                            listOneLog += '<tr>'                                
+                                + "<td style='vertical-align: left;'>" + bean.cSrid + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.eventName + "</td>"
+                                + "<td style='vertical-align: left;'>" + strLog + "</td>"
+                                + "<td style='vertical-align: left;'>" + tDate + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.createdUserName + "</td>"                                
+                            + "</tr>";
+						}
+                    });
+
+                    if (listOneLog != "") {
+                        listOneLog = "<div class='col-lg-12'>"
+						    + "	<div class='ibox'>"
+							+ "		<div class='ibox-title'>"
+							+ "			<h5>報修主檔資訊</h5>"
+							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
+							+ "      </div>"
+							+ "      <div class='ibox-content'>"
+						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
+                            + "				<thead><tr>"                                
+                            + "				<th>SRID</th>"
+                            + "				<th>事件名稱</th>"
+                            + "				<th>Log</th>"
+                            + "				<th>異動時間</th>"
+                            + "				<th>異動人員</th>"                                
+                            + "				</tr></thead><tbody>"
+                            + listOneLog
+                            + "</tbody></table></div></div></div>";
+					}
+					//↑↑↑↑↑歷史記錄資訊(共用) ↑↑↑↑↑/
+
+					//↓↓↓↓↓客戶聯絡窗口資訊(共用) ↓↓↓↓↓/
+					$.each(result.srDetailContact, function (i, bean) {
+                        if (bean != null) {
+							var tDate = TransDate(bean.modifiedDate);
+
+                            listContact += '<tr>'                                
+                                + "<td style='vertical-align: left;'>" + bean.cContactName + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cContactAddress + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cContactPhone + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cContactMobile + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cContactEmail + "</td>"                                
+								+ "<td style='vertical-align: left;'>" + tDate + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.modifiedUserName + "</td>"
+                            + "</tr>";
+						}
+                    });
+
+                    if (listContact != "") {
+                        listContact = "<div class='col-lg-12'>"
+						    + "	<div class='ibox'>"
+							+ "		<div class='ibox-title'>"
+							+ "			<h5>客戶聯絡窗口資訊</h5>"
+							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
+							+ "      </div>"
+							+ "      <div class='ibox-content' style='display:none;'>"
+						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
+                            + "				<thead><tr>"                                
+                            + "				<th>聯絡人姓名</th>"
+                            + "				<th>聯絡人地址</th>"
+                            + "				<th>聯絡人電話</th>"
+                            + "				<th>聯絡人手機</th>"
+                            + "				<th>聯絡人E-Mail</th>"  
+							+ "				<th>異動時間</th>"
+                            + "				<th>異動人員</th>"
+                            + "				</tr></thead><tbody>"
+                            + listContact
+                            + "</tbody></table></div></div></div>";
+					}
+					//↑↑↑↑↑客戶聯絡人資訊(共用) ↑↑↑↑↑/
+
+					//↓↓↓↓↓物料訊息資訊(裝機) ↓↓↓↓↓/
+					$.each(result.srDetailMaterialInfo, function (i, bean) {
+                        if (bean != null) {
+							var tDate = TransDate(bean.modifiedDate);
+
+                            listMaterial += '<tr>'                                
+                                + "<td style='vertical-align: left;'>" + bean.cMaterialId + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cMaterialName + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cQuantity + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cBasicContent + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.cMfpnumber + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cBrand + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.cProductHierarchy + "</td>"
+								+ "<td style='vertical-align: left;'>" + tDate + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.modifiedUserName + "</td>"
+                            + "</tr>";
+						}
+                    });
+
+                    if (listMaterial != "") {
+                        listMaterial = "<div class='col-lg-12'>"
+						    + "	<div class='ibox'>"
+							+ "		<div class='ibox-title'>"
+							+ "			<h5>物料訊息資訊</h5>"
+							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
+							+ "      </div>"
+							+ "      <div class='ibox-content' style='display:none;'>"
+						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
+                            + "				<thead><tr>"                                
+                            + "				<th>物料代號</th>"
+                            + "				<th>料號說明</th>"
+							+ "				<th>數量</th>"
+                            + "				<th>基本內文</th>"
+                            + "				<th>製造商零件號碼</th>"
+							+ "				<th>廠牌</th>"
+                            + "				<th>產品階層</th>"
+							+ "				<th>異動時間</th>"
+                            + "				<th>異動人員</th>"
+                            + "				</tr></thead><tbody>"
+                            + listMaterial
+                            + "</tbody></table></div></div></div>";
+					}
+					//↑↑↑↑↑物料訊息資訊(裝機) ↑↑↑↑↑/
+
+					//↓↓↓↓↓序號回報資訊(裝機) ↓↓↓↓↓/
+					$.each(result.srDetailSerialFeedback, function (i, bean) {
+                        if (bean != null) {
+							var tDate = TransDate(bean.modifiedDate);
+
+                            listFeedBack += '<tr>'                                
+                                + "<td style='vertical-align: left;'>" + bean.cSerialId + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cMaterialId + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cMaterialName + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.cConfigReport + "</td>"                                
+								+ "<td style='vertical-align: left;'>" + tDate + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.modifiedUserName + "</td>"
+                            + "</tr>";
+						}
+                    });
+
+                    if (listFeedBack != "") {
+                        listFeedBack = "<div class='col-lg-12'>"
+						    + "	<div class='ibox'>"
+							+ "		<div class='ibox-title'>"
+							+ "			<h5>序號回報資訊</h5>"
+							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
+							+ "      </div>"
+							+ "      <div class='ibox-content' style='display:none;'>"
+						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
+                            + "				<thead><tr>"     
+							+ "				<th>序號</th>"
+                            + "				<th>物料代號</th>"
+                            + "				<th>料號說明</th>"							
+                            + "				<th>裝機Config檔</th>"
+							+ "				<th>異動時間</th>"
+                            + "				<th>異動人員</th>"
+                            + "				</tr></thead><tbody>"
+                            + listFeedBack
+                            + "</tbody></table></div></div></div>";
+					}
+					//↑↑↑↑↑序號回報資訊(裝機) ↑↑↑↑↑/
+
+					//↓↓↓↓↓處理與工時紀錄資訊(共用) ↓↓↓↓↓/
+					$.each(result.srDetailRecord, function (i, bean) {
+                        if (bean != null) {
+							var tDateR = TransDate(bean.cReceiveTime);
+							var tDateS = TransDate(bean.cStartTime);
+							var tDateA = TransDate(bean.cArriveTime);
+							var tDateF = TransDate(bean.cFinishTime);
+							var tDate = TransDate(bean.modifiedDate);
+
+                            listRecord += '<tr>'                                
+                                + "<td style='vertical-align: left;'>" + bean.cEngineerName + "</td>"
+                                + "<td style='vertical-align: left;'>" + tDateR + "</td>"
+                                + "<td style='vertical-align: left;'>" + tDateS + "</td>"
+                                + "<td style='vertical-align: left;'>" + tDateA + "</td>"
+                                + "<td style='vertical-align: left;'>" + tDateF + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.cWorkHours + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.cDesc + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.cSrreport + "</td>"
+								+ "<td style='vertical-align: left;'>" + tDate + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.modifiedUserName + "</td>"
+                            + "</tr>";
+						}
+                    });
+
+                    if (listRecord != "") {
+                        listRecord = "<div class='col-lg-12'>"
+						    + "	<div class='ibox'>"
+							+ "		<div class='ibox-title'>"
+							+ "			<h5>處理與工時紀錄資訊</h5>"
+							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
+							+ "      </div>"
+							+ "      <div class='ibox-content' style='display:none;'>"
+						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
+                            + "				<thead><tr>"                                
+                            + "				<th>服務工程師</th>"
+                            + "				<th>接單時間</th>"
+                            + "				<th>出發時間</th>"
+                            + "				<th>到場時間</th>"
+                            + "				<th>完成時間</th>"  
+							+ "				<th>工時(分鐘)</th>"  
+							+ "				<th>處理紀錄</th>"  
+							+ "				<th>服務報告書</th>"  
+							+ "				<th>異動時間</th>"
+                            + "				<th>異動人員</th>"
+                            + "				</tr></thead><tbody>"
+                            + listRecord
+                            + "</tbody></table></div></div></div>";
+					}
+					//↑↑↑↑↑處理與工時紀錄資訊(共用) ↑↑↑↑↑/					
+
+					ALLList += listOneLog + listContact + listMaterial + listFeedBack + listRecord;
+
+                    $("#tb_ShowHistoryLog").html(ALLList);  
+					callCollapse();
+                }
+			});
 		}
 		
 		//確認提交事件
@@ -2357,12 +2656,16 @@
 						@{
 							if (ViewBag.cSRID != "")
 							{
-												<div class="form-group row">
-													<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
-														<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
-													</button>
-													<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
-												</div>
+								<div class="form-group row">
+									<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
+										<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
+									</button>
+									<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="btn_ShowHistoryLog" class="btn btn-success btn-lg" type="button">
+										<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
+									</button>
+								</div>
 							}
 						}
 
