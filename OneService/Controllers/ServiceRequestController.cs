@@ -23,6 +23,7 @@ using System.IO;
 using System.Diagnostics.Contracts;
 using NuGet.Packaging.Core;
 using System.Runtime.ConstrainedExecution;
+using System.Net;
 
 namespace OneService.Controllers
 {
@@ -1566,7 +1567,7 @@ namespace OneService.Controllers
                 {
                     #region 修改主檔
 
-                    #region 紀錄舊值
+                    #region 紀錄新舊值
                     OldCStatus = beanNowM.CStatus;
                     tLog += CMF.getNewAndOldLog("狀態", OldCStatus, CStatus);
 
@@ -5262,56 +5263,125 @@ namespace OneService.Controllers
                                                string cEditContactCity, string cEditContactAddress, string cEditContactPhone, string cEditContactMobile, 
                                                string cEditContactEmail, string ModifiedUserName)
         {
+            bool tIsDouble = false;
+
+            string reValue = "SUCCESS";
+            string tLog = string.Empty;
+            string OldContactCity = string.Empty;
+            string OldContactAddress = string.Empty;
+            string OldContactPhone = string.Empty;
+            string OldContactMobile = string.Empty;
+            string OldContactEmail = string.Empty;
+
             cEditContactCity = string.IsNullOrEmpty(cEditContactCity) ? "" : cEditContactCity.Trim();
             cEditContactAddress = string.IsNullOrEmpty(cEditContactAddress) ? "" : cEditContactAddress.Trim();
             cEditContactPhone = string.IsNullOrEmpty(cEditContactPhone) ? "" : cEditContactPhone.Trim();
             cEditContactMobile = string.IsNullOrEmpty(cEditContactMobile) ? "" : cEditContactMobile.Trim();
             cEditContactEmail = string.IsNullOrEmpty(cEditContactEmail) ? "" : cEditContactEmail.Trim();
 
-            if (cCustomerID.Substring(0, 1) == "P")
+            try
             {
-                var bean = dbProxy.PersonalContacts.FirstOrDefault(x => x.ContactId.ToString() == cEditContactID);
+                tIsDouble = CMF.CheckContactsIsDoubleEmail(cEditContactID, cBUKRS, cCustomerID, cEditContactEmail);
 
-                if (bean != null) //修改
+                if (tIsDouble)
                 {
-                    bean.ContactCity = cEditContactCity;
-                    bean.ContactAddress = cEditContactAddress;
-                    bean.ContactPhone = cEditContactPhone;
-                    bean.ContactMobile = cEditContactMobile;
-                    bean.ContactEmail = cEditContactEmail;
+                    reValue = "聯絡人Email重覆，請重新確認！";                    
+                }
+                else
+                {
+                    if (cCustomerID.Substring(0, 1) == "P")
+                    {
+                        var bean = dbProxy.PersonalContacts.FirstOrDefault(x => x.ContactId.ToString() == cEditContactID);
 
-                    bean.ModifiedUserName = ModifiedUserName;
-                    bean.ModifiedDate = DateTime.Now;
+                        if (bean != null) //修改
+                        {
+                            #region 紀錄新舊值
+                            OldContactCity = bean.ContactCity;
+                            tLog += CMF.getNewAndOldLog("城市", OldContactCity, cEditContactCity);
+
+                            OldContactAddress = bean.ContactAddress;
+                            tLog += CMF.getNewAndOldLog("詳細地址", OldContactAddress, cEditContactAddress);
+
+                            OldContactPhone = bean.ContactPhone;
+                            tLog += CMF.getNewAndOldLog("電話", OldContactPhone, cEditContactPhone);
+
+                            OldContactMobile = bean.ContactMobile;
+                            tLog += CMF.getNewAndOldLog("手機", OldContactMobile, cEditContactMobile);
+
+                            OldContactEmail = bean.ContactEmail;
+                            tLog += CMF.getNewAndOldLog("Email", OldContactEmail, cEditContactEmail);
+                            #endregion
+
+                            bean.ContactCity = cEditContactCity;
+                            bean.ContactAddress = cEditContactAddress;
+                            bean.ContactPhone = cEditContactPhone;
+                            bean.ContactMobile = cEditContactMobile;
+                            bean.ContactEmail = cEditContactEmail;
+
+                            bean.ModifiedUserName = ModifiedUserName;
+                            bean.ModifiedDate = DateTime.Now;                            
+                        }
+                    }
+                    else
+                    {
+                        var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.ContactId.ToString() == cEditContactID);
+
+                        if (bean != null) //修改
+                        {
+                            #region 紀錄新舊值
+                            OldContactCity = bean.ContactCity;
+                            tLog += CMF.getNewAndOldLog("城市", OldContactCity, cEditContactCity);
+
+                            OldContactAddress = bean.ContactAddress;
+                            tLog += CMF.getNewAndOldLog("詳細地址", OldContactAddress, cEditContactAddress);
+
+                            OldContactPhone = bean.ContactPhone;
+                            tLog += CMF.getNewAndOldLog("電話", OldContactPhone, cEditContactPhone);
+
+                            OldContactMobile = bean.ContactMobile;
+                            tLog += CMF.getNewAndOldLog("手機", OldContactMobile, cEditContactMobile);
+
+                            OldContactEmail = bean.ContactEmail;
+                            tLog += CMF.getNewAndOldLog("Email", OldContactEmail, cEditContactEmail);
+                            #endregion
+
+                            bean.ContactCity = cEditContactCity;
+                            bean.ContactAddress = cEditContactAddress;
+                            bean.ContactPhone = cEditContactPhone;
+                            bean.ContactMobile = cEditContactMobile;
+                            bean.ContactEmail = cEditContactEmail;
+
+                            bean.ModifiedUserName = ModifiedUserName;
+                            bean.ModifiedDate = DateTime.Now;                            
+                        }
+                    }
+
+                    int result = dbProxy.SaveChanges();
+
+                    if (result <= 0)
+                    {
+                        reValue = "提交失敗(編輯)";
+                    }                    
+                }
+
+                if (tLog != "")
+                {
+                    CMF.writeToLog(cCustomerID, "SaveEditContactInfo", tLog, ModifiedUserName);
                 }
             }
-            else
+            catch (Exception e)
             {
-                var bean = dbProxy.CustomerContacts.FirstOrDefault(x => x.ContactId.ToString() == cEditContactID);
+                reValue = "SaveEditContactInfo Error：" + e.Message;                
+            }
 
-                if (bean != null) //修改
-                {
-                    bean.ContactCity = cEditContactCity;
-                    bean.ContactAddress = cEditContactAddress;
-                    bean.ContactPhone = cEditContactPhone;
-                    bean.ContactMobile = cEditContactMobile;
-                    bean.ContactEmail = cEditContactEmail;
-
-                    bean.ModifiedUserName = ModifiedUserName;
-                    bean.ModifiedDate = DateTime.Now;
-                }
-            }                       
-
-            var result = dbProxy.SaveChanges();
-
-            return Json(result);
+            return Json(reValue);
         }
         #endregion
 
         #region Ajax儲存客戶聯絡人(for新增)
         /// <summary>
         /// /Ajax儲存客戶聯絡人
-        /// </summary>        
-        /// <param name="cAddContactID">程式作業編號檔系統ID</param>
+        /// </summary>
         /// <param name="cBUKRS">工廠別(T012、T016、C069、T022)</param>
         /// <param name="cCustomerID">客戶代號</param>
         /// <param name="cCustomerName">客戶名稱</param>
@@ -5323,12 +5393,16 @@ namespace OneService.Controllers
         /// <param name="cAddContactEmail">客戶聯絡人Email</param>
         /// <param name="ModifiedUserName">修改人姓名</param>        
         /// <returns></returns>
-        public IActionResult SaveContactInfo(string cAddContactID, string cBUKRS, string cCustomerID, string cCustomerName, string cAddContactName,
+        public IActionResult SaveContactInfo(string cBUKRS, string cCustomerID, string cCustomerName, string cAddContactName,
                                            string cAddContactCity, string cAddContactAddress, string cAddContactPhone, string cAddContactMobile, 
                                            string cAddContactEmail, string ModifiedUserName)
         {
-            string tBpmNo = "GenerallySR";
+            bool tIsDouble = false;
 
+            string tBpmNo = "GenerallySR";
+            string reValue = "SUCCESS";
+            string tLog = string.Empty;
+            
             cAddContactName = string.IsNullOrEmpty(cAddContactName) ? "" : cAddContactName.Trim();
             cAddContactCity = string.IsNullOrEmpty(cAddContactCity) ? "" : cAddContactCity.Trim();
             cAddContactAddress = string.IsNullOrEmpty(cAddContactAddress) ? "" : cAddContactAddress.Trim();
@@ -5336,95 +5410,109 @@ namespace OneService.Controllers
             cAddContactMobile = string.IsNullOrEmpty(cAddContactMobile) ? "" : cAddContactMobile.Trim();
             cAddContactEmail = string.IsNullOrEmpty(cAddContactEmail) ? "" : cAddContactEmail.Trim();
 
-            if (cCustomerID.Substring(0, 1) == "P")
+            tIsDouble = CMF.CheckContactsIsDoubleEmail("", cBUKRS, cCustomerID, cAddContactEmail);
+
+            if (tIsDouble)
             {
-                #region 個人客戶
-
-                var bean = dbProxy.PersonalContacts.FirstOrDefault(x => x.Disabled == 0 && x.Knb1Bukrs == cBUKRS &&
-                                                                     x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
-
-                if (bean != null) //修改
-                {
-                    bean.ContactCity = cAddContactCity;
-                    bean.ContactAddress = cAddContactAddress;
-                    bean.ContactPhone = cAddContactPhone;
-                    bean.ContactMobile = cAddContactMobile;
-                    bean.ContactEmail = cAddContactEmail;
-                   
-                    bean.ModifiedUserName = ModifiedUserName;
-                    bean.ModifiedDate = DateTime.Now;
-                }
-                else
-                {
-                    PersonalContact bean1 = new PersonalContact();
-
-                    bean1.ContactId = Guid.NewGuid();
-                    bean1.Kna1Kunnr = cCustomerID;
-                    bean1.Kna1Name1 = cCustomerName;
-                    bean1.Knb1Bukrs = cBUKRS;
-                    bean1.ContactName = cAddContactName;
-                    bean1.ContactCity = cAddContactCity;
-                    bean1.ContactAddress = cAddContactAddress;
-                    bean1.ContactPhone = cAddContactPhone;
-                    bean1.ContactMobile = cAddContactMobile;
-                    bean1.ContactEmail = cAddContactEmail;
-                    bean1.Disabled = 0;
-
-                    bean1.CreatedUserName = pLoginName;
-                    bean1.CreatedDate = DateTime.Now;
-
-                    dbProxy.PersonalContacts.Add(bean1);
-                }
-                #endregion
+                reValue = "聯絡人Email重覆，請重新確認！";
             }
             else
             {
-                #region 法人客戶
-                var bean = dbProxy.CustomerContacts.FirstOrDefault(x => (x.Disabled == null || x.Disabled != 1) &&
-                                                                     x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
-
-                cAddContactMobile = String.IsNullOrEmpty(cAddContactMobile) ? "" : cAddContactMobile;
-
-                if (bean != null) //修改
+                if (cCustomerID.Substring(0, 1) == "P")
                 {
-                    bean.ContactCity = cAddContactCity;
-                    bean.ContactAddress = cAddContactAddress;
-                    bean.ContactPhone = cAddContactPhone;
-                    bean.ContactMobile = cAddContactMobile;
-                    bean.ContactEmail = cAddContactEmail;
+                    #region 個人客戶
 
-                    bean.ModifiedUserName = ModifiedUserName;
-                    bean.ModifiedDate = DateTime.Now;
+                    var bean = dbProxy.PersonalContacts.FirstOrDefault(x => x.Disabled == 0 && x.Knb1Bukrs == cBUKRS &&
+                                                                         x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
+
+                    if (bean != null) //修改
+                    {
+                        bean.ContactCity = cAddContactCity;
+                        bean.ContactAddress = cAddContactAddress;
+                        bean.ContactPhone = cAddContactPhone;
+                        bean.ContactMobile = cAddContactMobile;
+                        bean.ContactEmail = cAddContactEmail;
+
+                        bean.ModifiedUserName = ModifiedUserName;
+                        bean.ModifiedDate = DateTime.Now;
+                    }
+                    else
+                    {
+                        PersonalContact bean1 = new PersonalContact();
+
+                        bean1.ContactId = Guid.NewGuid();
+                        bean1.Kna1Kunnr = cCustomerID;
+                        bean1.Kna1Name1 = cCustomerName;
+                        bean1.Knb1Bukrs = cBUKRS;
+                        bean1.ContactName = cAddContactName;
+                        bean1.ContactCity = cAddContactCity;
+                        bean1.ContactAddress = cAddContactAddress;
+                        bean1.ContactPhone = cAddContactPhone;
+                        bean1.ContactMobile = cAddContactMobile;
+                        bean1.ContactEmail = cAddContactEmail;
+                        bean1.Disabled = 0;
+
+                        bean1.CreatedUserName = pLoginName;
+                        bean1.CreatedDate = DateTime.Now;
+
+                        dbProxy.PersonalContacts.Add(bean1);
+                    }
+                    #endregion
                 }
-                else //新增
+                else
                 {
-                    CustomerContact bean1 = new CustomerContact();
+                    #region 法人客戶
+                    var bean = dbProxy.CustomerContacts.FirstOrDefault(x => (x.Disabled == null || x.Disabled != 1) &&
+                                                                         x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName == cAddContactName);
 
-                    bean1.ContactId = Guid.NewGuid();
-                    bean1.Kna1Kunnr = cCustomerID;
-                    bean1.Kna1Name1 = cCustomerName;
-                    bean1.Knb1Bukrs = cBUKRS;
-                    bean1.ContactType = "5"; //One Service
-                    bean1.ContactName = cAddContactName;
-                    bean1.ContactCity = cAddContactCity;
-                    bean1.ContactAddress = cAddContactAddress;
-                    bean1.ContactPhone = cAddContactPhone;
-                    bean1.ContactMobile = cAddContactMobile;
-                    bean1.ContactEmail = cAddContactEmail;
-                    bean1.BpmNo = tBpmNo;
-                    bean1.Disabled = 0;
+                    cAddContactMobile = String.IsNullOrEmpty(cAddContactMobile) ? "" : cAddContactMobile;
 
-                    bean1.ModifiedUserName = ModifiedUserName;
-                    bean1.ModifiedDate = DateTime.Now;
+                    if (bean != null) //修改
+                    {
+                        bean.ContactCity = cAddContactCity;
+                        bean.ContactAddress = cAddContactAddress;
+                        bean.ContactPhone = cAddContactPhone;
+                        bean.ContactMobile = cAddContactMobile;
+                        bean.ContactEmail = cAddContactEmail;
 
-                    dbProxy.CustomerContacts.Add(bean1);
+                        bean.ModifiedUserName = ModifiedUserName;
+                        bean.ModifiedDate = DateTime.Now;
+                    }
+                    else //新增
+                    {
+                        CustomerContact bean1 = new CustomerContact();
+
+                        bean1.ContactId = Guid.NewGuid();
+                        bean1.Kna1Kunnr = cCustomerID;
+                        bean1.Kna1Name1 = cCustomerName;
+                        bean1.Knb1Bukrs = cBUKRS;
+                        bean1.ContactType = "5"; //One Service
+                        bean1.ContactName = cAddContactName;
+                        bean1.ContactCity = cAddContactCity;
+                        bean1.ContactAddress = cAddContactAddress;
+                        bean1.ContactPhone = cAddContactPhone;
+                        bean1.ContactMobile = cAddContactMobile;
+                        bean1.ContactEmail = cAddContactEmail;
+                        bean1.BpmNo = tBpmNo;
+                        bean1.Disabled = 0;
+
+                        bean1.ModifiedUserName = ModifiedUserName;
+                        bean1.ModifiedDate = DateTime.Now;
+
+                        dbProxy.CustomerContacts.Add(bean1);
+                    }
+                    #endregion
                 }
-                #endregion
+
+                int result = dbProxy.SaveChanges();
+
+                if (result <= 0)
+                {
+                    reValue = "提交失敗(新增)";
+                }
             }            
 
-            var result = dbProxy.SaveChanges();
-
-            return Json(result);
+            return Json(reValue);
         }
         #endregion
 

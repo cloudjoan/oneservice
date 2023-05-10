@@ -1820,6 +1820,49 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 判斷客戶聯絡人的Email是否有重覆(true.重覆 false.無重覆)
+        /// <summary>
+        /// 判斷客戶聯絡人的Email是否有重覆(true.重覆 false.無重覆)
+        /// </summary>
+        /// <param name="cID">系統ID(若為新增時則傳空白)</param>
+        /// <param name="cBUKRS">工廠別(T012、T016、C069、T022)</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cContactEmail">聯絡Email</param>
+        /// <returns></returns>
+        public bool CheckContactsIsDoubleEmail(string cID, string cBUKRS, string cCustomerID, string cContactEmail)
+        {
+            bool reValue = false;            
+
+            if (cCustomerID.Substring(0, 1) == "P")
+            {
+                #region 個人客戶
+                var beanT = dbProxy.PersonalContacts.FirstOrDefault(x => x.Disabled == 0 && x.Knb1Bukrs == cBUKRS &&
+                                                                     x.Kna1Kunnr == cCustomerID && x.ContactEmail == cContactEmail &&
+                                                                     (string.IsNullOrEmpty(cID) ? true : x.ContactId.ToString() != cID));
+                if (beanT != null)
+                {
+                    reValue = true;
+                }
+                #endregion
+            }
+            else
+            {
+                #region 法人客戶
+                var beanT = dbProxy.CustomerContacts.FirstOrDefault(x => (x.Disabled == null || x.Disabled != 1) && x.Knb1Bukrs == cBUKRS &&
+                                                                     x.Kna1Kunnr == cCustomerID && x.ContactEmail == cContactEmail &&                                                                     
+                                                                     (string.IsNullOrEmpty(cID) ? true : x.ContactId.ToString() != cID));
+
+                if (beanT != null)
+                {
+                    reValue = true;
+                }
+                #endregion
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #region 取得客戶名稱
         /// <summary>
         /// 取得客戶名稱

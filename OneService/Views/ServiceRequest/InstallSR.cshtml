@@ -1447,10 +1447,8 @@
 		}			
 
 		//新增客戶聯絡人
-		function btn_AddContactInfo_onclick() {
-			var OperationID = $('#hid_OperationID').val();
-			var CustomerID = $('#hid_cCustomerID').val();
-			var cBUKRS = $("#hid_cLoginUser_BUKRS").val();
+		function btn_AddContactInfo_onclick() {			
+			var CustomerID = $('#hid_cCustomerID').val();			
 
 			if (CustomerID == "")
 			{
@@ -1458,8 +1456,7 @@
 			}
 			else
 			{
-				resetPopup("#dialog_pAddContactInfo");		//popup各欄位reset
-				$('#tbx_cAddContactID').val(OperationID);  //程式作業編號檔系統ID
+				resetPopup("#dialog_pAddContactInfo");		//popup各欄位reset				
 
 				$("#dialog_pAddContactInfo .dropzone").show();
 				$("#dialog_pAddContactInfo").modal('show');
@@ -1685,19 +1682,14 @@
 			var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS");
 			var tbx_cCustomerName = $("#tbx_cCustomerName");
 			var hid_cCustomerID = $("#hid_cCustomerID");
-
-			var tbx_cAddContactID = $("#tbx_cAddContactID");					//程式作業編號檔系統ID
+			
 			var tbx_cAddContactName = $("#tbx_cAddContactName");				//客戶聯絡人姓名
 			var tbx_cAddContactCity = $("#tbx_cAddContactCity");				//客戶聯絡人城市
 			var tbx_cAddContactAddress = $("#tbx_cAddContactAddress");		//客戶聯絡人詳細地址
 			var tbx_cAddContactAddress_No = $("#tbx_cAddContactAddress_No");	//客戶聯絡人門牌號碼/樓層
 			var tbx_cAddContactPhone = $("#tbx_cAddContactPhone");			//客戶聯絡人電話
 			var tbx_cAddContactMobile = $("#tbx_cAddContactMobile");			//客戶聯絡人手機
-			var tbx_cAddContactEmail = $("#tbx_cAddContactEmail");			//客戶聯絡人Email
-
-			if (tbx_cAddContactID.val() == "") {
-				strMsg += "程式作業編號檔系統ID不得為空！\n";
-			}
+			var tbx_cAddContactEmail = $("#tbx_cAddContactEmail");			//客戶聯絡人Email			
 
 			if (tbx_cAddContactName.val() == "") {
 				strMsg += "客戶聯絡人【姓名】不得為空！\n";
@@ -1735,8 +1727,7 @@
 					url: '@Url.Action("SaveContactInfo", "ServiceRequest")',
 					type: 'post',
 					dataType: 'json',
-                    data: {
-						cAddContactID: tbx_cAddContactID.val(),
+                    data: {						
 						cBUKRS:hid_cLoginUser_BUKRS.val(),
 						cCustomerID: hid_cCustomerID.val(),
 						cCustomerName: tbx_cCustomerName.val(),
@@ -3303,13 +3294,7 @@
 							<div class="modal-body" id="div_PostAddressList"></div>
                         </div>                       
                     </div>
-					<div class="hr-line-dashed"></div>
-					<div class="form-group row">
-						<label class="col-lg-2 col-form-label">程式作業編號檔系統ID</label>
-						<div class="col-lg-10">
-							<input type="text" id="tbx_cAddContactID" name="tbx_cAddContactID" class="form-control" placeholder="程式作業編號檔系統ID" disabled>
-						</div>						
-					</div>					
+					<div class="hr-line-dashed"></div>									
 					<div class="form-group row">						
 						<label class="col-lg-2 col-form-label">姓名*</label>
 						<div class="col-lg-4">
