@@ -361,17 +361,20 @@
 		function getHistoryLog()
 		{
 			var cSRID = $("input[name='hid_cSRID']").val();			//SRID
+			var cCustomerID = $("#hid_cCustomerID").val();			//客戶ID
             
 			$.ajax({
 				url: '@Url.Action("GetHistoryLog", "ServiceRequest")',
 				type: 'post',
 				dataType: 'json',
                 data: {                    
-					cSRID : cSRID
+					cSRID : cSRID,
+					cCustomerID: cCustomerID
                 },
                 success: function (result) {
                     var ALLList = ""
 					var listOneLog = "";
+					var listContactChangLog = "";
 					var listContact = "";
 					var listProduct = "";
 					var listRecord = "";
@@ -413,6 +416,43 @@
                             + "</tbody></table></div></div></div>";
 					}
 					//↑↑↑↑↑歷史記錄資訊(共用) ↑↑↑↑↑/
+
+					//↓↓↓↓↓聯絡人主檔異動資訊(共用) ↓↓↓↓↓/
+					$.each(result.srContactChangLog, function (i, bean) {
+                        if (bean != null) {                    
+							var tDate = TransDate(bean.createdDate);
+							var strLog = bean.log.replace(/\n/g,"<br />");
+
+                            listContactChangLog += '<tr>'                                
+                                + "<td style='vertical-align: left;'>" + bean.cSrid + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.eventName + "</td>"
+                                + "<td style='vertical-align: left;'>" + strLog + "</td>"
+                                + "<td style='vertical-align: left;'>" + tDate + "</td>"
+                                + "<td style='vertical-align: left;'>" + bean.createdUserName + "</td>"                                
+                            + "</tr>";
+						}
+                    });
+
+                    if (listContactChangLog != "") {
+                        listContactChangLog = "<div class='col-lg-12'>"
+						    + "	<div class='ibox'>"
+							+ "		<div class='ibox-title'>"
+							+ "			<h5>聯絡人主檔異動資訊</h5>"
+							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
+							+ "      </div>"
+							+ "      <div class='ibox-content' style='display:none;'>"
+						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
+                            + "				<thead><tr>"                                
+                            + "				<th>SRID</th>"
+                            + "				<th>事件名稱</th>"
+                            + "				<th>Log</th>"
+                            + "				<th>異動時間</th>"
+                            + "				<th>異動人員</th>"                                
+                            + "				</tr></thead><tbody>"
+                            + listContactChangLog
+                            + "</tbody></table></div></div></div>";
+					}
+					//↑↑↑↑↑聯絡人主檔異動資訊(共用) ↑↑↑↑↑/
 
 					//↓↓↓↓↓客戶聯絡窗口資訊(共用) ↓↓↓↓↓/
 					$.each(result.srDetailContact, function (i, bean) {
@@ -604,7 +644,7 @@
 					}
 					//↑↑↑↑↑零件更換資訊(一般) ↑↑↑↑↑/
 
-					ALLList += listOneLog + listContact + listProduct + listRecord + listPartsReplace;
+					ALLList += listOneLog + listContactChangLog + listContact + listProduct + listRecord + listPartsReplace;
 
                     $("#tb_ShowHistoryLog").html(ALLList);  
 					callCollapse();

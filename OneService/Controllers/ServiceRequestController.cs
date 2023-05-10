@@ -5805,17 +5805,19 @@ namespace OneService.Controllers
         /// 查詢更改歷史記錄
         /// </summary>
         /// <param name="cSRID">SRID</param>
+        /// <param name="cCustomerID">客戶代號</param>
         /// <returns></returns>
-        public IActionResult GetHistoryLog(string cSRID)
+        public IActionResult GetHistoryLog(string cSRID, string cCustomerID)
         {
             OneLogInfo beanOne = new OneLogInfo();
 
             string EventName = string.Empty;
-            
-            switch(cSRID.Substring(0,2))
+            string EventName_ContactChang = "SaveEditContactInfo";
+
+            switch (cSRID.Substring(0,2))
             {
                 case "61":
-                    EventName = "SaveGenerallySR";
+                    EventName = "SaveGenerallySR";                    
                     break;
 
                 case "63":
@@ -5829,6 +5831,9 @@ namespace OneService.Controllers
 
             //歷史記錄資訊(共用)
             var SROneLog = dbOne.TbOneLogs.OrderByDescending(x => x.CreatedDate).Where(x => x.CSrid == cSRID && x.EventName == EventName).ToList();
+
+            //客戶聯絡人異動資訊(共用)
+            var SRContactChangLog = dbOne.TbOneLogs.OrderByDescending(x => x.CreatedDate).Where(x => x.CSrid == cCustomerID && x.EventName == EventName_ContactChang).ToList();
 
             //客戶聯絡人資訊(共用)
             var SRDetailContact = dbOne.TbOneSrdetailContacts.OrderByDescending(x => x.ModifiedDate).Where(x => x.CSrid == cSRID && x.Disabled == 1).ToList();
@@ -5850,6 +5855,7 @@ namespace OneService.Controllers
 
             #region 新增
             beanOne.SROneLog = SROneLog;
+            beanOne.SRContactChangLog = SRContactChangLog;
             beanOne.SRDetailContact = SRDetailContact;
             beanOne.SRDetailRecord = SRDetailRecord;
             beanOne.SRDetailProduct = SRDetailProduct;
@@ -6196,6 +6202,8 @@ namespace OneService.Controllers
     {
         /// <summary>歷史記錄資訊(共用)</summary>
         public List<TbOneLog> SROneLog { get; set; }
+        /// <summary>客戶聯絡人異動資訊(共用)</summary>
+        public List<TbOneLog> SRContactChangLog { get; set; }
 
         /// <summary>客戶聯絡人資訊(共用)</summary>
         public List<TbOneSrdetailContact> SRDetailContact { get; set; }
