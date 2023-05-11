@@ -1179,6 +1179,7 @@
 
 		//用關鍵字查詢物料
 		function findMaterialByKeyword() {
+			var cBUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
 			$(".material").unbind();
 
 			$(".material").koala({
@@ -1192,7 +1193,11 @@
 								url: '@Url.Action("findMaterial", "ServiceRequest")',
 								type: 'post',
 								dataType: 'json',
-								data: { functionName: 'findMaterial', keyword: keyword },
+								data: { 
+									functionName: 'findMaterial', 
+									cBUKRS: cBUKRS,
+									keyword: keyword 
+								},
 								success: function (result) {
 									materials = [];
 									$.each(result, function (i, idata) {

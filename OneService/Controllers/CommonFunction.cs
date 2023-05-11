@@ -1897,13 +1897,14 @@ namespace OneService.Controllers
 
             Guid tcID = new Guid(tSysOperationID); //全模組
 
-            var bean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "MIS");
+            var beans = psipDb.TbOneSysParameters.Where(x => x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "MIS");
 
-            if (bean != null)
+            foreach (var bean in beans)
             {
-                if ( bean.CValue.ToLower() == LoginAccount.ToLower())
+                if (bean.CValue.ToLower() == LoginAccount.ToLower())
                 {
-                    reValue = true;                    
+                    reValue = true;
+                    break;
                 }
             }
 
@@ -1924,13 +1925,14 @@ namespace OneService.Controllers
 
             Guid tcID = new Guid(tSysOperationID); //全模組
 
-            var bean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "CUSTOMERSERVICE");
+            var beans = psipDb.TbOneSysParameters.Where(x => x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "CUSTOMERSERVICE");
 
-            if (bean != null)
+            foreach (var bean in beans)
             {
                 if (bean.CValue.ToLower() == LoginAccount.ToLower())
                 {
                     reValue = true;
+                    break;
                 }
             }
 
@@ -1951,13 +1953,14 @@ namespace OneService.Controllers
 
             Guid tcID = new Guid(tSysOperationID); //全模組
 
-            var bean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "CUSTOMERSERVICEManager");
+            var beans = psipDb.TbOneSysParameters.Where(x => x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "CUSTOMERSERVICEManager");
 
-            if (bean != null)
+            foreach(var bean in beans)
             {
                 if (bean.CValue.ToLower() == LoginAccount.ToLower())
                 {
                     reValue = true;
+                    break;
                 }
             }
 
@@ -2388,12 +2391,27 @@ namespace OneService.Controllers
         #region 依關鍵字查詢物料資訊
         /// <summary>
         /// 依關鍵字查詢物料資訊
-        /// </summary>        
+        /// </summary>    
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
         /// <param name="keyword">料號/料號說明關鍵字</param>
         /// <returns></returns>
-        public Object findMaterialByKeyWords(string keyword)
+        public Object findMaterialByKeyWords(string cBUKRS, string keyword)
         {
-            Object contentObj = dbProxy.ViewMaterialByComps.Where(x => x.MaraMatnr.Contains(keyword) || x.MaktTxza1Zf.Contains(keyword)).Take(8);
+            string cMARD_WERKS = string.Empty;
+
+            switch(cBUKRS)
+            {
+                case "T012":
+                    cMARD_WERKS = "12G9";
+                    break;
+                case "T016":
+                    cMARD_WERKS = "16G9";
+                    break;
+            }
+
+            Object contentObj = dbProxy.ViewMaterialByComps.Where(x => (x.MaraMatnr.Contains(keyword) || x.MaktTxza1Zf.Contains(keyword)) &&
+                                                                   (string.IsNullOrEmpty(cMARD_WERKS) ? true : x.MardWerks == cMARD_WERKS)
+                                                             ).Take(8);
 
             return contentObj;
         }

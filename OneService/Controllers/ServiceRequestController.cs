@@ -1720,20 +1720,23 @@ namespace OneService.Controllers
 
                     for (int i = 0; i < countCO; i++)
                     {
-                        TbOneSrdetailContact beanD = new TbOneSrdetailContact();
+                        if (COcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailContact beanD = new TbOneSrdetailContact();
 
-                        beanD.CSrid = pSRID;
-                        beanD.CContactName = COcContactName[i];
-                        beanD.CContactAddress = COcContactAddress[i];
-                        beanD.CContactPhone = COcContactPhone[i];
-                        beanD.CContactMobile = COcContactMobile[i];
-                        beanD.CContactEmail = COcContactEmail[i];
-                        beanD.Disabled = int.Parse(COcDisabled[i]);
+                            beanD.CSrid = pSRID;
+                            beanD.CContactName = COcContactName[i];
+                            beanD.CContactAddress = COcContactAddress[i];
+                            beanD.CContactPhone = COcContactPhone[i];
+                            beanD.CContactMobile = COcContactMobile[i];
+                            beanD.CContactEmail = COcContactEmail[i];
+                            beanD.Disabled = int.Parse(COcDisabled[i]);
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailContacts.Add(beanD);
+                            dbOne.TbOneSrdetailContacts.Add(beanD);
+                        }
                     }
                     #endregion
 
@@ -1767,21 +1770,24 @@ namespace OneService.Controllers
 
                     for (int i = 0; i < countPR; i++)
                     {
-                        TbOneSrdetailProduct beanD = new TbOneSrdetailProduct();
+                        if (PRcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailProduct beanD = new TbOneSrdetailProduct();
 
-                        beanD.CSrid = pSRID;
-                        beanD.CSerialId = PRcSerialID[i];
-                        beanD.CMaterialId = PRcMaterialID[i];
-                        beanD.CMaterialName = PRcMaterialName[i];
-                        beanD.CProductNumber = PRcProductNumber[i];
-                        beanD.CNewSerialId = PRcNewSerialID[i];
-                        beanD.CInstallId = PRcInstallID[i];
-                        beanD.Disabled = int.Parse(PRcDisabled[i]);
+                            beanD.CSrid = pSRID;
+                            beanD.CSerialId = PRcSerialID[i];
+                            beanD.CMaterialId = PRcMaterialID[i];
+                            beanD.CMaterialName = PRcMaterialName[i];
+                            beanD.CProductNumber = PRcProductNumber[i];
+                            beanD.CNewSerialId = PRcNewSerialID[i];
+                            beanD.CInstallId = PRcInstallID[i];
+                            beanD.Disabled = int.Parse(PRcDisabled[i]);
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailProducts.Add(beanD);
+                            dbOne.TbOneSrdetailProducts.Add(beanD);
+                        }
                     }
                     #endregion
 
@@ -1876,41 +1882,44 @@ namespace OneService.Controllers
 
                     for (int i = 0; i < countRE; i++)
                     {
-                        TbOneSrdetailRecord beanD = new TbOneSrdetailRecord();
-
-                        beanD.CSrid = pSRID;
-                        beanD.CEngineerName = REcEngineerName[i];
-                        beanD.CEngineerId = REcEngineerID[i];                        
-
-                        if (REcReceiveTime[i] != "")
+                        if (REcDisabled[i] == "0")
                         {
-                            beanD.CReceiveTime = Convert.ToDateTime(REcReceiveTime[i]);
+                            TbOneSrdetailRecord beanD = new TbOneSrdetailRecord();
+
+                            beanD.CSrid = pSRID;
+                            beanD.CEngineerName = REcEngineerName[i];
+                            beanD.CEngineerId = REcEngineerID[i];
+
+                            if (REcReceiveTime[i] != "")
+                            {
+                                beanD.CReceiveTime = Convert.ToDateTime(REcReceiveTime[i]);
+                            }
+
+                            if (REcStartTime[i] != "")
+                            {
+                                beanD.CStartTime = Convert.ToDateTime(REcStartTime[i]);
+                            }
+
+                            if (REcArriveTime[i] != "")
+                            {
+                                beanD.CArriveTime = Convert.ToDateTime(REcArriveTime[i]);
+                            }
+
+                            if (REcFinishTime[i] != "")
+                            {
+                                beanD.CFinishTime = Convert.ToDateTime(REcFinishTime[i]);
+                            }
+
+                            beanD.CWorkHours = decimal.Parse(REcWorkHours[i]);
+                            beanD.CDesc = REcDesc[i];
+                            beanD.CSrreport = REcSRReport[i];
+                            beanD.Disabled = int.Parse(REcDisabled[i]);
+
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
+
+                            dbOne.TbOneSrdetailRecords.Add(beanD);
                         }
-
-                        if (REcStartTime[i] != "")
-                        {
-                            beanD.CStartTime = Convert.ToDateTime(REcStartTime[i]);
-                        }
-
-                        if (REcArriveTime[i] != "")
-                        {
-                            beanD.CArriveTime = Convert.ToDateTime(REcArriveTime[i]);
-                        }
-
-                        if (REcFinishTime[i] != "")
-                        {
-                            beanD.CFinishTime = Convert.ToDateTime(REcFinishTime[i]);
-                        }
-
-                        beanD.CWorkHours = decimal.Parse(REcWorkHours[i]);
-                        beanD.CDesc = REcDesc[i];
-                        beanD.CSrreport = REcSRReport[i];
-                        beanD.Disabled = int.Parse(REcDisabled[i]);
-
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
-
-                        dbOne.TbOneSrdetailRecords.Add(beanD);
                     }
                     #endregion
 
@@ -1951,37 +1960,40 @@ namespace OneService.Controllers
 
                     for (int i = 0; i < countPA; i++)
                     {
-                        TbOneSrdetailPartsReplace beanD = new TbOneSrdetailPartsReplace();
-
-                        beanD.CSrid = pSRID;
-                        beanD.CXchp = PAcXCHP[i];
-                        beanD.CMaterialId = PAcMaterialID[i];
-                        beanD.CMaterialName = PAcMaterialName[i];
-                        beanD.COldCt = PAcOldCT[i];
-                        beanD.CNewCt = PAcNewCT[i];
-                        beanD.CHpct = PAcHPCT[i];
-                        beanD.CNewUefi = PAcNewUEFI[i];
-                        beanD.CStandbySerialId = PAcStandbySerialID[i];
-                        beanD.CHpcaseId = PAcHPCaseID[i];
-
-                        if (PAcArriveDate[i] != "")
+                        if (PAcDisabled[i] == "0")
                         {
-                            beanD.CArriveDate = Convert.ToDateTime(PAcArriveDate[i]);
+                            TbOneSrdetailPartsReplace beanD = new TbOneSrdetailPartsReplace();
+
+                            beanD.CSrid = pSRID;
+                            beanD.CXchp = PAcXCHP[i];
+                            beanD.CMaterialId = PAcMaterialID[i];
+                            beanD.CMaterialName = PAcMaterialName[i];
+                            beanD.COldCt = PAcOldCT[i];
+                            beanD.CNewCt = PAcNewCT[i];
+                            beanD.CHpct = PAcHPCT[i];
+                            beanD.CNewUefi = PAcNewUEFI[i];
+                            beanD.CStandbySerialId = PAcStandbySerialID[i];
+                            beanD.CHpcaseId = PAcHPCaseID[i];
+
+                            if (PAcArriveDate[i] != "")
+                            {
+                                beanD.CArriveDate = Convert.ToDateTime(PAcArriveDate[i]);
+                            }
+
+                            if (PAcReturnDate[i] != "")
+                            {
+                                beanD.CReturnDate = Convert.ToDateTime(PAcReturnDate[i]);
+                            }
+
+                            beanD.CPersonalDamage = PAcPersonalDamage[i];
+                            beanD.CNote = PAcNote[i];
+                            beanD.Disabled = int.Parse(PAcDisabled[i]);
+
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
+
+                            dbOne.TbOneSrdetailPartsReplaces.Add(beanD);
                         }
-
-                        if (PAcReturnDate[i] != "")
-                        {
-                            beanD.CReturnDate = Convert.ToDateTime(PAcReturnDate[i]);
-                        }
-
-                        beanD.CPersonalDamage = PAcPersonalDamage[i];
-                        beanD.CNote = PAcNote[i];
-                        beanD.Disabled = int.Parse(PAcDisabled[i]);
-
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
-
-                        dbOne.TbOneSrdetailPartsReplaces.Add(beanD);
                     }
                     #endregion
 
@@ -1996,24 +2008,22 @@ namespace OneService.Controllers
                     }
                     else
                     {
-                        if (string.IsNullOrEmpty(tLog))
+                        if (!string.IsNullOrEmpty(tLog))
                         {
-                            tLog = "報修資訊主檔無變更！";
+                            #region 紀錄修改log
+                            TbOneLog logBean = new TbOneLog
+                            {
+                                CSrid = pSRID,
+                                EventName = "SaveGenerallySR",
+                                Log = tLog,
+                                CreatedUserName = LoginUser_Name,
+                                CreatedDate = DateTime.Now
+                            };
+
+                            dbOne.TbOneLogs.Add(logBean);
+                            dbOne.SaveChanges();
+                            #endregion
                         }
-
-                        #region 紀錄修改log
-                        TbOneLog logBean = new TbOneLog
-                        {                            
-                            CSrid = pSRID,
-                            EventName = "SaveGenerallySR",
-                            Log = tLog,
-                            CreatedUserName = LoginUser_Name,
-                            CreatedDate = DateTime.Now
-                        };
-
-                        dbOne.TbOneLogs.Add(logBean);
-                        dbOne.SaveChanges();
-                        #endregion
 
                         #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
                         string TempStatus = CStatus;
@@ -3578,20 +3588,23 @@ namespace OneService.Controllers
 
                     for (int i = 0; i < countCO; i++)
                     {
-                        TbOneSrdetailContact beanD = new TbOneSrdetailContact();
+                        if (COcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailContact beanD = new TbOneSrdetailContact();
 
-                        beanD.CSrid = pSRID;
-                        beanD.CContactName = COcContactName[i];
-                        beanD.CContactAddress = COcContactAddress[i];
-                        beanD.CContactPhone = COcContactPhone[i];
-                        beanD.CContactMobile = COcContactMobile[i];
-                        beanD.CContactEmail = COcContactEmail[i];
-                        beanD.Disabled = int.Parse(COcDisabled[i]);
+                            beanD.CSrid = pSRID;
+                            beanD.CContactName = COcContactName[i];
+                            beanD.CContactAddress = COcContactAddress[i];
+                            beanD.CContactPhone = COcContactPhone[i];
+                            beanD.CContactMobile = COcContactMobile[i];
+                            beanD.CContactEmail = COcContactEmail[i];
+                            beanD.Disabled = int.Parse(COcDisabled[i]);
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailContacts.Add(beanD);
+                            dbOne.TbOneSrdetailContacts.Add(beanD);
+                        }
                     }
                     #endregion
 
@@ -3624,22 +3637,25 @@ namespace OneService.Controllers
 
                     for (int i = 0; i < countMI; i++)
                     {
-                        TbOneSrdetailMaterialInfo beanD = new TbOneSrdetailMaterialInfo();
+                        if (MIcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailMaterialInfo beanD = new TbOneSrdetailMaterialInfo();
 
-                        beanD.CSrid = pSRID;
-                        beanD.CMaterialId = MIcMaterialID[i];
-                        beanD.CMaterialName = MIcMaterialName[i];
-                        beanD.CQuantity = int.Parse(MIcQuantity[i]);
-                        beanD.CBasicContent = MIcBasicContent[i];
-                        beanD.CMfpnumber = MIcMFPNumber[i];
-                        beanD.CBrand = MIcBrand[i];
-                        beanD.CProductHierarchy = MIcProductHierarchy[i];
-                        beanD.Disabled = int.Parse(MIcDisabled[i]);
+                            beanD.CSrid = pSRID;
+                            beanD.CMaterialId = MIcMaterialID[i];
+                            beanD.CMaterialName = MIcMaterialName[i];
+                            beanD.CQuantity = int.Parse(MIcQuantity[i]);
+                            beanD.CBasicContent = MIcBasicContent[i];
+                            beanD.CMfpnumber = MIcMFPNumber[i];
+                            beanD.CBrand = MIcBrand[i];
+                            beanD.CProductHierarchy = MIcProductHierarchy[i];
+                            beanD.Disabled = int.Parse(MIcDisabled[i]);
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailMaterialInfos.Add(beanD);
+                            dbOne.TbOneSrdetailMaterialInfos.Add(beanD);
+                        }
                     }
                     #endregion
 
@@ -3669,19 +3685,22 @@ namespace OneService.Controllers
 
                     for (int i = 0; i < countSF; i++)
                     {
-                        TbOneSrdetailSerialFeedback beanD = new TbOneSrdetailSerialFeedback();
+                        if (SFcDisabled[i] == "0")
+                        {
+                            TbOneSrdetailSerialFeedback beanD = new TbOneSrdetailSerialFeedback();
 
-                        beanD.CSrid = pSRID;
-                        beanD.CSerialId = SFcSerialID[i];
-                        beanD.CMaterialId = SFcMaterialID[i];
-                        beanD.CMaterialName = SFcMaterialName[i];
-                        beanD.CConfigReport = SFcConfigReport[i];
-                        beanD.Disabled = int.Parse(SFcDisabled[i]);
+                            beanD.CSrid = pSRID;
+                            beanD.CSerialId = SFcSerialID[i];
+                            beanD.CMaterialId = SFcMaterialID[i];
+                            beanD.CMaterialName = SFcMaterialName[i];
+                            beanD.CConfigReport = SFcConfigReport[i];
+                            beanD.Disabled = int.Parse(SFcDisabled[i]);
 
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
 
-                        dbOne.TbOneSrdetailSerialFeedbacks.Add(beanD);
+                            dbOne.TbOneSrdetailSerialFeedbacks.Add(beanD);
+                        }
                     }
                     #endregion
 
@@ -3716,41 +3735,44 @@ namespace OneService.Controllers
 
                     for (int i = 0; i < countRE; i++)
                     {
-                        TbOneSrdetailRecord beanD = new TbOneSrdetailRecord();
-
-                        beanD.CSrid = pSRID;
-                        beanD.CEngineerName = REcEngineerName[i];
-                        beanD.CEngineerId = REcEngineerID[i];
-
-                        if (REcReceiveTime[i] != "")
+                        if (REcDisabled[i] == "0")
                         {
-                            beanD.CReceiveTime = Convert.ToDateTime(REcReceiveTime[i]);
+                            TbOneSrdetailRecord beanD = new TbOneSrdetailRecord();
+
+                            beanD.CSrid = pSRID;
+                            beanD.CEngineerName = REcEngineerName[i];
+                            beanD.CEngineerId = REcEngineerID[i];
+
+                            if (REcReceiveTime[i] != "")
+                            {
+                                beanD.CReceiveTime = Convert.ToDateTime(REcReceiveTime[i]);
+                            }
+
+                            if (REcStartTime[i] != "")
+                            {
+                                beanD.CStartTime = Convert.ToDateTime(REcStartTime[i]);
+                            }
+
+                            if (REcArriveTime[i] != "")
+                            {
+                                beanD.CArriveTime = Convert.ToDateTime(REcArriveTime[i]);
+                            }
+
+                            if (REcFinishTime[i] != "")
+                            {
+                                beanD.CFinishTime = Convert.ToDateTime(REcFinishTime[i]);
+                            }
+
+                            beanD.CWorkHours = decimal.Parse(REcWorkHours[i]);
+                            beanD.CDesc = REcDesc[i];
+                            beanD.CSrreport = REcSRReport[i];
+                            beanD.Disabled = int.Parse(REcDisabled[i]);
+
+                            beanD.CreatedDate = DateTime.Now;
+                            beanD.CreatedUserName = LoginUser_Name;
+
+                            dbOne.TbOneSrdetailRecords.Add(beanD);
                         }
-
-                        if (REcStartTime[i] != "")
-                        {
-                            beanD.CStartTime = Convert.ToDateTime(REcStartTime[i]);
-                        }
-
-                        if (REcArriveTime[i] != "")
-                        {
-                            beanD.CArriveTime = Convert.ToDateTime(REcArriveTime[i]);
-                        }
-
-                        if (REcFinishTime[i] != "")
-                        {
-                            beanD.CFinishTime = Convert.ToDateTime(REcFinishTime[i]);
-                        }
-
-                        beanD.CWorkHours = decimal.Parse(REcWorkHours[i]);
-                        beanD.CDesc = REcDesc[i];
-                        beanD.CSrreport = REcSRReport[i];
-                        beanD.Disabled = int.Parse(REcDisabled[i]);
-
-                        beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
-
-                        dbOne.TbOneSrdetailRecords.Add(beanD);
                     }
                     #endregion
 
@@ -3765,24 +3787,22 @@ namespace OneService.Controllers
                     }
                     else
                     {
-                        if (string.IsNullOrEmpty(tLog))
+                        if (!string.IsNullOrEmpty(tLog))
                         {
-                            tLog = "裝機資訊主檔無變更！";
+                            #region 紀錄修改log
+                            TbOneLog logBean = new TbOneLog
+                            {
+                                CSrid = pSRID,
+                                EventName = "SaveInstallSR",
+                                Log = tLog,
+                                CreatedUserName = LoginUser_Name,
+                                CreatedDate = DateTime.Now
+                            };
+
+                            dbOne.TbOneLogs.Add(logBean);
+                            dbOne.SaveChanges();
+                            #endregion
                         }
-
-                        #region 紀錄修改log
-                        TbOneLog logBean = new TbOneLog
-                        {
-                            CSrid = pSRID,
-                            EventName = "SaveInstallSR",
-                            Log = tLog,
-                            CreatedUserName = LoginUser_Name,
-                            CreatedDate = DateTime.Now
-                        };
-
-                        dbOne.TbOneLogs.Add(logBean);
-                        dbOne.SaveChanges();
-                        #endregion
 
                         #region call ONE SERVICE（裝機服務案件）狀態更新接口來寄送Mail
                         string TempStatus = CStatus;
@@ -5614,11 +5634,12 @@ namespace OneService.Controllers
         /// <summary>
         /// Ajax依關鍵字查詢物料資訊
         /// </summary>
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
         /// <param name="keyword">關鍵字</param>        
         /// <returns></returns>
-        public IActionResult findMaterial(string keyword)
+        public IActionResult findMaterial(string cBUKRS, string keyword)
         {
-            Object contentObj = CMF.findMaterialByKeyWords(keyword);
+            Object contentObj = CMF.findMaterialByKeyWords(cBUKRS, keyword);
 
             return Json(contentObj);
         }

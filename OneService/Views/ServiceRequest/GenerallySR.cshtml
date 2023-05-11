@@ -283,8 +283,9 @@
 		//要略過的清單(textarea)
 		function checkTextareaSkipList(tID)
 		{
-			var ArrayList = ["tbx_PAcMaterialName"]; 			
-			return SkiptList(tID, ArrayList);
+			//先不略過
+			//var ArrayList = ["tbx_PAcMaterialName"]; 			
+			//return SkiptList(tID, ArrayList);
 		}		
 
 		//執行要略過的清單
@@ -617,7 +618,7 @@
                         listPartsReplace = "<div class='col-lg-12'>"
 						    + "	<div class='ibox'>"
 							+ "		<div class='ibox-title'>"
-							+ "			<h5>處理與工時紀錄資訊</h5>"
+							+ "			<h5>零件更換資訊</h5>"
 							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
 							+ "      </div>"
 							+ "      <div class='ibox-content' style='display:none;'>"
@@ -1382,6 +1383,7 @@
 
 		//用關鍵字查詢物料
 		function findMaterialByKeyword() {
+			var cBUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
 			$(".material").unbind();
 
 			$(".material").koala({
@@ -1395,7 +1397,11 @@
 								url: '@Url.Action("findMaterial", "ServiceRequest")',
 								type: 'post',
 								dataType: 'json',
-								data: { functionName: 'findMaterial', keyword: keyword },
+								data: { 
+									functionName: 'findMaterial', 
+									cBUKRS: cBUKRS,
+									keyword: keyword 
+								},
 								success: function (result) {
 									materials = [];
 									$.each(result, function (i, idata) {
@@ -3298,7 +3304,7 @@
 
 		//組料號說明
 		function SetMaterialName_Parts() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_PAcMaterialName' id='tbx_PAcMaterialName" + trPartsNoCount + "' readonly></textarea></td>";
+			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_PAcMaterialName' id='tbx_PAcMaterialName" + trPartsNoCount + "'></textarea></td>";
 			return reValue;
 		}
 
@@ -4216,7 +4222,7 @@
 																																										<input type='text' name='tbx_PAcMaterialID' @("id=tbx_PAcMaterialID" + count) class='form-control material' style='width:150px;' placeholder='更換零件料號ID' value="@bean.CMaterialId" title="@bean.CMaterialId">
 																																									</td>																	
 																																									<td>
-																																										<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PAcMaterialName" @("id=tbx_PAcMaterialName" + count) title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
+																																										<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PAcMaterialName" @("id=tbx_PAcMaterialName" + count) title="@bean.CMaterialName">@bean.CMaterialName</textarea>
 																																									</td>
 																																									<td>
 																																										<input type='text' name='tbx_PAcOldCT' @("id=tbx_PAcOldCT" + count) class='form-control' style='width:100px;' placeholder='Old CT' value="@bean.COldCt" title="@bean.COldCt">
