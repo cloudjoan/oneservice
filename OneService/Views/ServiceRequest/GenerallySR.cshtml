@@ -873,6 +873,7 @@
 				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
 				var objContactAddress = tds.eq(2).children();		//地址(聯絡人)
 				var objContactPhone = tds.eq(3).children();		//電話(聯絡人)
+				var objContactMoblie = tds.eq(4).children();		//手機(聯絡人)
 				var objContactEmail = tds.eq(5).children();		//E-Mail(聯絡人)
 
 				if (objContactName.val() != undefined) {                    
@@ -885,8 +886,8 @@
 							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【地址(聯絡人)】不得為空！\n";
 						}							
 						
-						if (objContactPhone.val() == "") {
-							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【電話(聯絡人)】不得為空！\n";
+						if (objContactPhone.val() == "" && objContactMoblie.val() == "") {
+							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【電話、手機(聯絡人)】請至少擇一輸入！\n";
 						}
 
 						if (objContactEmail.val() == "") {
