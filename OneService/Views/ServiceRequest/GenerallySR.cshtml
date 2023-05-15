@@ -56,7 +56,7 @@
 			getpjTeam();				//取得服務團隊
 			getpjAssEngineer();			//取得協助工程師	
 			getpjTechManager();			//取得技術主管	
-			getSRDetail_Warranty();		//取得保固SLA明細Table(非新建或駁回狀態)	
+			getSRDetail_Warranty();		//取得保固SLA明細Table(非新建或駁回狀態)
 		});		
 
 		//初始頁面
@@ -123,7 +123,8 @@
 			//顯示服務團隊設定popup
             $('#btn_pjTeam').click(function () {
                 $('#dialog_pjTeam').modal('show');
-            })			
+            })				
+			
 
 			var pIsCanEditSR = $("#hid_pIsCanEditSR").val();
 			var cSRID = $("input[name='hid_cSRID']").val();
@@ -157,7 +158,7 @@
 					$("#btn_Edit").hide();
 				}
 			}
-		}
+		}		
 
 		//顯示剩餘字數
         function showRemainWords(obj, maxLength, remainWord) {
@@ -196,6 +197,8 @@
 		//popup各欄位disabled
 		//popupId.傳入的obj、IsDisabled(true.不准許輸入 false.准許輸入)
 		function disabledPopup(popupId, IsDisabled) {
+			var ddl_cStatus = $("#ddl_cStatus");
+
 			$(popupId).find("input").each(function (index, value) {				
 				var reValue = checkInputSkipList($(this).attr("name"));				
 				if (!reValue){
@@ -215,7 +218,7 @@
 				if (!reValue){
 					$(this).prop('disabled', IsDisabled);
 				}
-			});
+			});			
 
 			$(popupId).find("textarea").each(function (index, value) {
 				var reValue = checkTextareaSkipList($(this).attr("name"));				
@@ -223,6 +226,17 @@
 					$(this).prop('disabled', IsDisabled);
 				}
 			});
+
+			//L2處理中且按下編輯時，才准許修改
+			if (ddl_cStatus.val() == "E0002" && IsDisabled == false)
+			{
+				$(".Fault").prop('disabled', false);	
+				$('.Fault').iCheck('update'); //讓checkbox有作用
+			}
+			else
+			{
+				$(".Fault").prop('disabled', true);
+			}
 
 			setTimeout(function () {
                 if (IsDisabled)
@@ -262,7 +276,7 @@
 		//要略過的清單(Input)
 		function checkInputSkipList(tID)
 		{
-			var ArrayList = ["tbx_cRepairAddress", "tbx_cRepairPhone", "tbx_cRepairEmail", "tbx_cRepairMobile", "tbx_cTeamName", "tbx_cAssEngineerName", "tbx_cTechManagerName", "tbx_REcWorkHours"]; 
+			var ArrayList = ["tbx_cRepairAddress", "tbx_cRepairPhone", "tbx_cRepairEmail", "tbx_cRepairMobile", "tbx_cTeamName", "tbx_cAssEngineerName", "tbx_cTechManagerName", "tbx_REcWorkHours", "tbx_cFaultGroupNote1", "tbx_cFaultGroupNote2", "tbx_cFaultGroupNoteOther", "tbx_cFaultStateNote1", "tbx_cFaultStateNote2", "tbx_cFaultStateNoteOther", "tbx_cFaultSpecNote1", "tbx_cFaultSpecNote2", "tbx_cFaultSpecNoteOther", "chk_cFaultGroup1", "chk_cFaultGroup2", "chk_cFaultGroupOther", "chk_cFaultState1", "chk_cFaultState2", "chk_cFaultStateOther", "chk_cFaultSpec1", "chk_cFaultSpec2", "chk_cFaultSpecOther"]; 
 			return SkiptList(tID, ArrayList);
 		}
 
@@ -278,7 +292,7 @@
 		{
 			var ArrayList = ["btn_ShowHistoryLog", "btn_showRepairInfo", "btn_clearRepairInfo", "btn_addRepairInfo", "btn_addContactInfo", "btn_editRepairInfo", "btn_editContactInfo", "btn_pjTeam", "btn_pjAssEngineer", "btn_pjTechManager"];
 			return SkiptList(tID, ArrayList);
-		}
+		}		
 
 		//要略過的清單(textarea)
 		function checkTextareaSkipList(tID)
@@ -2641,16 +2655,15 @@
 		}
 		//-----↑↑↑↑↑產品序號資訊檔 ↑↑↑↑↑-----
 
-		//-----↓↓↓↓↓保固SLA檔 ↓↓↓↓↓-----
-
-		//保固SLA產生時，要初始本次使用的chang事件
+		//-----↓↓↓↓↓保固SLA檔 ↓↓↓↓↓-----		
 		function init_iChceck()
 		{
 			$('.i-checks').iCheck({
 				checkboxClass: 'icheckbox_square-green',
 				radioClass: 'iradio_square-green',
-			});
+			});				
 
+			//保固SLA產生時，要初始本次使用的chang事件
 			$(".i-checks input[name='CheckUsed']").on('ifChanged', function (event) {
 				var objID =$(this).attr("id");
 				
@@ -2668,6 +2681,121 @@
 
 				getShowCheck(objID, event.target.checked);
             });
+
+			//init L2客戶故障狀況onChange事件
+			$(".Fault").on('ifChanged', function (event) {
+				var objID =$(this).attr("id");
+
+				if (event.target.checked)
+				{					
+					$(this).iCheck('check');
+
+					if (objID == "chk_cFaultGroup1") //客戶故障狀況分類-硬體
+					{
+						$("#hid_cFaultGroup1").val("Y");
+						$("#tbx_cFaultGroupNote1").prop('disabled', false);
+					}
+					else if (objID == "chk_cFaultGroup2") //客戶故障狀況分類-系統
+					{
+						$("#hid_cFaultGroup2").val("Y");
+						$("#tbx_cFaultGroupNote2").prop('disabled', false);
+					}
+					else if (objID == "chk_cFaultGroupOther") //客戶故障狀況分類-其他
+					{
+						$("#hid_cFaultGroupOther").val("Y");
+						$("#tbx_cFaultGroupNoteOther").prop('disabled', false);
+					}
+					else if (objID == "chk_cFaultState1") //客戶故障狀況-面板燈號
+					{
+						$("#hid_cFaultState1").val("Y");
+						$("#tbx_cFaultStateNote1").prop('disabled', false);
+					}
+					else if (objID == "chk_cFaultState2") //客戶故障狀況-管理介面(iLO、IMM、iDRAC)
+					{
+						$("#hid_cFaultState2").val("Y");
+						$("#tbx_cFaultStateNote2").prop('disabled', false);
+					}
+					else if (objID == "chk_cFaultStateOther") //客戶故障狀況-其他
+					{
+						$("#hid_cFaultStateOther").val("Y");
+						$("#tbx_cFaultStateNoteOther").prop('disabled', false);
+					}
+					else if (objID == "chk_cFaultSpec1") //故障零件規格料號-零件規格
+					{
+						$("#hid_cFaultSpec1").val("Y");
+						$("#tbx_cFaultSpecNote1").prop('disabled', false);
+					}
+					else if (objID == "chk_cFaultSpec2") //故障零件規格料號-零件料號
+					{
+						$("#hid_cFaultSpec2").val("Y");
+						$("#tbx_cFaultSpecNote2").prop('disabled', false);
+					}
+					else if (objID == "chk_cFaultSpecOther") //故障零件規格料號-其他
+					{
+						$("#hid_cFaultSpecOther").val("Y");
+						$("#tbx_cFaultSpecNoteOther").prop('disabled', false);
+					}
+				}
+				else
+				{
+					$(this).iCheck('uncheck');
+
+					if (objID == "chk_cFaultGroup1") //客戶故障狀況分類-硬體
+					{
+						$("#hid_cFaultGroup1").val("N");
+						$("#tbx_cFaultGroupNote1").prop('disabled', true);
+						$("#tbx_cFaultGroupNote1").val("");
+					}
+					else if (objID == "chk_cFaultGroup2") //客戶故障狀況分類-系統
+					{
+						$("#hid_cFaultGroup2").val("N");
+						$("#tbx_cFaultGroupNote2").prop('disabled', true);
+						$("#tbx_cFaultGroupNote2").val("");
+					}
+					else if (objID == "chk_cFaultGroupOther") //客戶故障狀況分類-其他
+					{
+						$("#hid_cFaultGroupOther").val("N");
+						$("#tbx_cFaultGroupNoteOther").prop('disabled', true);
+						$("#tbx_cFaultGroupNoteOther").val("");
+					}
+					else if (objID == "chk_cFaultState1") //客戶故障狀況-面板燈號
+					{
+						$("#hid_cFaultState1").val("N");
+						$("#tbx_cFaultStateNote1").prop('disabled', true);
+						$("#tbx_cFaultStateNote1").val("");
+					}
+					else if (objID == "chk_cFaultState2") //客戶故障狀況-管理介面(iLO、IMM、iDRAC)
+					{
+						$("#hid_cFaultState2").val("N");
+						$("#tbx_cFaultStateNote2").prop('disabled', true);
+						$("#tbx_cFaultStateNote2").val("");
+					}
+					else if (objID == "chk_cFaultStateOther") //客戶故障狀況-其他
+					{
+						$("#hid_cFaultStateOther").val("N");
+						$("#tbx_cFaultStateNoteOther").prop('disabled', true);
+						$("#tbx_cFaultStateNoteOther").val("");
+					}
+					else if (objID == "chk_cFaultSpec1") //故障零件規格料號-零件規格
+					{
+						$("#hid_cFaultSpec1").val("N");
+						$("#tbx_cFaultSpecNote1").prop('disabled', true);
+						$("#tbx_cFaultSpecNote1").val("");
+					}
+					else if (objID == "chk_cFaultSpec2") //故障零件規格料號-零件料號
+					{
+						$("#hid_cFaultSpec2").val("N");
+						$("#tbx_cFaultSpecNote2").prop('disabled', true);
+						$("#tbx_cFaultSpecNote2").val("");
+					}
+					else if (objID == "chk_cFaultSpecOther") //故障零件規格料號-其他
+					{
+						$("#hid_cFaultSpecOther").val("N");
+						$("#tbx_cFaultSpecNoteOther").prop('disabled', true);
+						$("#tbx_cFaultSpecNoteOther").val("");
+					}
+				}
+            });	
 		}
 
 		//取得要顯示的Checkbox
@@ -3582,7 +3710,130 @@
 							<div class="col-lg-4">								
 								<select asp-for="ddl_cIsSecondFix" asp-items="Model.ListIsSecondFix" class="form-control"></select>
 							</div>
-						</div>						
+						</div>	
+						
+						<!--L2客戶故障狀況分類資訊-->
+						<div class="col-lg-12">
+							<div class="ibox ">
+								<div class="ibox-title">
+									<h5>
+										*客戶故障狀況分類資訊	(L2處理中時必填)
+									</h5>
+									<div class="ibox-tools">
+										<a class="collapse-link">
+											<i class="fa fa-chevron-up"></i>
+										</a>
+									</div>
+								</div>
+								<div class="ibox-content" id="div_Fault">	
+									<div class="form-group row">
+										<label class="col-lg-2 col-form-label">*客戶故障狀況分類</label>
+										<div class="col-lg-4">		
+											<input type="hidden" id="hid_cFaultGroup" />
+										</div>										
+									</div>
+									<div class="form-group row">	
+										<label class="col-lg-2 i-checks" style="text-align: right;">
+											<input type="hidden" id="hid_cFaultGroup1" />
+											硬體<input id="chk_cFaultGroup1" name="chk_cFaultGroup1" type="checkbox" class="Fault">
+										</label>	
+										<div class="col-lg-6">																					
+											<input type="text" id="tbx_cFaultGroupNote1" name="tbx_cFaultGroupNote1" class="form-control" placeholder="勾選【硬體】時請說明" value="@ViewBag.cFaultGroupNote1" title="@ViewBag.cFaultGroupNote1" disabled>
+										</div>										
+									</div>	
+									<div class="form-group row">
+										<label class="col-lg-2 i-checks" style="text-align: right;">
+											<input type="hidden" id="hid_cFaultGroup2" />
+											系統<input id="chk_cFaultGroup2" name="chk_cFaultGroup2" type="checkbox" class="Fault">
+										</label>
+										<div class="col-lg-6">											
+											<input type="text" id="tbx_cFaultGroupNote2" name="tbx_cFaultGroupNote2" class="form-control" placeholder="勾選【系統】時請說明" value="@ViewBag.cFaultGroupNote2" title="@ViewBag.cFaultGroupNote2" disabled>
+										</div>
+									</div>
+									<div class="form-group row">	
+										<label class="col-lg-2 i-checks" style="text-align: right;">
+											<input type="hidden" id="hid_cFaultGroupOther" />
+											其他<input id="chk_cFaultGroupOther" name="chk_cFaultGroupOther" type="checkbox" class="Fault">
+										</label>
+										<div class="col-lg-6">
+											<input type="text" id="tbx_cFaultGroupNoteOther" name="tbx_cFaultGroupNoteOther" class="form-control" placeholder="勾選【其他】時請說明" value="@ViewBag.cFaultGroupNoteOther" title="@ViewBag.cFaultGroupNoteOther" disabled>
+										</div>
+									</div>
+
+									<div class="hr-line-dashed"></div>
+
+									<div class="form-group row">
+										<label class="col-lg-2 col-form-label">*客戶故障狀況</label>
+										<div class="col-lg-4">		
+											<input type="hidden" id="hid_cFaultState" />
+										</div>										
+									</div>
+									<div class="form-group row">	
+										<label class="col-lg-2 i-checks" style="text-align: right;">
+											<input type="hidden" id="hid_cFaultState1" />
+											面板燈號<input id="chk_cFaultState1" name="chk_cFaultState1" type="checkbox" class="Fault">
+										</label>	
+										<div class="col-lg-6">																					
+											<input type="text" id="tbx_cFaultStateNote1" name="tbx_cFaultStateNote1" class="form-control" placeholder="勾選【面板燈號】時請說明" value="@ViewBag.cFaultStateNote1" title="@ViewBag.cFaultStateNote1" disabled>
+										</div>										
+									</div>	
+									<div class="form-group row">
+										<label class="col-lg-2 i-checks" style="text-align: right;">
+											<input type="hidden" id="hid_cFaultState2" />
+											管理介面(iLO、IMM、iDRAC)<input id="chk_cFaultState2" name="chk_cFaultState2" type="checkbox" class="Fault">
+										</label>
+										<div class="col-lg-6">											
+											<input type="text" id="tbx_cFaultStateNote2" name="tbx_cFaultStateNote2" class="form-control" placeholder="勾選【管理介面(iLO、IMM、iDRAC)】時請說明" value="@ViewBag.cFaultStateNote2" title="@ViewBag.cFaultStateNote2" disabled>
+										</div>
+									</div>
+									<div class="form-group row">	
+										<label class="col-lg-2 i-checks" style="text-align: right;">
+											<input type="hidden" id="hid_cFaultStateOther" />
+											其他<input id="chk_cFaultStateOther" name="chk_cFaultStateOther" type="checkbox" class="Fault">
+										</label>
+										<div class="col-lg-6">
+											<input type="text" id="tbx_cFaultStateNoteOther" name="tbx_cFaultStateNoteOther" class="form-control" placeholder="勾選【其他】時請說明" value="@ViewBag.cFaultStateNoteOther" title="@ViewBag.cFaultStateNoteOther" disabled>
+										</div>
+									</div>
+
+									<div class="hr-line-dashed"></div>
+
+									<div class="form-group row">
+										<label class="col-lg-2 col-form-label">*故障零件規格料號</label>
+										<div class="col-lg-4">		
+											<input type="hidden" id="hid_cFaultSpec" />
+										</div>										
+									</div>
+									<div class="form-group row">	
+										<label class="col-lg-2 i-checks" style="text-align: right;">
+											<input type="hidden" id="hid_cFaultSpec1" />
+											零件規格<input id="chk_cFaultSpec1" name="chk_cFaultSpec1" type="checkbox" class="Fault">
+										</label>	
+										<div class="col-lg-6">																					
+											<input type="text" id="tbx_cFaultSpecNote1" name="tbx_cFaultSpecNote1" class="form-control" placeholder="勾選【零件規格】時請說明" value="@ViewBag.cFaultSpecNote1" title="@ViewBag.cFaultSpecNote1" disabled>
+										</div>										
+									</div>	
+									<div class="form-group row">	
+										<label class="col-lg-2 i-checks" style="text-align: right;">
+											<input type="hidden" id="hid_cFaultSpec2" />
+											零件料號<input id="chk_cFaultSpec2" name="chk_cFaultSpec2" type="checkbox" class="Fault">
+										</label>
+										<div class="col-lg-6">											
+											<input type="text" id="tbx_cFaultSpecNote2" name="tbx_cFaultSpecNote2" class="form-control" placeholder="勾選【零件料號】時請說明" value="@ViewBag.cFaultSpecNote2" title="@ViewBag.cFaultSpecNote2" disabled>
+										</div>
+									</div>
+									<div class="form-group row">	
+										<label class="col-lg-2 i-checks" style="text-align: right;">
+											<input type="hidden" id="hid_cFaultSpecOther" />
+											其他<input id="chk_cFaultSpecOther" name="chk_cFaultSpecOther" type="checkbox" class="Fault">
+										</label>
+										<div class="col-lg-6">
+											<input type="text" id="tbx_cFaultSpecNoteOther" name="tbx_cFaultSpecNoteOther" class="form-control" placeholder="勾選【其他】時請說明" value="@ViewBag.cFaultSpecNoteOther" title="@ViewBag.cFaultSpecNoteOther" disabled>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 
 						<!--客戶報修窗口資訊-->
 						<div class="col-lg-12">
