@@ -17,6 +17,7 @@ namespace OneService.Models
         }
 
         public virtual DbSet<CustomerContact> CustomerContacts { get; set; } = null!;
+        public virtual DbSet<CustomerContactStore> CustomerContactStores { get; set; } = null!;
         public virtual DbSet<F0005> F0005s { get; set; } = null!;
         public virtual DbSet<F4501> F4501s { get; set; } = null!;
         public virtual DbSet<Material> Materials { get; set; } = null!;
@@ -133,6 +134,39 @@ namespace OneService.Models
                 entity.Property(e => e.ModifiedUserName)
                     .HasMaxLength(50)
                     .HasComment("更新者姓名");
+            });
+
+            modelBuilder.Entity<CustomerContactStore>(entity =>
+            {
+                entity.HasKey(e => e.ContactStoreId);
+
+                entity.ToTable("CUSTOMER_ContactStore");
+
+                entity.Property(e => e.ContactStoreId)
+                    .ValueGeneratedNever()
+                    .HasColumnName("ContactStoreID");
+
+                entity.Property(e => e.ContactStoreName).HasMaxLength(40);
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.Kna1Kunnr)
+                    .HasMaxLength(10)
+                    .HasColumnName("KNA1_KUNNR");
+
+                entity.Property(e => e.Kna1Name1)
+                    .HasMaxLength(35)
+                    .HasColumnName("KNA1_NAME1");
+
+                entity.Property(e => e.Knb1Bukrs)
+                    .HasMaxLength(4)
+                    .HasColumnName("KNB1_BUKRS");
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
             });
 
             modelBuilder.Entity<F0005>(entity =>
