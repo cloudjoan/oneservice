@@ -809,7 +809,7 @@
 				var objContactAddress = tds.eq(2).children();		//地址(聯絡人)
 				var objContactPhone = tds.eq(3).children();		//電話(聯絡人)
 				var objContactMoblie = tds.eq(4).children();		//手機(聯絡人)
-				var objContactEmail = tds.eq(5).children();		//E-Mail(聯絡人)
+				//var objContactEmail = tds.eq(5).children();		//E-Mail(聯絡人)
 
 				if (objContactName.val() != undefined) {                    
 					if (objDisabled.val() == "0"){
@@ -825,9 +825,9 @@
 							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【電話、手機(聯絡人)】請至少擇一輸入！\n";
 						}
 
-						if (objContactEmail.val() == "") {
-							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【E-Mail(聯絡人)】不得為空！\n";
-						}						
+						//if (objContactEmail.val() == "") {
+						//	Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【E-Mail(聯絡人)】不得為空！\n";
+						//}						
 					}
                 }				
 			})			
@@ -1678,9 +1678,9 @@
 				strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
 			}			
 
-			if (tbx_cEditContactEmail.val() == "") {
-				strMsg += "客戶聯絡人【Email】不得為空！\n";
-			}
+			//if (tbx_cEditContactEmail.val() == "") {
+			//	strMsg += "客戶聯絡人【Email】不得為空！\n";
+			//}
 
 			if (strMsg != "") {
 				alert(strMsg);
@@ -1757,9 +1757,9 @@
 				strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
 			}
 
-			if (tbx_cAddContactEmail.val() == "") {
-				strMsg += "客戶聯絡人【Email】不得為空！\n";
-			}
+			//if (tbx_cAddContactEmail.val() == "") {
+			//	strMsg += "客戶聯絡人【Email】不得為空！\n";
+			//}
 
 			if (strMsg != "") {
 				alert(strMsg);
@@ -2869,7 +2869,7 @@
 												<th>*地址(聯絡人)</th>
 												<th>電話(聯絡人)</th>
 												<th>手機(聯絡人)</th>
-												<th>*E-Mail(聯絡人)</th>
+												<th>E-Mail(聯絡人)</th>
 												<th width="130">刪除</th>
 											</tr>
 										</thead>

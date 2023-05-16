@@ -1620,6 +1620,7 @@ namespace OneService.Controllers
 
             string tTempValue = string.Empty;
             string ContactMobile = string.Empty;
+            string ContactStore = string.Empty;
 
             if (CustomerID.Substring(0, 1) == "P")
             {
@@ -1655,20 +1656,21 @@ namespace OneService.Controllers
                 var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
                                                    Where(x => (x.Disabled == null || x.Disabled != 1) && 
                                                               x.ContactName != "" && x.ContactCity != "" && 
-                                                              x.ContactAddress != "" && x.ContactEmail != "" &&                                                              
+                                                              x.ContactAddress != "" && (x.ContactPhone != "" || (x.ContactMobile != "" && x.ContactMobile != null)) &&                                                              
                                                               x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID).ToList();
 
                 if (qPjRec != null && qPjRec.Count() > 0)
                 {
                     foreach (var prBean in qPjRec)
                     {
-                        tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactEmail.Trim().Replace(" ", "");
+                        tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "") + "|" + prBean.ContactStore.ToString();
 
-                        if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人名姓名不重覆才要顯示
+                        if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人姓名、聯絡門市不重覆才要顯示
                         {
                             tTempList.Add(tTempValue);
 
                             ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");
+                            ContactStore = string.IsNullOrEmpty(prBean.ContactStore.ToString()) ? "" : prBean.ContactStore.ToString();
 
                             PCustomerContact prDocBean = new PCustomerContact();
 
@@ -1682,6 +1684,7 @@ namespace OneService.Controllers
                             prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
                             prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
                             prDocBean.Mobile = ContactMobile;
+                            prDocBean.Store = ContactStore;
                             prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");
 
                             liPCContact.Add(prDocBean);
@@ -1704,26 +1707,28 @@ namespace OneService.Controllers
         {
             var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
                                                Where(x => (x.Disabled == null || x.Disabled != 1) && x.ContactName != "" && x.ContactCity != "" &&
-                                                          x.ContactAddress != "" && x.ContactPhone != "" && x.ContactEmail != "" &&
+                                                          x.ContactAddress != "" && (x.ContactPhone != "" || (x.ContactMobile != "" && x.ContactMobile != null)) &&
                                                           x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID && x.ContactName.Contains(ContactName)).ToList();
 
             List<string> tTempList = new List<string>();
 
             string tTempValue = string.Empty;
             string ContactMobile = string.Empty;
+            string ContactStore = string.Empty;
 
             List<PCustomerContact> liPCContact = new List<PCustomerContact>();
             if (qPjRec != null && qPjRec.Count() > 0)
             {
                 foreach (var prBean in qPjRec)
                 {
-                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactEmail.Trim().Replace(" ", "");
+                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "") + "|" + prBean.ContactStore.ToString();
 
-                    if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人名姓名不重覆才要顯示
+                    if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人姓名、聯絡人門市不重覆才要顯示
                     {
                         tTempList.Add(tTempValue);
 
                         ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");
+                        ContactStore = string.IsNullOrEmpty(prBean.ContactStore.ToString()) ? "" : prBean.ContactStore.ToString();
 
                         PCustomerContact prDocBean = new PCustomerContact();
 
@@ -1737,7 +1742,8 @@ namespace OneService.Controllers
                         prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
                         prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
                         prDocBean.Mobile = ContactMobile;
-                        prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");
+                        prDocBean.Store = ContactStore;
+                        prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");                        
 
                         liPCContact.Add(prDocBean);
                     }
@@ -1780,8 +1786,11 @@ namespace OneService.Controllers
             /// <summary>聯絡人手機</summary>
             public string Mobile{ get; set; }
 
-        /// <summary>來源表單</summary>
-        public string BPMNo { get; set; }
+            /// <summary>聯絡人門市</summary>
+            public string Store { get; set; }
+
+            /// <summary>來源表單</summary>
+            public string BPMNo { get; set; }
         }
         #endregion
 
@@ -1820,16 +1829,17 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 判斷客戶聯絡人的Email是否有重覆(true.重覆 false.無重覆)
+        #region 判斷客戶聯絡人是否有重覆(true.重覆 false.無重覆)
         /// <summary>
-        /// 判斷客戶聯絡人的Email是否有重覆(true.重覆 false.無重覆)
+        /// 判斷客戶聯絡人是否有重覆(true.重覆 false.無重覆)
         /// </summary>
         /// <param name="cID">系統ID(若為新增時則傳空白)</param>
         /// <param name="cBUKRS">工廠別(T012、T016、C069、T022)</param>
         /// <param name="cCustomerID">客戶代號</param>
-        /// <param name="cContactEmail">聯絡Email</param>
+        /// <param name="cContactName">聯絡人姓名</param>
+        /// <param name="cContactStore">聯絡人門市</param>
         /// <returns></returns>
-        public bool CheckContactsIsDoubleEmail(string cID, string cBUKRS, string cCustomerID, string cContactEmail)
+        public bool CheckContactsIsDouble(string cID, string cBUKRS, string cCustomerID, string cContactName, string cContactStore)
         {
             bool reValue = false;            
 
@@ -1837,7 +1847,7 @@ namespace OneService.Controllers
             {
                 #region 個人客戶
                 var beanT = dbProxy.PersonalContacts.FirstOrDefault(x => x.Disabled == 0 && x.Knb1Bukrs == cBUKRS &&
-                                                                     x.Kna1Kunnr == cCustomerID && x.ContactEmail == cContactEmail &&
+                                                                     x.Kna1Kunnr == cCustomerID && x.ContactName == cContactName &&
                                                                      (string.IsNullOrEmpty(cID) ? true : x.ContactId.ToString() != cID));
                 if (beanT != null)
                 {
@@ -1849,7 +1859,8 @@ namespace OneService.Controllers
             {
                 #region 法人客戶
                 var beanT = dbProxy.CustomerContacts.FirstOrDefault(x => (x.Disabled == null || x.Disabled != 1) && x.Knb1Bukrs == cBUKRS &&
-                                                                     x.Kna1Kunnr == cCustomerID && x.ContactEmail == cContactEmail &&                                                                     
+                                                                     x.Kna1Kunnr == cCustomerID && x.ContactName == cContactName &&
+                                                                     (string.IsNullOrEmpty(cContactStore) ? true : x.ContactStore.ToString() == cContactStore) &&
                                                                      (string.IsNullOrEmpty(cID) ? true : x.ContactId.ToString() != cID));
 
                 if (beanT != null)

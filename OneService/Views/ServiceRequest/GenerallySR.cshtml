@@ -743,7 +743,7 @@
 			var tbx_cRepairAddress = $("#tbx_cRepairAddress");		//地址(報修人)
 			var tbx_cRepairPhone = $("#tbx_cRepairPhone");			//電話(報修人)
 			var tbx_cRepairMobile = $("#tbx_cRepairMobile");			//手機(報修人)
-			var tbx_cRepairEmail	= $("#tbx_cRepairEmail");			//Email(報修人)			
+			//var tbx_cRepairEmail	= $("#tbx_cRepairEmail");			//Email(報修人)			
 
 			var hid_cTeamID = $("#hid_cTeamID");					//服務團隊
 			var tbx_cMainEngineerName = $("#tbx_cMainEngineerName");	//主要工程師
@@ -817,9 +817,9 @@
 				Msg += "【電話(報修人)】【手機(報修人)】請至少擇一輸入！\n";
 			}			
 
-			if (tbx_cRepairEmail.val() == "") {
-				Msg += "【Email(報修人)】不得為空！\n";
-			}			
+			//if (tbx_cRepairEmail.val() == "") {
+			//	Msg += "【Email(報修人)】不得為空！\n";
+			//}			
 
 			if (hid_cTeamID.val() == "") {
 				Msg += "請選擇【服務團隊】！\n";
@@ -841,6 +841,13 @@
 			if ($("#tablePR tr").length == 1) {
 				Msg += "請至少新增一筆【產品序號資訊】明細！\n";
 			}			
+
+			if (ddl_cStatus.val() == "E0006") //完修判斷
+			{
+				if ($("#tableRecord tr").length == 1) {
+					Msg += "請至少新增一筆【處理與工時紀錄】明細！\n";
+				}	
+			}
 
 			//【聯絡人窗口資訊】明細檢查
 			Msg += checkDetail_CO();
@@ -888,7 +895,7 @@
 				var objContactAddress = tds.eq(2).children();		//地址(聯絡人)
 				var objContactPhone = tds.eq(3).children();		//電話(聯絡人)
 				var objContactMoblie = tds.eq(4).children();		//手機(聯絡人)
-				var objContactEmail = tds.eq(5).children();		//E-Mail(聯絡人)
+				//var objContactEmail = tds.eq(5).children();		//E-Mail(聯絡人)
 
 				if (objContactName.val() != undefined) {                    
 					if (objDisabled.val() == "0"){
@@ -904,9 +911,9 @@
 							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【電話、手機(聯絡人)】請至少擇一輸入！\n";
 						}
 
-						if (objContactEmail.val() == "") {
-							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【E-Mail(聯絡人)】不得為空！\n";
-						}						
+						//if (objContactEmail.val() == "") {
+						//	Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【E-Mail(聯絡人)】不得為空！\n";
+						//}						
 					}
                 }				
 			})			
@@ -1944,9 +1951,9 @@
 				strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
 			}			
 
-			if (tbx_cEditContactEmail.val() == "") {
-				strMsg += "客戶聯絡人【Email】不得為空！\n";
-			}
+			//if (tbx_cEditContactEmail.val() == "") {
+			//	strMsg += "客戶聯絡人【Email】不得為空！\n";
+			//}
 
 			if (strMsg != "") {
 				alert(strMsg);
@@ -2023,9 +2030,9 @@
 				strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
 			}
 
-			if (tbx_cAddContactEmail.val() == "") {
-				strMsg += "客戶聯絡人【Email】不得為空！\n";
-			}
+			//if (tbx_cAddContactEmail.val() == "") {
+			//	strMsg += "客戶聯絡人【Email】不得為空！\n";
+			//}
 
 			if (strMsg != "") {
 				alert(strMsg);
@@ -3884,7 +3891,7 @@
 										</div>
 									</div>									
 									<div class="form-group row">										
-										<label class="col-lg-2 col-form-label">*Email(報修人)</label>
+										<label class="col-lg-2 col-form-label">Email(報修人)</label>
 										<div class="col-lg-4">
 										<input type="text" id="tbx_cRepairEmail" name="tbx_cRepairEmail" class="form-control RepairEmail" placeholder="Email(報修人)" value="@ViewBag.cRepairEmail" title="@ViewBag.cRepairEmail" disabled>
 										</div>
@@ -3928,7 +3935,7 @@
 																							<th>*地址(聯絡人)</th>
 																							<th>電話(聯絡人)</th>
 																							<th>手機(聯絡人)</th>
-																							<th>*E-Mail(聯絡人)</th>
+																							<th>E-Mail(聯絡人)</th>
 																							<th width="130">刪除</th>
 																						</tr>
 																					</thead>
@@ -3950,7 +3957,7 @@
 																							<th>*地址(聯絡人)</th>
 																							<th>電話(聯絡人)</th>
 																							<th>手機(聯絡人)</th>
-																							<th>*E-Mail(聯絡人)</th>
+																							<th>E-Mail(聯絡人)</th>
 																							<th width="130">刪除</th>
 																						</tr>
 																					</thead>
@@ -4598,7 +4605,7 @@
 						</div>
 					</div>
 					<div class="form-group row">
-						<label class="col-lg-2 col-form-label">Email*</label>
+						<label class="col-lg-2 col-form-label">Email</label>
 						<div class="col-lg-10">
 							<input type="text" id="tbx_cAddContactEmail" name="tbx_cAddContactEmail" class="form-control" placeholder="Email" onblur="CheckEmailValid();">
 						</div>
@@ -4670,7 +4677,7 @@
 						</div>
 					</div>
 					<div class="form-group row">
-						<label class="col-lg-2 col-form-label">Email*</label>
+						<label class="col-lg-2 col-form-label">Email</label>
 						<div class="col-lg-10">
 							<input type="text" id="tbx_cEditContactEmail" name="tbx_cEditContactEmail" class="form-control" placeholder="Email" onblur="CheckEditEmailValid();">
 						</div>
