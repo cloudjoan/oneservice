@@ -24,6 +24,7 @@ using System.Diagnostics.Contracts;
 using NuGet.Packaging.Core;
 using System.Runtime.ConstrainedExecution;
 using System.Net;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 
 namespace OneService.Controllers
 {
@@ -1181,7 +1182,134 @@ namespace OneService.Controllers
                     SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
                     SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
                 }
-                #endregion               
+                #endregion
+
+                #region 客戶故障狀況分類資訊(L2處理中)
+
+                #region 客戶故障狀況分類
+                ViewBag.cFaultGroup = "";
+                ViewBag.cFaultGroup1 = "";
+                ViewBag.cFaultGroup2 = "";
+                ViewBag.cFaultGroup3 = "";
+                ViewBag.cFaultGroup4 = "";
+                ViewBag.cFaultGroupOther = "";
+
+                ViewBag.cFaultGroupNote1 = "";
+                ViewBag.cFaultGroupNote2 = "";
+                ViewBag.cFaultGroupNote3 = "";
+                ViewBag.cFaultGroupNote4 = "";
+                ViewBag.cFaultGroupNoteOther = "";
+
+                if (!string.IsNullOrEmpty(beanM.CFaultGroup))
+                {
+                    ViewBag.cFaultGroup = beanM.CFaultGroup;
+
+                    string[] tAryGroup = beanM.CFaultGroup.Split(';');
+
+                    foreach (string tValue in tAryGroup)
+                    {
+                        switch(tValue)
+                        {
+                            case "Z01": //硬體
+                                ViewBag.cFaultGroup1 = "Y";
+                                ViewBag.cFaultGroupNote1 = beanM.CFaultGroupNote1;
+                                break;
+                            case "Z02": //系統
+                                ViewBag.cFaultGroup2 = "Y";
+                                ViewBag.cFaultGroupNote2 = beanM.CFaultGroupNote2;
+                                break;
+                            case "Z03": //服務
+                                ViewBag.cFaultGroup3 = "Y";
+                                ViewBag.cFaultGroupNote3 = beanM.CFaultGroupNote3;
+                                break;
+                            case "Z04": //網路
+                                ViewBag.cFaultGroup4 = "Y";
+                                ViewBag.cFaultGroupNote4 = beanM.CFaultGroupNote4;
+                                break;
+                            case "Z99": //其他
+                                ViewBag.cFaultGroupOther = "Y";
+                                ViewBag.cFaultGroupNoteOther = beanM.CFaultGroupNoteOther;
+                                break;
+                        }                        
+                    }
+                }
+                #endregion
+
+                #region 客戶故障狀況
+                ViewBag.cFaultState = "";
+                ViewBag.cFaultState1 = "";
+                ViewBag.cFaultState2 = "";                
+                ViewBag.cFaultStateOther = "";
+
+                ViewBag.cFaultStateNote1 = "";
+                ViewBag.cFaultStateNote2 = "";                
+                ViewBag.cFaultStateNoteOther = "";
+
+                if (!string.IsNullOrEmpty(beanM.CFaultState))
+                {
+                    ViewBag.cFaultState = beanM.CFaultState;
+
+                    string[] tAryState = beanM.CFaultState.Split(';');
+
+                    foreach (string tValue in tAryState)
+                    {
+                        switch (tValue)
+                        {
+                            case "Z01": //面板燈號
+                                ViewBag.cFaultState1 = "Y";
+                                ViewBag.cFaultStateNote1 = beanM.CFaultStateNote1;
+                                break;
+                            case "Z02": //管理介面(iLO、IMM、iDRAC)
+                                ViewBag.cFaultState2 = "Y";
+                                ViewBag.cFaultStateNote2 = beanM.CFaultStateNote2;
+                                break;                                
+                            case "Z99": //其他
+                                ViewBag.cFaultStateOther = "Y";
+                                ViewBag.cFaultStateNoteOther = beanM.CFaultStateNoteOther;
+                                break;
+                        }
+                    }
+                }
+                #endregion
+
+                #region 故障零件規格料號
+                ViewBag.cFaultSpec = "";
+                ViewBag.cFaultSpec1 = "";
+                ViewBag.cFaultSpec2 = "";
+                ViewBag.cFaultSpecOther = "";
+
+                ViewBag.cFaultSpecNote1 = "";
+                ViewBag.cFaultSpecNote2 = "";
+                ViewBag.cFaultSpecNoteOther = "";
+
+                if (!string.IsNullOrEmpty(beanM.CFaultSpec))
+                {
+                    ViewBag.cFaultSpec = beanM.CFaultSpec;
+
+                    string[] tArySpec = beanM.CFaultSpec.Split(';');
+
+                    foreach (string tValue in tArySpec)
+                    {
+                        switch (tValue)
+                        {
+                            case "Z01": //零件規格
+                                ViewBag.cFaultSpec1 = "Y";
+                                ViewBag.cFaultSpecNote1 = beanM.CFaultSpecNote1;
+                                break;
+                            case "Z02": //零件料號
+                                ViewBag.cFaultSpec2 = "Y";
+                                ViewBag.cFaultSpecNote2 = beanM.CFaultSpecNote2;
+                                break;
+                            case "Z99": //其他
+                                ViewBag.cFaultSpecOther = "Y";
+                                ViewBag.cFaultSpecNoteOther = beanM.CFaultSpecNoteOther;
+                                break;
+                        }
+                    }
+                }
+                #endregion
+
+                #endregion
 
                 #region 客戶報修窗口資訊
                 ViewBag.cRepairName = beanM.CRepairName;
@@ -1319,6 +1447,33 @@ namespace OneService.Controllers
             string OldCAssEngineerId = string.Empty;
             string OldCTechManagerId = string.Empty;
 
+            string OldCFaultGroup = string.Empty;
+            string OldCFaultGroup1 = string.Empty;
+            string OldCFaultGroup2 = string.Empty;
+            string OldCFaultGroup3 = string.Empty;
+            string OldCFaultGroup4 = string.Empty;
+            string OldCFaultGroupOther = string.Empty;
+            string OldCFaultState = string.Empty;
+            string OldCFaultState1 = string.Empty;
+            string OldCFaultState2 = string.Empty;
+            string OldCFaultStateOther = string.Empty;
+            string OldCFaultSpec = string.Empty;
+            string OldCFaultSpec1 = string.Empty;
+            string OldCFaultSpec2 = string.Empty;
+            string OldCFaultSpecOther = string.Empty;
+
+            string OldCFaultGroupNote1 = string.Empty;
+            string OldCFaultGroupNote2 = string.Empty;
+            string OldCFaultGroupNote3 = string.Empty;
+            string OldCFaultGroupNote4 = string.Empty;
+            string OldCFaultGroupNoteOther = string.Empty;
+            string OldCFaultStateNote1 = string.Empty;
+            string OldCFaultStateNote2 = string.Empty;
+            string OldCFaultStateNoteOther = string.Empty;
+            string OldCFaultSpecNote1 = string.Empty;
+            string OldCFaultSpecNote2 = string.Empty;
+            string OldCFaultSpecNoteOther = string.Empty;
+
             string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
             string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
             string CCustomerId = formCollection["hid_cCustomerID"].FirstOrDefault();            
@@ -1348,6 +1503,21 @@ namespace OneService.Controllers
             string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();
             string CTechManagerId = formCollection["hid_cTechManagerID"].FirstOrDefault();
             string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
+
+            string CFaultGroup = formCollection["hid_cFaultGroup"].FirstOrDefault();            
+            string CFaultState = formCollection["hid_cFaultState"].FirstOrDefault();            
+            string CFaultSpec = formCollection["hid_cFaultSpec"].FirstOrDefault();            
+            string CFaultGroupNote1 = formCollection["tbx_cFaultGroupNote1"].FirstOrDefault();
+            string CFaultGroupNote2 = formCollection["tbx_cFaultGroupNote2"].FirstOrDefault();
+            string CFaultGroupNote3 = formCollection["tbx_cFaultGroupNote3"].FirstOrDefault();
+            string CFaultGroupNote4 = formCollection["tbx_cFaultGroupNote4"].FirstOrDefault();
+            string CFaultGroupNoteOther = formCollection["tbx_cFaultGroupNoteOther"].FirstOrDefault();
+            string CFaultStateNote1 = formCollection["tbx_cFaultStateNote1"].FirstOrDefault();
+            string CFaultStateNote2 = formCollection["tbx_cFaultStateNote2"].FirstOrDefault();
+            string CFaultStateNoteOther = formCollection["tbx_cFaultStateNoteOther"].FirstOrDefault();
+            string CFaultSpecNote1 = formCollection["tbx_cFaultSpecNote1"].FirstOrDefault();
+            string CFaultSpecNote2 = formCollection["tbx_cFaultSpecNote2"].FirstOrDefault();
+            string CFaultSpecNoteOther = formCollection["tbx_cFaultSpecNoteOther"].FirstOrDefault();
 
             SRCondition srCon = new SRCondition();
             SRMain_SRSTATUS_INPUT beanIN = new SRMain_SRSTATUS_INPUT();
@@ -1651,6 +1821,61 @@ namespace OneService.Controllers
 
                     OldCTechManagerId = beanNowM.CTechManagerId;
                     tLog += CMF.getNewAndOldLog("技術主管ERPID", OldCTechManagerId, CTechManagerId);
+
+                    #region 客戶故障狀況分類
+                    OldCFaultGroup = string.IsNullOrEmpty(beanNowM.CFaultGroup) ? "" : beanNowM.CFaultGroup;
+                    OldCFaultGroup = CMF.TransL2Fault(OldCFaultGroup, "Group");
+                    string CFaultGroupTemp = CMF.TransL2Fault(CFaultGroup, "Group");
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況分類", OldCFaultGroup, CFaultGroupTemp);
+
+                    OldCFaultGroupNote1 = string.IsNullOrEmpty(beanNowM.CFaultGroupNote1) ? "" : beanNowM.CFaultGroupNote1;
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況分類-硬體說明", OldCFaultGroupNote1, CFaultGroupNote1);
+
+                    OldCFaultGroupNote2 = string.IsNullOrEmpty(beanNowM.CFaultGroupNote2) ? "" : beanNowM.CFaultGroupNote2;
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況分類-系統說明", OldCFaultGroupNote2, CFaultGroupNote2);
+
+                    OldCFaultGroupNote3 = string.IsNullOrEmpty(beanNowM.CFaultGroupNote3) ? "" : beanNowM.CFaultGroupNote3;
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況分類-服務說明", OldCFaultGroupNote3, CFaultGroupNote3);
+
+                    OldCFaultGroupNote4 = string.IsNullOrEmpty(beanNowM.CFaultGroupNote4) ? "" : beanNowM.CFaultGroupNote4;
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況分類-網路說明", OldCFaultGroupNote4, CFaultGroupNote4);
+
+                    OldCFaultGroupNoteOther = string.IsNullOrEmpty(beanNowM.CFaultGroupNoteOther) ? "" : beanNowM.CFaultGroupNoteOther;
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況分類-其他說明", OldCFaultGroupNoteOther, CFaultGroupNoteOther);
+                    #endregion
+
+                    #region 客戶故障狀況
+                    OldCFaultState = string.IsNullOrEmpty(beanNowM.CFaultState) ? "" : beanNowM.CFaultState;
+                    OldCFaultState = CMF.TransL2Fault(OldCFaultState, "State");
+                    string CFaultStateTemp = CMF.TransL2Fault(CFaultState, "State");
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況", OldCFaultState, CFaultStateTemp);
+
+                    OldCFaultStateNote1 = string.IsNullOrEmpty(beanNowM.CFaultStateNote1) ? "" : beanNowM.CFaultStateNote1;
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況-面板燈號說明", OldCFaultStateNote1, CFaultStateNote1);
+
+                    OldCFaultStateNote2 = string.IsNullOrEmpty(beanNowM.CFaultStateNote2) ? "" : beanNowM.CFaultStateNote2;
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況-管理介面(iLO、IMM、iDRAC)說明", OldCFaultStateNote2, CFaultStateNote2);                    
+
+                    OldCFaultStateNoteOther = string.IsNullOrEmpty(beanNowM.CFaultStateNoteOther) ? "" : beanNowM.CFaultStateNoteOther;
+                    tLog += CMF.getNewAndOldLog("客戶故障狀況-其他說明", OldCFaultStateNoteOther, CFaultStateNoteOther);
+                    #endregion
+
+                    #region 故障零件規格料號
+                    OldCFaultSpec = string.IsNullOrEmpty(beanNowM.CFaultSpec) ? "" : beanNowM.CFaultSpec;
+                    OldCFaultSpec = CMF.TransL2Fault(OldCFaultSpec, "Spec");
+                    string CFaultSpecTemp = CMF.TransL2Fault(CFaultSpec, "Spec");
+                    tLog += CMF.getNewAndOldLog("故障零件規格料號", OldCFaultSpec, CFaultSpecTemp);
+
+                    OldCFaultSpecNote1 = string.IsNullOrEmpty(beanNowM.CFaultSpecNote1) ? "" : beanNowM.CFaultSpecNote1;
+                    tLog += CMF.getNewAndOldLog("故障零件規格料號-零件規格說明", OldCFaultSpecNote1, CFaultSpecNote1);
+
+                    OldCFaultSpecNote2 = string.IsNullOrEmpty(beanNowM.CFaultSpecNote2) ? "" : beanNowM.CFaultSpecNote2;
+                    tLog += CMF.getNewAndOldLog("故障零件規格料號-零件料號說明", OldCFaultSpecNote2, CFaultSpecNote2);
+
+                    OldCFaultSpecNoteOther = string.IsNullOrEmpty(beanNowM.CFaultSpecNoteOther) ? "" : beanNowM.CFaultSpecNoteOther;
+                    tLog += CMF.getNewAndOldLog("故障零件規格料號-其他說明", OldCFaultSpecNoteOther, CFaultSpecNoteOther);
+                    #endregion
+
                     #endregion
 
                     //主表資料
@@ -1683,6 +1908,29 @@ namespace OneService.Controllers
                     beanNowM.CAssEngineerId = CAssEngineerId;
                     beanNowM.CTechManagerId = CTechManagerId;
                     beanNowM.CSystemGuid = Guid.NewGuid();
+
+                    #region 客戶故障狀況分類
+                    beanNowM.CFaultGroup = string.IsNullOrEmpty(CFaultGroup) ? "" : CFaultGroup.TrimEnd(';');
+                    beanNowM.CFaultGroupNote1 = string.IsNullOrEmpty(CFaultGroupNote1) ? "" : CFaultGroupNote1;
+                    beanNowM.CFaultGroupNote2 = string.IsNullOrEmpty(CFaultGroupNote2) ? "" : CFaultGroupNote2;
+                    beanNowM.CFaultGroupNote3 = string.IsNullOrEmpty(CFaultGroupNote3) ? "" : CFaultGroupNote3;
+                    beanNowM.CFaultGroupNote4 = string.IsNullOrEmpty(CFaultGroupNote4) ? "" : CFaultGroupNote4;
+                    beanNowM.CFaultGroupNoteOther = string.IsNullOrEmpty(CFaultGroupNoteOther) ? "" : CFaultGroupNoteOther;
+                    #endregion
+
+                    #region 客戶故障狀況
+                    beanNowM.CFaultState = string.IsNullOrEmpty(CFaultState) ? "" : CFaultState.TrimEnd(';');
+                    beanNowM.CFaultStateNote1 = string.IsNullOrEmpty(CFaultStateNote1) ? "" : CFaultStateNote1;
+                    beanNowM.CFaultStateNote2 = string.IsNullOrEmpty(CFaultStateNote2) ? "" : CFaultStateNote2;                    
+                    beanNowM.CFaultStateNoteOther = string.IsNullOrEmpty(CFaultStateNoteOther) ? "" : CFaultStateNoteOther;
+                    #endregion
+
+                    #region 故障零件規格料號
+                    beanNowM.CFaultSpec = string.IsNullOrEmpty(CFaultSpec) ? "" : CFaultSpec.TrimEnd(';');
+                    beanNowM.CFaultSpecNote1 = string.IsNullOrEmpty(CFaultSpecNote1) ? "" : CFaultSpecNote1;
+                    beanNowM.CFaultSpecNote2 = string.IsNullOrEmpty(CFaultSpecNote2) ? "" : CFaultSpecNote2;
+                    beanNowM.CFaultSpecNoteOther = string.IsNullOrEmpty(CFaultSpecNoteOther) ? "" : CFaultSpecNoteOther;
+                    #endregion
 
                     if (CStatus == "E0006") //完修
                     {

@@ -40,6 +40,20 @@ namespace OneService.Models
         public string? CSecretaryName { get; set; }
         public string? CSalesNo { get; set; }
         public string? CShipmentNo { get; set; }
+        public string? CFaultGroup { get; set; }
+        public string? CFaultGroupNote1 { get; set; }
+        public string? CFaultGroupNote2 { get; set; }
+        public string? CFaultGroupNote3 { get; set; }
+        public string? CFaultGroupNote4 { get; set; }
+        public string? CFaultGroupNoteOther { get; set; }
+        public string? CFaultState { get; set; }
+        public string? CFaultStateNote1 { get; set; }
+        public string? CFaultStateNote2 { get; set; }
+        public string? CFaultStateNoteOther { get; set; }
+        public string? CFaultSpec { get; set; }
+        public string? CFaultSpecNote1 { get; set; }
+        public string? CFaultSpecNote2 { get; set; }
+        public string? CFaultSpecNoteOther { get; set; }
         public Guid? CSystemGuid { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }

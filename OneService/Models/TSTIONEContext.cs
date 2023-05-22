@@ -597,6 +597,62 @@ namespace OneService.Models
                     .HasMaxLength(255)
                     .HasColumnName("cDesc");
 
+                entity.Property(e => e.CFaultGroup)
+                    .HasMaxLength(30)
+                    .HasColumnName("cFaultGroup");
+
+                entity.Property(e => e.CFaultGroupNote1)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultGroupNote1");
+
+                entity.Property(e => e.CFaultGroupNote2)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultGroupNote2");
+
+                entity.Property(e => e.CFaultGroupNote3)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultGroupNote3");
+
+                entity.Property(e => e.CFaultGroupNote4)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultGroupNote4");
+
+                entity.Property(e => e.CFaultGroupNoteOther)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultGroupNoteOther");
+
+                entity.Property(e => e.CFaultSpec)
+                    .HasMaxLength(30)
+                    .HasColumnName("cFaultSpec");
+
+                entity.Property(e => e.CFaultSpecNote1)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultSpecNote1");
+
+                entity.Property(e => e.CFaultSpecNote2)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultSpecNote2");
+
+                entity.Property(e => e.CFaultSpecNoteOther)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultSpecNoteOther");
+
+                entity.Property(e => e.CFaultState)
+                    .HasMaxLength(30)
+                    .HasColumnName("cFaultState");
+
+                entity.Property(e => e.CFaultStateNote1)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultStateNote1");
+
+                entity.Property(e => e.CFaultStateNote2)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultStateNote2");
+
+                entity.Property(e => e.CFaultStateNoteOther)
+                    .HasMaxLength(100)
+                    .HasColumnName("cFaultStateNoteOther");
+
                 entity.Property(e => e.CIsAppclose)
                     .HasMaxLength(1)
                     .IsUnicode(false)
@@ -1065,8 +1121,7 @@ namespace OneService.Models
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Dn)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
+                    .HasMaxLength(30)
                     .HasColumnName("DN");
 
                 entity.Property(e => e.Pid)
@@ -1078,8 +1133,7 @@ namespace OneService.Models
                     .HasColumnName("PN");
 
                 entity.Property(e => e.So)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
+                    .HasMaxLength(30)
                     .HasColumnName("SO");
             });
 

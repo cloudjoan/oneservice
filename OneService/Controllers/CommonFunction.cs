@@ -2478,6 +2478,87 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得客戶故障狀況分類資訊(L2處理中)說明
+        /// <summary>
+        /// 取得客戶故障狀況分類資訊(L2處理中)說明
+        /// </summary>
+        /// <param name="tInValue">傳入值</param>
+        /// <param name="tType">Group.客戶故障狀況分類、State.客戶故障狀況、Spec.故障零件規格料號</param>
+        /// <returns></returns>
+        public string TransL2Fault(string tInValue, string tType)
+        {
+            string reValue = string.Empty;
+
+            if (tInValue != "")
+            {
+                string[] tAryValue = tInValue.TrimEnd(';').Split(';');
+
+                if (tType == "Group")
+                {
+                    foreach (string tValue in tAryValue)
+                    {
+                        switch (tValue)
+                        {
+                            case "Z01":
+                                reValue += "硬體;";
+                                break;
+                            case "Z02":
+                                reValue += "系統;";
+                                break;
+                            case "Z03":
+                                reValue += "服務;";
+                                break;
+                            case "Z04":
+                                reValue += "網路;";
+                                break;
+                            case "Z99":
+                                reValue += "其他;";
+                                break;
+                        }
+                    }
+                }
+                else if (tType == "State")
+                {
+                    foreach (string tValue in tAryValue)
+                    {
+                        switch (tValue)
+                        {
+                            case "Z01":
+                                reValue += "面板燈號;";
+                                break;
+                            case "Z02":
+                                reValue += "管理介面(iLO、IMM、iDRAC);";
+                                break;
+                            case "Z99":
+                                reValue += "其他;";
+                                break;
+                        }
+                    }
+                }
+                else if (tType == "Spec")
+                {
+                    foreach (string tValue in tAryValue)
+                    {
+                        switch (tValue)
+                        {
+                            case "Z01":
+                                reValue += "零件規格;";
+                                break;
+                            case "Z02":
+                                reValue += "零件料號;";
+                                break;
+                            case "Z99":
+                                reValue += "其他;";
+                                break;
+                        }
+                    }
+                }
+            }
+
+            return reValue.TrimEnd(';');
+        }
+        #endregion
+
         #region 新增時取得個人客戶流水號ID
         /// <summary>
         /// 新增時取得個人客戶流水號ID
