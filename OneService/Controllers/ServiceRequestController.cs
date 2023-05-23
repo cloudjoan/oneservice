@@ -5484,6 +5484,44 @@ namespace OneService.Controllers
         /// <summary>
         /// 取得客戶聯絡人
         /// </summary>
+        /// <param name="tIDName">傳入的欄位Name</param>
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="CustomerID">客戶代號</param>        
+        /// <returns></returns>
+        public IActionResult FindContactInfo(string tIDName, string cBUKRS, string CustomerID)
+        {
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            List<PCustomerContact> beans = CMF.GetContactInfo(cBUKRS, CustomerID);
+
+            #region 組待查詢清單
+            foreach (var bean in beans)
+            {
+                string[] QueryInfo = new string[8];
+
+                QueryInfo[0] = bean.ContactID;
+                QueryInfo[1] = tIDName;
+                QueryInfo[2] = bean.Name;
+                QueryInfo[3] = bean.City;
+                QueryInfo[4] = bean.Address;
+                QueryInfo[5] = bean.Email;
+                QueryInfo[6] = bean.Phone;
+                QueryInfo[7] = bean.Mobile;
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion
+
+        #region Ajax取得客戶聯絡人
+        /// <summary>
+        /// 取得客戶聯絡人
+        /// </summary>
         /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
         /// <param name="CustomerID">客戶代號</param>        
         /// <returns></returns>
@@ -6530,6 +6568,48 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----  
     }
+
+    #region 客戶聯絡人定義
+    /// <summary>客戶聯絡人</summary>
+    public class PCustomerContact
+    {
+        /// <summary>GUID</summary>
+        public string ContactID { get; set; }
+
+        /// <summary>客戶ID</summary>
+        public string CustomerID { get; set; }
+
+        /// <summary>客戶名稱</summary>
+        public string CustomerName { get; set; }
+
+        /// <summary>公司別</summary>
+        public string BUKRS { get; set; }
+
+        /// <summary>聯絡人姓名</summary>
+        public string Name { get; set; }
+
+        /// <summary>聯絡人居住城市</summary>
+        public string City { get; set; }
+
+        /// <summary>聯絡人地址</summary>
+        public string Address { get; set; }
+
+        /// <summary>聯絡人Email</summary>
+        public string Email { get; set; }
+
+        /// <summary>聯絡人電話</summary>
+        public string Phone { get; set; }
+
+        /// <summary>聯絡人手機</summary>
+        public string Mobile { get; set; }
+
+        /// <summary>聯絡人門市</summary>
+        public string Store { get; set; }
+
+        /// <summary>來源表單</summary>
+        public string BPMNo { get; set; }
+    }
+    #endregion
 
     #region 更改歷史記錄相關資訊
     public class OneLogInfo

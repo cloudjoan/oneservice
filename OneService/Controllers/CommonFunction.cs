@@ -1751,47 +1751,7 @@ namespace OneService.Controllers
             }
 
             return liPCContact;
-        }
-
-        /// <summary>客戶聯絡人</summary>
-        public struct PCustomerContact
-        {
-            /// <summary>GUID</summary>
-            public string ContactID { get; set; }
-
-            /// <summary>客戶ID</summary>
-            public string CustomerID { get; set; }
-
-            /// <summary>客戶名稱</summary>
-            public string CustomerName { get; set; }
-
-            /// <summary>公司別</summary>
-            public string BUKRS { get; set; }
-
-            /// <summary>聯絡人姓名</summary>
-            public string Name { get; set; }
-
-            /// <summary>聯絡人居住城市</summary>
-            public string City { get; set; }
-
-            /// <summary>聯絡人地址</summary>
-            public string Address { get; set; }
-
-            /// <summary>聯絡人Email</summary>
-            public string Email { get; set; }
-
-            /// <summary>聯絡人電話</summary>
-            public string Phone { get; set; }
-
-            /// <summary>聯絡人手機</summary>
-            public string Mobile{ get; set; }
-
-            /// <summary>聯絡人門市</summary>
-            public string Store { get; set; }
-
-            /// <summary>來源表單</summary>
-            public string BPMNo { get; set; }
-        }
+        }        
         #endregion
 
         #region 取得客戶聯絡資訊檔清單

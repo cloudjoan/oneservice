@@ -1361,90 +1361,34 @@
 			}
 			else
 			{
-				GetContactInfo(tIDName, cBUKRS, CustomerID);
+				FindContactInfo(tIDName, cBUKRS, CustomerID);
 				$('#dialog_pContactInfo').modal('show');
 			}
-		}		
-
+		}
+		
 		//取得客戶聯絡人
 		//cBUKRS.公司別
 		//CustomerID.客戶ID
-		function GetContactInfo(tIDName, cBUKRS, CustomerID) {
+		function FindContactInfo(tIDName, cBUKRS, CustomerID) {
 			$.ajax({
-				url: '@Url.Action("GetContactInfo", "ServiceRequest")',
+				url: '@Url.Action("FindContactInfo", "ServiceRequest")',
 				type: 'post',
 				dataType: 'json',
 				data: {
+					tIDName: tIDName,
 					cBUKRS: cBUKRS,
 					CustomerID: CustomerID
 				},
 				success: function (result) {
-					var list = "";
-					$.each(result, function (i, bean) {
-						if (bean != null) {
-								var stremail = bean.email;							
-								var straddress = bean.address;
-								var strphone = bean.phone;
-								var strmobile = bean.mobile;
-								
-								stremail = stremail.replace(/\s+/g, "&nbsp;");
-								stremail = stremail.replace(/\"/g, "&quot;");
-								stremail = stremail.replace(/\'/g, "’"); //單引號，半型->全型
-
-								straddress = straddress.replace(/\s+/g, "&nbsp;");
-								straddress = straddress.replace(/\"/g, "&quot;");
-								straddress = straddress.replace(/\'/g, "’"); //單引號，半型->全型
-
-								strphone = strphone.replace(/\s+/g, "&nbsp;");
-								strphone = strphone.replace(/\"/g, "&quot;");
-								strphone = strphone.replace(/\'/g, "’"); //單引號，半型->全型
-
-								strmobile = strmobile.replace(/\s+/g, "&nbsp;");
-								strmobile = strmobile.replace(/\"/g, "&quot;");
-								strmobile = strmobile.replace(/\'/g, "’"); //單引號，半型->全型
-
-								list += "<tbody>"
-									+ "<tr>"
-									+ "<td>"
-									+ "    <input name='rdSelect' type='radio' onclick=selectContactInfo('" + tIDName + "','" + bean.customerName + "','" + bean.name + "','" + stremail + "','" + bean.city + "','" + straddress + "','" + strphone + "','" + strmobile + "') />"
-									+ '    <input type="hidden" class="hid_ContactID" value="' + bean.ContactID + '" />'
-									+ '</td>'									
-									+ "<td style='vertical-align: middle;'>" + bean.name + "</td>"
-									+ "<td style='vertical-align: middle;'>" + bean.city + "</td>"
-									+ "<td style='vertical-align: middle;'>" + bean.address + "</td>"
-									+ "<td style='vertical-align: middle;'>" + bean.email + "</td>"
-									+ "<td style='vertical-align: middle;'>" + bean.phone + "</td>"
-									+ "<td style='vertical-align: middle;'>" + bean.mobile + "</td>"
-									+ "</tr>"
-									+ "</tbody>";
-							}
-					});
-
-					if (list != "") {
-						list = "<table class='table table-striple table-bordered table-hover dataTables-example' style='text-align: center;'>"
-							+ "<thead><tr>"
-							+ "<th>選取</th>"							
-							+ "<th>聯絡人姓名</th>"
-							+ "<th>聯絡人城市</th>"
-							+ "<th>聯絡人地址</th>"
-							+ "<th>聯絡人Email</th>"
-							+ "<th>聯絡人電話</th>"	
-							+ "<th>聯絡人手機</th>"
-							+ "</tr></thead>"
-							+ list
-							+ "</table>";
-					}
-					else {
-						list = "查無聯絡人資訊!";
-					}
-
-					$("#tb_pContactInfo").html(list);
-				}
+				},
+				complete: function (result) {
+					$("#tb_pContactInfo").html(result.responseText);				
+				}				
 			});
-		}
+		}		
 
 		//選取客戶聯絡人並將相關資訊帶回已更新聯絡資訊
-		function selectContactInfo(tIDName, CustomerName, Name, Email, City, Address, phone, Mobile) {
+		function selectContactInfo(tIDName, Name, City, Address, Email, phone, Mobile) {
 			var tbx_cRepairName = $("#tbx_cRepairName");				//客戶報修人			
 			var tbx_cRepairAddress = $("#tbx_cRepairAddress");			//地址(報修人)
 			var tbx_cRepairPhone = $("#tbx_cRepairPhone");				//電話(報修人)
@@ -3469,7 +3413,7 @@
 
 	<!--選擇客戶聯絡人彈出視窗-->
 	<div class="modal fade" id="dialog_pContactInfo" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-dialog modal-lg" role="document" style="max-width:50%">
 			<div class="modal-content">
 				<div class="modal-header">
 					<label class="col-form-label">客戶【聯絡】窗口資訊</label>
