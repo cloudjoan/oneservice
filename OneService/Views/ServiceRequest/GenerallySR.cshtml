@@ -892,22 +892,6 @@
 
 			if (hid_cMainEngineerID.val() == "") {
 				Msg += "您未下拉選取【主要工程師】，請輸入關鍵字後再重新選取！\n";
-			}			
-
-            //明細判斷
-			if ($("#tableCO tr").length == 1) {
-				Msg += "請至少新增一筆【客戶聯絡窗口資訊】明細！\n";
-			}			
-
-			if ($("#tablePR tr").length == 1) {
-				Msg += "請至少新增一筆【產品序號資訊】明細！\n";
-			}			
-
-			if (ddl_cStatus.val() == "E0006") //完修判斷
-			{
-				if ($("#tableRecord tr").length == 1) {
-					Msg += "請至少新增一筆【處理與工時紀錄】明細！\n";
-				}	
 			}
 
 			//【L2處理中-客戶故障狀況分類資訊】檢查
@@ -1123,12 +1107,14 @@
 			var Msg = "";
 			var cStatus = $("#ddl_cStatus").val();						
             var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
+			var tCount = 0; //記錄目前有效的明細
 
 			var tableName = "tableCO";
 			var trs = $("#" + tableName + " tr");			
 
 			$.each(trs, function (i, itr) {
 				var tds = $(itr).find('td');
+				var tIsError = false;								//記錄是否有錯誤
 				var objRowNumber = tds.eq(0).children();			//項次
 				var objContactName = tds.eq(1).children().eq(0);	//姓名(聯絡人)
 				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
@@ -1141,14 +1127,22 @@
 					if (objDisabled.val() == "0"){
 						if (objContactName.val() == "") {
 							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【姓名(聯絡人)】不得為空！\n";
+							tIsError = true;
 						}						
 
 						if (objContactAddress.val() == "") {
 							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【地址(聯絡人)】不得為空！\n";
+							tIsError = true;
 						}							
 						
 						if (objContactPhone.val() == "" && objContactMoblie.val() == "") {
 							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【電話、手機(聯絡人)】請至少擇一輸入！\n";
+							tIsError = true;
+						}
+
+						if (!tIsError)
+						{
+							tCount++;
 						}
 
 						//if (objContactEmail.val() == "") {
@@ -1156,7 +1150,12 @@
 						//}						
 					}
                 }				
-			})			
+			})	
+			
+			if (tCount == 0)
+			{
+				Msg += "請至少新增一筆【客戶聯絡窗口資訊】明細！\n";
+			}
 
 			return Msg;
 		}
@@ -1166,6 +1165,7 @@
 			var Msg = "";
 			var cStatus = $("#ddl_cStatus").val();						
             var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
+			var tCount = 0; //記錄目前有效的明細
 
 			var tableName = "tablePR";
 			var trs = $("#" + tableName + " tr");
@@ -1174,6 +1174,7 @@
 
 			$.each(trs, function (i, itr) {
 				var tds = $(itr).find('td');
+				var tIsError = false;								//記錄是否有錯誤
 				var objRowNumber = tds.eq(0).children();			//項次
 				var objSerialID = tds.eq(1).children().eq(0);		//序號
 				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
@@ -1183,18 +1184,30 @@
 					if (objDisabled.val() == "0"){
 						if (objSerialID.val() == "") {
 							Msg += "明細【產品序號資訊】「項次：" + objRowNumber.html() + "」的【序號】不得為空！\n";
+							tIsError = true;
 						}						
 
 						if (objMaterialName.val() == "") {
 							Msg += "明細【產品序號資訊】「項次：" + objRowNumber.html() + "」的【機器型號】不得為空！\n";
+							tIsError = true;
 						}							
 							
 						if (Msg == ""){
 							AryPNowPrSERIAL.push(objSerialID.val());
 						}
+
+						if (!tIsError)
+						{
+							tCount++;
+						}
 					}
                 }				
-			})			
+			})	
+			
+			if (tCount == 0)
+			{
+				Msg += "請至少新增一筆【產品序號資訊】明細！\n";
+			}
 
 			return Msg;
 		}
@@ -1277,12 +1290,14 @@
 			var Msg = "";
 			var cStatus = $("#ddl_cStatus").val();			
             var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
+			var tCount = 0; //記錄目前有效的明細
 
 			var tableName = "tableRecord";
 			var trs = $("#" + tableName + " tr");			
 
 			$.each(trs, function (i, itr) {
 				var tds = $(itr).find('td');				
+				var tIsError = false;								//記錄是否有錯誤
 				var objRowNumber = tds.eq(0).children();				//項次
 				var objEngineerName = tds.eq(1).children().eq(0);		//服務工程師/技術主管姓名				
 				var objEngineerID = tds.eq(1).children().eq(1);		//服務工程師/技術主管ID
@@ -1300,34 +1315,47 @@
 					{
 						if (objEngineerName.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【服務工程師/技術主管】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objEngineerID.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」未下拉選取【服務工程師/技術主管】，請輸入關鍵字後再重新選取！\n";
+							tIsError = true;
 						}
 
 						if (objReceiveTime.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【接單時間】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objStartTime.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【出發時間】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objArriveTime.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【到場時間】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objFinishTime.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【完成時間】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objWorkHours.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【工時(分鐘)】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objDesc.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【處理紀錄】不得為空！\n";
+							tIsError = true;
+						}
+
+						if (!tIsError)
+						{
+							tCount++;
 						}
 
 						//if (objSRReport.val() == "") {
@@ -1335,7 +1363,15 @@
 						//}
 					}
                 }					
-			})			
+			})		
+			
+			if (cStatus == "E0006") //下拉選擇完修
+			{
+				if (tCount == 0)
+				{
+					Msg += "請至少新增一筆【處理與工時紀錄】明細！\n";
+				}
+			}
 
 			return Msg;
 		}
@@ -1479,11 +1515,29 @@
 				obj.prop('disabled', IsDisabled);
 			});
 
-			//儲存前將客Email(聯絡人)設為可改，後端才能儲存
+			//儲存前將客戶Email(聯絡人)設為可改，後端才能儲存
 			$(".ContactEmail").each(function () {
 				var obj = $(this);
 				obj.prop('disabled', IsDisabled);
 			});
+
+			//儲存前將客戶故障狀況分類說明設為可改，後端才能儲存
+			$(".cFaultGroupNote").each(function () {
+				var obj = $(this);
+				obj.prop('disabled', IsDisabled);
+			});
+
+			//儲存前將客戶故障狀況說明設為可改，後端才能儲存
+			$(".cFaultStateNote").each(function () {
+				var obj = $(this);
+				obj.prop('disabled', IsDisabled);
+			});
+
+			//儲存前將故障零件規格料號說明設為可改，後端才能儲存
+			$(".cFaultSpecNote").each(function () {
+				var obj = $(this);
+				obj.prop('disabled', IsDisabled);
+			});			
 		}		
 
 		//SAP客戶代號/客戶名稱查詢
@@ -4097,7 +4151,7 @@
 											硬體<input id="chk_cFaultGroup1" name="chk_cFaultGroup1" type="checkbox" class="Fault">
 										</label>	
 										<div class="col-lg-6">																					
-											<input type="text" id="tbx_cFaultGroupNote1" name="tbx_cFaultGroupNote1" class="form-control" placeholder="勾選【硬體】時請說明" value="@ViewBag.cFaultGroupNote1" title="@ViewBag.cFaultGroupNote1" disabled>
+											<input type="text" id="tbx_cFaultGroupNote1" name="tbx_cFaultGroupNote1" class="form-control cFaultGroupNote" placeholder="勾選【硬體】時請說明" value="@ViewBag.cFaultGroupNote1" title="@ViewBag.cFaultGroupNote1" disabled>
 										</div>										
 									</div>	
 									<div class="form-group row">
@@ -4106,7 +4160,7 @@
 											系統<input id="chk_cFaultGroup2" name="chk_cFaultGroup2" type="checkbox" class="Fault">
 										</label>
 										<div class="col-lg-6">											
-											<input type="text" id="tbx_cFaultGroupNote2" name="tbx_cFaultGroupNote2" class="form-control" placeholder="勾選【系統】時請說明" value="@ViewBag.cFaultGroupNote2" title="@ViewBag.cFaultGroupNote2" disabled>
+											<input type="text" id="tbx_cFaultGroupNote2" name="tbx_cFaultGroupNote2" class="form-control cFaultGroupNote" placeholder="勾選【系統】時請說明" value="@ViewBag.cFaultGroupNote2" title="@ViewBag.cFaultGroupNote2" disabled>
 										</div>
 									</div>
 									<div class="form-group row">
@@ -4115,7 +4169,7 @@
 											服務<input id="chk_cFaultGroup3" name="chk_cFaultGroup3" type="checkbox" class="Fault">
 										</label>
 										<div class="col-lg-6">											
-											<input type="text" id="tbx_cFaultGroupNote3" name="tbx_cFaultGroupNote3" class="form-control" placeholder="勾選【服務】時請說明" value="@ViewBag.cFaultGroupNote3" title="@ViewBag.cFaultGroupNote3" disabled>
+											<input type="text" id="tbx_cFaultGroupNote3" name="tbx_cFaultGroupNote3" class="form-control cFaultGroupNote" placeholder="勾選【服務】時請說明" value="@ViewBag.cFaultGroupNote3" title="@ViewBag.cFaultGroupNote3" disabled>
 										</div>
 									</div>
 									<div class="form-group row">
@@ -4124,7 +4178,7 @@
 											網路<input id="chk_cFaultGroup4" name="chk_cFaultGroup4" type="checkbox" class="Fault">
 										</label>
 										<div class="col-lg-6">											
-											<input type="text" id="tbx_cFaultGroupNote4" name="tbx_cFaultGroupNote4" class="form-control" placeholder="勾選【網路】時請說明" value="@ViewBag.cFaultGroupNote4" title="@ViewBag.cFaultGroupNote4" disabled>
+											<input type="text" id="tbx_cFaultGroupNote4" name="tbx_cFaultGroupNote4" class="form-control cFaultGroupNote" placeholder="勾選【網路】時請說明" value="@ViewBag.cFaultGroupNote4" title="@ViewBag.cFaultGroupNote4" disabled>
 										</div>
 									</div>
 									<div class="form-group row">	
@@ -4133,7 +4187,7 @@
 											其他<input id="chk_cFaultGroupOther" name="chk_cFaultGroupOther" type="checkbox" class="Fault">
 										</label>
 										<div class="col-lg-6">
-											<input type="text" id="tbx_cFaultGroupNoteOther" name="tbx_cFaultGroupNoteOther" class="form-control" placeholder="勾選【其他】時請說明" value="@ViewBag.cFaultGroupNoteOther" title="@ViewBag.cFaultGroupNoteOther" disabled>
+											<input type="text" id="tbx_cFaultGroupNoteOther" name="tbx_cFaultGroupNoteOther" class="form-control cFaultGroupNote" placeholder="勾選【其他】時請說明" value="@ViewBag.cFaultGroupNoteOther" title="@ViewBag.cFaultGroupNoteOther" disabled>
 										</div>
 									</div>
 
@@ -4151,7 +4205,7 @@
 											面板燈號<input id="chk_cFaultState1" name="chk_cFaultState1" type="checkbox" class="Fault">
 										</label>	
 										<div class="col-lg-6">																					
-											<input type="text" id="tbx_cFaultStateNote1" name="tbx_cFaultStateNote1" class="form-control" placeholder="勾選【面板燈號】時請說明" value="@ViewBag.cFaultStateNote1" title="@ViewBag.cFaultStateNote1" disabled>
+											<input type="text" id="tbx_cFaultStateNote1" name="tbx_cFaultStateNote1" class="form-control cFaultStateNote" placeholder="勾選【面板燈號】時請說明" value="@ViewBag.cFaultStateNote1" title="@ViewBag.cFaultStateNote1" disabled>
 										</div>										
 									</div>	
 									<div class="form-group row">
@@ -4160,7 +4214,7 @@
 											管理介面(iLO、IMM、iDRAC)<input id="chk_cFaultState2" name="chk_cFaultState2" type="checkbox" class="Fault">
 										</label>
 										<div class="col-lg-6">											
-											<input type="text" id="tbx_cFaultStateNote2" name="tbx_cFaultStateNote2" class="form-control" placeholder="勾選【管理介面(iLO、IMM、iDRAC)】時請說明" value="@ViewBag.cFaultStateNote2" title="@ViewBag.cFaultStateNote2" disabled>
+											<input type="text" id="tbx_cFaultStateNote2" name="tbx_cFaultStateNote2" class="form-control cFaultStateNote" placeholder="勾選【管理介面(iLO、IMM、iDRAC)】時請說明" value="@ViewBag.cFaultStateNote2" title="@ViewBag.cFaultStateNote2" disabled>
 										</div>
 									</div>
 									<div class="form-group row">	
@@ -4169,7 +4223,7 @@
 											其他<input id="chk_cFaultStateOther" name="chk_cFaultStateOther" type="checkbox" class="Fault">
 										</label>
 										<div class="col-lg-6">
-											<input type="text" id="tbx_cFaultStateNoteOther" name="tbx_cFaultStateNoteOther" class="form-control" placeholder="勾選【其他】時請說明" value="@ViewBag.cFaultStateNoteOther" title="@ViewBag.cFaultStateNoteOther" disabled>
+											<input type="text" id="tbx_cFaultStateNoteOther" name="tbx_cFaultStateNoteOther" class="form-control cFaultStateNote" placeholder="勾選【其他】時請說明" value="@ViewBag.cFaultStateNoteOther" title="@ViewBag.cFaultStateNoteOther" disabled>
 										</div>
 									</div>
 
@@ -4187,7 +4241,7 @@
 											零件規格<input id="chk_cFaultSpec1" name="chk_cFaultSpec1" type="checkbox" class="Fault">
 										</label>	
 										<div class="col-lg-6">																					
-											<input type="text" id="tbx_cFaultSpecNote1" name="tbx_cFaultSpecNote1" class="form-control" placeholder="勾選【零件規格】時請說明" value="@ViewBag.cFaultSpecNote1" title="@ViewBag.cFaultSpecNote1" disabled>
+											<input type="text" id="tbx_cFaultSpecNote1" name="tbx_cFaultSpecNote1" class="form-control cFaultSpecNote" placeholder="勾選【零件規格】時請說明" value="@ViewBag.cFaultSpecNote1" title="@ViewBag.cFaultSpecNote1" disabled>
 										</div>										
 									</div>	
 									<div class="form-group row">	
@@ -4196,7 +4250,7 @@
 											零件料號<input id="chk_cFaultSpec2" name="chk_cFaultSpec2" type="checkbox" class="Fault">
 										</label>
 										<div class="col-lg-6">											
-											<input type="text" id="tbx_cFaultSpecNote2" name="tbx_cFaultSpecNote2" class="form-control" placeholder="勾選【零件料號】時請說明" value="@ViewBag.cFaultSpecNote2" title="@ViewBag.cFaultSpecNote2" disabled>
+											<input type="text" id="tbx_cFaultSpecNote2" name="tbx_cFaultSpecNote2" class="form-control cFaultSpecNote" placeholder="勾選【零件料號】時請說明" value="@ViewBag.cFaultSpecNote2" title="@ViewBag.cFaultSpecNote2" disabled>
 										</div>
 									</div>
 									<div class="form-group row">	
@@ -4205,7 +4259,7 @@
 											其他<input id="chk_cFaultSpecOther" name="chk_cFaultSpecOther" type="checkbox" class="Fault">
 										</label>
 										<div class="col-lg-6">
-											<input type="text" id="tbx_cFaultSpecNoteOther" name="tbx_cFaultSpecNoteOther" class="form-control" placeholder="勾選【其他】時請說明" value="@ViewBag.cFaultSpecNoteOther" title="@ViewBag.cFaultSpecNoteOther" disabled>
+											<input type="text" id="tbx_cFaultSpecNoteOther" name="tbx_cFaultSpecNoteOther" class="form-control cFaultSpecNote" placeholder="勾選【其他】時請說明" value="@ViewBag.cFaultSpecNoteOther" title="@ViewBag.cFaultSpecNoteOther" disabled>
 										</div>
 									</div>
 								</div>

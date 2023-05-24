@@ -1,5 +1,5 @@
 ﻿@{
-	ViewData["Title"] = "ContractMain";
+	ViewData["Title"] = "QueryContractMain";
 	Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
 
@@ -8,6 +8,7 @@
 	<script>
 		$(document).ready(function () {
 			initTable();
+			init_iChceck();
 			CustSearch();
 			PeopleSearch();
 		});
@@ -45,12 +46,12 @@
 									return data;
 								}
 							}
-							else if (column === 3 || column === 5 || column === 6 || column === 7 || column === 9 || column === 11) //將換行符號<br>換成excel可以識別的\n
+							else if (column === 14 || column === 17) //將換行符號<br>換成excel可以識別的\n
 							{
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 							}
 							else
-							return data;
+								return data;
 						}
 					}
 				}
@@ -63,16 +64,16 @@
 					"search": " 關鍵字篩選"
 				},
 				pageLength: 25,
-				responsive: true,				
+				responsive: true,
 				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
 				buttons: [
 					$.extend(true, {}, buttonCommon, {
 						extend: 'excelHtml5',
-						title: '服務進度查詢作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						title: '合約主數據查詢_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
 						text: '匯出Excel',
-						sheetName: '服務進度查詢作業',
+						sheetName: '合約主數據查詢',
 						exportOptions: {
-							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] //要顯示的欄位
+							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							addCustomNumberFormat(xlsx, '0');
@@ -92,13 +93,14 @@
 							formatTargetColumn(xlsx, 'N');
 							formatTargetColumn(xlsx, 'O');
 							formatTargetColumn(xlsx, 'P');
+							formatTargetColumn(xlsx, 'Q');
+							formatTargetColumn(xlsx, 'R');
 						}
 					}),
 				],
 			});
 
-			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
-			$('#ddl_cTeamID option').prop('selected', false).trigger('chosen:updated');	//服務團隊
+			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右			
 		}
 
 		function addCustomNumberFormat(xlsx, numberFormat) {
@@ -127,6 +129,26 @@
 			else {
 				$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
 			}
+		}
+
+		//初始Checkbox
+		function init_iChceck() {
+			$('.i-checks').iCheck({
+				checkboxClass: 'icheckbox_square-green',
+				radioClass: 'iradio_square-green',
+			});
+
+			//保固SLA產生時，要初始本次使用的chang事件
+			$(".i-checks input[name='chk_cMainEngineerID']").on('ifChanged', function (event) {
+				var objUsed = $("#hid_cAssignMainEngineer"); //未指派主要工程師
+
+				if (event.target.checked) {
+					objUsed.val("Y");
+				}
+				else {
+					objUsed.val("");
+				}				
+			});			
 		}
 
 		//SAP客戶代號/客戶名稱查詢
@@ -200,7 +222,7 @@
 										objects[i] = {
 											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
 											idx: i,
-											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉											
+											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉
 										};
 									});
 
@@ -210,7 +232,7 @@
 									}).bind('focus', function () { obj.autocomplete("search"); });
 
 									//開啟autocomplete選單
-									obj.focus();									
+									obj.focus();
 								}
 							})
 
@@ -218,62 +240,13 @@
 					}
 				}
 			})
-		}
-
-		//-----↓↓↓↓↓報修類別 ↓↓↓↓↓-----
-		//第一階(大類) onChange
-		function onChangecSRTypeOne() {
-
-			//先清空下拉選單選項，才不會一直append
-			$('#ddl_cSRTypeSec').empty();
-			$('#ddl_cSRTypeThr').empty();
-
-			$.ajax({
-				url: '@Url.Action("findSRTypeSecList", "ServiceRequest")',
-				type: 'post',
-				dataType: 'json',
-				data: {
-					keyword: $('#ddl_cSRTypeOne').val(),
-				},
-				success: function (result) {
-					$.each(result, function (index, obj) {
-						$("#ddl_cSRTypeSec").append(
-							$('<option></option>').val(obj.value).html(obj.text)
-						);
-					});
-				}
-			});
-		}
-
-		//第二階(中類) onChange
-		function onChangecSRTypeSec() {
-
-			//先清空下拉選單選項，才不會一直append
-			$('#ddl_cSRTypeThr').empty();
-
-			$.ajax({
-				url: '@Url.Action("findSRTypeThrList", "ServiceRequest")',
-				type: 'post',
-				dataType: 'json',
-				data: {
-					keyword: $('#ddl_cSRTypeSec').val(),
-				},
-				success: function (result) {
-					$.each(result, function (index, obj) {
-						$("#ddl_cSRTypeThr").append(
-							$('<option></option>').val(obj.value).html(obj.text)
-						);
-					});
-				}
-			});
-		}
-		//-----↑↑↑↑↑報修類別 ↑↑↑↑↑-----
+		}		
 
 		//查詢
 		function Query() {
 			$("#waitingImg").show();
 
-			var tMsg = "";						
+			var tMsg = "";
 			var SRCaseType = $("#ddl_cSRCaseType").val().join();		//服務案件種類
 			var Status = $("#ddl_cStatus").val().join();				//狀態
 			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//派單起始日期
@@ -282,7 +255,7 @@
 			var tbx_cCustomerName = $('#tbx_cCustomerName');				//客戶名稱
 			var tbx_cSRID = $('#tbx_cSRID');							//SRID
 			var tbx_CreatedUserName = $('#tbx_CreatedUserName');			//派單人員
-			var tbx_cRepairName = $('#tbx_cRepairName');				//報修人姓名			
+			var tbx_cMASales = $('#tbx_cMASales');				//報修人姓名
 			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道
 			var tbx_cMainEngineerID = $('#tbx_cMainEngineerID');			//主要工程師ERPID
 			var tbx_cAssEngineerID = $('#tbx_cAssEngineerID');			//協助工程師ERPID
@@ -301,7 +274,7 @@
 				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && SRPathWay == "" &&
 				tbx_cMainEngineerID.val() == "" && tbx_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" &&
 				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
-				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
+				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") &&
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
 
 				tMsg += "請至少輸入一項查詢條件！　\n";
@@ -322,19 +295,19 @@
 			}
 			else {
 				searchQuerySRProgress(SRCaseType, Status, tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
-									  tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
-									  tbx_cMainEngineerID.val(), tbx_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID,
-									  ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
-									  tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
+					tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
+					tbx_cMainEngineerID.val(), tbx_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID,
+					ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
+					tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
 			}
 
 			return true;
 		}
 
 		//查詢結果
-		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID,cCustomerName, cSRID, CreatedUserName, cRepairName, cSRPathWay,
-									  cMainEngineerID, cAssEngineerID, cTechManagerID, cTeamID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
-			
+		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID, cCustomerName, cSRID, CreatedUserName, cRepairName, cSRPathWay,
+			cMainEngineerID, cAssEngineerID, cTechManagerID, cTeamID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
+
 			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
 			$("#dataDiv").html('');
 
@@ -375,42 +348,32 @@
 		}
 
 		//清除
-		function clearQuerySRProgress() {			
-			$('#tbx_cStartCreatedDate').val("");
-			$('#tbx_cEndCreatedDate').val("");
+		function clearQuery() {
+			$('#tbx_cContractID').val("");
+			$('#ddl_cIsSubContract').val("");
 			$('#tbx_cCustomerID').val("");
 			$('#tbx_cCustomerName').val("");
-			$('#tbx_cSRID').val("");
-			$('#tbx_CreatedUserName').val("");
-			$('#tbx_cRepairName').val("");			
+			$('#tbx_cSoSales').val("");
+			$('#tbx_cMASales').val("");
+			$('#tbx_cRepairName').val("");
 			$('#tbx_cMainEngineerID').val("");
-			$('#tbx_cAssEngineerID').val("");
-			$('#tbx_cTechManagerID').val("");
-			$('#tbx_cSerialID').val("");
-			$('#tbx_cMaterialName').val("");
-			$('#tbx_cProductNumber').val("");
-
-			$("#ddl_cSRCaseType").val("").trigger('chosen:updated');	//服務案件種類
-			$("#ddl_cStatus").val("").trigger('chosen:updated');	//狀態
-			$("#ddl_cSRPathWay").val("").trigger('chosen:updated');	//報修管道
-			$("#ddl_cTeamID").val("").trigger('chosen:updated');	//服務團隊
-			
-			$('#ddl_cSRTypeOne').val("");			
-			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
-			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
+			$('#tbx_cStartDate').val("");
+			$('#tbx_cEndDate').val("");
+			$("#chk_cMainEngineerID").iCheck('uncheck'); //拿掉勾勾
+			$("#hid_cAssignMainEngineer").val("");
 		}
 	</script>
 }
 
 	@section breadcrumb_section{
 	<div class="col-lg-10">
-		<h2>服務進度查詢作業</h2>
+		<h2>合約主數據查詢/維護作業</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
-				<a href="#">服務管理系統參數設定</a>
+				<a href="#">合約管理</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>服務進度查詢作業</strong>
+				<strong>合約主數據查詢/維護作業</strong>
 			</li>
 		</ol>
 	</div>
@@ -422,7 +385,7 @@
 			<div class="ibox ">
 				<div class="ibox-title">
 					<h5>
-						服務進度查詢作業						
+						合約主數據查詢/維護作業
 					</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
@@ -430,31 +393,26 @@
 						</a>
 					</div>
 				</div>
-				<div class="ibox-content">
-					@model OneService.Controllers.ServiceRequestController.ViewModelQuerySRProgress //載入StatusViewModel
-					<form id="form1" name="form" action='#' method="post">						
+				<div class="ibox-content">					
+					<form id="form1" name="form" action='#' method="post">
 						<!--登人者公司別(Comp-1、Comp-2...)-->
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 						<!--登人者公司別(T012、T016...)-->
 						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">派單日期</label>
-							<div class="input-group col-md-10 col-lg-6">
-								<span class="input-group-addon">起</span>
-								<input type="text" name="tbx_cStartCreatedDate" id="tbx_cStartCreatedDate" class="calendar form-control" placeholder="起始日期"><span class="input-group-addon">迄</span>
-								<input type="text" name="tbx_cEndCreatedDate" id="tbx_cEndCreatedDate" class="calendar form-control" placeholder="結束日期">
+							<label class="col-lg-2 col-form-label">文件編號</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cContractID" id="tbx_cContractID" class="form-control" placeholder="文件編號">
+							</div>
+							<label class="col-lg-2 col-form-label">客戶類型</label>
+							<div class="col-lg-4">
+								<!--用是否為下包約來判斷(Y.有下包代表是供應商、空白.無下包代表是客戶)-->
+								<select class="form-control" style="width:120px;" name="ddl_cIsSubContract" id="ddl_cIsSubContract">
+									<option value="" selected="selected">客戶</option>
+									<option value="Y">供應商</option>									
+								</select>
 							</div>
 						</div>
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">服務案件種類</label>
-							<div class="col-lg-4">								
-								@Html.DropDownList("ddl_cSRCaseType", (IEnumerable<SelectListItem>)ViewBag.ddl_cSRCaseType, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務案件種類" })
-							</div>
-							<label class="col-lg-2 col-form-label">狀態</label>
-							<div class="col-lg-4">
-								@Html.DropDownList("ddl_cStatus", (IEnumerable<SelectListItem>)ViewBag.ddl_cStatus, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇狀態" })
-							</div>
-						</div>						
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">客戶代號</label>
 							<div class="col-lg-4">
@@ -464,75 +422,40 @@
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cCustomerName" id="tbx_cCustomerName" class="form-control" placeholder="客戶名稱">
 							</div>
-						</div>
+						</div>						
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">SRID</label>
+							<label class="col-lg-2 col-form-label">業務員ERPID</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cSRID" id="tbx_cSRID" class="form-control" placeholder="SRID">
-							</div>						
+								<input type="text" name="tbx_cSoSales" id="tbx_cSoSales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+							</div>
+							<label class="col-lg-2 col-form-label">維護業務員ERPID</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cMASales" id="tbx_cMASales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+							</div>
 						</div>
-						<div class="form-group row">							
-							<label class="col-lg-2 col-form-label">派單人員</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_CreatedUserName" id="tbx_CreatedUserName" class="form-control" placeholder="派單人員">
-							</div>
-							<label class="col-lg-2 col-form-label">報修人姓名</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cRepairName" id="tbx_cRepairName" class="form-control" placeholder="客戶報修人姓名">
-							</div>
-						</div>												
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">報修管道</label>
-							<div class="col-lg-4">								
-								@Html.DropDownList("ddl_cSRPathWay", (IEnumerable<SelectListItem>)ViewBag.ddl_cSRPathWay, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇報修管道" })
-							</div>
+						<div class="form-group row">						
 							<label class="col-lg-2 col-form-label">主要工程師ERPID</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cMainEngineerID" id="tbx_cMainEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
 							</div>
-						</div>
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">協助工程師ERPID</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cAssEngineerID" id="tbx_cAssEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
-							</div>
-							<label class="col-lg-2 col-form-label">技術主管ERPID</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cTechManagerID" id="tbx_cTechManagerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
-							</div>
-						</div>
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">報修類別</label>
-							<div class="col-lg-4">
-								@Html.DropDownList("ddl_cSRTypeOne", (IEnumerable<SelectListItem>)ViewBag.SRTypeOneList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeOne();" })
-								@Html.DropDownList("ddl_cSRTypeSec", (IEnumerable<SelectListItem>)ViewBag.SRTypeSecList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeSec();" })
-								@Html.DropDownList("ddl_cSRTypeThr", (IEnumerable<SelectListItem>)ViewBag.SRTypeThrList, new { @class = "form-control" })
-							</div>
-							<label class="col-lg-2 col-form-label">服務團隊</label>
-							<div class="col-lg-4">
-								@Html.DropDownList("ddl_cTeamID", (IEnumerable<SelectListItem>)ViewBag.ddl_cTeamID, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務團隊" })
-							</div>
+							<label class="col-lg-2 i-checks" style="text-align: right;">
+								未指派主要工程師
+								<input id="chk_cMainEngineerID" name="chk_cMainEngineerID" type="checkbox">
+								<input type="hidden" id="hid_cAssignMainEngineer" name="hid_cAssignMainEngineer">
+							</label>
 						</div>						
-						<div class="form-group row">							
-							<label class="col-lg-2 col-form-label">產品序號</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cSerialID" id="tbx_cSerialID" class="form-control" placeholder="產品序號">
-							</div>
-							<label class="col-lg-2 col-form-label">產品機器型號</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cMaterialName" id="tbx_cMaterialName" class="form-control" placeholder="產品機器型號">
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">合約到期日</label>
+							<div class="input-group col-md-10 col-lg-6">
+								<span class="input-group-addon">起</span>
+								<input type="text" name="tbx_cStartDate" id="tbx_cStartDate" class="calendar form-control" placeholder="起始日期"><span class="input-group-addon">迄</span>
+								<input type="text" name="tbx_cEndDate" id="tbx_cEndDate" class="calendar form-control" placeholder="結束日期">
 							</div>
 						</div>
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">Product Number</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cProductNumber" id="tbx_cProductNumber" class="form-control" placeholder="Product Number">
-							</div>
-						</div>						
 						<div class="hr-line-dashed"></div>
 						<div class="form-group row">
 							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
-							<button class="btn btn-default btn-lg" type="button" onclick="clearQuerySRProgress();"><i class="fa fa-trash"></i> 清 除 </button>
+							<button class="btn btn-default btn-lg" type="button" onclick="clearQuery();"><i class="fa fa-trash"></i> 清 除 </button>
 							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
 						</div>
 					</form>
@@ -543,7 +466,7 @@
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>服務進度查詢結果</h5>
+					<h5>合約主數據查詢結果</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
@@ -554,22 +477,24 @@
 					<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
 						<thead>
 							<tr>
-								<th>SRID</th>
-								<th>客戶</th>
-								<th>客戶報修人</th>
-								<th>客戶聯絡人</th>
-								<th>說明</th>
-								<th>延遲結案原因</th>
-								<th>產品序號相關明細</th>
-								<th>服務團隊</th>
-								<th>報修管道</th>
-								<th>報修類別</th>
-								<th>主要工程師</th>
-								<th>協助工程師</th>
-								<th>派單人員</th>
-								<th>派單日期</th>
-								<th>最後編輯日期</th>
-								<th>狀態</th>
+								<th>文件編號</th>
+								<th>合約類型</th>
+								<th>合約客戶編號</th>
+								<th>銷售單號</th>
+								<th>業務ERPID</th>
+								<th>業務姓名</th>
+								<th>業務祕書ERPID</th>
+								<th>業務祕書姓名</th>
+								<th>維護業務ERPID</th>
+								<th>維護業務姓名</th>
+								<th>主要工程師ERPID</th>
+								<th>主要工程師姓名</th>
+								<th>客戶代號</th>
+								<th>客戶名稱</th>
+								<th>訂單說明</th>
+								<th>維護開始</th>
+								<th>維護結束</th>
+								<th>合約備註</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -578,24 +503,26 @@
 							{
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
-									<tr>
-										<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-										<td>@Html.Raw(QueryInfo[2])</td>
-										<td>@Html.Raw(QueryInfo[3])</td>
-										<td>@Html.Raw(QueryInfo[4])</td>
-										<td>@Html.Raw(QueryInfo[5])</td>
-										<td>@Html.Raw(QueryInfo[6])</td>
-										<td>@Html.Raw(QueryInfo[7])</td>
-										<td>@Html.Raw(QueryInfo[8])</td>
-										<td>@Html.Raw(QueryInfo[9])</td>
-										<td>@Html.Raw(QueryInfo[10])</td>
-										<td>@Html.Raw(QueryInfo[12])</td>
-										<td>@Html.Raw(QueryInfo[13])</td>
-										<td>@Html.Raw(QueryInfo[15])</td>
-										<td>@Html.Raw(QueryInfo[16])</td>
-										<td>@Html.Raw(QueryInfo[17])</td>
-										<td>@Html.Raw(QueryInfo[18])</td>
-									</tr>
+										<tr>
+											<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+											<td>@Html.Raw(QueryInfo[2])</td>
+											<td>@Html.Raw(QueryInfo[3])</td>
+											<td>@Html.Raw(QueryInfo[4])</td>
+											<td>@Html.Raw(QueryInfo[5])</td>
+											<td>@Html.Raw(QueryInfo[6])</td>
+											<td>@Html.Raw(QueryInfo[7])</td>
+											<td>@Html.Raw(QueryInfo[8])</td>
+											<td>@Html.Raw(QueryInfo[9])</td>
+											<td>@Html.Raw(QueryInfo[10])</td>
+											<td>@Html.Raw(QueryInfo[11])</td>
+											<td>@Html.Raw(QueryInfo[12])</td>
+											<td>@Html.Raw(QueryInfo[13])</td>
+											<td>@Html.Raw(QueryInfo[14])</td>
+											<td>@Html.Raw(QueryInfo[15])</td>
+											<td>@Html.Raw(QueryInfo[16])</td>
+											<td>@Html.Raw(QueryInfo[17])</td>
+											<td>@Html.Raw(QueryInfo[18])</td>
+										</tr>
 								}
 							}
 						}
