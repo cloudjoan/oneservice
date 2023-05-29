@@ -33,7 +33,7 @@
 							if (typeof data === 'string')
 								data = data.replace(translate_re, translator);
 
-							if (column === 0) //去除連結的部份
+							if (column === 0 || column === 4) //去除連結的部份
 							{
 								var splitName = data.split(">");
 								var length = splitName.length;
@@ -45,7 +45,7 @@
 									return data;
 								}
 							}
-							else if (column === 3 || column === 5 || column === 6 || column === 7 || column === 9 || column === 11) //將換行符號<br>換成excel可以識別的\n
+							else if (column === 3) //將換行符號<br>換成excel可以識別的\n
 							{
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 							}
@@ -68,11 +68,11 @@
 				buttons: [
 					$.extend(true, {}, buttonCommon, {
 						extend: 'excelHtml5',
-						title: '服務進度查詢作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						title: '下包合約_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
 						text: '匯出Excel',
-						sheetName: '服務進度查詢作業',
+						sheetName: '下包合約',
 						exportOptions: {
-							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] //要顯示的欄位
+							columns: [0, 1, 2, 3, 4] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							addCustomNumberFormat(xlsx, '0');
@@ -80,18 +80,7 @@
 							formatTargetColumn(xlsx, 'B');
 							formatTargetColumn(xlsx, 'C');
 							formatTargetColumn(xlsx, 'D');
-							formatTargetColumn(xlsx, 'E');
-							formatTargetColumn(xlsx, 'F');
-							formatTargetColumn(xlsx, 'G');
-							formatTargetColumn(xlsx, 'H');
-							formatTargetColumn(xlsx, 'I');
-							formatTargetColumn(xlsx, 'J');
-							formatTargetColumn(xlsx, 'K');
-							formatTargetColumn(xlsx, 'L');
-							formatTargetColumn(xlsx, 'M');
-							formatTargetColumn(xlsx, 'N');
-							formatTargetColumn(xlsx, 'O');
-							formatTargetColumn(xlsx, 'P');
+							formatTargetColumn(xlsx, 'E');							
 						}
 					}),
 				],
@@ -220,57 +209,10 @@
 			})
 		}
 
-		//-----↓↓↓↓↓報修類別 ↓↓↓↓↓-----
-		//第一階(大類) onChange
-		function onChangecSRTypeOne() {
+		
 
-			//先清空下拉選單選項，才不會一直append
-			$('#ddl_cSRTypeSec').empty();
-			$('#ddl_cSRTypeThr').empty();
-
-			$.ajax({
-				url: '@Url.Action("findSRTypeSecList", "ServiceRequest")',
-				type: 'post',
-				dataType: 'json',
-				data: {
-					keyword: $('#ddl_cSRTypeOne').val(),
-				},
-				success: function (result) {
-					$.each(result, function (index, obj) {
-						$("#ddl_cSRTypeSec").append(
-							$('<option></option>').val(obj.value).html(obj.text)
-						);
-					});
-				}
-			});
-		}
-
-		//第二階(中類) onChange
-		function onChangecSRTypeSec() {
-
-			//先清空下拉選單選項，才不會一直append
-			$('#ddl_cSRTypeThr').empty();
-
-			$.ajax({
-				url: '@Url.Action("findSRTypeThrList", "ServiceRequest")',
-				type: 'post',
-				dataType: 'json',
-				data: {
-					keyword: $('#ddl_cSRTypeSec').val(),
-				},
-				success: function (result) {
-					$.each(result, function (index, obj) {
-						$("#ddl_cSRTypeThr").append(
-							$('<option></option>').val(obj.value).html(obj.text)
-						);
-					});
-				}
-			});
-		}
-		//-----↑↑↑↑↑報修類別 ↑↑↑↑↑-----
-
-		//查詢
-		function Query() {
+		//儲存前檢查
+		function BeforeSave() {
 			$("#waitingImg").show();
 
 			var tMsg = "";						
@@ -372,45 +314,19 @@
 					$("#waitingImg").hide();
 				}
 			});
-		}
-
-		//清除
-		function clearQuerySRProgress() {			
-			$('#tbx_cStartCreatedDate').val("");
-			$('#tbx_cEndCreatedDate').val("");
-			$('#tbx_cCustomerID').val("");
-			$('#tbx_cCustomerName').val("");
-			$('#tbx_cSRID').val("");
-			$('#tbx_CreatedUserName').val("");
-			$('#tbx_cRepairName').val("");			
-			$('#tbx_cMainEngineerID').val("");
-			$('#tbx_cAssEngineerID').val("");
-			$('#tbx_cTechManagerID').val("");
-			$('#tbx_cSerialID').val("");
-			$('#tbx_cMaterialName').val("");
-			$('#tbx_cProductNumber').val("");
-
-			$("#ddl_cSRCaseType").val("").trigger('chosen:updated');	//服務案件種類
-			$("#ddl_cStatus").val("").trigger('chosen:updated');	//狀態
-			$("#ddl_cSRPathWay").val("").trigger('chosen:updated');	//報修管道
-			$("#ddl_cTeamID").val("").trigger('chosen:updated');	//服務團隊
-			
-			$('#ddl_cSRTypeOne').val("");			
-			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
-			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
-		}
+		}		
 	</script>
 }
 
 	@section breadcrumb_section{
 	<div class="col-lg-10">
-		<h2>服務進度查詢作業</h2>
+		<h2>合約主數據維護作業</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
-				<a href="#">服務管理系統參數設定</a>
+				<a href="#">合約管理</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>服務進度查詢作業</strong>
+				<strong>合約主數據維護作業</strong>
 			</li>
 		</ol>
 	</div>
@@ -422,7 +338,7 @@
 			<div class="ibox ">
 				<div class="ibox-title">
 					<h5>
-						服務進度查詢作業						
+						合約主數據內容						
 					</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
@@ -430,120 +346,140 @@
 						</a>
 					</div>
 				</div>
-				<div class="ibox-content">
-					@model OneService.Controllers.ServiceRequestController.ViewModelQuerySRProgress //載入StatusViewModel
+				<div class="ibox-content">	
+					<div class="form-group row">
+						<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
+							<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
+						</button>
+						<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+						&nbsp;&nbsp;&nbsp;&nbsp;
+						<button id="btn_ShowHistoryLog" class="btn btn-success btn-lg" type="button">
+							<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
+						</button>
+					</div>
 					<form id="form1" name="form" action='#' method="post">						
 						<!--登人者公司別(Comp-1、Comp-2...)-->
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 						<!--登人者公司別(T012、T016...)-->
 						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">派單日期</label>
+							<label class="col-lg-2 col-form-label">*文件編號</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cContractID" id="tbx_cContractID" class="form-control" placeholder="文件編號" value="@ViewBag.cContractID" title="@ViewBag.cContractID"disabled>
+							</div>	
+							<label class="col-lg-2 col-form-label">銷售單號</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cSoNo" id="tbx_cSoNo" class="form-control" placeholder="銷售單號" value="@ViewBag.cSoNo" title="@ViewBag.cSoNo">
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">*客戶代號</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cCustomerID" id="tbx_cCustomerID" class="form-control CustName" placeholder="客戶代號" value="@ViewBag.cCustomerID" title="@ViewBag.cCustomerID" disabled>
+							</div>
+							<label class="col-lg-2 col-form-label">*客戶名稱</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cCustomerName" id="tbx_cCustomerName" class="form-control" placeholder="客戶名稱" value="@ViewBag.cCustomerName" title="@ViewBag.cCustomerName" disabled>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">*業務員ERPID</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cSoSales" id="tbx_cSoSales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSales" title="@ViewBag.cSoSales">
+							</div>
+							<label class="col-lg-2 col-form-label">*業務員姓名</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cSoSalesName" id="tbx_cSoSalesName" class="form-control" placeholder="業務員姓名" value="@ViewBag.cSoSalesName" title="@ViewBag.cSoSalesName" disabled>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">*業務祕書ERPID</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cSoSalesASS" id="tbx_cSoSalesASS" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSalesASS" title="@ViewBag.cSoSalesASS">
+							</div>
+							<label class="col-lg-2 col-form-label">*業務祕書姓名</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cSoSalesASSName" id="tbx_cSoSalesASSName" class="form-control" placeholder="業務祕書姓名" value="@ViewBag.cSoSalesASSName" title="@ViewBag.cSoSalesASSName" disabled>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">*維護業務員ERPID</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cMASales" id="tbx_cMASales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMASales" title="@ViewBag.cMASales">
+							</div>
+							<label class="col-lg-2 col-form-label">*維護業務員姓名</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cMASalesName" id="tbx_cMASalesName" class="form-control" placeholder="維護業務員姓名" value="@ViewBag.cMASalesName" title="@ViewBag.cMASalesName" disabled>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">*訂單說明</label>
+							<div class="col-lg-4">
+								<textarea rows="3" class="form-control" placeholder="訂單說明" id="tbx_cDesc" name="tbx_cDesc" title="@ViewBag.cDesc">@ViewBag.cDesc</textarea>
+							</div>							
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">維護日期</label>
 							<div class="input-group col-md-10 col-lg-6">
 								<span class="input-group-addon">起</span>
-								<input type="text" name="tbx_cStartCreatedDate" id="tbx_cStartCreatedDate" class="calendar form-control" placeholder="起始日期"><span class="input-group-addon">迄</span>
-								<input type="text" name="tbx_cEndCreatedDate" id="tbx_cEndCreatedDate" class="calendar form-control" placeholder="結束日期">
+								<input type="text" name="tbx_cStartDate" id="tbx_cStartDate" class="calendar form-control" placeholder="起" value="@ViewBag.cStartDate"><span class="input-group-addon">迄</span>
+								<input type="text" name="tbx_cEndDate" id="tbx_cEndDate" class="calendar form-control" placeholder="迄" value="@ViewBag.cEndDate">
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">服務案件種類</label>
-							<div class="col-lg-4">								
-								@Html.DropDownList("ddl_cSRCaseType", (IEnumerable<SelectListItem>)ViewBag.ddl_cSRCaseType, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務案件種類" })
-							</div>
-							<label class="col-lg-2 col-form-label">狀態</label>
+							<label class="col-lg-2 col-form-label">*維護週期</label>
 							<div class="col-lg-4">
-								@Html.DropDownList("ddl_cStatus", (IEnumerable<SelectListItem>)ViewBag.ddl_cStatus, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇狀態" })
+								<textarea rows="3" class="form-control" placeholder="維護週期" id="tbx_cMACycle" name="tbx_cMACycle" title="@ViewBag.cMACycle">@ViewBag.cMACycle</textarea>
 							</div>
-						</div>						
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">客戶代號</label>
+							<label class="col-lg-2 col-form-label">*維護備註</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cCustomerID" id="tbx_cCustomerID" class="form-control CustName" placeholder="請輸入客戶名稱或統編的關鍵字">
-							</div>
-							<label class="col-lg-2 col-form-label">客戶名稱</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cCustomerName" id="tbx_cCustomerName" class="form-control" placeholder="客戶名稱">
+								<textarea rows="3" class="form-control" placeholder="維護備註" id="tbx_cMANotes" name="tbx_cMANotes" title="@ViewBag.cMANotes">@ViewBag.cMANotes</textarea>
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">SRID</label>
+							<label class="col-lg-2 col-form-label">*維護地址</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cSRID" id="tbx_cSRID" class="form-control" placeholder="SRID">
-							</div>						
-						</div>
-						<div class="form-group row">							
-							<label class="col-lg-2 col-form-label">派單人員</label>
+								<textarea rows="3" class="form-control" placeholder="維護地址" id="tbx_cMAAddress" name="tbx_cMAAddress" title="@ViewBag.cMAAddress">@ViewBag.cMAAddress</textarea>
+							</div>		
+							<label class="col-lg-2 col-form-label">*合約備註</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_CreatedUserName" id="tbx_CreatedUserName" class="form-control" placeholder="派單人員">
-							</div>
-							<label class="col-lg-2 col-form-label">報修人姓名</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cRepairName" id="tbx_cRepairName" class="form-control" placeholder="客戶報修人姓名">
-							</div>
-						</div>												
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">報修管道</label>
-							<div class="col-lg-4">								
-								@Html.DropDownList("ddl_cSRPathWay", (IEnumerable<SelectListItem>)ViewBag.ddl_cSRPathWay, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇報修管道" })
-							</div>
-							<label class="col-lg-2 col-form-label">主要工程師ERPID</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cMainEngineerID" id="tbx_cMainEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+								<textarea rows="3" class="form-control" placeholder="合約備註" id="tbx_cContractNotes" name="tbx_cContractNotes" title="@ViewBag.cContractNotes">@ViewBag.cContractNotes</textarea>
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">協助工程師ERPID</label>
+							<label class="col-lg-2 col-form-label">*回應條件</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cAssEngineerID" id="tbx_cAssEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+								<input type="text" name="tbx_cSLARESP" id="tbx_cSLARESP" class="form-control" placeholder="回應條件" value="@ViewBag.cSLARESP" title="@ViewBag.cSLARESP">
 							</div>
-							<label class="col-lg-2 col-form-label">技術主管ERPID</label>
+							<label class="col-lg-2 col-form-label">*服務條件</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cTechManagerID" id="tbx_cTechManagerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
-							</div>
-						</div>
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">報修類別</label>
-							<div class="col-lg-4">
-								@Html.DropDownList("ddl_cSRTypeOne", (IEnumerable<SelectListItem>)ViewBag.SRTypeOneList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeOne();" })
-								@Html.DropDownList("ddl_cSRTypeSec", (IEnumerable<SelectListItem>)ViewBag.SRTypeSecList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeSec();" })
-								@Html.DropDownList("ddl_cSRTypeThr", (IEnumerable<SelectListItem>)ViewBag.SRTypeThrList, new { @class = "form-control" })
-							</div>
-							<label class="col-lg-2 col-form-label">服務團隊</label>
-							<div class="col-lg-4">
-								@Html.DropDownList("ddl_cTeamID", (IEnumerable<SelectListItem>)ViewBag.ddl_cTeamID, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務團隊" })
-							</div>
-						</div>						
-						<div class="form-group row">							
-							<label class="col-lg-2 col-form-label">產品序號</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cSerialID" id="tbx_cSerialID" class="form-control" placeholder="產品序號">
-							</div>
-							<label class="col-lg-2 col-form-label">產品機器型號</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cMaterialName" id="tbx_cMaterialName" class="form-control" placeholder="產品機器型號">
+								<input type="text" name="tbx_cSLASRV" id="tbx_cSLASRV" class="form-control" placeholder="服務條件" value="@ViewBag.cSLASRV" title="@ViewBag.cSLASRV" disabled>
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">Product Number</label>
+							<label class="col-lg-2 col-form-label">主要工程師姓名</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cProductNumber" id="tbx_cProductNumber" class="form-control" placeholder="Product Number">
+								<input type="text" name="tbx_cMainEngineerID" id="tbx_cMainEngineerID" class="form-control" placeholder="主要工程師" value="@ViewBag.cMainEngineerID" title="@ViewBag.cMainEngineerID" disabled>
 							</div>
-						</div>						
+							<label class="col-lg-2 col-form-label">合約書link</label>
+							<div class="col-lg-4">
+								<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
+							</div>
+						</div>											
 						<div class="hr-line-dashed"></div>
 						<div class="form-group row">
-							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
-							<button class="btn btn-default btn-lg" type="button" onclick="clearQuerySRProgress();"><i class="fa fa-trash"></i> 清 除 </button>
+							<button class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }"><i class="fa fa-floppy-o"></i> 儲 存 </button>
 							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
 						</div>
 					</form>
 				</div>
 			</div>
-		</div>
+		</div>		
 
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>服務進度查詢結果</h5>
+					<h5>下包合約</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
@@ -554,22 +490,11 @@
 					<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
 						<thead>
 							<tr>
-								<th>SRID</th>
-								<th>客戶</th>
-								<th>客戶報修人</th>
-								<th>客戶聯絡人</th>
-								<th>說明</th>
-								<th>延遲結案原因</th>
-								<th>產品序號相關明細</th>
-								<th>服務團隊</th>
-								<th>報修管道</th>
-								<th>報修類別</th>
-								<th>主要工程師</th>
-								<th>協助工程師</th>
-								<th>派單人員</th>
-								<th>派單日期</th>
-								<th>最後編輯日期</th>
-								<th>狀態</th>
+								<th>下包文件編號</th>
+								<th>下包商統一編號</th>
+								<th>下包商名稱</th>
+								<th>下包備註</th>
+								<th>標的</th>								
 							</tr>
 						</thead>
 						<tbody>
@@ -583,18 +508,7 @@
 										<td>@Html.Raw(QueryInfo[2])</td>
 										<td>@Html.Raw(QueryInfo[3])</td>
 										<td>@Html.Raw(QueryInfo[4])</td>
-										<td>@Html.Raw(QueryInfo[5])</td>
-										<td>@Html.Raw(QueryInfo[6])</td>
-										<td>@Html.Raw(QueryInfo[7])</td>
-										<td>@Html.Raw(QueryInfo[8])</td>
-										<td>@Html.Raw(QueryInfo[9])</td>
-										<td>@Html.Raw(QueryInfo[10])</td>
-										<td>@Html.Raw(QueryInfo[12])</td>
-										<td>@Html.Raw(QueryInfo[13])</td>
-										<td>@Html.Raw(QueryInfo[15])</td>
-										<td>@Html.Raw(QueryInfo[16])</td>
-										<td>@Html.Raw(QueryInfo[17])</td>
-										<td>@Html.Raw(QueryInfo[18])</td>
+										<td><a href="@QueryInfo[5]" target="_blank">查詢</a></td>
 									</tr>
 								}
 							}
@@ -604,4 +518,5 @@
 			</div>
 		</div>
 	</div>
-</div>
+
+	</div>

@@ -41,7 +41,7 @@
 								return data;
 							}
 						}
-						else if (column === 14 || column === 17) //將換行符號<br>換成excel可以識別的\n
+						else if (column === 13 || column === 16) //將換行符號<br>換成excel可以識別的\n
 						{
 							return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 						}
@@ -68,7 +68,7 @@
 					text: '匯出Excel',
 					sheetName: '合約主數據查詢',
 					exportOptions: {
-						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] //要顯示的欄位
+						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						addCustomNumberFormat(xlsx, '0');
@@ -88,8 +88,7 @@
 						formatTargetColumn(xlsx, 'N');
 						formatTargetColumn(xlsx, 'O');
 						formatTargetColumn(xlsx, 'P');
-						formatTargetColumn(xlsx, 'Q');
-						formatTargetColumn(xlsx, 'R');
+						formatTargetColumn(xlsx, 'Q');						
 					}
 				}),
 			],
@@ -131,8 +130,7 @@
 	<thead>
 		<tr>
 			<th>文件編號</th>
-			<th>合約類型</th>
-			<th>合約客戶編號</th>
+			<th>合約類型</th>			
 			<th>銷售單號</th>
 			<th>業務ERPID</th>
 			<th>業務姓名</th>			
@@ -173,8 +171,7 @@
 						<td>@Html.Raw(QueryInfo[14])</td>						
 						<td>@Html.Raw(QueryInfo[15])</td>
 						<td>@Html.Raw(QueryInfo[16])</td>
-						<td>@Html.Raw(QueryInfo[17])</td>
-						<td>@Html.Raw(QueryInfo[18])</td>
+						<td>@Html.Raw(QueryInfo[17])</td>						
 					</tr>
 				}
 			}

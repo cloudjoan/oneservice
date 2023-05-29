@@ -16,6 +16,10 @@ namespace OneService.Models
         {
         }
 
+        public virtual DbSet<TbOneContractDetailEng> TbOneContractDetailEngs { get; set; } = null!;
+        public virtual DbSet<TbOneContractDetailObj> TbOneContractDetailObjs { get; set; } = null!;
+        public virtual DbSet<TbOneContractDetailSub> TbOneContractDetailSubs { get; set; } = null!;
+        public virtual DbSet<TbOneContractMain> TbOneContractMains { get; set; } = null!;
         public virtual DbSet<TbOneDocument> TbOneDocuments { get; set; } = null!;
         public virtual DbSet<TbOneLog> TbOneLogs { get; set; } = null!;
         public virtual DbSet<TbOneSrcustomerEmailMapping> TbOneSrcustomerEmailMappings { get; set; } = null!;
@@ -44,6 +48,335 @@ namespace OneService.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<TbOneContractDetailEng>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_ContractDetail_ENG");
+
+                entity.HasIndex(e => new { e.CContractId, e.CContactStoreId }, "NonClusteredIndex-20230517-113504");
+
+                entity.Property(e => e.CId)
+                    .HasColumnName("cID")
+                    .HasComment("系統ID");
+
+                entity.Property(e => e.CContactStoreId)
+                    .HasColumnName("cContactStoreID")
+                    .HasComment("客戶聯絡人門市代號");
+
+                entity.Property(e => e.CContactStoreName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cContactStoreName")
+                    .HasComment("客戶聯絡人門市名稱");
+
+                entity.Property(e => e.CContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cContractID")
+                    .HasComment("文件編號");
+
+                entity.Property(e => e.CEngineerId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cEngineerID")
+                    .HasComment("工程師ERPID");
+
+                entity.Property(e => e.CEngineerName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cEngineerName")
+                    .HasComment("工程師姓名(中文+ 英文)");
+
+                entity.Property(e => e.CIsMainEngineer)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cIsMainEngineer")
+                    .HasComment("是否為主要工程師(Y、空白)");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.Disabled).HasComment("是否停用(0.啟用 1.停用)");
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneContractDetailObj>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_ContractDetail_OBJ");
+
+                entity.HasIndex(e => e.CContractId, "NonClusteredIndex-20230517-113539");
+
+                entity.Property(e => e.CId)
+                    .HasColumnName("cID")
+                    .HasComment("系統ID");
+
+                entity.Property(e => e.CAddress)
+                    .HasMaxLength(100)
+                    .HasColumnName("cAddress")
+                    .HasComment("地點");
+
+                entity.Property(e => e.CArea)
+                    .HasMaxLength(30)
+                    .HasColumnName("cArea")
+                    .HasComment("區域");
+
+                entity.Property(e => e.CBrands)
+                    .HasMaxLength(30)
+                    .HasColumnName("cBrands")
+                    .HasComment("廠牌");
+
+                entity.Property(e => e.CContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cContractID")
+                    .HasComment("文件編號");
+
+                entity.Property(e => e.CHostName)
+                    .HasMaxLength(120)
+                    .HasColumnName("cHostName")
+                    .HasComment("主機名稱");
+
+                entity.Property(e => e.CLocation)
+                    .HasMaxLength(100)
+                    .HasColumnName("cLocation")
+                    .HasComment("Location");
+
+                entity.Property(e => e.CModel)
+                    .HasMaxLength(40)
+                    .HasColumnName("cModel")
+                    .HasComment("產品模組");
+
+                entity.Property(e => e.CNotes)
+                    .HasMaxLength(255)
+                    .HasColumnName("cNotes")
+                    .HasComment("備註");
+
+                entity.Property(e => e.CPid)
+                    .HasMaxLength(40)
+                    .HasColumnName("cPID")
+                    .HasComment("PID");
+
+                entity.Property(e => e.CSerialId)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSerialID")
+                    .HasComment("序號");
+
+                entity.Property(e => e.CSlaresp)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSLARESP")
+                    .HasComment("SLA回應條件");
+
+                entity.Property(e => e.CSlasrv)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSLASRV")
+                    .HasComment("SLA服務條件");
+
+                entity.Property(e => e.CSubContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSubContractID")
+                    .HasComment("下包文件編號");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.Disabled).HasComment("是否停用(0.啟用 1.停用)");
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneContractDetailSub>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_ContractDetail_SUB");
+
+                entity.HasIndex(e => new { e.CContractId, e.CSubContractId }, "NonClusteredIndex-20230517-113553");
+
+                entity.Property(e => e.CId)
+                    .HasColumnName("cID")
+                    .HasComment("系統ID");
+
+                entity.Property(e => e.CContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cContractID")
+                    .HasComment("文件編號");
+
+                entity.Property(e => e.CSubContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSubContractID")
+                    .HasComment("下包文件編號");
+
+                entity.Property(e => e.CSubNotes)
+                    .HasMaxLength(255)
+                    .HasColumnName("cSubNotes")
+                    .HasComment("下包備註");
+
+                entity.Property(e => e.CSubSupplierId)
+                    .HasMaxLength(15)
+                    .HasColumnName("cSubSupplierID")
+                    .HasComment("下包商代號");
+
+                entity.Property(e => e.CSubSupplierName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSubSupplierName")
+                    .HasComment("下包商名稱");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.Disabled).HasComment("是否停用(0.啟用 1.停用)");
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneContractMain>(entity =>
+            {
+                entity.HasKey(e => e.CContractId);
+
+                entity.ToTable("TB_ONE_ContractMain");
+
+                entity.Property(e => e.CContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cContractID")
+                    .HasComment("文件編號");
+
+                entity.Property(e => e.CBillCycle)
+                    .HasMaxLength(512)
+                    .HasColumnName("cBillCycle")
+                    .HasComment("請款週期");
+
+                entity.Property(e => e.CBillNotes)
+                    .HasMaxLength(512)
+                    .HasColumnName("cBillNotes")
+                    .HasComment("請款備註");
+
+                entity.Property(e => e.CContractNotes)
+                    .HasMaxLength(512)
+                    .HasColumnName("cContractNotes")
+                    .HasComment("合約備註");
+
+                entity.Property(e => e.CContractReport)
+                    .HasColumnName("cContractReport")
+                    .HasComment("合約書URL");
+
+                entity.Property(e => e.CCustomerId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cCustomerID")
+                    .HasComment("客戶代號");
+
+                entity.Property(e => e.CCustomerName)
+                    .HasMaxLength(35)
+                    .HasColumnName("cCustomerName")
+                    .HasComment("客戶名稱");
+
+                entity.Property(e => e.CDesc)
+                    .HasMaxLength(255)
+                    .HasColumnName("cDesc")
+                    .HasComment("訂單說明");
+
+                entity.Property(e => e.CEndDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cEndDate")
+                    .HasComment("維護結束日期");
+
+                entity.Property(e => e.CInvalidReason)
+                    .HasMaxLength(255)
+                    .HasColumnName("cInvalidReason");
+
+                entity.Property(e => e.CIsSubContract)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cIsSubContract")
+                    .HasComment("是否為下包約(Y、空白)");
+
+                entity.Property(e => e.CMaaddress)
+                    .HasMaxLength(255)
+                    .HasColumnName("cMAAddress")
+                    .HasComment("維護地址");
+
+                entity.Property(e => e.CMacycle)
+                    .HasMaxLength(512)
+                    .HasColumnName("cMACycle")
+                    .HasComment("維護週期");
+
+                entity.Property(e => e.CManotes)
+                    .HasMaxLength(512)
+                    .HasColumnName("cMANotes")
+                    .HasComment("維護備註");
+
+                entity.Property(e => e.CMasales)
+                    .HasMaxLength(20)
+                    .HasColumnName("cMASales")
+                    .HasComment("維護業務員ERPID");
+
+                entity.Property(e => e.CMasalesName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cMASalesName")
+                    .HasComment("維護業務員姓名(中文+ 英文)");
+
+                entity.Property(e => e.CSlaresp)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSLARESP")
+                    .HasComment("SLA回應條件");
+
+                entity.Property(e => e.CSlasrv)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSLASRV")
+                    .HasComment("SLA服務條件");
+
+                entity.Property(e => e.CSoNo)
+                    .HasMaxLength(10)
+                    .HasColumnName("cSoNo")
+                    .HasComment("銷售訂單號");
+
+                entity.Property(e => e.CSoSales)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSoSales")
+                    .HasComment("業務員ERPID");
+
+                entity.Property(e => e.CSoSalesAss)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSoSalesASS")
+                    .HasComment("業務祕書ERPID");
+
+                entity.Property(e => e.CSoSalesAssname)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSoSalesASSName")
+                    .HasComment("業務祕書姓名(中文+ 英文)");
+
+                entity.Property(e => e.CSoSalesName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSoSalesName")
+                    .HasComment("業務員姓名(中文+ 英文)");
+
+                entity.Property(e => e.CStartDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cStartDate")
+                    .HasComment("維護開始日期");
+
+                entity.Property(e => e.CTeamId)
+                    .HasMaxLength(36)
+                    .IsUnicode(false)
+                    .HasColumnName("cTeamID")
+                    .HasComment("服務團隊ID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
             modelBuilder.Entity<TbOneDocument>(entity =>
             {
                 entity.ToTable("TB_ONE_DOCUMENT");

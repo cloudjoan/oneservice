@@ -46,7 +46,7 @@
 									return data;
 								}
 							}
-							else if (column === 14 || column === 17) //將換行符號<br>換成excel可以識別的\n
+							else if (column === 13 || column === 16) //將換行符號<br>換成excel可以識別的\n
 							{
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 							}
@@ -73,7 +73,7 @@
 						text: '匯出Excel',
 						sheetName: '合約主數據查詢',
 						exportOptions: {
-							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] //要顯示的欄位
+							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							addCustomNumberFormat(xlsx, '0');
@@ -93,8 +93,7 @@
 							formatTargetColumn(xlsx, 'N');
 							formatTargetColumn(xlsx, 'O');
 							formatTargetColumn(xlsx, 'P');
-							formatTargetColumn(xlsx, 'Q');
-							formatTargetColumn(xlsx, 'R');
+							formatTargetColumn(xlsx, 'Q');							
 						}
 					}),
 				],
@@ -247,44 +246,30 @@
 			$("#waitingImg").show();
 
 			var tMsg = "";
-			var SRCaseType = $("#ddl_cSRCaseType").val().join();		//服務案件種類
-			var Status = $("#ddl_cStatus").val().join();				//狀態
-			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//派單起始日期
-			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');			//派單結束日期
+			var tbx_cContractID = $('#tbx_cContractID');				//文件編號
+			var ddl_cIsSubContract = $('#ddl_cIsSubContract');			//合約類型
 			var tbx_cCustomerID = $('#tbx_cCustomerID');				//客戶代號
 			var tbx_cCustomerName = $('#tbx_cCustomerName');				//客戶名稱
-			var tbx_cSRID = $('#tbx_cSRID');							//SRID
-			var tbx_CreatedUserName = $('#tbx_CreatedUserName');			//派單人員
-			var tbx_cMASales = $('#tbx_cMASales');				//報修人姓名
-			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道
+			var tbx_cSoSales = $('#tbx_cSoSales');						//業務員ERPID
+			var tbx_cMASales = $('#tbx_cMASales');						//維護業務員ERPID			
 			var tbx_cMainEngineerID = $('#tbx_cMainEngineerID');			//主要工程師ERPID
-			var tbx_cAssEngineerID = $('#tbx_cAssEngineerID');			//協助工程師ERPID
-			var tbx_cTechManagerID = $('#tbx_cTechManagerID');			//技術主管ERPID
-			var cTeamID = $("#ddl_cTeamID").val().join();			    //服務團隊
+			var tbx_cStartDate = $('#tbx_cStartDate');					//合約到期日(起)
+			var tbx_cEndDate = $('#tbx_cEndDate');						//合約到期日(迄)
+			var hid_cAssignMainEngineer = $("#hid_cAssignMainEngineer");	//未指派主要工程師
 
-			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');					//報修類別-大類
-			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');					//報修類別-中類
-			var ddl_cSRTypeThr = $('#ddl_cSRTypeThr');					//報修類別-小類
+			if (tbx_cContractID.val() == "" && tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && 
+			    tbx_cSoSales.val() == "" && tbx_cMASales.val() == "" && tbx_cMainEngineerID.val() == "" && 
+				tbx_cStartDate.val() == "" && tbx_cEndDate.val() == "" && hid_cAssignMainEngineer.val() == "") 
+			{
 
-			var tbx_cSerialID = $('#tbx_cSerialID');					//產品序號
-			var tbx_cMaterialName = $('#tbx_cMaterialName');				//產品機器型號
-			var tbx_cProductNumber = $('#tbx_cProductNumber');			//Product Number
-
-			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
-				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && SRPathWay == "" &&
-				tbx_cMainEngineerID.val() == "" && tbx_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" &&
-				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
-				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") &&
-				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
-
-				tMsg += "請至少輸入一項查詢條件！　\n";
+				tMsg += "除【合約類型】之外，請至少輸入一項查詢條件！\n";
 			}
 
-			if (tbx_cStartCreatedDate.val() != "" && tbx_cEndCreatedDate.val() != "") {
+			if (tbx_cStartDate.val() != "" && tbx_cEndDate.val() != "") {
 
-				if (tbx_cStartCreatedDate.val() > tbx_cEndCreatedDate.val()) {
-					tMsg += '派單起始日期不能大於結束日期！\n';
-					tbx_cEndCreatedDate.val(""); //清空
+				if (tbx_cStartDate.val() > tbx_cEndDate.val()) {
+					tMsg += '合約到期日(起)不能大於合約到期日(迄)！\n';
+					tbx_cEndDate.val(""); //清空
 				}
 			}
 
@@ -294,49 +279,33 @@
 				return false;
 			}
 			else {
-				searchQuerySRProgress(SRCaseType, Status, tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
-					tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
-					tbx_cMainEngineerID.val(), tbx_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID,
-					ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
-					tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
+				searchQuery(ddl_cIsSubContract.val(), tbx_cContractID.val(), tbx_cCustomerID.val(), tbx_cCustomerName.val(),
+					tbx_cSoSales.val(), tbx_cMASales.val(), tbx_cMainEngineerID.val(),
+					tbx_cStartDate.val(), tbx_cEndDate.val(), hid_cAssignMainEngineer.val());
 			}
 
 			return true;
 		}
 
 		//查詢結果
-		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID, cCustomerName, cSRID, CreatedUserName, cRepairName, cSRPathWay,
-			cMainEngineerID, cAssEngineerID, cTechManagerID, cTeamID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
-
-			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
+		function searchQuery(cIsSubContract, cContractID, cCustomerID, cCustomerName, cSoSales, cMASales, cMainEngineerID, cStartDate, cEndDate, cAssignMainEngineer) {
 			$("#dataDiv").html('');
 
 			$.ajax({
-				url: '@Url.Action("QuerySRProgressResult", "ServiceRequest")',
+				url: '@Url.Action("QueryContractMainResult", "Contract")',
 				type: 'post',
 				dataType: 'json',
 				data: {
-					cCompanyID: cCompanyID,
-					cSRCaseType: cSRCaseType,
-					cStatus: cStatus,
-					cStartCreatedDate: cStartCreatedDate,
-					cEndCreatedDate: cEndCreatedDate,
+					cIsSubContract: cIsSubContract,					
+					cContractID: cContractID,					
 					cCustomerID: cCustomerID,
 					cCustomerName: cCustomerName,
-					cSRID: cSRID,
-					CreatedUserName: CreatedUserName,
-					cRepairName: cRepairName,
-					cSRPathWay: cSRPathWay,
+					cSoSales: cSoSales,
+					cMASales: cMASales,
 					cMainEngineerID: cMainEngineerID,
-					cAssEngineerID: cAssEngineerID,
-					cTechManagerID: cTechManagerID,
-					cTeamID: cTeamID,
-					cSRTypeOne: cSRTypeOne,
-					cSRTypeSec: cSRTypeSec,
-					cSRTypeThr: cSRTypeThr,
-					cSerialID: cSerialID,
-					cMaterialName: cMaterialName,
-					cProductNumber: cProductNumber
+					cStartDate: cStartDate,
+					cEndDate: cEndDate,
+					cAssignMainEngineer: cAssignMainEngineer					
 				},
 				success: function (result) {
 				},
@@ -354,8 +323,7 @@
 			$('#tbx_cCustomerID').val("");
 			$('#tbx_cCustomerName').val("");
 			$('#tbx_cSoSales').val("");
-			$('#tbx_cMASales').val("");
-			$('#tbx_cRepairName').val("");
+			$('#tbx_cMASales').val("");			
 			$('#tbx_cMainEngineerID').val("");
 			$('#tbx_cStartDate').val("");
 			$('#tbx_cEndDate').val("");
@@ -385,7 +353,7 @@
 			<div class="ibox ">
 				<div class="ibox-title">
 					<h5>
-						合約主數據查詢/維護作業
+						合約主數據查詢作業
 					</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
@@ -404,7 +372,7 @@
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cContractID" id="tbx_cContractID" class="form-control" placeholder="文件編號">
 							</div>
-							<label class="col-lg-2 col-form-label">客戶類型</label>
+							<label class="col-lg-2 col-form-label">合約類型</label>
 							<div class="col-lg-4">
 								<!--用是否為下包約來判斷(Y.有下包代表是供應商、空白.無下包代表是客戶)-->
 								<select class="form-control" style="width:120px;" name="ddl_cIsSubContract" id="ddl_cIsSubContract">
@@ -478,8 +446,7 @@
 						<thead>
 							<tr>
 								<th>文件編號</th>
-								<th>合約類型</th>
-								<th>合約客戶編號</th>
+								<th>合約類型</th>								
 								<th>銷售單號</th>
 								<th>業務ERPID</th>
 								<th>業務姓名</th>
@@ -520,8 +487,7 @@
 											<td>@Html.Raw(QueryInfo[14])</td>
 											<td>@Html.Raw(QueryInfo[15])</td>
 											<td>@Html.Raw(QueryInfo[16])</td>
-											<td>@Html.Raw(QueryInfo[17])</td>
-											<td>@Html.Raw(QueryInfo[18])</td>
+											<td>@Html.Raw(QueryInfo[17])</td>											
 										</tr>
 								}
 							}
