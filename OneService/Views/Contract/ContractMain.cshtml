@@ -385,7 +385,7 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">*業務員ERPID</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cSoSales" id="tbx_cSoSales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSales" title="@ViewBag.cSoSales">
+								<input type="text" name="tbx_cSoSales" id="tbx_cSoSales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSales" title="@ViewBag.cSoSales" disabled>
 							</div>
 							<label class="col-lg-2 col-form-label">*業務員姓名</label>
 							<div class="col-lg-4">
@@ -395,7 +395,7 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">*業務祕書ERPID</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cSoSalesASS" id="tbx_cSoSalesASS" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSalesASS" title="@ViewBag.cSoSalesASS">
+								<input type="text" name="tbx_cSoSalesASS" id="tbx_cSoSalesASS" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSalesASS" title="@ViewBag.cSoSalesASS" disabled>
 							</div>
 							<label class="col-lg-2 col-form-label">*業務祕書姓名</label>
 							<div class="col-lg-4">
@@ -405,7 +405,7 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">*維護業務員ERPID</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cMASales" id="tbx_cMASales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMASales" title="@ViewBag.cMASales">
+								<input type="text" name="tbx_cMASales" id="tbx_cMASales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMASales" title="@ViewBag.cMASales" disabled>
 							</div>
 							<label class="col-lg-2 col-form-label">*維護業務員姓名</label>
 							<div class="col-lg-4">
@@ -422,8 +422,8 @@
 							<label class="col-lg-2 col-form-label">維護日期</label>
 							<div class="input-group col-md-10 col-lg-6">
 								<span class="input-group-addon">起</span>
-								<input type="text" name="tbx_cStartDate" id="tbx_cStartDate" class="calendar form-control" placeholder="起" value="@ViewBag.cStartDate"><span class="input-group-addon">迄</span>
-								<input type="text" name="tbx_cEndDate" id="tbx_cEndDate" class="calendar form-control" placeholder="迄" value="@ViewBag.cEndDate">
+								<input type="text" name="tbx_cStartDate" id="tbx_cStartDate" class="calendar form-control" placeholder="起" value="@ViewBag.cStartDate" disabled><span class="input-group-addon">迄</span>
+								<input type="text" name="tbx_cEndDate" id="tbx_cEndDate" class="calendar form-control" placeholder="迄" value="@ViewBag.cEndDate" disabled>
 							</div>
 						</div>
 						<div class="form-group row">
@@ -463,7 +463,7 @@
 							</div>
 							<label class="col-lg-2 col-form-label">合約書link</label>
 							<div class="col-lg-4">
-								<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
+								@Html.Raw(ViewBag.cContractReport)
 							</div>
 						</div>											
 						<div class="hr-line-dashed"></div>

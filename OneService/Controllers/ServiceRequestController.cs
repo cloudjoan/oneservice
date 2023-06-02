@@ -6779,4 +6779,34 @@ namespace OneService.Controllers
         public string EV_MSG { get; set; }
     }
     #endregion
+
+    #region 查詢是否可以讀取合約書PDF權限資料INPUT資訊
+    /// <summary>查詢是否可以讀取合約書PDF權限資料INPUT資訊</summary>
+    public struct VIEWCONTRACTSMEMBERSINFO_INPUT
+    {
+        /// <summary>登入者員工編號ERPID</summary>
+        public string IV_LOGINEMPNO { get; set; }
+        /// <summary>修改者員工姓名(中文+英文)</summary>
+        public string IV_LOGINEMPNAME { get; set; }
+        /// <summary>文件編號</summary>
+        public string IV_CONTRACTID { get; set; }
+        /// <summary>服務團隊代碼</summary>
+        public string IV_SRTEAM { get; set; }
+        /// <summary>APIURL開頭網址</summary>
+        public string IV_APIURLName { get; set; }
+    }
+    #endregion
+
+    #region 查詢是否可以讀取合約書PDF權限資料OUTPUT資訊
+    /// <summary>查詢是否可以讀取合約書PDF權限資料OUTPUT資訊</summary>
+    public struct VIEWCONTRACTSMEMBERSINFO_OUTPUT
+    {
+        /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+        public string EV_MSGT { get; set; }
+        /// <summary>消息內容</summary>
+        public string EV_MSG { get; set; }
+        /// <summary>是否可以讀取合約書PDF(Y.是 N.否)</summary>
+        public string EV_IsCanRead { get; set; }
+    }
+    #endregion
 }

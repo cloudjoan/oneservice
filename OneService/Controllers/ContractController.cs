@@ -5,7 +5,9 @@ using Microsoft.Extensions.Primitives;
 using NPOI.SS.Formula.Functions;
 using OneService.Models;
 using OneService.Utils;
+using Org.BouncyCastle.Asn1.X509;
 using System.Data;
+using System.DirectoryServices.ActiveDirectory;
 using System.Security.Policy;
 using System.Text;
 
@@ -65,6 +67,11 @@ namespace OneService.Controllers
         /// 程式作業編號檔系統ID(ALL，固定的GUID)
         /// </summary>
         string pSysOperationID = "F8EFC55F-FA77-4731-BB45-2F2147244A2D";
+
+        /// <summary>
+        /// 程式作業編號檔系統ID(一般服務)
+        /// </summary>
+        static string pOperationID_GenerallySR = "869FC989-1049-4266-ABDE-69A9B07BCD0A";
 
         /// <summary>
         /// 程式作業編號檔系統ID(合約主數據查詢/維護作業)
@@ -327,10 +334,20 @@ namespace OneService.Controllers
         public IActionResult ContractMain()
         {
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+            
+            bool tIsFormal = false;
 
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
             string tSubUrl = string.Empty;
             string tObjUrl = string.Empty;
             string tSubNotes = string.Empty;
+            
+            Dictionary<string, string> DicORG = new Dictionary<string, string>(); //記錄服務組織人員
+
+            DataTable dtORG = new DataTable();
 
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -345,6 +362,17 @@ namespace OneService.Controllers
             {
                 pContractID = HttpContext.Request.Query["ContractID"].FirstOrDefault();
             }
+            #endregion
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
             #endregion
 
             #region 取得合約主數據主檔
@@ -367,13 +395,33 @@ namespace OneService.Controllers
                 ViewBag.cEndDate = Convert.ToDateTime(beanM.CEndDate).ToString("yyyy-MM-dd");
                 ViewBag.cMACycle = beanM.CMacycle;
                 ViewBag.cMANotes = beanM.CManotes;
-
                 ViewBag.cMAAddress = beanM.CMaaddress;
                 ViewBag.cContractNotes = beanM.CContractNotes;
                 ViewBag.cSLARESP = beanM.CSlaresp;
                 ViewBag.cSLASRV = beanM.CSlasrv;
                 ViewBag.cMANotes = beanM.CManotes;
-                ViewBag.cContractReport = beanM.CContractReport;
+                ViewBag.cTeamID = beanM.CTeamId;
+
+                #region call ONE SERVICE 查詢是否可以讀取合約書PDF權限接口
+                VIEWCONTRACTSMEMBERSINFO_INPUT beanIN = new VIEWCONTRACTSMEMBERSINFO_INPUT();
+
+                beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
+                beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
+                beanIN.IV_CONTRACTID = ViewBag.cContractID;
+                beanIN.IV_SRTEAM = ViewBag.cTeamID;
+                beanIN.IV_APIURLName = tAPIURLName;
+
+                VIEWCONTRACTSMEMBERSINFO_OUTPUT beanOUT = CMF.GetAPI_VIEWCONTRACTSMEMBERSINFO(beanIN);
+
+                if (beanOUT.EV_IsCanRead == "Y" || pIsMIS || pIsCSManager)
+                {
+                    ViewBag.cContractReport = "<a href=" + beanM.CContractReport + " target='_blank'>" + beanM.CContractId + "</a>";                
+                }
+                else
+                {
+                    ViewBag.cContractReport = "您無權限查詢！";                    
+                }
+                #endregion
             }
             #endregion
 

@@ -1448,9 +1448,72 @@ namespace OneService.Controllers
 
         #region -----↓↓↓↓↓裝機服務 ↓↓↓↓↓-----
 
-      
+
 
         #endregion -----↑↑↑↑↑裝機服務 ↑↑↑↑↑-----
+
+        #region -----↓↓↓↓↓合約管理 ↓↓↓↓↓-----
+
+        #region call ONE SERVICE 查詢是否可以讀取合約書PDF權限接口
+        /// <summary>
+        /// call ONE SERVICE 查詢是否可以讀取合約書PDF權限接口
+        /// </summary>
+        /// <param name="beanIN"></param>
+        public VIEWCONTRACTSMEMBERSINFO_OUTPUT GetAPI_VIEWCONTRACTSMEMBERSINFO(VIEWCONTRACTSMEMBERSINFO_INPUT beanIN)
+        {
+            VIEWCONTRACTSMEMBERSINFO_OUTPUT OUTBean = new VIEWCONTRACTSMEMBERSINFO_OUTPUT();
+
+            string pMsg = string.Empty;
+
+            try
+            {
+                string tURL = beanIN.IV_APIURLName + "/API/API_VIEWCONTRACTSMEMBERSINFO_GET";
+
+                var client = new RestClient(tURL);
+
+                var request = new RestRequest();
+                request.Method = RestSharp.Method.Post;
+
+                Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+                parameters.Add("IV_LOGINEMPNO", beanIN.IV_LOGINEMPNO);
+                parameters.Add("IV_CONTRACTID", beanIN.IV_CONTRACTID);
+                parameters.Add("IV_SRTEAM", beanIN.IV_SRTEAM);
+
+                request.AddHeader("Content-Type", "application/json");
+                request.AddParameter("application/json", parameters, ParameterType.RequestBody);
+
+                RestResponse response = client.Execute(request);
+
+                #region 取得回傳訊息(成功或失敗)
+                var data = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+                OUTBean.EV_MSGT = data["EV_MSGT"].ToString().Trim();
+                OUTBean.EV_MSG = data["EV_MSG"].ToString().Trim();
+                OUTBean.EV_IsCanRead = data["EV_IsCanRead"].ToString().Trim();
+                #endregion
+
+                if (OUTBean.EV_MSGT == "Y")
+                {
+                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 查詢是否可以讀取合約書PDF權限接口接口成功";
+                }
+                else
+                {
+                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 查詢是否可以讀取合約書PDF權限接口接口失敗，原因:" + OUTBean.EV_MSG;
+                }
+            }
+            catch (Exception ex)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口失敗，原因:" + ex.Message + Environment.NewLine;
+                pMsg += " 失敗行數：" + ex.ToString();
+            }
+
+            writeToLog(beanIN.IV_CONTRACTID, "GetAPI_VIEWCONTRACTSMEMBERSINFO_GET", pMsg, beanIN.IV_LOGINEMPNAME);
+
+            return OUTBean;
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑合約管理 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
@@ -2771,6 +2834,28 @@ namespace OneService.Controllers
             }
 
             return dt;
+        }
+        #endregion
+
+        #region 傳入DataTable並過濾重覆人員
+        /// <summary>
+        /// 傳入DataTable並過濾重覆人員
+        /// </summary>
+        /// <param name="dtORG">組織人員</param>
+        /// <param name="DicORG">傳入的Dic</param>
+        public void SetDtORGPeople(DataTable dtORG, ref Dictionary<string, string> DicORG)
+        {
+            string tEMPNO = string.Empty;
+
+            foreach (DataRow dr in dtORG.Rows)
+            {
+                tEMPNO = dr["EMPNO"].ToString().TrimStart('0').Trim();
+
+                if (!DicORG.Keys.Contains(tEMPNO))
+                {
+                    DicORG.Add(tEMPNO, dr["EMPNAME"].ToString().Trim());
+                }
+            }
         }
         #endregion
 
