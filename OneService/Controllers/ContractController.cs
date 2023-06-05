@@ -373,6 +373,8 @@ namespace OneService.Controllers
             tPSIPURLName = ParaBean.PSIPURLName;
             tAPIURLName = ParaBean.APIURLName;
             tAttachURLName = ParaBean.AttachURLName;
+
+            ViewBag.APIURLName = tAPIURLName;
             #endregion
 
             #region 取得合約主數據主檔
@@ -401,27 +403,7 @@ namespace OneService.Controllers
                 ViewBag.cSLASRV = beanM.CSlasrv;
                 ViewBag.cMANotes = beanM.CManotes;
                 ViewBag.cTeamID = beanM.CTeamId;
-
-                #region call ONE SERVICE 查詢是否可以讀取合約書PDF權限接口
-                VIEWCONTRACTSMEMBERSINFO_INPUT beanIN = new VIEWCONTRACTSMEMBERSINFO_INPUT();
-
-                beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
-                beanIN.IV_CONTRACTID = ViewBag.cContractID;
-                beanIN.IV_SRTEAM = ViewBag.cTeamID;
-                beanIN.IV_APIURLName = tAPIURLName;
-
-                VIEWCONTRACTSMEMBERSINFO_OUTPUT beanOUT = CMF.GetAPI_VIEWCONTRACTSMEMBERSINFO(beanIN);
-
-                if (beanOUT.EV_IsCanRead == "Y" || pIsMIS || pIsCSManager)
-                {
-                    ViewBag.cContractReport = "<a href=" + beanM.CContractReport + " target='_blank'>" + beanM.CContractId + "</a>";                
-                }
-                else
-                {
-                    ViewBag.cContractReport = "您無權限查詢！";                    
-                }
-                #endregion
+                ViewBag.cContractReport = beanM.CContractReport;
             }
             #endregion
 
@@ -459,6 +441,49 @@ namespace OneService.Controllers
             #endregion
 
             return View();
+        }
+        #endregion
+
+        #region 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
+        /// <summary>
+        /// 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
+        /// </summary>        
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cTeamID">服務團隊</param>
+        /// <param name="cAPIURLName">API URLName</param>
+        /// <returns></returns>
+        public IActionResult checkIsCanReadContractReport(string cContractID, string cTeamID, string cAPIURLName)
+        {
+            string reValue = "N";
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            #region call ONE SERVICE 查詢是否可以讀取合約書PDF權限接口
+            VIEWCONTRACTSMEMBERSINFO_INPUT beanIN = new VIEWCONTRACTSMEMBERSINFO_INPUT();
+
+            beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
+            beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
+            beanIN.IV_CONTRACTID = cContractID;
+            beanIN.IV_SRTEAM = cTeamID;
+            beanIN.IV_APIURLName = cAPIURLName;
+
+            VIEWCONTRACTSMEMBERSINFO_OUTPUT beanOUT = CMF.GetAPI_VIEWCONTRACTSMEMBERSINFO(beanIN);
+
+            if (beanOUT.EV_MSGT == "Y")
+            {
+                if (pIsMIS || pIsCSManager)
+                {
+                    reValue = "Y";
+                }
+                else
+                {
+                    reValue = beanOUT.EV_IsCanRead;
+                }
+            }
+            #endregion
+
+            return Json(reValue);
         }
         #endregion
 
