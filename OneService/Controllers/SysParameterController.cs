@@ -33,12 +33,22 @@ namespace OneService.Controllers
         /// <summary>
         /// 登入者是否為客服人員(true.是 false.否)
         /// </summary>
-        bool pIsCS = false;      
+        bool pIsCS = false;
+
+        /// <summary>
+        /// 登入者是否為管理者(true.是 false.否)
+        /// </summary>
+        bool pIsManager = false;
 
         /// <summary>
         /// 程式作業編號檔系統ID(ALL，固定的GUID)
         /// </summary>
         string pSysOperationID = "F8EFC55F-FA77-4731-BB45-2F2147244A2D";
+
+        /// <summary>
+        /// 公司別(T012、T016、C069、T022)
+        /// </summary>
+        string pCompanyCode = string.Empty;
 
         #region -----資訊系統作業設定 Start-----
         /// <summary>
@@ -53,6 +63,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
+            getEmployeeInfo();
 
             return View();
 		}
@@ -108,7 +119,10 @@ namespace OneService.Controllers
         /// <returns></returns>
         public ActionResult SaveOperation(string cID, string cModuleID, string cOperationID, string cOperationName, string cOperationURL)
         {
-            string tMsg = string.Empty;            
+            string tMsg = string.Empty;
+
+            getLoginAccount();
+            getEmployeeInfo();
 
             try
             {
@@ -127,7 +141,7 @@ namespace OneService.Controllers
                         prBean1.COperationUrl = cOperationURL == null ? "" : cOperationURL.Trim();
                         prBean1.Disabled = 0;
 
-                        prBean1.CreatedUserName = "SYS";
+                        prBean1.CreatedUserName = ViewBag.empEngName;
                         prBean1.CreatedDate = DateTime.Now;
 
                         psipDb.TbOneOperationParameters.Add(prBean1);
@@ -146,7 +160,7 @@ namespace OneService.Controllers
                     prBean.COperationName = cOperationName.Trim();
                     prBean.COperationUrl = cOperationURL == null ? "": cOperationURL.Trim();
 
-                    prBean.ModifiedUserName = "SYS";
+                    prBean.ModifiedUserName = ViewBag.empEngName;
                     prBean.ModifiedDate = DateTime.Now;
                     result = psipDb.SaveChanges();
                     #endregion
@@ -170,6 +184,9 @@ namespace OneService.Controllers
         {
             string tMsg = string.Empty;
 
+            getLoginAccount();
+            getEmployeeInfo();
+
             var prBean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.Disabled == 0 && x.COperationId.ToString() == cID);
             var prBean1 = psipDb.TbOneRoleParameters.FirstOrDefault(x => x.Disabled == 0 && x.COperationId.ToString() == cID);
 
@@ -185,7 +202,7 @@ namespace OneService.Controllers
             {
                 var ctBean = psipDb.TbOneOperationParameters.FirstOrDefault(x => x.CId.ToString() == cID);
                 ctBean.Disabled = 1;
-                ctBean.ModifiedUserName = "SYS"; //EmpBean.EmployeeCName;
+                ctBean.ModifiedUserName = ViewBag.empEngName;
                 ctBean.ModifiedDate = DateTime.Now;
 
                 var result = psipDb.SaveChanges();
@@ -260,6 +277,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
+            getEmployeeInfo();
 
             #region 程式作業編號檔系統ID清單
             var ModuleList = findModuleIDList();
@@ -338,6 +356,9 @@ namespace OneService.Controllers
         {
             string tMsg = string.Empty;
 
+            getLoginAccount();
+            getEmployeeInfo();
+
             try
             {
                 int result = 0;
@@ -361,7 +382,7 @@ namespace OneService.Controllers
                         prBean1.CDescription = cDescription.Trim();
                         prBean1.Disabled = 0;
 
-                        prBean1.CreatedUserName = "SYS";
+                        prBean1.CreatedUserName = ViewBag.empEngName;
                         prBean1.CreatedDate = DateTime.Now;
 
                         psipDb.TbOneSysParameters.Add(prBean1);
@@ -389,7 +410,7 @@ namespace OneService.Controllers
                         prBean1.CValue = cValue.Trim();
                         prBean1.CDescription = cDescription.Trim();
 
-                        prBean1.ModifiedUserName = "SYS";
+                        prBean1.ModifiedUserName = ViewBag.empEngName;
                         prBean1.ModifiedDate = DateTime.Now;
                         result = psipDb.SaveChanges();
                     }
@@ -416,9 +437,12 @@ namespace OneService.Controllers
         /// <returns></returns>
         public ActionResult DeleteSysParameter(string cID)
         {
+            getLoginAccount();
+            getEmployeeInfo();
+
             var ctBean = psipDb.TbOneSysParameters.FirstOrDefault(x => x.CId.ToString() == cID);
             ctBean.Disabled = 1;
-            ctBean.ModifiedUserName = "SYS"; //EmpBean.EmployeeCName;
+            ctBean.ModifiedUserName = ViewBag.empEngName;
             ctBean.ModifiedDate = DateTime.Now;
 
             var result = psipDb.SaveChanges();
@@ -585,6 +609,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
+            getEmployeeInfo();
 
             #region 程式作業編號檔系統ID清單
             var ModuleList = findModuleIDList();
@@ -605,11 +630,12 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="cOperationID">程式作業編號檔系統ID</param>
         /// <param name="cFunctionID">功能別</param>
-        /// <param name="cCompanyID">公司別</param>        
+        /// <param name="cCompanyID">公司別</param>   
+        /// <param name="cNo">參數No</param>
         /// <param name="cValue">參數值</param>
         /// <param name="cDescription">參數值說明</param>        
         /// <returns></returns>
-        public IActionResult RoleParameterResult(string cOperationID, string cFunctionID, string cCompanyID, string cValue, string cDescription)
+        public IActionResult RoleParameterResult(string cOperationID, string cFunctionID, string cCompanyID, string cNo, string cValue, string cDescription)
         {
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
@@ -619,25 +645,27 @@ namespace OneService.Controllers
                                                             (string.IsNullOrEmpty(cOperationID) ? true : x.COperationId.ToString() == cOperationID) &&
                                                             (string.IsNullOrEmpty(cCompanyID) ? true : x.CCompanyId == cCompanyID) &&                                                            
                                                             (string.IsNullOrEmpty(cFunctionID) ? true : x.CFunctionId == cFunctionID) &&
+                                                            (string.IsNullOrEmpty(cNo) ? true : x.CNo.Contains(cNo.Trim())) &&
                                                             (string.IsNullOrEmpty(cValue) ? true : x.CValue.Contains(cValue.Trim())) &&
                                                             (string.IsNullOrEmpty(cDescription) ? true : x.CDescription.Contains(cDescription.Trim())));
 
             foreach (var bean in beans)
             {
-                string[] QueryInfo = new string[12];
+                string[] QueryInfo = new string[13];
 
                 QueryInfo[0] = bean.CId.ToString();                    //系統ID
                 QueryInfo[1] = bean.COperationId.ToString();            //程式作業編號檔系統ID
                 QueryInfo[2] = bean.CFunctionId;                        //功能別
                 QueryInfo[3] = TransRoleFunctionID(bean.CFunctionId);   //功能別名稱
                 QueryInfo[4] = bean.CCompanyId;                         //公司別                
-                QueryInfo[5] = bean.CValue;                            //參數值        
-                QueryInfo[6] = bean.CDescription;                       //參數值說明
-                QueryInfo[7] = bean.CIncludeSubDept;                    //是否含子部門
-                QueryInfo[8] = bean.CExeQuery;                         //是否可執行查詢
-                QueryInfo[9] = bean.CExeInsert;                        //是否可執行新增
-                QueryInfo[10] = bean.CExeEdit;                         //是否可執行編輯
-                QueryInfo[11] = bean.CExeDel;                          //是否可執行刪除
+                QueryInfo[5] = bean.CNo;                               //參數No
+                QueryInfo[6] = bean.CValue;                            //參數值        
+                QueryInfo[7] = bean.CDescription;                       //參數值說明
+                QueryInfo[8] = bean.CIncludeSubDept;                    //是否含子部門
+                QueryInfo[9] = bean.CExeQuery;                         //是否可執行查詢
+                QueryInfo[10] = bean.CExeInsert;                        //是否可執行新增
+                QueryInfo[11] = bean.CExeEdit;                         //是否可執行編輯
+                QueryInfo[12] = bean.CExeDel;                          //是否可執行刪除
 
                 QueryToList.Add(QueryInfo);
             }
@@ -656,7 +684,8 @@ namespace OneService.Controllers
         /// <param name="cID">系統ID</param>
         /// <param name="cOperationID">程式作業編號檔系統ID</param>
         /// <param name="cFunctionID">功能別</param>
-        /// <param name="cCompanyID">公司別</param>        
+        /// <param name="cCompanyID">公司別</param> 
+        /// <param name="cNo">參數No</param>
         /// <param name="cValue">參數值</param>
         /// <param name="cDescription">參數值說明</param>
         /// <param name="cIncludeSubDept">是否含子部門(Y、N)</param>
@@ -665,10 +694,13 @@ namespace OneService.Controllers
         /// <param name="cExeEdit">是否可執行編輯(Y、N)</param>
         /// <param name="cExeDel">是否可執行刪除(Y、N)</param>
         /// <returns></returns>
-        public ActionResult SaveRole(string cID, string cOperationID, string cFunctionID, string cCompanyID, string cValue, string cDescription,
+        public ActionResult SaveRole(string cID, string cOperationID, string cFunctionID, string cCompanyID, string cNo, string cValue, string cDescription,
                                    string cIncludeSubDept, string cExeQuery, string cExeInsert, string cExeEdit, string cExeDel)
         {
             string tMsg = string.Empty;
+
+            getLoginAccount();
+            getEmployeeInfo();
 
             try
             {
@@ -679,14 +711,16 @@ namespace OneService.Controllers
                     var prBean = psipDb.TbOneRoleParameters.FirstOrDefault(x => x.Disabled == 0 &&
                                                                             x.COperationId.ToString() == cOperationID &&
                                                                             x.CFunctionId == cFunctionID &&
-                                                                            x.CCompanyId == cCompanyID &&                                                                            
+                                                                            x.CCompanyId == cCompanyID &&  
+                                                                            x.CNo == cNo &&
                                                                             x.CValue == cValue);
                     if (prBean == null)
                     {
                         TbOneRoleParameter prBean1 = new TbOneRoleParameter();
                         prBean1.COperationId = Guid.Parse(cOperationID);
                         prBean1.CFunctionId = cFunctionID;
-                        prBean1.CCompanyId = cCompanyID;                        
+                        prBean1.CCompanyId = cCompanyID;
+                        prBean1.CNo = cNo;
                         prBean1.CValue = cValue.Trim();
                         prBean1.CDescription = cDescription.Trim();
                         prBean1.CIncludeSubDept = cIncludeSubDept == null ? "N" : cIncludeSubDept;
@@ -696,7 +730,7 @@ namespace OneService.Controllers
                         prBean1.CExeDel = cExeDel == null ? "N" : cExeDel;
                         prBean1.Disabled = 0;
 
-                        prBean1.CreatedUserName = "SYS";
+                        prBean1.CreatedUserName = ViewBag.empEngName;
                         prBean1.CreatedDate = DateTime.Now;
 
                         psipDb.TbOneRoleParameters.Add(prBean1);
@@ -715,7 +749,8 @@ namespace OneService.Controllers
                                                                             x.CId.ToString() != cID &&
                                                                             x.COperationId.ToString() == cOperationID &&
                                                                             x.CFunctionId == cFunctionID &&
-                                                                            x.CCompanyId == cCompanyID &&                                                                            
+                                                                            x.CCompanyId == cCompanyID &&
+                                                                            x.CNo == cNo &&
                                                                             x.CValue == cValue);
                     if (prBean == null)
                     {
@@ -728,7 +763,7 @@ namespace OneService.Controllers
                         prBean1.CExeEdit = cExeEdit == null ? "N" : cExeEdit;
                         prBean1.CExeDel = cExeDel == null ? "N" : cExeDel;
 
-                        prBean1.ModifiedUserName = "SYS";
+                        prBean1.ModifiedUserName = ViewBag.empEngName;
                         prBean1.ModifiedDate = DateTime.Now;
                         result = psipDb.SaveChanges();
                     }
@@ -755,9 +790,12 @@ namespace OneService.Controllers
         /// <returns></returns>
         public ActionResult DeleteRoleParameter(string cID)
         {
+            getLoginAccount();
+            getEmployeeInfo();
+
             var ctBean = psipDb.TbOneRoleParameters.FirstOrDefault(x => x.CId.ToString() == cID);
             ctBean.Disabled = 1;
-            ctBean.ModifiedUserName = "SYS"; //EmpBean.EmployeeCName;
+            ctBean.ModifiedUserName = ViewBag.empEngName;
             ctBean.ModifiedDate = DateTime.Now;
 
             var result = psipDb.SaveChanges();
@@ -821,6 +859,30 @@ namespace OneService.Controllers
             ViewBag.pIsCSManager = pIsCSManager;
             ViewBag.pIsCS = pIsCS;
             #endregion            
+        }
+        #endregion
+
+        #region 取得人員相關資料
+        public void getEmployeeInfo()
+        {
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
+            ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
+            ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
+            ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
+            ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
+            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
+            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+            ViewBag.pIsManager = EmpBean.IsManager;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+
+            pCompanyCode = EmpBean.BUKRS;
+            pIsManager = EmpBean.IsManager;
         }
         #endregion
 

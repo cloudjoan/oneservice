@@ -9,6 +9,7 @@ namespace OneService.Models
         public Guid COperationId { get; set; }
         public string CFunctionId { get; set; } = null!;
         public string CCompanyId { get; set; } = null!;
+        public string? CNo { get; set; }
         public string? CValue { get; set; }
         public string? CDescription { get; set; }
         public string? CIncludeSubDept { get; set; }

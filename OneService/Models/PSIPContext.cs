@@ -174,6 +174,11 @@ namespace OneService.Models
                     .IsUnicode(false)
                     .HasColumnName("cIncludeSubDept");
 
+                entity.Property(e => e.CNo)
+                    .HasMaxLength(30)
+                    .IsUnicode(false)
+                    .HasColumnName("cNo");
+
                 entity.Property(e => e.COperationId).HasColumnName("cOperationID");
 
                 entity.Property(e => e.CValue)

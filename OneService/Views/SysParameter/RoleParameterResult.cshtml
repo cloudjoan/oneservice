@@ -51,7 +51,7 @@
 					text: '匯出Excel',
 					sheetName: '資訊系統角色權限設定檔',
 					exportOptions: {
-						columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] //要顯示的欄位
+						columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						var sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -67,6 +67,7 @@
 						$('row c[r^="I"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="J"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="K"]', sheet).attr('s', '0');	//設成文字格式
+						$('row c[r^="L"]', sheet).attr('s', '0');	//設成文字格式
 					}
 				}),
 			],
@@ -83,7 +84,8 @@
 			<th>程式作業編號檔系統ID</th>
 			<th>功能別</th>
 			<th>功能別名稱</th>
-			<th>公司別</th>			
+			<th>公司別</th>
+			<th>參數No</th>
 			<th>參數值</th>
 			<th>參數值說明</th>
 			<th>是否含子部門</th>
@@ -110,13 +112,14 @@
 						<td class="tdcFunctionID">@Html.Raw(QueryInfo[2])</td>
 						<td class="tdcFunctionName">@Html.Raw(QueryInfo[3])</td>
 						<td class="tdcCompanyID">@Html.Raw(QueryInfo[4])</td>						
-						<td class="tdcValue">@Html.Raw(QueryInfo[5])</td>
-						<td class="tdcDescription">@Html.Raw(QueryInfo[6])</td>
-						<td class="tdcIncludeSubDept">@Html.Raw(QueryInfo[7])</td>
-						<td class="tdcExeQuery">@Html.Raw(QueryInfo[8])</td>
-						<td class="tdcExeInsert">@Html.Raw(QueryInfo[9])</td>
-						<td class="tdcExeEdit">@Html.Raw(QueryInfo[10])</td>
-						<td class="tdcExeDel">@Html.Raw(QueryInfo[11])</td>
+						<td class="tdcNo">@Html.Raw(QueryInfo[5])</td>
+						<td class="tdcValue">@Html.Raw(QueryInfo[6])</td>
+						<td class="tdcDescription">@Html.Raw(QueryInfo[7])</td>
+						<td class="tdcIncludeSubDept">@Html.Raw(QueryInfo[8])</td>
+						<td class="tdcExeQuery">@Html.Raw(QueryInfo[9])</td>
+						<td class="tdcExeInsert">@Html.Raw(QueryInfo[10])</td>
+						<td class="tdcExeEdit">@Html.Raw(QueryInfo[11])</td>
+						<td class="tdcExeDel">@Html.Raw(QueryInfo[12])</td>
 					</tr>
 				}
 			}

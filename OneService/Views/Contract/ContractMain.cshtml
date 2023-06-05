@@ -9,8 +9,7 @@
 		$(document).ready(function () {
 			initTable();
 			CustSearch();
-			PeopleSearch();
-			checkIsCanReadContractReport();
+			PeopleSearch();			
 		});
 
 		function initTable() {
@@ -210,40 +209,6 @@
 			})
 		}
 
-		//判斷是否可以顯示合約書link
-		function checkIsCanReadContractReport() {
-			var btn_ContractReport = $("#btn_ContractReport");
-			var cLoginUser_ERPID = $("#hid_cLoginUser_ERPID").val(); //登入者ERPID
-			var empEngName = $("#hid_empEngName").val();			//登入者姓名
-			var cContractID = $("#tbx_cContractID").val();			//文件編號
-			var cTeamID = $("#hid_cTeamID").val();					//服務團隊
-			var cAPIURLName = $("#hid_APIURLName").val();			//API URLName			
-
-			$.ajax({
-				url: '@Url.Action("checkIsCanReadContractReport", "Contract")',
-				type: 'post',
-				dataType: 'json',
-				data: {
-					cLoginUser_ERPID: cLoginUser_ERPID,
-					empEngName: empEngName,
-					cContractID: cContractID,
-					cTeamID: cTeamID,
-					cAPIURLName: cAPIURLName
-				},
-				success: function (result) {
-					if (result == "Y")
-					{
-						btn_ContractReport.show();
-					}
-					else
-					{
-						btn_ContractReport.hide();
-					}
-				}
-			});
-		}
-		
-
 		//儲存前檢查
 		function BeforeSave() {
 			$("#waitingImg").show();
@@ -395,10 +360,6 @@
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 						<!--登人者公司別(T012、T016...)-->
 						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">						
-						<!--服務團隊-->
-						<input type="hidden" id="hid_cTeamID" name="hid_cTeamID" value="@ViewBag.cTeamID">
-						<!--API URLName-->
-						<input type="hidden" id="hid_APIURLName" name="hid_APIURLName" value="@ViewBag.APIURLName">
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">*文件編號</label>
 							<div class="col-lg-4">
@@ -500,7 +461,16 @@
 							</div>
 							<label class="col-lg-2 col-form-label">合約書link</label>
 							<div class="col-lg-4">
-								<button class="btn btn-info" id="btn_ContractReport" type="button" onclick="window.open('@ViewBag.cContractReport', target='_blank');" style="display:none;"><i class="fa fa-file-pdf-o"></i> 開 啟 </button>
+								@{
+									if (ViewBag.IsCanRead == "Y")
+									{
+										<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
+									}
+									else
+									{
+										<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
+									}
+								}								
 							</div>
 						</div>											
 						<div class="hr-line-dashed"></div>

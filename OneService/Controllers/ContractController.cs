@@ -404,6 +404,17 @@ namespace OneService.Controllers
                 ViewBag.cMANotes = beanM.CManotes;
                 ViewBag.cTeamID = beanM.CTeamId;
                 ViewBag.cContractReport = beanM.CContractReport;
+
+                pIsCanEditSR = checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, tAPIURLName);
+
+                if (pIsCanEditSR)
+                {
+                    ViewBag.IsCanRead = "Y";
+                }
+                else
+                {
+                    ViewBag.IsCanRead = "N";
+                }
             }
             #endregion
 
@@ -452,9 +463,9 @@ namespace OneService.Controllers
         /// <param name="cTeamID">服務團隊</param>
         /// <param name="cAPIURLName">API URLName</param>
         /// <returns></returns>
-        public IActionResult checkIsCanReadContractReport(string cContractID, string cTeamID, string cAPIURLName)
+        public bool checkIsCanReadContractReport(string cContractID, string cTeamID, string cAPIURLName)
         {
-            string reValue = "N";
+            bool reValue = false;
 
             getLoginAccount();
             getEmployeeInfo();
@@ -474,19 +485,33 @@ namespace OneService.Controllers
             {
                 if (pIsMIS || pIsCSManager)
                 {
-                    reValue = "Y";
+                    reValue = true;
                 }
                 else
                 {
-                    reValue = beanOUT.EV_IsCanRead;
+                    if (beanOUT.EV_IsCanRead == "Y")
+                    {
+                        reValue = true;
+                    }
                 }
             }
             #endregion
 
-            return Json(reValue);
+            return reValue;
         }
         #endregion
 
         #endregion -----↑↑↑↑↑合約主數據查詢/維護 ↑↑↑↑↑-----
+
+        #region -----↓↓↓↓↓下包合約明細查詢 ↓↓↓↓↓----- 
+
+        #region 下包合約明細顯示
+        public IActionResult ContractDetailSub()
+        {
+            return View();
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑下包合約明細查詢 ↑↑↑↑↑-----
     }
 }
