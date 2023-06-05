@@ -2082,7 +2082,7 @@
 
 			var tAlltd = RowNumber + ContactName + ContactAddress + ContactPhone + ContactMobile + ContactEmail + tDelButton;
 
-			$("#" + tableName).append("<tr id='tr" + trContactNoCount + "'>" + tAlltd + "</tr>");			
+			$("#" + tableName).append("<tr id='trCO" + trContactNoCount + "'>" + tAlltd + "</tr>");			
 		}
 
 		//組項次
@@ -2126,7 +2126,7 @@
 		function SetCODelButton()
 		{
 			var tTrID = $("input[name='hid_trContactNo']").val();
-			var reValue = "<td><button name='btn_ContactDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Contact('tr" + tTrID + "','" + trContactNoCount + "');><i class='fa fa-trash'></i></button></td>";
+			var reValue = "<td><button name='btn_ContactDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Contact('trCO" + tTrID + "','" + trContactNoCount + "');><i class='fa fa-trash'></i></button></td>";
 			return reValue;
 		}		
 
@@ -2164,7 +2164,7 @@
 
 			var tAlltd = RowNumber + MaterialID + MaterialName + Quantity + BasicContent + MFPNumber + Brand + ProductHierarchy + tDelButton;
 
-			$("#" + tableName).append("<tr id='tr" + trMaterialNoCount + "'>" + tAlltd + "</tr>");
+			$("#" + tableName).append("<tr id='trMA" + trMaterialNoCount + "'>" + tAlltd + "</tr>");
 			
 			findMaterialByKeyword();	//用關鍵字查詢物料
 			initRow();
@@ -2222,7 +2222,7 @@
 		//組刪除按鈕
 		function SetMIDelButton() {
 			var tTrID = $("input[name='hid_trMaterialNo']").val();
-			var reValue = "<td><button name='btn_MaterialDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Material('tr" + tTrID + "','" + trMaterialNoCount + "');><i class='fa fa-trash'></i></td>";
+			var reValue = "<td><button name='btn_MaterialDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Material('trMA" + tTrID + "','" + trMaterialNoCount + "');><i class='fa fa-trash'></i></td>";
 			return reValue;
 		}		
 
@@ -2257,7 +2257,7 @@
 
 			var tAlltd = RowNumber + SerialID + MaterialID + MaterialName + SRConfig + tDelButton;
 
-			$("#" + tableName).append("<tr id='tr" + trSerialNoCount + "'>" + tAlltd + "</tr>");
+			$("#" + tableName).append("<tr id='trSF" + trSerialNoCount + "'>" + tAlltd + "</tr>");
 
 			hidePopupInit_Serial();		//檔案元件
 			SerialSearch();				//產品序號資訊查詢
@@ -2305,7 +2305,7 @@
 		function SetSFDelButton()
 		{
 			var tTrID = $("input[name='hid_trSerialNo']").val();
-			var reValue = "<td><button name='btn_SerialDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Serial('tr" + tTrID + "','" + trSerialNoCount + "');><i class='fa fa-trash'></i></button></td>";
+			var reValue = "<td><button name='btn_SerialDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Serial('trSF" + tTrID + "','" + trSerialNoCount + "');><i class='fa fa-trash'></i></button></td>";
 			return reValue;
 		}		
 
@@ -2352,7 +2352,7 @@
 
 			var tAlltd = RowNumber + Engineer + ReceiveTime + StartTime + ArriveTime + FinishTime + WorkHours + Desc + SRReport + tDelButton;
 
-			$("#" + tableName).append("<tr id='tr" + trRecordNoCount + "'>" + tAlltd + "</tr>");			
+			$("#" + tableName).append("<tr id='trPR" + trRecordNoCount + "'>" + tAlltd + "</tr>");			
 
 			hidePopupInit_Record(trRecordNoCount);		//初始日期元件
 			PeopleSearch();				//Ajax用中文或英文姓名查詢人員帳號
@@ -2424,7 +2424,7 @@
 		//組刪除按鈕
 		function SetREDelButton() {
 			var tTrID = $("input[name='hid_trRecordNo']").val();
-			var reValue = "<td><button name='btn_RecordDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Record('tr" + tTrID + "','" + trRecordNoCount + "');><i class='fa fa-trash'></i></td>";
+			var reValue = "<td><button name='btn_RecordDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Record('trPR" + tTrID + "','" + trRecordNoCount + "');><i class='fa fa-trash'></i></td>";
 			return reValue;
 		}		
 
