@@ -1,0 +1,276 @@
+﻿@{
+	ViewData["Title"] = "ContractDetailSub";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>
+		$(document).ready(function () {
+			initPage();
+		});
+
+		//初始頁面
+		function initPage() {
+			//查詢更改歷史記錄popup
+			$('#btn_ShowHistoryLog').click(function () {
+				getHistoryLog();			//顯示更改歷史記錄
+				$('#dialog_ShowHistoryLog').modal('show');
+			})
+		}
+
+		//呼叫日期轉換
+		function TransDate(Obj) {
+			if (Obj != null) {
+				return getDateString(new Date(Obj));
+			}
+
+			return "";
+		}
+
+		//日期Format(補0)
+		function pad(v) {
+			return (v < 10) ? '0' + v : v
+		}
+
+		//日期Format
+		function getDateString(d) {
+			try {
+				var year = d.getFullYear();
+				var month = pad(d.getMonth() + 1);
+				var day = pad(d.getDate());
+				var hour = pad(d.getHours());
+				var min = pad(d.getMinutes());
+				var sec = pad(d.getSeconds());
+
+				return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+			}
+			catch (e) {
+				return "";
+			}
+		}
+
+		//查詢更改歷史記錄
+		function getHistoryLog() {
+			var cContractID = $("#tbx_cSubContractID").val();	//下包文件編號
+			var cIsSubContract = "Y";							//是否為下包合約(Y.是 N.否)
+
+			$.ajax({
+				url: '@Url.Action("GetHistoryLog", "Contract")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cContractID: cContractID,
+					cIsSubContract: cIsSubContract
+				},
+				success: function (result) {
+					var ALLList = ""
+					var listOneLog = "";					
+
+					//↓↓↓↓↓歷史記錄資訊(共用) ↓↓↓↓↓/
+					$.each(result.srOneLog, function (i, bean) {
+						if (bean != null) {
+							var tDate = TransDate(bean.createdDate);
+							var strLog = bean.log.replace(/\n/g, "<br />");
+
+							listOneLog += '<tr>'
+								+ "<td style='vertical-align: left;'>" + bean.cSrid + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.eventName + "</td>"
+								+ "<td style='vertical-align: left;'>" + strLog + "</td>"
+								+ "<td style='vertical-align: left;'>" + tDate + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.createdUserName + "</td>"
+								+ "</tr>";
+						}
+					});
+
+					if (listOneLog != "") {
+						listOneLog = "<div class='col-lg-12'>"
+							+ "	<div class='ibox'>"
+							+ "		<div class='ibox-title'>"
+							+ "			<h5>下包合約明細內容資訊</h5>"
+							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
+							+ "      </div>"
+							+ "      <div class='ibox-content'>"
+							+ "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
+							+ "				<thead><tr>"
+							+ "				<th>SRID</th>"
+							+ "				<th>事件名稱</th>"
+							+ "				<th>Log</th>"
+							+ "				<th>異動時間</th>"
+							+ "				<th>異動人員</th>"
+							+ "				</tr></thead><tbody>"
+							+ listOneLog
+							+ "</tbody></table></div></div></div>";
+					}
+					//↑↑↑↑↑歷史記錄資訊(共用) ↑↑↑↑↑/
+
+					
+					ALLList += listOneLog;
+
+					$("#tb_ShowHistoryLog").html(ALLList);
+					callCollapse();
+				}
+			});
+		}
+
+		//返回合約主數據主檔
+		function backToContractMain()
+		{
+			window.location.href = "@Url.Action("ContractMain", "Contract", new { ContractID = ViewBag.cContractID })";
+		}
+
+		//儲存前檢查
+		function BeforeSave() {
+			$("#waitingImg").show();
+			$("#btnSave").hide();
+
+			var tMsg = "";
+
+			var hid_cID = $('#hid_cID');				//系統ID
+			var tbx_cSubNotes = $('#tbx_cSubNotes');	//下包備註
+
+			if (tbx_cSubNotes.val() == "") {
+				tMsg += "下包備註不得為空！　\n";
+			}
+
+			if (tMsg != "") {
+				alert(tMsg);
+				$("#waitingImg").hide();
+				$("#btnSave").show();
+				return false;
+			}
+			else {
+				saveDetailSub(hid_cID.val(), tbx_cSubNotes.val());
+			}
+
+			return true;
+		}
+
+		//儲存下包合約明細內容
+		function saveDetailSub(cID, cSubNotes) {
+			$.ajax({
+				url: '@Url.Action("saveDetailSub", "Contract")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cID: cID,
+					cSubNotes: cSubNotes					
+				},
+				success: function (result) {
+					if (result == "SUCCESS") {
+						alert("儲存成功！");
+						$("#btnSave").show();
+					}
+					else {
+						alert("儲存失敗！原因：" + result);
+					}
+
+					$("#waitingImg").hide();
+				}
+			});
+		}		
+	</script>
+}
+
+@section breadcrumb_section{
+<div class="col-lg-10">
+	<h2>合約主數據維護作業</h2>
+	<ol class="breadcrumb">
+		<li class="breadcrumb-item">
+			<a href="#">合約管理</a>
+		</li>
+		<li class="breadcrumb-item active">
+			<strong>合約主數據維護作業</strong>
+		</li>
+	</ol>
+</div>
+}
+
+<div class="row">
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>
+					下包合約明細內容						
+				</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content">	
+				<div class="form-group row">							
+					<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<button id="btn_ShowHistoryLog" class="btn btn-success btn-lg" type="button">
+						<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
+					</button>
+				</div>
+				<form id="form1" name="form" action='#' method="post">						
+				<!--登人者公司別(Comp-1、Comp-2...)-->
+				<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+				<!--登人者公司別(T012、T016...)-->
+				<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+				<!--下包合約資料檔系統ID-->
+				<input type="hidden" id="hid_cID" name="hid_cID" value="@ViewBag.cID">
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">*主約文件編號</label>
+					<div class="col-lg-4">
+								<input type="text" name="tbx_cContractID" id="tbx_cContractID" class="form-control" placeholder="主約文件編號" value="@ViewBag.cContractID" title="@ViewBag.cContractID" disabled>
+					</div>
+					<label class="col-lg-2 col-form-label">*下包文件編號</label>
+					<div class="col-lg-4">
+						<input type="text" name="tbx_cSubContractID" id="tbx_cSubContractID" class="form-control" placeholder="下包文件編號" value="@ViewBag.cSubContractID" title="@ViewBag.cSubContractID" disabled>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">*下包商代號</label>
+					<div class="col-lg-4">
+						<input type="text" name="tbx_cSubSupplierID" id="tbx_cSubSupplierID" class="form-control" placeholder="下包商代號" value="@ViewBag.cSubSupplierID" title="@ViewBag.cSubSupplierID" disabled>
+					</div>
+					<label class="col-lg-2 col-form-label">*下包商名稱</label>
+					<div class="col-lg-4">
+						<input type="text" name="tbx_cSubSupplierName" id="tbx_cSubSupplierName" class="form-control" placeholder="下包商名稱" value="@ViewBag.cSubSupplierName" title="@ViewBag.cSubSupplierName" disabled>
+					</div>
+				</div>							
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">*下包備註</label>
+					<div class="col-lg-4">
+						<textarea rows="3" class="form-control" placeholder="下包備註" id="tbx_cSubNotes" name="tbx_cSubNotes" title="@ViewBag.cSubNotes">@ViewBag.cSubNotes</textarea>
+					</div>	
+					<label class="col-lg-2 col-form-label">下包合約書link</label>
+					<div class="col-lg-4">
+					@{
+						if (ViewBag.IsCanRead == "Y")
+						{
+										<a href="@ViewBag.cSubContractReport" target="_blank">@ViewBag.cSubContractID</a>
+						}
+						else
+						{
+										<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
+						}
+					}
+				</div>
+				</div>							
+				<div class="hr-line-dashed"></div>
+				<div class="form-group row">
+					@{
+						if (ViewBag.IsCanEdit != "Y")
+						{
+									<button id="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }" style="display:none;" ><i class="fa fa-floppy-o"></i> 儲 存 </button>
+						}
+						else
+						{
+									<button id="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }"><i class="fa fa-floppy-o"></i> 儲 存 </button>
+						}
+					}
+					&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-secondary btn-lg" type="button" onclick="backToContractMain();"><i class="fa fa-reply"></i> 返 回</button>
+					<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+				</div>
+			</form>
+			</div>
+		</div>
+	</div>
+</div>

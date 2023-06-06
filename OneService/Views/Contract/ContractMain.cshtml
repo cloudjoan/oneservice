@@ -510,13 +510,13 @@
 							{
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
-										<tr>
-											<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-											<td>@Html.Raw(QueryInfo[2])</td>
-											<td>@Html.Raw(QueryInfo[3])</td>
-											<td>@Html.Raw(QueryInfo[4])</td>
-											<td><a href="@QueryInfo[5]" target="_blank">查詢</a></td>
-										</tr>
+									<tr>
+										<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
+										<td>@Html.Raw(QueryInfo[2])</td>
+										<td>@Html.Raw(QueryInfo[3])</td>
+										<td>@Html.Raw(QueryInfo[4])</td>
+										<td><a href="@QueryInfo[5]" target="_blank">查詢</a></td>
+									</tr>
 								}
 							}
 						}

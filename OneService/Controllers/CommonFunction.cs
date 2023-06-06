@@ -2837,24 +2837,18 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 傳入DataTable並過濾重覆人員
+        #region 傳入ERPID並過濾重覆人員
         /// <summary>
-        /// 傳入DataTable並過濾重覆人員
+        /// 傳入ERPID並過濾重覆人員
         /// </summary>
-        /// <param name="dtORG">組織人員</param>
+        /// <param name="tERPID">ERPID</param>
+        /// <param name="tNAME">姓名</param>
         /// <param name="DicORG">傳入的Dic</param>
-        public void SetDtORGPeople(DataTable dtORG, ref Dictionary<string, string> DicORG)
+        public void SetDtORGPeople(string tERPID, string tNAME, ref Dictionary<string, string> DicORG)
         {
-            string tEMPNO = string.Empty;
-
-            foreach (DataRow dr in dtORG.Rows)
+            if (!DicORG.Keys.Contains(tERPID))
             {
-                tEMPNO = dr["EMPNO"].ToString().TrimStart('0').Trim();
-
-                if (!DicORG.Keys.Contains(tEMPNO))
-                {
-                    DicORG.Add(tEMPNO, dr["EMPNAME"].ToString().Trim());
-                }
+                DicORG.Add(tERPID, tNAME);
             }
         }
         #endregion
