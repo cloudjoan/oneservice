@@ -303,14 +303,22 @@ namespace OneService.Controllers
 
             foreach (DataRow dr in dt.Rows)
             {
-                string[] QueryInfo = new string[18];
+                string[] QueryInfo = new string[18];                
                 
-                tUrl = "../Contract/ContractMain?ContractID=" + dr["cContractID"].ToString();
                 tIsSubContract = dr["cIsSubContract"].ToString() == "Y" ? "供應商" : "客戶";
                 tDesc = dr["cDesc"].ToString().Replace("\r\n", "<br/>");
                 tContractNotes = dr["cContractNotes"].ToString().Replace("\r\n", "<br/>");
                 tStartDate = Convert.ToDateTime(dr["cStartDate"].ToString()).ToString("yyyy-MM-dd");
                 tEndDate = Convert.ToDateTime(dr["cEndDate"].ToString()).ToString("yyyy-MM-dd");
+
+                if (dr["cIsSubContract"].ToString() == "Y") //下包
+                {
+                    tUrl = "../Contract/ContractDetailSub?SubContractID=" + dr["cContractID"].ToString();
+                }
+                else //非下包
+                {
+                    tUrl = "../Contract/ContractMain?ContractID=" + dr["cContractID"].ToString();
+                }
 
                 QueryInfo[0] = dr["cContractID"].ToString();      //文件編號
                 QueryInfo[1] = tUrl;                            //合約主數據主檔URL
@@ -356,9 +364,7 @@ namespace OneService.Controllers
             string tObjUrl = string.Empty;
             string tSubNotes = string.Empty;
             
-            Dictionary<string, string> DicORG = new Dictionary<string, string>(); //記錄服務組織人員
-
-            DataTable dtORG = new DataTable();
+            Dictionary<string, string> DicORG = new Dictionary<string, string>(); //記錄合約相關人員
 
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -553,8 +559,12 @@ namespace OneService.Controllers
         #region 下包合約明細顯示
         public IActionResult ContractDetailSub()
         {
+            Dictionary<string, string> DicORG = new Dictionary<string, string>(); //記錄合約相關人員
+
             string SubIsCanRead = string.Empty;
-            string SubIsCanEdit = string.Empty;
+            string SubIsCanEdit = string.Empty;            
+            string IsFromQueryContractMain = string.Empty;
+            string tAPIURLName = string.Empty;
 
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -569,14 +579,80 @@ namespace OneService.Controllers
             {
                 pSubContractID = HttpContext.Request.Query["SubContractID"].FirstOrDefault();
 
-                SubIsCanRead = HttpContext.Request.Query["SubIsCanRead"].FirstOrDefault();
-                ViewBag.IsCanRead = SubIsCanRead;
-                pIsCanRead = SubIsCanRead == "Y" ? true : false;
+                #region 可編輯
+                if (HttpContext.Request.Query["SubIsCanEdit"].FirstOrDefault() != null)
+                {
+                    SubIsCanEdit = HttpContext.Request.Query["SubIsCanEdit"].FirstOrDefault();
+                    ViewBag.IsCanEdit = SubIsCanEdit;
+                    pIsCanEdit = SubIsCanEdit == "Y" ? true : false;
+                }
+                #endregion
 
-                SubIsCanEdit = HttpContext.Request.Query["SubIsCanEdit"].FirstOrDefault();
-                ViewBag.IsCanEdit = SubIsCanEdit;
-                pIsCanEdit = SubIsCanEdit == "Y" ? true : false;
+                #region 可閱讀合約書
+                if (HttpContext.Request.Query["SubIsCanRead"].FirstOrDefault() != null)               
+                {
+                    SubIsCanRead = HttpContext.Request.Query["SubIsCanRead"].FirstOrDefault();
+                    ViewBag.IsCanRead = SubIsCanRead;
+                    pIsCanRead = SubIsCanRead == "Y" ? true : false;
+                }
+                #endregion               
+
+                IsFromQueryContractMain = string.IsNullOrEmpty(SubIsCanRead) ? "Y" : "N";
             }
+            #endregion
+
+            #region 判斷是否從QueryContractMain進來，是的話則要重新取得權限
+            if (IsFromQueryContractMain == "Y")
+            {
+                #region 取得系統位址參數相關資訊
+                SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+                
+                tAPIURLName = ParaBean.APIURLName;
+                #endregion
+
+                #region 取得合約主數據主檔
+                var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == pSubContractID);
+
+                if (beanM != null)
+                {
+                    //取得合約相關人員
+                    CMF.SetDtORGPeople(beanM.CSoSales, beanM.CSoSalesName, ref DicORG);
+                    CMF.SetDtORGPeople(beanM.CSoSalesAss, beanM.CSoSalesAssname, ref DicORG);
+                    CMF.SetDtORGPeople(beanM.CMasales, beanM.CMasalesName, ref DicORG);                   
+
+                    #region 是否可編輯合約主數據相關內容
+                    string tLoginERPID = ViewBag.cLoginUser_ERPID;
+                    if (DicORG.Keys.Contains(tLoginERPID) || pIsMIS || pIsCSManager)
+                    {
+                        pIsCanEdit = true;
+                    }
+
+                    if (pIsCanEdit)
+                    {
+                        ViewBag.IsCanEdit = "Y";
+                    }
+                    else
+                    {
+                        ViewBag.IsCanEdit = "N";
+                    }
+                    #endregion
+
+                    #region 是否可顯示合約書link
+                    pIsCanRead = checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, tAPIURLName);
+
+                    if (pIsCanRead)
+                    {
+                        ViewBag.IsCanRead = "Y";
+                    }
+                    else
+                    {
+                        ViewBag.IsCanRead = "N";
+                    }
+                    #endregion
+                }
+                #endregion
+            }
+
             #endregion
 
             var beansSub = dbOne.TbOneContractDetailSubs.FirstOrDefault(x => x.Disabled == 0 && x.CSubContractId == pSubContractID);
