@@ -7,9 +7,7 @@
 @section js_section{
 	<script>
 		$(document).ready(function () {
-			initTable();
-			CustSearch();
-			PeopleSearch();			
+			initTable();			
 		});
 
 		function initTable() {
@@ -88,6 +86,31 @@
 
 			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
 			$('#ddl_cTeamID option').prop('selected', false).trigger('chosen:updated');	//服務團隊
+
+			//查詢更改歷史記錄popup
+            $('#btn_ShowHistoryLog').click(function () {                
+				//getHistoryLog();			//顯示更改歷史記錄
+				$('#dialog_ShowHistoryLog').modal('show');				
+            })
+
+			//判斷是否可以編輯
+			var hid_IsCanEdit = $('#hid_IsCanEdit');
+			if (hid_IsCanEdit.val() == "Y") {
+
+				disabledPopup("#form1", true);
+
+				$("#btn_submit").hide();
+				$("#btn_Edit").show();
+				$("#btn_ShowHistoryLog").show();
+				$("#btn_ShowHistoryLog").prop('disabled', false);
+			}
+			else {				
+				disabledPopup("#form1", true);
+
+				$("#btn_submit").hide();
+				$("#btn_Edit").hide();
+				$("#btn_ShowHistoryLog").hide();
+			}
 		}
 
 		function addCustomNumberFormat(xlsx, numberFormat) {
@@ -118,200 +141,171 @@
 			}
 		}
 
-		//SAP客戶代號/客戶名稱查詢
-		//compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
-		function CustSearch() {
-			var compcde = $("#hid_cLoginUser_CompCode").val();
-
-			$(".CustName").unbind();
-
-			$(".CustName").koala({
-				delay: 300,
-				keyup: function (event) {
-					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
-						var keyword = $(this).val();
-						if (keyword.length > 1) {
-							var obj = $(this);
-							$.ajax({
-								url: '@Url.Action("findCustByKeywordAndComp", "ServiceRequest")',
-								type: 'post',
-								dataType: 'json',
-								data: { functionName: 'findCustByKeywordAndComp', keyword: keyword, compcde: compcde },
-								success: function (result) {
-									Customers = [];
-									$.each(result, function (i, idata) {
-										Customers[i] = {
-											label: idata.Kna1Kunnr + "\\" + idata.Kna1Name1, //顯示在清單的東西
-											idx: i,
-											value: idata.Kna1Kunnr //這個是要填入textbox的值
-										};
-									});
-
-									//綁定foucs事件
-									obj.autocomplete({
-										source: Customers
-									}).bind('focus', function () { $(this).autocomplete("search"); });
-
-									//開啟autocomplete選單
-									obj.focus();
-								}
-							})
-						}
-					}
-
-				}
-			})
+		//顯示剩餘字數
+		function showRemainWords(obj, maxLength, remainWord) {
+			$(remainWord).show();
+			var len = obj.value.length;
+			if (len > 0) {
+				$(remainWord).html("剩餘字數: " + (maxLength - len));
+			}
+			if (len > maxLength) {
+				$(remainWord).html("已超過字數上限: " + (len - maxLength));
+			}
 		}
 
-		//Ajax用中文或英文姓名查詢人員帳號
-		function PeopleSearch() {
-			$(".Peoploe").unbind();
+		//隱藏剩餘字數
+		function hideRemainWords(obj) {
+			$(obj).html('');
+			$(obj).hide();
+		}
 
-			$(".Peoploe").koala({
-				delay: 300,
-				keyup: function (event) {
-					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
-						var keyword = $(this).val();
-						if (keyword.length > 1) {
-							var obj = $(this);
-							var ojbID = $(this).attr("id");
+		//popup各欄位reset
+		function resetPopup(popupId) {
+			$(popupId).find("input").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find("select").each(function (index, value) {
+				$(this).val("-1");
+			});
+			$(popupId).find("textarea").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find(".file-box").each(function (index, value) {
+				$(this).remove();
+			});
+		}
 
-							$.ajax({
-								url: '@Url.Action("AjaxfindEmployeeByKeyword", "ServiceRequest")',
-								type: 'post',
-								dataType: 'json',
-								data: {
-									functionName: 'AjaxfindEmployeeByKeyword', keyword: keyword
-								},
-								success: function (result) {
-									objects = [];
-									$.each(result, function (i, idata) {
-										objects[i] = {
-											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
-											idx: i,
-											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉											
-										};
-									});
+		//popup各欄位disabled
+		//popupId.傳入的obj、IsDisabled(true.不准許輸入 false.准許輸入)
+		function disabledPopup(popupId, IsDisabled) {			
 
-									//綁定foucs事件
-									obj.autocomplete({
-										source: objects
-									}).bind('focus', function () { obj.autocomplete("search"); });
-
-									//開啟autocomplete選單
-									obj.focus();									
-								}
-							})
-
-						}
-					}
+			$(popupId).find("input").each(function (index, value) {
+				var reValue = checkInputSkipList($(this).attr("name"));
+				if (!reValue) {
+					$(this).prop('disabled', IsDisabled);
 				}
-			})
+			});
+
+			$(popupId).find("select").each(function (index, value) {
+				var reValue = checkSelectSkipList($(this).attr("name"));
+				if (!reValue) {
+					$(this).prop('disabled', IsDisabled);
+				}
+			});
+
+			$(popupId).find("button").each(function (index, value) {
+				var reValue = checkButtonSkipList($(this).attr("name"));
+				if (!reValue) {
+					$(this).prop('disabled', IsDisabled);
+				}
+			});
+
+			$(popupId).find("textarea").each(function (index, value) {
+				var reValue = checkTextareaSkipList($(this).attr("name"));
+				if (!reValue) {
+					$(this).prop('disabled', IsDisabled);
+				}
+			});			
+		}
+
+		//要略過的清單(Input)
+		function checkInputSkipList(tID) {
+			var ArrayList = ["tbx_cContractID", "tbx_cCustomerID", "tbx_cCustomerName", "tbx_cSoSales", "tbx_cSoSalesName", "tbx_cSoSalesASS", "tbx_cSoSalesASSName", "tbx_cMASales", "tbx_cMASalesName", "tbx_cStartDate", "tbx_cEndDate", "tbx_cSLARESP", "tbx_cSLASRV", "tbx_cMainEngineerName"];
+			return SkiptList(tID, ArrayList);
+		}
+
+		//要略過的清單(select)
+		function checkSelectSkipList(tID) {
+			//var ArrayList = ["ddl_cSRPathWay", "ddl_cCustomerType"];
+			//return SkiptList(tID, ArrayList);
+		}
+
+		//要略過的清單(button)
+		function checkButtonSkipList(tID) {
+			//var ArrayList = ["btn_ShowHistoryLog", "btn_showRepairInfo", "btn_clearRepairInfo", "btn_addRepairInfo", "btn_addContactInfo", "btn_editRepairInfo", "btn_editContactInfo", "btn_pjTeam", "btn_pjAssEngineer", "btn_pjTechManager"];
+			//return SkiptList(tID, ArrayList);
+		}
+
+		//要略過的清單(textarea)
+		function checkTextareaSkipList(tID) {
+			var ArrayList = ["tbx_cBillCycle"];
+			return SkiptList(tID, ArrayList);
+		}
+
+		//執行要略過的清單
+		function SkiptList(tID, ArrayList) {
+			var tIsExits = false;
+
+			ArrayList.every(function (v) {
+				if (v == tID) {
+					tIsExits = true;
+					return false;
+				}
+				else {
+					return true;
+				}
+			});
+
+			return tIsExits;
+		}
+
+		//按下編輯事件
+		function EditContract() {
+			$("#btn_Edit").hide();
+			$("#btn_submit").show();
+
+			disabledPopup("#form1", false);
+		}
+
+		//確認提交事件
+		function onclickBtnSave() {
+			if (checkBeforeSend()) {
+				$("#form1").submit();
+			}
 		}
 
 		//儲存前檢查
-		function BeforeSave() {
+		function checkBeforeSend() {
+			$("#btn_submit").hide();
 			$("#waitingImg").show();
 
-			var tMsg = "";						
-			var SRCaseType = $("#ddl_cSRCaseType").val().join();		//服務案件種類
-			var Status = $("#ddl_cStatus").val().join();				//狀態
-			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//派單起始日期
-			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');			//派單結束日期
-			var tbx_cCustomerID = $('#tbx_cCustomerID');				//客戶代號
-			var tbx_cCustomerName = $('#tbx_cCustomerName');				//客戶名稱
-			var tbx_cSRID = $('#tbx_cSRID');							//SRID
-			var tbx_CreatedUserName = $('#tbx_CreatedUserName');			//派單人員
-			var tbx_cRepairName = $('#tbx_cRepairName');				//報修人姓名			
-			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道
-			var tbx_cMainEngineerID = $('#tbx_cMainEngineerID');			//主要工程師ERPID
-			var tbx_cAssEngineerID = $('#tbx_cAssEngineerID');			//協助工程師ERPID
-			var tbx_cTechManagerID = $('#tbx_cTechManagerID');			//技術主管ERPID
-			var cTeamID = $("#ddl_cTeamID").val().join();			    //服務團隊
+			var Msg = "";
+			
+			var tbx_cMACycle = $("#tbx_cMACycle");				//維護週期
+			var tbx_cMANotes = $("#tbx_cMANotes");				//維護備註
+			var tbx_cMAAddress = $("#tbx_cMAAddress");			//維護地址
+			var tbx_cContractNotes = $("#tbx_cContractNotes");	//合約備註
+			var tbx_cBillNotes = $("#tbx_cBillNotes");			//請款備註			
 
-			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');					//報修類別-大類
-			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');					//報修類別-中類
-			var ddl_cSRTypeThr = $('#ddl_cSRTypeThr');					//報修類別-小類
-
-			var tbx_cSerialID = $('#tbx_cSerialID');					//產品序號
-			var tbx_cMaterialName = $('#tbx_cMaterialName');				//產品機器型號
-			var tbx_cProductNumber = $('#tbx_cProductNumber');			//Product Number
-
-			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
-				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && SRPathWay == "" &&
-				tbx_cMainEngineerID.val() == "" && tbx_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" &&
-				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
-				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
-				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
-
-				tMsg += "請至少輸入一項查詢條件！　\n";
+			if (tbx_cMACycle.val() == "") {
+				Msg += "【維護週期】不得為空！\n";
+			}
+			
+			if (tbx_cMANotes.val() == "") {
+				Msg += "【維護備註】不得為空！\n";
 			}
 
-			if (tbx_cStartCreatedDate.val() != "" && tbx_cEndCreatedDate.val() != "") {
-
-				if (tbx_cStartCreatedDate.val() > tbx_cEndCreatedDate.val()) {
-					tMsg += '派單起始日期不能大於結束日期！\n';
-					tbx_cEndCreatedDate.val(""); //清空
-				}
+			if (tbx_cMAAddress.val() == "") {
+				Msg += "【維護地址】不得為空！\n";
 			}
 
-			if (tMsg != "") {
-				alert(tMsg);
+			if (tbx_cContractNotes.val() == "") {
+				Msg += "【合約備註】不得為空！\n";
+			}
+
+			if (tbx_cBillNotes.val() == "") {
+				Msg += "【請款備註】不得為空！\n";
+			}
+
+			if (Msg != "") {
+				alert(Msg);
+
+				$("#btn_submit").show();
 				$("#waitingImg").hide();
 				return false;
-			}
-			else {
-				searchQuerySRProgress(SRCaseType, Status, tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
-									  tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
-									  tbx_cMainEngineerID.val(), tbx_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID,
-									  ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
-									  tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
-			}
+			}			
 
 			return true;
-		}
-
-		//查詢結果
-		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID,cCustomerName, cSRID, CreatedUserName, cRepairName, cSRPathWay,
-									  cMainEngineerID, cAssEngineerID, cTechManagerID, cTeamID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
-			
-			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
-			$("#dataDiv").html('');
-
-			$.ajax({
-				url: '@Url.Action("QuerySRProgressResult", "ServiceRequest")',
-				type: 'post',
-				dataType: 'json',
-				data: {
-					cCompanyID: cCompanyID,
-					cSRCaseType: cSRCaseType,
-					cStatus: cStatus,
-					cStartCreatedDate: cStartCreatedDate,
-					cEndCreatedDate: cEndCreatedDate,
-					cCustomerID: cCustomerID,
-					cCustomerName: cCustomerName,
-					cSRID: cSRID,
-					CreatedUserName: CreatedUserName,
-					cRepairName: cRepairName,
-					cSRPathWay: cSRPathWay,
-					cMainEngineerID: cMainEngineerID,
-					cAssEngineerID: cAssEngineerID,
-					cTechManagerID: cTechManagerID,
-					cTeamID: cTeamID,
-					cSRTypeOne: cSRTypeOne,
-					cSRTypeSec: cSRTypeSec,
-					cSRTypeThr: cSRTypeThr,
-					cSerialID: cSerialID,
-					cMaterialName: cMaterialName,
-					cProductNumber: cProductNumber
-				},
-				success: function (result) {
-				},
-				complete: function (result) {
-					$("#dataDiv").html(result.responseText);
-					$("#waitingImg").hide();
-				}
-			});
 		}		
 	</script>
 }
@@ -344,9 +338,9 @@
 						</a>
 					</div>
 				</div>
-				<div class="ibox-content">	
+				<div class="ibox-content">
 					<div class="form-group row">
-						<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
+						<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditContract();">
 							<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
 						</button>
 						<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
@@ -355,63 +349,69 @@
 							<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
 						</button>
 					</div>
-					<form id="form1" name="form" action='#' method="post">						
+					<form id="form1" name="form" action='@Url.Action("saveContractMain", "Contract")' method="post">
 						<!--登人者公司別(Comp-1、Comp-2...)-->
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 						<!--登人者公司別(T012、T016...)-->
-						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">						
+						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+						<!--是否可編輯合約主數據相關內容-->
+						<input type="hidden" id="hid_IsCanEdit" name="hid_IsCanEdit" value="@ViewBag.IsCanEdit">
+						<!--是否可顯示合約書link-->
+						<input type="hidden" id="hid_IsCanRead" name="hid_IsCanRead" value="@ViewBag.IsCanRead">
+						<!--文件編號隱藏欄位-->
+						<input type="hidden" id="hid_cContractID" name="hid_cContractID" value="@ViewBag.cContractID">						
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">*文件編號</label>
+							<label class="col-lg-2 col-form-label">文件編號</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cContractID" id="tbx_cContractID" class="form-control" placeholder="文件編號" value="@ViewBag.cContractID" title="@ViewBag.cContractID"disabled>
 							</div>	
-							<label class="col-lg-2 col-form-label">銷售單號</label>
+							<label class="col-lg-2 col-form-label">*銷售單號</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSoNo" id="tbx_cSoNo" class="form-control" placeholder="銷售單號" value="@ViewBag.cSoNo" title="@ViewBag.cSoNo">
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">*客戶代號</label>
+							<label class="col-lg-2 col-form-label">客戶代號</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cCustomerID" id="tbx_cCustomerID" class="form-control CustName" placeholder="客戶代號" value="@ViewBag.cCustomerID" title="@ViewBag.cCustomerID" disabled>
 							</div>
-							<label class="col-lg-2 col-form-label">*客戶名稱</label>
+							<label class="col-lg-2 col-form-label">客戶名稱</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cCustomerName" id="tbx_cCustomerName" class="form-control" placeholder="客戶名稱" value="@ViewBag.cCustomerName" title="@ViewBag.cCustomerName" disabled>
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">*業務員ERPID</label>
+							<label class="col-lg-2 col-form-label">業務員ERPID</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cSoSales" id="tbx_cSoSales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSales" title="@ViewBag.cSoSales" disabled>
+								<input type="text" name="tbx_cSoSales" id="tbx_cSoSales" class="form-control" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSales" title="@ViewBag.cSoSales" disabled>
 							</div>
-							<label class="col-lg-2 col-form-label">*業務員姓名</label>
+							<label class="col-lg-2 col-form-label">業務員姓名</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSoSalesName" id="tbx_cSoSalesName" class="form-control" placeholder="業務員姓名" value="@ViewBag.cSoSalesName" title="@ViewBag.cSoSalesName" disabled>
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">*業務祕書ERPID</label>
+							<label class="col-lg-2 col-form-label">業務祕書ERPID</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cSoSalesASS" id="tbx_cSoSalesASS" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSalesASS" title="@ViewBag.cSoSalesASS" disabled>
+								<input type="text" name="tbx_cSoSalesASS" id="tbx_cSoSalesASS" class="form-control" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSoSalesASS" title="@ViewBag.cSoSalesASS" disabled>
 							</div>
-							<label class="col-lg-2 col-form-label">*業務祕書姓名</label>
+							<label class="col-lg-2 col-form-label">業務祕書姓名</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSoSalesASSName" id="tbx_cSoSalesASSName" class="form-control" placeholder="業務祕書姓名" value="@ViewBag.cSoSalesASSName" title="@ViewBag.cSoSalesASSName" disabled>
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">*維護業務員ERPID</label>
+							<label class="col-lg-2 col-form-label">維護業務員ERPID</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cMASales" id="tbx_cMASales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMASales" title="@ViewBag.cMASales" disabled>
+								<input type="text" name="tbx_cMASales" id="tbx_cMASales" class="form-control" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMASales" title="@ViewBag.cMASales" disabled>
 							</div>
-							<label class="col-lg-2 col-form-label">*維護業務員姓名</label>
+							<label class="col-lg-2 col-form-label">維護業務員姓名</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cMASalesName" id="tbx_cMASalesName" class="form-control" placeholder="維護業務員姓名" value="@ViewBag.cMASalesName" title="@ViewBag.cMASalesName" disabled>
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">*訂單說明</label>
+							<label class="col-lg-2 col-form-label">訂單說明</label>
 							<div class="col-lg-4">
 								<textarea rows="3" class="form-control" placeholder="訂單說明" id="tbx_cDesc" name="tbx_cDesc" title="@ViewBag.cDesc">@ViewBag.cDesc</textarea>
 							</div>							
@@ -445,11 +445,11 @@
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">*回應條件</label>
+							<label class="col-lg-2 col-form-label">回應條件</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cSLARESP" id="tbx_cSLARESP" class="form-control" placeholder="回應條件" value="@ViewBag.cSLARESP" title="@ViewBag.cSLARESP">
+								<input type="text" name="tbx_cSLARESP" id="tbx_cSLARESP" class="form-control" placeholder="回應條件" value="@ViewBag.cSLARESP" title="@ViewBag.cSLARESP" disabled>
 							</div>
-							<label class="col-lg-2 col-form-label">*服務條件</label>
+							<label class="col-lg-2 col-form-label">服務條件</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSLASRV" id="tbx_cSLASRV" class="form-control" placeholder="服務條件" value="@ViewBag.cSLASRV" title="@ViewBag.cSLASRV" disabled>
 							</div>
@@ -457,7 +457,7 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">主要工程師姓名</label>
 							<div class="col-lg-4">
-								<input type="text" name="tbx_cMainEngineerID" id="tbx_cMainEngineerID" class="form-control" placeholder="主要工程師" value="@ViewBag.cMainEngineerID" title="@ViewBag.cMainEngineerID" disabled>
+								<input type="text" name="tbx_cMainEngineerName" id="tbx_cMainEngineerName" class="form-control" placeholder="主要工程師" value="@ViewBag.cMainEngineerName" title="@ViewBag.cMainEngineerName" disabled>
 							</div>
 							<label class="col-lg-2 col-form-label">合約書link</label>
 							<div class="col-lg-4">
@@ -475,7 +475,19 @@
 						</div>											
 						<div class="hr-line-dashed"></div>
 						<div class="form-group row">
-							<button class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }"><i class="fa fa-floppy-o"></i> 儲 存 </button>
+							<label class="col-lg-2 col-form-label">請款期間</label>
+							<div class="col-lg-4">
+								<textarea rows="3" class="form-control" placeholder="請款期間" id="tbx_cBillCycle" name="tbx_cBillCycle" title="@ViewBag.cBillCycle" disabled>@ViewBag.cBillCycle</textarea>
+							</div>
+							<label class="col-lg-2 col-form-label">*請款備註</label>
+							<div class="col-lg-4">
+								<textarea rows="3" class="form-control" placeholder="請款備註" id="tbx_cBillNotes" name="tbx_cBillNotes" title="@ViewBag.cBillNotes">@ViewBag.cBillNotes</textarea>
+							</div>
+						</div>
+						<div class="form-group row">
+							<button id="btn_submit" class="btn btn-primary btn-lg" type="button" onclick="ShowSRConfirmDialogMsg('確認', '您是否確認儲存？');">
+								<i class="fa fa-arrow-circle-up" style="font-size:large"> 儲 存</i>
+							</button>
 							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
 						</div>
 					</form>
@@ -506,24 +518,43 @@
 						</thead>
 						<tbody>
 							@{
-							if (ViewBag.QueryToListBean != null)
-							{
-								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								if (ViewBag.QueryToListBean != null)
 								{
-									<tr>
-										<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
-										<td>@Html.Raw(QueryInfo[2])</td>
-										<td>@Html.Raw(QueryInfo[3])</td>
-										<td>@Html.Raw(QueryInfo[4])</td>
-										<td><a href="@QueryInfo[5]" target="_blank">查詢</a></td>
-									</tr>
+									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+									{
+										<tr>
+											<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
+											<td>@Html.Raw(QueryInfo[2])</td>
+											<td>@Html.Raw(QueryInfo[3])</td>
+											<td>@Html.Raw(QueryInfo[4])</td>
+											<td><a href="@QueryInfo[5]" target="_blank">查詢</a></td>
+										</tr>
+									}
 								}
 							}
-						}
-					</tbody>
-				</table>
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>
 
+	<!--ShowSRConfirmDialog-->
+	<div class="modal fade" id="ShowSRConfirmDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="ShowSRConfirmdialogTitle">確認</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="ShowSRConfirmdialogContent">
+				</div>
+				<div class="modal-footer">
+					<button id="BtnCancel" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">取消</button>
+					<button id="BtnSave" type="button" class="btn btn-lg btn-primary" data-dismiss="modal" onclick="onclickBtnSave();">確認</button>
+				</div>
+			</div>
+		</div>
 	</div>

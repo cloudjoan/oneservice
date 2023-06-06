@@ -425,6 +425,8 @@ namespace OneService.Controllers
                 ViewBag.cSLASRV = beanM.CSlasrv;
                 ViewBag.cMANotes = beanM.CManotes;
                 ViewBag.cTeamID = beanM.CTeamId;
+                ViewBag.cBillCycle = beanM.CBillCycle;
+                ViewBag.cBillNotes = beanM.CBillNotes;
                 ViewBag.cContractReport = beanM.CContractReport;
 
                 #region 是否可編輯合約主數據相關內容
@@ -464,7 +466,7 @@ namespace OneService.Controllers
 
             if (beanEng != null)
             {
-                ViewBag.cMainEngineerID = beanEng.CEngineerName;
+                ViewBag.cMainEngineerName = beanEng.CEngineerName;
             }
             #endregion
 
@@ -475,7 +477,7 @@ namespace OneService.Controllers
             {
                 string[] QueryInfo = new string[6];
 
-                tSubUrl = "../Contract/ContractDetailSub?SubContractID=" + beanSub.CSubContractId + "&SubIsCanRead=" + ViewBag.IsCanRead + "&SubIsCanEdit=" + ViewBag.IsCanEdit;
+                tSubUrl = "../Contract/ContractDetailSub?SubContractID=" + beanSub.CSubContractId;
                 tObjUrl = "javascript:void(0);";
                 tSubNotes = beanSub.CSubNotes.Replace("\n", "<br/>");                
 
@@ -494,17 +496,7 @@ namespace OneService.Controllers
 
             return View();
         }
-        #endregion
-
-        #region 判斷是否可編輯合約主數據相關內容
-        public bool checkIsCanEditContract()
-        {
-            bool reValue = false;
-
-
-            return reValue;
-        }
-        #endregion
+        #endregion       
 
         #region 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
         /// <summary>
@@ -552,6 +544,86 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 儲存合約主數據內容
+        [HttpPost]
+        public IActionResult saveContractMain(IFormCollection formCollection)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string tLog = string.Empty;
+            string OldCMACycle = string.Empty;
+            string OldCMANotes = string.Empty;
+            string OldCMAAddress = string.Empty;
+            string OldCContractNotes = string.Empty;
+            string OldCBillNotes = string.Empty;
+
+            pContractID = formCollection["hid_cContractID"].FirstOrDefault();
+            string CMACycle = formCollection["tbx_cMACycle"].FirstOrDefault();
+            string CMANotes = formCollection["tbx_cMANotes"].FirstOrDefault();
+            string CMAAddress = formCollection["tbx_cMAAddress"].FirstOrDefault();
+            string CContractNotes = formCollection["tbx_cContractNotes"].FirstOrDefault();
+            string CBillNotes = formCollection["tbx_cBillNotes"].FirstOrDefault();
+
+            try
+            {
+                var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == pContractID);
+
+                if (beanM != null)
+                {
+                    #region 紀錄新舊值
+                    OldCMACycle = beanM.CMacycle;
+                    tLog += CMF.getNewAndOldLog("維護週期", OldCMACycle, CMACycle);
+
+                    OldCMANotes = beanM.CManotes;
+                    tLog += CMF.getNewAndOldLog("維護備註", OldCMANotes, CMANotes);
+
+                    OldCMAAddress = beanM.CMaaddress;
+                    tLog += CMF.getNewAndOldLog("維護地址", OldCMAAddress, CMAAddress);
+
+                    OldCContractNotes = beanM.CContractNotes;
+                    tLog += CMF.getNewAndOldLog("合約備註", OldCContractNotes, CContractNotes);
+
+                    OldCBillNotes = beanM.CBillNotes;
+                    tLog += CMF.getNewAndOldLog("請款備註", OldCBillNotes, CBillNotes);
+                    #endregion
+
+                    #region 主資料表
+                    beanM.CMacycle = CMACycle;
+                    beanM.CManotes = CMANotes;
+                    beanM.CMaaddress = CMAAddress;
+                    beanM.CContractNotes = CContractNotes;
+                    beanM.CBillNotes = CBillNotes;
+                    #endregion
+
+                    int result = dbOne.SaveChanges();
+
+                    if (result <= 0)
+                    {
+                        pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
+                        CMF.writeToLog(pContractID, "saveContractMain", pMsg, ViewBag.empEngName);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(tLog))
+                        {
+                            CMF.writeToLog(pContractID, "saveContractMain", tLog, ViewBag.empEngName);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
+                pMsg += " 失敗行數：" + ex.ToString();
+
+                CMF.writeToLog(pContractID, "saveContractMain", pMsg, ViewBag.empEngName);
+            }
+
+            return RedirectToAction("finishForm");
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑合約主數據查詢/維護 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓下包合約明細查詢 ↓↓↓↓↓----- 
@@ -577,83 +649,57 @@ namespace OneService.Controllers
             #region Request參數            
             if (HttpContext.Request.Query["SubContractID"].FirstOrDefault() != null)
             {
-                pSubContractID = HttpContext.Request.Query["SubContractID"].FirstOrDefault();
-
-                #region 可編輯
-                if (HttpContext.Request.Query["SubIsCanEdit"].FirstOrDefault() != null)
-                {
-                    SubIsCanEdit = HttpContext.Request.Query["SubIsCanEdit"].FirstOrDefault();
-                    ViewBag.IsCanEdit = SubIsCanEdit;
-                    pIsCanEdit = SubIsCanEdit == "Y" ? true : false;
-                }
-                #endregion
-
-                #region 可閱讀合約書
-                if (HttpContext.Request.Query["SubIsCanRead"].FirstOrDefault() != null)               
-                {
-                    SubIsCanRead = HttpContext.Request.Query["SubIsCanRead"].FirstOrDefault();
-                    ViewBag.IsCanRead = SubIsCanRead;
-                    pIsCanRead = SubIsCanRead == "Y" ? true : false;
-                }
-                #endregion               
-
-                IsFromQueryContractMain = string.IsNullOrEmpty(SubIsCanRead) ? "Y" : "N";
+                pSubContractID = HttpContext.Request.Query["SubContractID"].FirstOrDefault();               
             }
             #endregion
+           
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
 
-            #region 判斷是否從QueryContractMain進來，是的話則要重新取得權限
-            if (IsFromQueryContractMain == "Y")
+            tAPIURLName = ParaBean.APIURLName;
+            #endregion
+
+            #region 取得合約主數據主檔
+            var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == pSubContractID);
+
+            if (beanM != null)
             {
-                #region 取得系統位址參數相關資訊
-                SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
-                
-                tAPIURLName = ParaBean.APIURLName;
+                //取得合約相關人員
+                CMF.SetDtORGPeople(beanM.CSoSales, beanM.CSoSalesName, ref DicORG);
+                CMF.SetDtORGPeople(beanM.CSoSalesAss, beanM.CSoSalesAssname, ref DicORG);
+                CMF.SetDtORGPeople(beanM.CMasales, beanM.CMasalesName, ref DicORG);
+
+                #region 是否可編輯合約主數據相關內容
+                string tLoginERPID = ViewBag.cLoginUser_ERPID;
+                if (DicORG.Keys.Contains(tLoginERPID) || pIsMIS || pIsCSManager)
+                {
+                    pIsCanEdit = true;
+                }
+
+                if (pIsCanEdit)
+                {
+                    ViewBag.IsCanEdit = "Y";
+                }
+                else
+                {
+                    ViewBag.IsCanEdit = "N";
+                }
                 #endregion
 
-                #region 取得合約主數據主檔
-                var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == pSubContractID);
+                #region 是否可顯示合約書link
+                pIsCanRead = checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, tAPIURLName);
 
-                if (beanM != null)
+                if (pIsCanRead)
                 {
-                    //取得合約相關人員
-                    CMF.SetDtORGPeople(beanM.CSoSales, beanM.CSoSalesName, ref DicORG);
-                    CMF.SetDtORGPeople(beanM.CSoSalesAss, beanM.CSoSalesAssname, ref DicORG);
-                    CMF.SetDtORGPeople(beanM.CMasales, beanM.CMasalesName, ref DicORG);                   
-
-                    #region 是否可編輯合約主數據相關內容
-                    string tLoginERPID = ViewBag.cLoginUser_ERPID;
-                    if (DicORG.Keys.Contains(tLoginERPID) || pIsMIS || pIsCSManager)
-                    {
-                        pIsCanEdit = true;
-                    }
-
-                    if (pIsCanEdit)
-                    {
-                        ViewBag.IsCanEdit = "Y";
-                    }
-                    else
-                    {
-                        ViewBag.IsCanEdit = "N";
-                    }
-                    #endregion
-
-                    #region 是否可顯示合約書link
-                    pIsCanRead = checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, tAPIURLName);
-
-                    if (pIsCanRead)
-                    {
-                        ViewBag.IsCanRead = "Y";
-                    }
-                    else
-                    {
-                        ViewBag.IsCanRead = "N";
-                    }
-                    #endregion
+                    ViewBag.IsCanRead = "Y";
+                }
+                else
+                {
+                    ViewBag.IsCanRead = "N";
                 }
                 #endregion
             }
-
-            #endregion
+            #endregion        
 
             var beansSub = dbOne.TbOneContractDetailSubs.FirstOrDefault(x => x.Disabled == 0 && x.CSubContractId == pSubContractID);
 
@@ -669,12 +715,7 @@ namespace OneService.Controllers
                 #region 取得下包約合約書link
                 if (pIsCanRead)
                 {
-                    var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.CContractId == beansSub.CSubContractId);
-
-                    if (beanM != null)
-                    {
-                        ViewBag.cSubContractReport = beanM.CContractReport;
-                    }
+                    ViewBag.cSubContractReport = beanM.CContractReport;
                 }
                 #endregion
             }
@@ -717,7 +758,7 @@ namespace OneService.Controllers
                 #endregion
 
                 #region 更新主檔的維護備註
-                var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.CContractId == beanSub.CContractId);
+                var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.CContractId == tSubContractID);
 
                 if (beanM != null)
                 {
@@ -748,6 +789,17 @@ namespace OneService.Controllers
         #endregion -----↑↑↑↑↑下包合約明細查詢 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
+
+        #region 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
+        /// <summary>
+        /// 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult finishForm()
+        {
+            return View();
+        }
+        #endregion
 
         #region 查詢更改歷史記錄
         /// <summary>

@@ -17,6 +17,16 @@
 				getHistoryLog();			//顯示更改歷史記錄
 				$('#dialog_ShowHistoryLog').modal('show');
 			})
+
+			var hid_IsCanEdit = $("#hid_IsCanEdit");	//是否可編輯
+			if (hid_IsCanEdit.val() == "Y")
+			{
+				$('#btn_ShowHistoryLog').show();
+			}
+			else
+			{
+				$('#btn_ShowHistoryLog').hide();
+			}
 		}
 
 		//呼叫日期轉換
@@ -213,6 +223,8 @@
 				<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
 				<!--下包合約資料檔系統ID-->
 				<input type="hidden" id="hid_cID" name="hid_cID" value="@ViewBag.cID">
+				<!--是否可編輯下包合約相關內容-->
+				<input type="hidden" id="hid_IsCanEdit" name="hid_IsCanEdit" value="@ViewBag.IsCanEdit">
 				<div class="form-group row">
 					<label class="col-lg-2 col-form-label">*主約文件編號</label>
 					<div class="col-lg-4">
@@ -243,11 +255,11 @@
 					@{
 						if (ViewBag.IsCanRead == "Y")
 						{
-										<a href="@ViewBag.cSubContractReport" target="_blank">@ViewBag.cSubContractID</a>
+							<a href="@ViewBag.cSubContractReport" target="_blank">@ViewBag.cSubContractID</a>
 						}
 						else
 						{
-										<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
+							<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
 						}
 					}
 				</div>
@@ -257,11 +269,11 @@
 					@{
 						if (ViewBag.IsCanEdit != "Y")
 						{
-									<button id="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }" style="display:none;" ><i class="fa fa-floppy-o"></i> 儲 存 </button>
+							<button id="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }" style="display:none;" ><i class="fa fa-floppy-o"></i> 儲 存 </button>
 						}
 						else
 						{
-									<button id="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }"><i class="fa fa-floppy-o"></i> 儲 存 </button>
+							<button id="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }"><i class="fa fa-floppy-o"></i> 儲 存 </button>
 						}
 					}
 					&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-secondary btn-lg" type="button" onclick="backToContractMain();"><i class="fa fa-reply"></i> 返回主約</button>
