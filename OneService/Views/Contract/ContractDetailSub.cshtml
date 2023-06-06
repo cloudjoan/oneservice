@@ -93,7 +93,7 @@
 							+ "      <div class='ibox-content'>"
 							+ "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
 							+ "				<thead><tr>"
-							+ "				<th>SRID</th>"
+							+ "				<th>文件編號</th>"
 							+ "				<th>事件名稱</th>"
 							+ "				<th>Log</th>"
 							+ "				<th>異動時間</th>"
@@ -103,12 +103,10 @@
 							+ "</tbody></table></div></div></div>";
 					}
 					//↑↑↑↑↑歷史記錄資訊(共用) ↑↑↑↑↑/
-
 					
 					ALLList += listOneLog;
 
-					$("#tb_ShowHistoryLog").html(ALLList);
-					callCollapse();
+					$("#tb_ShowHistoryLog").html(ALLList);					
 				}
 			});
 		}
