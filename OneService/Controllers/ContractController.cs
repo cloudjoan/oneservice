@@ -82,12 +82,12 @@ namespace OneService.Controllers
         /// <summary>
         /// 程式作業編號檔系統ID(一般服務)
         /// </summary>
-        static string pOperationID_GenerallySR = "869FC989-1049-4266-ABDE-69A9B07BCD0A";
+        static string pOperationID_GenerallySR = "869FC989-1049-4266-ABDE-69A9B07BCD0A";     
 
         /// <summary>
-        /// 程式作業編號檔系統ID(合約主數據查詢/維護作業)
+        /// 程式作業編號檔系統ID(合約主數據查詢/維護)
         /// </summary>
-        static string pOperationID_MaintainSR = "5B80D6AB-9143-4916-9273-ADFAEA9A61ED";
+        string pOperationID_Contract = "A9556C2C-E5DE-4745-A76B-5F2E1F69A3A9";
 
         /// <summary>
         /// 公司別(T012、T016、C069、T022)
@@ -363,8 +363,6 @@ namespace OneService.Controllers
             string tSubUrl = string.Empty;
             string tObjUrl = string.Empty;
             string tSubNotes = string.Empty;
-            
-            Dictionary<string, string> DicORG = new Dictionary<string, string>(); //記錄合約相關人員
 
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -399,11 +397,6 @@ namespace OneService.Controllers
 
             if (beanM != null)
             {
-                //取得合約相關人員
-                CMF.SetDtORGPeople(beanM.CSoSales, beanM.CSoSalesName, ref DicORG);
-                CMF.SetDtORGPeople(beanM.CSoSalesAss, beanM.CSoSalesAssname, ref DicORG);
-                CMF.SetDtORGPeople(beanM.CMasales, beanM.CMasalesName, ref DicORG);
-
                 ViewBag.cContractID = beanM.CContractId;
                 ViewBag.cSoNo = beanM.CSoNo;
                 ViewBag.cCustomerID = beanM.CCustomerId;
@@ -429,12 +422,8 @@ namespace OneService.Controllers
                 ViewBag.cBillNotes = beanM.CBillNotes;
                 ViewBag.cContractReport = beanM.CContractReport;
 
-                #region 是否可編輯合約主數據相關內容
-                string tLoginERPID = ViewBag.cLoginUser_ERPID;
-                if (DicORG.Keys.Contains(tLoginERPID) || pIsMIS || pIsCSManager)
-                {
-                    pIsCanEdit = true;
-                }
+                #region 是否可編輯合約主數據相關內容                
+                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, beanM.CContractId, "MAIN");
 
                 if (pIsCanEdit)
                 {
@@ -634,8 +623,6 @@ namespace OneService.Controllers
         #region 下包合約明細顯示
         public IActionResult ContractDetailSub()
         {
-            Dictionary<string, string> DicORG = new Dictionary<string, string>(); //記錄合約相關人員
-
             string SubIsCanRead = string.Empty;
             string SubIsCanEdit = string.Empty;            
             string IsFromQueryContractMain = string.Empty;
@@ -667,17 +654,8 @@ namespace OneService.Controllers
 
             if (beanM != null)
             {
-                //取得合約相關人員
-                CMF.SetDtORGPeople(beanM.CSoSales, beanM.CSoSalesName, ref DicORG);
-                CMF.SetDtORGPeople(beanM.CSoSalesAss, beanM.CSoSalesAssname, ref DicORG);
-                CMF.SetDtORGPeople(beanM.CMasales, beanM.CMasalesName, ref DicORG);
-
                 #region 是否可編輯合約主數據相關內容
-                string tLoginERPID = ViewBag.cLoginUser_ERPID;
-                if (DicORG.Keys.Contains(tLoginERPID) || pIsMIS || pIsCSManager)
-                {
-                    pIsCanEdit = true;
-                }
+                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pSubContractID, "MAIN");
 
                 if (pIsCanEdit)
                 {
@@ -793,6 +771,102 @@ namespace OneService.Controllers
         #endregion
 
         #endregion -----↑↑↑↑↑下包合約明細查詢 ↑↑↑↑↑-----
+
+        #region -----↓↓↓↓↓工程師明細查詢/維謢 ↓↓↓↓↓----- 
+
+        #region 工程師明細查詢
+        public IActionResult QueryContractDetailEng()
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            ViewBag.cContractID = "";
+
+            #region Request參數            
+            if (HttpContext.Request.Query["ContractID"].FirstOrDefault() != null)
+            {
+                pContractID = HttpContext.Request.Query["ContractID"].FirstOrDefault();
+                ViewBag.cContractID = pContractID;
+            }
+            #endregion
+
+            if (pContractID != "")
+            {
+                callQueryContractDetailEng(pContractID, "", "");
+            }
+
+            return View();
+        }
+        #endregion
+
+        #region 工程師明細查詢結果
+        /// <summary>
+        /// 工程師明細查詢結果
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cEngineerID">工程師ERPID</param>
+        /// <param name="cIsMainEngineer">主要工程師(Y、N)</param>
+        /// <returns></returns>
+        public IActionResult QueryContractDetailEngResult(string cContractID, string cEngineerID, string cIsMainEngineer)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+            callQueryContractDetailEng(cContractID, cEngineerID, cIsMainEngineer);
+
+            return View();
+        }
+        #endregion
+
+        #region 工程師明細查詢共用方法
+        public void callQueryContractDetailEng(string cContractID, string cEngineerID, string cIsMainEngineer)
+        {
+            string IsCanEdit = string.Empty;
+
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+                                                                  
+            if (!string.IsNullOrEmpty(cContractID)) //若有文件編號只要查一次
+            {
+                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, cContractID, "ENG");
+            }
+
+            var beans = dbOne.TbOneContractDetailEngs.Where(x => x.Disabled == 0 &&
+                                                         (string.IsNullOrEmpty(cContractID) ? true : x.CContractId.Contains(cContractID.Trim())) &&
+                                                         (string.IsNullOrEmpty(cEngineerID) ? true : x.CEngineerId == cEngineerID.Trim()) &&
+                                                         (string.IsNullOrEmpty(cIsMainEngineer) ? true : x.CIsMainEngineer == cIsMainEngineer));
+
+            foreach (var bean in beans)
+            {
+                if (string.IsNullOrEmpty(cContractID)) //若沒有文件編號才跑迴圈查
+                {
+                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, bean.CContractId, "ENG");
+                }
+
+                IsCanEdit = pIsCanEdit ? "Y" : "N";
+
+                string[] QueryInfo = new string[8];
+
+                QueryInfo[0] = IsCanEdit;                          //是否可以編輯
+                QueryInfo[1] = bean.CId.ToString();                 //系統ID
+                QueryInfo[2] = bean.CContractId;                    //文件編號
+                QueryInfo[3] = bean.CEngineerId;                    //工程師ERPID                
+                QueryInfo[4] = bean.CEngineerName;                  //工程師姓名
+                QueryInfo[5] = bean.CIsMainEngineer;                //是否為主要工程師                
+                QueryInfo[6] = bean.CContactStoreId.ToString();     //門市代號                
+                QueryInfo[7] = bean.CContactStoreName;              //門市名稱                
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑工程師明細查詢/維謢 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 

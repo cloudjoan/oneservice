@@ -1513,6 +1513,183 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得合約主數據相關人員資訊
+        /// <summary>
+        /// 取得合約主數據相關資訊
+        /// </summary>        
+        /// <param name="pOperationID_Contract">程式作業編號檔系統ID(合約主數據查詢/維護)</param>
+        /// <param name="tLoginERPID">登入者ERPID</param>
+        /// <param name="tLoginAccout">登入者AD帳號</param>
+        /// <param name="tBUKRS">登入者公司別(T012、T016、C069、T022)</param>
+        /// <param name="tCostCenterID">登入者成本中心ID</param>
+        /// <param name="tDeptID">登人者部門ID</param>
+        /// <param name="tIsMIS">登入者是否為MIS</param>
+        /// <param name="tIsCSManager">登入者是否為客服主管</param>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="tType">MAIN.主數據(含下包) ENG.工程師明細 OBJ.合約標的</param>
+        /// <returns></returns>
+        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, string cContractID, string tType)
+        {
+            bool reValue = false;
+
+            string ContractIDLimit = findSysParameterValue(pOperationID_Contract, "OTHER", "T012", "ContractIDLimit");
+
+            if (tIsMIS || tIsCSManager)
+            {
+                reValue = true;
+            }
+            else
+            {
+                var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID.Trim());
+
+                if (beanM != null)
+                { 
+                    switch (tType)
+                    {
+                        case "MAIN":
+                            #region 主數據(含下包)
+                            Dictionary<string, string> DicORG = new Dictionary<string, string>(); //記錄合約相關人員
+
+                            SetDtORGPeople(beanM.CSoSales, beanM.CSoSalesName, ref DicORG);
+                            SetDtORGPeople(beanM.CSoSalesAss, beanM.CSoSalesAssname, ref DicORG);
+                            SetDtORGPeople(beanM.CMasales, beanM.CMasalesName, ref DicORG);
+
+                            if (DicORG.Keys.Contains(tLoginERPID))
+                            {
+                                reValue = true;
+                            }
+                            #endregion
+
+                            break;
+
+                        case "ENG":
+                            #region 工程師明細
+                            //先判斷是否為服務團隊主管
+                            if (int.Parse(cContractID.Trim()) < int.Parse(ContractIDLimit))
+                            {
+                                reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
+                            }
+                            else
+                            {
+                                reValue = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //新組織
+                            }
+
+                            if (!reValue)
+                            {
+                                //再判斷是否為主要工程師
+                                reValue = checkIsContractEngineer(tLoginERPID, cContractID, "Y");
+                            }
+                            #endregion
+
+                            break;
+
+                        case "OBJ":
+                            #region 合約標的
+                            //先判斷是否為服務團隊主管
+                            if (int.Parse(cContractID.Trim()) < int.Parse(ContractIDLimit))
+                            {
+                                reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
+                            }
+                            else
+                            {
+                                reValue = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //新組織
+                            }
+
+                            if (!reValue)
+                            {
+                                //再判斷是否為主要工程師或協助工程師
+                                reValue = checkIsContractEngineer(tLoginERPID, cContractID, "");
+                            }
+                            #endregion
+
+                            break;
+                    }
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入人員是否有在傳入的服務團隊裡(true.有 false.否)，抓舊組織
+        /// <summary>
+        /// 判斷登入人員是否有在傳入的服務團隊裡(true.有 false.否)，抓舊組織
+        /// </summary>
+        /// <param name="pOperationID_Contract">程式作業編號檔系統ID(合約主數據查詢/維護)</param>
+        /// <param name="tBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="tAccountNo">AD帳號</param>
+        /// <returns></returns>
+        public bool checkEmpIsExistSRTeamMapping_OLD(string pOperationID_Contract, string tBUKRS, string tAccountNo)
+        {
+            bool reValue = false;
+
+            var bean = psipDb.TbOneRoleParameters.FirstOrDefault(x => x.Disabled == 0 && x.COperationId.ToString() == pOperationID_Contract &&
+                                                                    x.CFunctionId == "PERSON" && x.CCompanyId == tBUKRS &&
+                                                                    x.CNo == "OLDORG" && x.CValue.ToLower() == tAccountNo.ToLower());
+
+            if (bean != null)
+            {
+                reValue = true;
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入人員是否為該服務團隊主管
+        /// <summary>
+        /// 判斷登入人員是否為該服務團隊主管
+        /// </summary>
+        /// <param name="tLoginERPID">登入者ERPID</param>
+        /// <param name="tTeamOldID">服務團隊ID</param>
+        /// <returns></returns>      
+        public bool checkIsSRTeamMappingManager(string tLoginERPID, string tTeamOldID)
+        {
+            bool reValue = false;
+
+            string tMGRERPID = string.Empty;
+
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && x.CTeamOldId == tTeamOldID);
+
+            foreach (var beansItem in beans)
+            {
+                tMGRERPID = findDeptMGRERPID(beansItem.CTeamNewId);
+
+                if (tMGRERPID == tLoginERPID)
+                {
+                    reValue = true;
+                    break;
+                }
+            }
+
+            return reValue;
+        }
+        #endregion       
+
+        #region 判斷登入人員是否為該文件編號的主要工程師、協助工程師
+        /// <summary>
+        /// 判斷登入人員是否為該文件編號的主要工程師、協助工程師
+        /// </summary>
+        /// <param name="tLoginERPID">登入者ERPID</param>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cIsMainEngineer">是否為主要工程師(Y or 空白)</param>
+        /// <returns></returns>      
+        public bool checkIsContractEngineer(string tLoginERPID, string cContractID, string cIsMainEngineer)
+        {
+            bool reValue = false;
+
+            var bean = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID && x.CEngineerId == tLoginERPID &&
+                                                                     (string.IsNullOrEmpty(cIsMainEngineer) ? true : x.CIsMainEngineer == cIsMainEngineer));
+
+            if (bean != null)
+            {
+                reValue = true;
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑合約管理 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
