@@ -594,6 +594,9 @@ namespace OneService.Controllers
                     beanM.CMaaddress = CMAAddress;
                     beanM.CContractNotes = CContractNotes;
                     beanM.CBillNotes = CBillNotes;
+
+                    beanM.ModifiedDate = DateTime.Now;
+                    beanM.ModifiedUserName = ViewBag.empEngName;
                     #endregion
 
                     int result = dbOne.SaveChanges();
@@ -763,6 +766,9 @@ namespace OneService.Controllers
                 if (beanM != null)
                 {
                     beanM.CManotes = CSubNotes;
+
+                    beanM.ModifiedDate = DateTime.Now;
+                    beanM.ModifiedUserName = ViewBag.empEngName;
                 }
                 #endregion
             }

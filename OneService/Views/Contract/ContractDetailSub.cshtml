@@ -18,14 +18,23 @@
 				$('#dialog_ShowHistoryLog').modal('show');
 			})
 
-			var hid_IsCanEdit = $("#hid_IsCanEdit");	//是否可編輯
-			if (hid_IsCanEdit.val() == "Y")
-			{
-				$('#btn_ShowHistoryLog').show();
+			//判斷是否可以編輯
+			var hid_IsCanEdit = $('#hid_IsCanEdit');
+			if (hid_IsCanEdit.val() == "Y") {
+
+				disabledPopup("#form1", true);
+
+				$("#btnSave").hide();
+				$("#btn_Edit").show();
+				$("#btn_ShowHistoryLog").show();
+				$("#btn_ShowHistoryLog").prop('disabled', false);
 			}
-			else
-			{
-				$('#btn_ShowHistoryLog').hide();
+			else {
+				disabledPopup("#form1", true);
+
+				$("#btnSave").hide();
+				$("#btn_Edit").hide();
+				$("#btn_ShowHistoryLog").hide();
 			}
 		}
 
@@ -121,6 +130,104 @@
 			});
 		}
 
+		//popup各欄位reset
+		function resetPopup(popupId) {
+			$(popupId).find("input").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find("select").each(function (index, value) {
+				$(this).val("-1");
+			});
+			$(popupId).find("textarea").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find(".file-box").each(function (index, value) {
+				$(this).remove();
+			});
+		}
+
+		//popup各欄位disabled
+		//popupId.傳入的obj、IsDisabled(true.不准許輸入 false.准許輸入)
+		function disabledPopup(popupId, IsDisabled) {
+
+			$(popupId).find("input").each(function (index, value) {
+				var reValue = checkInputSkipList($(this).attr("name"));
+				if (!reValue) {
+					$(this).prop('disabled', IsDisabled);
+				}
+			});
+
+			$(popupId).find("select").each(function (index, value) {
+				var reValue = checkSelectSkipList($(this).attr("name"));
+				if (!reValue) {
+					$(this).prop('disabled', IsDisabled);
+				}
+			});
+
+			$(popupId).find("button").each(function (index, value) {
+				var reValue = checkButtonSkipList($(this).attr("name"));
+				if (!reValue) {
+					$(this).prop('disabled', IsDisabled);
+				}
+			});
+
+			$(popupId).find("textarea").each(function (index, value) {
+				var reValue = checkTextareaSkipList($(this).attr("name"));
+				if (!reValue) {
+					$(this).prop('disabled', IsDisabled);
+				}
+			});
+		}
+
+		//要略過的清單(Input)
+		function checkInputSkipList(tID) {
+			var ArrayList = ["tbx_cContractID", "tbx_cSubContractID", "tbx_cSubSupplierID", "tbx_cSubSupplierName"];
+			return SkiptList(tID, ArrayList);
+		}
+
+		//要略過的清單(select)
+		function checkSelectSkipList(tID) {
+			//var ArrayList = ["ddl_cSRPathWay", "ddl_cCustomerType"];
+			//return SkiptList(tID, ArrayList);
+		}
+
+		//要略過的清單(button)
+		function checkButtonSkipList(tID) {
+			var ArrayList = ["btnBack"];
+			return SkiptList(tID, ArrayList);
+		}
+
+		//要略過的清單(textarea)
+		function checkTextareaSkipList(tID) {
+			//var ArrayList = ["tbx_cBillCycle"];
+			//return SkiptList(tID, ArrayList);
+		}
+
+		//執行要略過的清單
+		function SkiptList(tID, ArrayList) {
+			var tIsExits = false;
+
+			ArrayList.every(function (v) {
+				if (v == tID) {
+					tIsExits = true;
+					return false;
+				}
+				else {
+					return true;
+				}
+			});
+
+			return tIsExits;
+		}
+
+		//按下編輯事件
+		function EditContract() {
+			$("#btn_Edit").hide();
+			$("#btnSave").show();
+
+			disabledPopup("#form1", false);
+		}
+
 		//返回合約主數據主檔
 		function backToContractMain()
 		{
@@ -210,6 +317,9 @@
 			</div>
 			<div class="ibox-content">	
 				<div class="form-group row">							
+					<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditContract();">
+						<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
+					</button>
 					<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
 					&nbsp;&nbsp;&nbsp;&nbsp;
 					<button id="btn_ShowHistoryLog" class="btn btn-success btn-lg" type="button">
@@ -269,14 +379,14 @@
 					@{
 						if (ViewBag.IsCanEdit != "Y")
 						{
-							<button id="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }" style="display:none;" ><i class="fa fa-floppy-o"></i> 儲 存 </button>
+							<button id="btnSave" name="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }" style="display:none;" ><i class="fa fa-floppy-o"></i> 儲 存 </button>
 						}
 						else
 						{
-							<button id="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }"><i class="fa fa-floppy-o"></i> 儲 存 </button>
+								<button id="btnSave" name="btnSave" class="btn btn-primary btn-lg" type="button" onclick="if (!BeforeSave()) { return false; }"><i class="fa fa-floppy-o"></i> 儲 存 </button>
 						}
 					}
-					&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn btn-secondary btn-lg" type="button" onclick="backToContractMain();"><i class="fa fa-reply"></i> 返回主約</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;<button id="btnBack" name="btnBack" class="btn btn-secondary btn-lg" type="button" onclick="backToContractMain();"><i class="fa fa-reply"></i> 返回主約</button>
 					<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
 				</div>
 			</form>

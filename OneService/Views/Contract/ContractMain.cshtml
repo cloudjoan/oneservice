@@ -89,7 +89,7 @@
 
 			//查詢更改歷史記錄popup
             $('#btn_ShowHistoryLog').click(function () {                
-				//getHistoryLog();			//顯示更改歷史記錄
+				getHistoryLog();			//顯示更改歷史記錄
 				$('#dialog_ShowHistoryLog').modal('show');				
             })
 
@@ -128,6 +128,98 @@
 			// this will be the 8th "xf" element - and will therefore have an index of "7", when we use it later:
 			$(celXfsElement).append(cellStyle);
 			$(celXfsElement).attr("count", "66"); //(1.2.3版)官方提供0-64共65種格式，在此自己新增加一種
+		}
+
+		//呼叫日期轉換
+		function TransDate(Obj) {
+			if (Obj != null) {
+				return getDateString(new Date(Obj));
+			}
+
+			return "";
+		}
+
+		//日期Format(補0)
+		function pad(v) {
+			return (v < 10) ? '0' + v : v
+		}
+
+		//日期Format
+		function getDateString(d) {
+			try {
+				var year = d.getFullYear();
+				var month = pad(d.getMonth() + 1);
+				var day = pad(d.getDate());
+				var hour = pad(d.getHours());
+				var min = pad(d.getMinutes());
+				var sec = pad(d.getSeconds());
+
+				return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+			}
+			catch (e) {
+				return "";
+			}
+		}
+
+		//查詢更改歷史記錄
+		function getHistoryLog() {
+			var cContractID = $("#tbx_cContractID").val();	//主約文件編號
+			var cIsSubContract = "N";						//是否為下包合約(Y.是 N.否)
+
+			$.ajax({
+				url: '@Url.Action("GetHistoryLog", "Contract")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cContractID: cContractID,
+					cIsSubContract: cIsSubContract
+				},
+				success: function (result) {
+					var ALLList = ""
+					var listOneLog = "";
+
+					//↓↓↓↓↓歷史記錄資訊(共用) ↓↓↓↓↓/
+					$.each(result.srOneLog, function (i, bean) {
+						if (bean != null) {
+							var tDate = TransDate(bean.createdDate);
+							var strLog = bean.log.replace(/\n/g, "<br />");
+
+							listOneLog += '<tr>'
+								+ "<td style='vertical-align: left;'>" + bean.cSrid + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.eventName + "</td>"
+								+ "<td style='vertical-align: left;'>" + strLog + "</td>"
+								+ "<td style='vertical-align: left;'>" + tDate + "</td>"
+								+ "<td style='vertical-align: left;'>" + bean.createdUserName + "</td>"
+								+ "</tr>";
+						}
+					});
+
+					if (listOneLog != "") {
+						listOneLog = "<div class='col-lg-12'>"
+							+ "	<div class='ibox'>"
+							+ "		<div class='ibox-title'>"
+							+ "			<h5>合約主數據內容資訊</h5>"
+							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
+							+ "      </div>"
+							+ "      <div class='ibox-content'>"
+							+ "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
+							+ "				<thead><tr>"
+							+ "				<th>文件編號</th>"
+							+ "				<th>事件名稱</th>"
+							+ "				<th>Log</th>"
+							+ "				<th>異動時間</th>"
+							+ "				<th>異動人員</th>"
+							+ "				</tr></thead><tbody>"
+							+ listOneLog
+							+ "</tbody></table></div></div></div>";
+					}
+					//↑↑↑↑↑歷史記錄資訊(共用) ↑↑↑↑↑/
+
+					ALLList += listOneLog;
+
+					$("#tb_ShowHistoryLog").html(ALLList);
+				}
+			});
 		}
 
 		function formatTargetColumn(xlsx, col) {
