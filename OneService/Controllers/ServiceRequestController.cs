@@ -147,9 +147,14 @@ namespace OneService.Controllers
             ViewBag.ddl_SRType = SRTypeList;
             #endregion
 
-            #region 服務團隊
+            #region 服務團隊(新)
             var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, false);
             ViewBag.ddl_TeamID = SRTeamIDList;
+            #endregion
+
+            #region 服務團隊(舊)
+            var SRTeamOldIDList = CMF.findSRTeamOldIDList(pOperationID_GenerallySR, pCompanyCode, false);
+            ViewBag.ddl_TeamOldID = SRTeamOldIDList;
             #endregion
 
             #region 狀態
@@ -191,7 +196,8 @@ namespace OneService.Controllers
         /// <param name="RepairAddress">報修人地址</param>        
         /// <param name="SerialID">序號</param>
         /// <param name="PID">機器型號</param>
-        /// <param name="TeamID">服務團隊</param>
+        /// <param name="TeamID">服務團隊(新)</param>
+        /// <param name="TeamOldID">服務團隊(舊)</param>
         /// <param name="Status">狀態</param>
         /// <param name="SRType">服務類型</param>
         /// <param name="EngineerID">工程師ERPID</param>
@@ -208,7 +214,7 @@ namespace OneService.Controllers
         /// <param name="cSRTypeThr">報修類別-小類</param>
         /// <returns></returns>
         public IActionResult SRReportResult(string StartCreatedDate, string EndCreatedDate, string StartFinishTime, string EndFinishTime, string SRID, 
-                                          string CustomerID, string RepairName, string RepairAddress, string SerialID, string PID, string TeamID, 
+                                          string CustomerID, string RepairName, string RepairAddress, string SerialID, string PID, string TeamID, string TeamOldID,
                                           string Status, string SRType, string EngineerID, string ContractID, string SO, string XCHP, string HPCT, 
                                           string MaterialID, string MaterialName, string OLDCT, string NEWCT, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr)
         {
@@ -327,11 +333,41 @@ namespace OneService.Controllers
             }
             #endregion           
 
-            #region 服務團隊
+            #region 服務團隊(新)
             if (!string.IsNullOrEmpty(TeamID))
             {
                 ttStrItem = "";
                 string[] tAryTeam = TeamID.TrimEnd(',').Split(',');
+
+                if (tAryTeam.Length >= 0)
+                {
+                    ttStrItem = "AND (";
+                }
+
+                foreach (string tTeam in tAryTeam)
+                {
+                    ttStrItem += " cTeamID like N'%" + tTeam + "%' or";
+                }
+
+                if (tAryTeam.Length >= 0)
+                {
+                    if (ttStrItem.EndsWith("or"))
+                    {
+                        ttStrItem = ttStrItem.Substring(0, ttStrItem.Length - 2); //去除最後一個or  
+                    }
+
+                    ttStrItem += ") ";
+                }
+
+                ttWhere += ttStrItem + Environment.NewLine;
+            }
+            #endregion
+
+            #region 服務團隊(舊)
+            if (!string.IsNullOrEmpty(TeamOldID))
+            {
+                ttStrItem = "";
+                string[] tAryTeam = TeamOldID.TrimEnd(',').Split(',');
 
                 if (tAryTeam.Length >= 0)
                 {
@@ -499,7 +535,16 @@ namespace OneService.Controllers
 
                 CreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd");
                 tSRIDUrl = CMF.findSRIDUrl(dr["cSRID"].ToString());
-                tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
+
+                if (dr["cTeamID"].ToString().Length >= 14)
+                {
+                    tSRTeam = dr["cTeamID"].ToString();
+                }
+                else
+                {
+                    tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
+                }
+
                 cNotes = dr["cNotes"].ToString().Replace("\r\n", "<br/>");
                 cReceiveTime = Convert.ToDateTime(dr["cReceiveTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cReceiveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cStartTime = Convert.ToDateTime(dr["cStartTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cStartTime"].ToString()).ToString("yyyy-MM-dd HH:mm");

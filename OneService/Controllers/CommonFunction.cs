@@ -654,6 +654,21 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得服務團隊清單(舊組織)
+        /// <summary>
+        /// 取得服務團隊清單(舊組織)
+        /// </summary>
+        /// <param name="pCompanyCode">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>        
+        /// <returns></returns>
+        public List<SelectListItem> findSRTeamOldIDList(string cOperationID_GenerallySR, string pCompanyCode, bool cEmptyOption)
+        {
+            var tList = findSysParameterListItem(cOperationID_GenerallySR, "OTHER", pCompanyCode, "OLDTEAM", cEmptyOption);           
+
+            return tList;
+        }
+        #endregion
+
         #region 取得服務團隊說明By List
         /// <summary>
         /// 取得服務團隊說明By List
@@ -1557,6 +1572,25 @@ namespace OneService.Controllers
                             if (DicORG.Keys.Contains(tLoginERPID))
                             {
                                 reValue = true;
+                            }
+
+                            if (!reValue)
+                            {
+                                //先判斷是否為服務團隊主管
+                                if (int.Parse(cContractID.Trim()) < int.Parse(ContractIDLimit))
+                                {
+                                    reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
+                                }
+                                else
+                                {
+                                    reValue = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //新組織
+                                }
+
+                                if (!reValue)
+                                {
+                                    //再判斷是否為主要工程師
+                                    reValue = checkIsContractEngineer(tLoginERPID, cContractID, "Y");
+                                }
                             }
                             #endregion
 
