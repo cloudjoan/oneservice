@@ -1681,13 +1681,13 @@ namespace OneService.Controllers
         {
             bool reValue = false;
 
-            string tMGRERPID = string.Empty;
+            List<string> tList = findALLDeptIDListbyTeamID(tTeamOldID);
+            
+            string tMGRERPID = string.Empty;            
 
-            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && x.CTeamOldId == tTeamOldID);
-
-            foreach (var beansItem in beans)
+            foreach (var tValue in tList)
             {
-                tMGRERPID = findDeptMGRERPID(beansItem.CTeamNewId);
+                tMGRERPID = findDeptMGRERPID(tValue);
 
                 if (tMGRERPID == tLoginERPID)
                 {
