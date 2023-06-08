@@ -2337,6 +2337,93 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得所有組織的DataTable
+        /// <summary>
+        /// 取得所有組織的DataTable
+        /// </summary>
+        /// <returns></returns>
+        protected DataTable GetOrgDt()
+        {
+            DataTable dt = new DataTable();
+
+            string cmmStr = @"select ID,ParentID,Name,Level from Department where ((Status='0' and Level <> '0') or (Status='0' and ParentID IS NULL)) AND NOT(ID LIKE '9%' or ID like '12GH%') ";
+
+            dt = getDataTableByDb(cmmStr, "dbEIP");
+
+            return dt;
+        }
+        #endregion
+
+        #region 傳入最上層部門ID，並取得底下所有子部門ID
+        /// <summary>
+        /// 傳入最上層部門ID，並取得底下所有子部門ID
+        /// </summary>
+        /// <param name="tParentID">上層部門ID</param>
+        /// <returns></returns>
+        public List<string> GetALLSubDeptID(string tParentID)
+        {
+            List<string> tList = new List<string>();
+
+            string reValue = string.Empty;
+            string tmpNodeID = string.Empty;
+            string tAllDept = string.Empty;
+
+            DataTable dt = GetOrgDt(); //取得所有組織的DataTable
+            DataRow[] rows = dt.Select("ID = '" + tParentID + "'");
+
+            bool rc;
+
+            foreach (DataRow row in rows)
+            {
+                tmpNodeID = row["ID"].ToString();
+
+                tAllDept = tmpNodeID + ",";
+
+                rc = AddNodes_Dept(tmpNodeID, ref dt, ref tAllDept);
+            }
+
+            reValue = tAllDept.TrimEnd(',');
+
+            tList = reValue.Split(',').ToList();
+
+            return tList;
+        }
+        #endregion
+
+        #region 取得子節點，遞廻(部門代號)
+        private bool AddNodes_Dept(string PID, ref DataTable dt, ref string tAllDept)
+        {
+            try
+            {
+                string tmpNodeID;
+
+                DataRow[] rows = dt.Select("ParentID = '" + PID + "'");
+
+                if (rows.GetUpperBound(0) >= 0)
+                {
+                    bool rc;
+
+                    foreach (DataRow row in rows)
+                    {
+                        tmpNodeID = row["ID"].ToString();
+
+                        tAllDept += tmpNodeID + ",";
+
+                        rc = AddNodes_Dept(tmpNodeID, ref dt, ref tAllDept);
+                    }
+                }
+
+                rows = null;
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        #endregion 
+
         #region 判斷Email格式是否正確
         /// <summary>
         /// 判斷Email格式是否正確
@@ -2646,6 +2733,54 @@ namespace OneService.Controllers
             }
 
             return reValue;
+        }
+        #endregion
+
+        #region 取得服務團隊ID所對應的部門代號清單
+        /// <summary>
+        /// 取得服務團隊ID所對應的部門代號清單
+        /// </summary>
+        /// <param name="cTeamOldId">服務團隊ID</param>
+        /// <returns></returns>
+        public List<string> findDeptIDListbyTeamID(string cTeamOldId)
+        {
+            List<string> tList = new List<string>();
+
+            string reValue = string.Empty;
+
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0  && x.CTeamOldId == cTeamOldId);
+
+            foreach(var bean in beans)
+            {
+                if (!tList.Contains(bean.CTeamNewId))
+                {
+                    tList.Add(bean.CTeamNewId);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
+        #region 取得服務團隊ID下所對應的部門(含子部門)
+        /// <summary>
+        /// 取得服務團隊ID下所對應的部門(含子部門)
+        /// </summary>
+        /// <param name="cTeamOldId">服務團隊ID</param>
+        /// <returns></returns>
+        public List<string> findALLDeptIDListbyTeamID(string cTeamOldId)
+        {
+            List<string> tAllDeptIDList = new List<string>();
+            List<string> tDeptIDList = findDeptIDListbyTeamID(cTeamOldId);
+
+            foreach (string tValue in tDeptIDList)
+            {
+                List<string> tLIst = GetALLSubDeptID(tValue);
+
+                tAllDeptIDList.AddRange(tLIst);
+            }
+
+            return tAllDeptIDList;
         }
         #endregion
 

@@ -1327,6 +1327,73 @@
 				}
 			})
 		}		
+
+		//Ajax用中文或英文姓名查詢人員帳號(by服務團隊)
+		function PeopleSearch() {
+			$(".PeoploeTeam").unbind();
+
+			$(".PeoploeTeam").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();	
+						var cTeamID = $("#hid_cTeamID").val();
+
+						if (keyword.length > 1) {
+							
+							if (cTeamID == "")
+							{
+								alert("請先選擇服務團隊，再輸入關鍵字查詢!");
+								$(this).val("");
+							}
+							else
+							{
+								var obj = $(this);
+								var ojbID = $(this).attr("id");
+
+								$.ajax({
+										url: '@Url.Action("AjaxfindTeamEmployeeByKeyword", "ServiceRequest")',
+										type: 'post',
+										dataType: 'json',
+										data: { 
+											functionName: 'AjaxfindTeamEmployeeByKeyword', cTeamID: cTeamID, keyword: keyword },
+											success: function (result) {
+											objects = [];
+											$.each(result, function (i, idata) {
+												objects[i] = {
+													label: idata.Name2 + "\\" + idata.Name + "\\" + idata.ErpId,
+													idx: i,
+													value: idata.Name2 + " " + idata.Name,
+													ERPID: idata.ErpId  //value這個值，一定要在label裡才能顯示出下拉
+												};
+											});
+
+											//綁定foucs事件
+											obj.autocomplete({
+												source: objects,
+												select: function (event, ui) {
+													if (ojbID.indexOf('tbx_cMainEngineerName') >= 0)
+													{
+														$('#hid_cMainEngineerID').val(ui.item.ERPID);
+													}													
+													else if (ojbID.indexOf('tbx_pjAssEngineerName') >= 0)
+													{
+														$('#hid_pjAssEngineerAcc').val(ui.item.ERPID);
+													}										
+												}
+											}).bind('focus', function () { obj.autocomplete("search"); });
+
+											//開啟autocomplete選單
+											obj.focus();
+											$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
+										}
+								})
+							}
+						}
+					}
+				}
+			})
+		}
 		//-----↓↓↓↓↓客戶聯絡人 ↓↓↓↓↓-----
 
 		//Email格式檢查
@@ -2908,7 +2975,7 @@
 									<div class="form-group row">
 										<label class="col-lg-2 col-form-label">*主要工程師</label>
 										<div class="col-lg-4">
-											<input type="text" id="tbx_cMainEngineerName" name="tbx_cMainEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMainEngineerName">
+											<input type="text" id="tbx_cMainEngineerName" name="tbx_cMainEngineerName" class="form-control PeoploeTeam" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cMainEngineerName">
 											<input type="hidden" id="hid_cMainEngineerID" name="hid_cMainEngineerID" value="@ViewBag.cMainEngineerID" />
 										</div>										
 									</div>
@@ -3483,7 +3550,7 @@
 						<label class="col-lg-2 col-form-label">協助工程師姓名</label>
 						<div class="input-group col-sm-10 col-lg-6" style="height: 36px;">
 							<input type="hidden" id="hid_pjAssEngineerAcc" />
-							<input type="text" id="tbx_pjAssEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+							<input type="text" id="tbx_pjAssEngineerName" class="form-control PeoploeTeam" placeholder="請輸入人名或英文關鍵字搜尋">
 						</div>
 						<div class="col-lg-2">
 							<button id="btn_savepjAssEngineer" class="btn btn-primary col-lg-12 col-xs-12" type="button" onclick="savepjAssEngineer();">

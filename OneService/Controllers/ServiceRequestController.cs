@@ -6013,7 +6013,29 @@ namespace OneService.Controllers
             string json = JsonConvert.SerializeObject(contentObj);
             return Content(json, "application/json");
         }
-        #endregion       
+        #endregion
+
+        #region Ajax用中文或英文姓名查詢人員(by服務團隊)
+        /// <summary>
+        /// Ajax用中文或英文姓名查詢人員(by服務團隊)
+        /// </summary>
+        /// <param name="cTeamID">服務團隊ID</param>
+        /// <param name="keyword">中文/英文姓名</param>        
+        /// <returns></returns>
+        public IActionResult AjaxfindTeamEmployeeByKeyword(string cTeamID, string keyword)
+        {
+            object contentObj = null;
+            
+            List<string> tList = CMF.findALLDeptIDListbyTeamID(cTeamID);            
+
+            contentObj = dbEIP.People.Where(x => tList.Contains(x.DeptId) &&
+                                               (x.Account.Contains(keyword) || x.Name2.Contains(keyword)) &&
+                                               (x.LeaveReason == null && x.LeaveDate == null)).Take(5);            
+
+            string json = JsonConvert.SerializeObject(contentObj);
+            return Content(json, "application/json");
+        }
+        #endregion
 
         #region Ajax用關鍵字查詢SQ人員
         /// <summary>
