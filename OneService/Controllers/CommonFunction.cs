@@ -2745,10 +2745,11 @@ namespace OneService.Controllers
         public List<string> findDeptIDListbyTeamID(string cTeamOldId)
         {
             List<string> tList = new List<string>();
+            List<string> tTeamList = cTeamOldId.Split(';').ToList();
 
             string reValue = string.Empty;
 
-            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0  && x.CTeamOldId == cTeamOldId);
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0  && tTeamList.Contains(x.CTeamOldId));
 
             foreach(var bean in beans)
             {

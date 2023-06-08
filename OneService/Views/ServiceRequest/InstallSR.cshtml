@@ -51,7 +51,8 @@
 			CustSearch();				//取得客戶資料	
 			SerialSearch();				//產品序號資訊查詢
 			findMaterialByKeyword();	//用關鍵字查詢物料
-			PeopleSearch();				//Ajax用中文或英文姓名查詢人員帳號			
+			PeopleSearch();				//Ajax用中文或英文姓名查詢人員帳號		
+			PeopleTeamSearch();			//Ajax用中文或英文姓名查詢人員帳號(by服務團隊)
 			getpjTeam();				//取得服務團隊
 			getpjAssEngineer();			//取得協助工程師
 		});		
@@ -1329,7 +1330,7 @@
 		}		
 
 		//Ajax用中文或英文姓名查詢人員帳號(by服務團隊)
-		function PeopleSearch() {
+		function PeopleTeamSearch() {
 			$(".PeoploeTeam").unbind();
 
 			$(".PeoploeTeam").koala({
@@ -3550,7 +3551,7 @@
 						<label class="col-lg-2 col-form-label">協助工程師姓名</label>
 						<div class="input-group col-sm-10 col-lg-6" style="height: 36px;">
 							<input type="hidden" id="hid_pjAssEngineerAcc" />
-							<input type="text" id="tbx_pjAssEngineerName" class="form-control PeoploeTeam" placeholder="請輸入人名或英文關鍵字搜尋">
+							<input type="text" id="tbx_pjAssEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
 						</div>
 						<div class="col-lg-2">
 							<button id="btn_savepjAssEngineer" class="btn btn-primary col-lg-12 col-xs-12" type="button" onclick="savepjAssEngineer();">
