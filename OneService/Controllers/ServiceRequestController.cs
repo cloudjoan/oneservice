@@ -25,6 +25,7 @@ using NuGet.Packaging.Core;
 using System.Runtime.ConstrainedExecution;
 using System.Net;
 using Org.BouncyCastle.Bcpg.OpenPgp;
+using NPOI.SS.Formula.Functions;
 
 namespace OneService.Controllers
 {
@@ -2316,7 +2317,7 @@ namespace OneService.Controllers
                             dbOne.TbOneLogs.Add(logBean);
                             dbOne.SaveChanges();
                             #endregion
-                        }
+                        }                       
 
                         #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
                         string TempStatus = CStatus;
@@ -3494,6 +3495,9 @@ namespace OneService.Controllers
             pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
             bool tIsFormal = false;
+
+            int pTotalQuantity = 0;  //總安裝數量
+
             string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
@@ -3548,6 +3552,7 @@ namespace OneService.Controllers
 
             SRCondition srCon = new SRCondition();
             SRMain_SRSTATUS_INPUT beanIN = new SRMain_SRSTATUS_INPUT();
+            CURRENTINSTALLINFO_INPUT beanInstall = new CURRENTINSTALLINFO_INPUT();
 
             try
             {
@@ -3670,6 +3675,8 @@ namespace OneService.Controllers
                         {
                             TbOneSrdetailMaterialInfo beanD = new TbOneSrdetailMaterialInfo();
 
+                            pTotalQuantity += int.Parse(MIcQuantity[i]);
+
                             beanD.CSrid = pSRID;
                             beanD.CMaterialId = MIcMaterialID[i];
                             beanD.CMaterialName = MIcMaterialName[i];
@@ -3739,6 +3746,20 @@ namespace OneService.Controllers
 
                         dbOne.TbOneLogs.Add(logBean);
                         dbOne.SaveChanges();
+                        #endregion
+
+                        #region call ONE SERVICE更新裝機現況資訊接口   
+                        beanInstall.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanInstall.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanInstall.IV_SRID = pSRID;
+                        beanInstall.IV_InstallDate = "";
+                        beanInstall.IV_ExpectedDate = "";
+                        beanInstall.IV_TotalQuantity = pTotalQuantity.ToString("N0");
+                        beanInstall.IV_InstallQuantity = "0";
+                        beanInstall.IV_IsFromAPP = "N";
+                        beanInstall.IV_APIURLName = tAPIURLName;
+
+                        CMF.GetAPI_CURRENTINSTALLINFO_Update(beanInstall);
                         #endregion
 
                         #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
@@ -3934,6 +3955,8 @@ namespace OneService.Controllers
                         {
                             TbOneSrdetailMaterialInfo beanD = new TbOneSrdetailMaterialInfo();
 
+                            pTotalQuantity += int.Parse(MIcQuantity[i]);
+
                             beanD.CSrid = pSRID;
                             beanD.CMaterialId = MIcMaterialID[i];
                             beanD.CMaterialName = MIcMaterialName[i];
@@ -4096,6 +4119,20 @@ namespace OneService.Controllers
                             dbOne.SaveChanges();
                             #endregion
                         }
+
+                        #region call ONE SERVICE更新裝機現況資訊接口   
+                        beanInstall.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanInstall.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanInstall.IV_SRID = pSRID;
+                        beanInstall.IV_InstallDate = "";
+                        beanInstall.IV_ExpectedDate = "";
+                        beanInstall.IV_TotalQuantity = pTotalQuantity.ToString("N0");
+                        beanInstall.IV_InstallQuantity = "0";
+                        beanInstall.IV_IsFromAPP = "N";
+                        beanInstall.IV_APIURLName = tAPIURLName;
+
+                        CMF.GetAPI_CURRENTINSTALLINFO_Update(beanInstall);
+                        #endregion
 
                         #region call ONE SERVICE（裝機服務案件）狀態更新接口來寄送Mail
                         string TempStatus = CStatus;
@@ -6846,6 +6883,44 @@ namespace OneService.Controllers
         public string EV_MSG { get; set; }
     }
     #endregion
+
+    #region 更新裝機現況資訊相關INPUT資訊
+    /// <summary>更新裝機現況資訊相關INPUT資訊</summary>
+    public struct CURRENTINSTALLINFO_INPUT
+    {
+        /// <summary>登入者員工編號</summary>
+        public string IV_LOGINEMPNO { get; set; }
+        /// <summary>修改者員工姓名(中文+英文)</summary>
+        public string IV_LOGINEMPNAME { get; set; }
+        /// <summary>服務案件ID</summary>
+        public string IV_SRID { get; set; }
+        /// <summary>系統ID</summary>
+        public string IV_CID { get; set; }
+        /// <summary>裝機起始日期</summary>
+        public string IV_InstallDate { get; set; }
+        /// <summary>裝機完成日期</summary>
+        public string IV_ExpectedDate { get; set; }
+        /// <summary>總安裝數量</summary>
+        public string IV_TotalQuantity { get; set; }
+        /// <summary>已安裝數量</summary>
+        public string IV_InstallQuantity { get; set; }
+        /// <summary>是否來自APP更新(Y.是 N.否)</summary>
+        public string IV_IsFromAPP { get; set; }
+        /// <summary>APIURL開頭網址</summary>
+        public string IV_APIURLName { get; set; }
+    }
+    #endregion
+
+    #region 更新裝機現況資訊相關OUTPUT資訊
+        /// <summary>更新裝機現況資訊相關OUTPUT資訊</summary>
+        public struct CURRENTINSTALLINFO_OUTPUT
+        {
+            /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+            public string EV_MSGT { get; set; }
+            /// <summary>消息內容</summary>
+            public string EV_MSG { get; set; }            
+        }
+        #endregion
 
     #region 查詢是否可以讀取合約書PDF權限資料INPUT資訊
     /// <summary>查詢是否可以讀取合約書PDF權限資料INPUT資訊</summary>

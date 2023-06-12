@@ -18,6 +18,8 @@ namespace OneService.Models
 
         public virtual DbSet<Department> Departments { get; set; } = null!;
         public virtual DbSet<Person> People { get; set; } = null!;
+        public virtual DbSet<TbServicesAppInstall> TbServicesAppInstalls { get; set; } = null!;
+        public virtual DbSet<TbServicesAppInstalltemp> TbServicesAppInstalltemps { get; set; } = null!;
         public virtual DbSet<ViewDeptMgr> ViewDeptMgrs { get; set; } = null!;
         public virtual DbSet<ViewEmpInfo> ViewEmpInfos { get; set; } = null!;
         public virtual DbSet<ViewEmpInfoWithoutLeave> ViewEmpInfoWithoutLeaves { get; set; } = null!;
@@ -413,6 +415,102 @@ namespace OneService.Models
                     .IsFixedLength();
 
                 entity.Property(e => e.Workers).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbServicesAppInstall>(entity =>
+            {
+                entity.ToTable("TB_SERVICES_APP_INSTALL");
+
+                entity.HasIndex(e => e.Srid, "NonClusteredIndex-20230530-142545");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.Account)
+                    .HasMaxLength(50)
+                    .HasColumnName("ACCOUNT");
+
+                entity.Property(e => e.EmpName)
+                    .HasMaxLength(30)
+                    .HasColumnName("EMP_NAME");
+
+                entity.Property(e => e.ErpId)
+                    .HasMaxLength(20)
+                    .HasColumnName("ERP_ID");
+
+                entity.Property(e => e.ExpectedDate).HasMaxLength(10);
+
+                entity.Property(e => e.InsertTime)
+                    .HasMaxLength(22)
+                    .HasColumnName("INSERT_TIME");
+
+                entity.Property(e => e.InstallDate).HasMaxLength(10);
+
+                entity.Property(e => e.InstallQuantity).HasColumnType("numeric(10, 0)");
+
+                entity.Property(e => e.Srid)
+                    .HasMaxLength(20)
+                    .HasColumnName("SRID");
+
+                entity.Property(e => e.TotalQuantity).HasColumnType("numeric(10, 0)");
+
+                entity.Property(e => e.UpdateAccount)
+                    .HasMaxLength(50)
+                    .HasColumnName("UPDATE_ACCOUNT");
+
+                entity.Property(e => e.UpdateEmpName)
+                    .HasMaxLength(30)
+                    .HasColumnName("UPDATE_EMP_NAME");
+
+                entity.Property(e => e.UpdateTime)
+                    .HasMaxLength(22)
+                    .HasColumnName("UPDATE_TIME");
+            });
+
+            modelBuilder.Entity<TbServicesAppInstalltemp>(entity =>
+            {
+                entity.ToTable("TB_SERVICES_APP_INSTALLTEMP");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.Account)
+                    .HasMaxLength(50)
+                    .HasColumnName("ACCOUNT");
+
+                entity.Property(e => e.EmpName)
+                    .HasMaxLength(30)
+                    .HasColumnName("EMP_NAME");
+
+                entity.Property(e => e.ErpId)
+                    .HasMaxLength(20)
+                    .HasColumnName("ERP_ID");
+
+                entity.Property(e => e.ExpectedDate).HasMaxLength(10);
+
+                entity.Property(e => e.InsertTime)
+                    .HasMaxLength(22)
+                    .HasColumnName("INSERT_TIME");
+
+                entity.Property(e => e.InstallDate).HasMaxLength(10);
+
+                entity.Property(e => e.InstallQuantity).HasColumnType("numeric(10, 0)");
+
+                entity.Property(e => e.Srid)
+                    .HasMaxLength(20)
+                    .HasColumnName("SRID");
+
+                entity.Property(e => e.TotalQuantity).HasColumnType("numeric(10, 0)");
+
+                entity.Property(e => e.UpdateAccount)
+                    .HasMaxLength(50)
+                    .HasColumnName("UPDATE_ACCOUNT");
+
+                entity.Property(e => e.UpdateEmpName)
+                    .HasMaxLength(30)
+                    .HasColumnName("UPDATE_EMP_NAME");
+
+                entity.Property(e => e.UpdateTime)
+                    .HasMaxLength(22)
+                    .HasColumnName("UPDATE_TIME");
             });
 
             modelBuilder.Entity<ViewDeptMgr>(entity =>

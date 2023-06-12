@@ -1463,7 +1463,79 @@ namespace OneService.Controllers
 
         #region -----↓↓↓↓↓裝機服務 ↓↓↓↓↓-----
 
+        #region call ONE SERVICE 更新裝機現況資訊接口 
+        /// <summary>
+        /// call ONE SERVICE 更新裝機現況資訊接口
+        /// </summary>
+        /// <param name="beanIN"></param>
+        public CURRENTINSTALLINFO_OUTPUT GetAPI_CURRENTINSTALLINFO_Update(CURRENTINSTALLINFO_INPUT beanIN)
+        {
+            CURRENTINSTALLINFO_OUTPUT OUTBean = new CURRENTINSTALLINFO_OUTPUT();
 
+            string pMsg = string.Empty;
+            string cID = "0";
+
+            try
+            {
+                #region 取得該SRID是否有存在APP_INSTALL
+                //var beanAPP = dbEIP.TbServicesAppInstalls.FirstOrDefault(x => x.Srid == beanIN.IV_SRID);
+                var beanAPP = dbEIP.TbServicesAppInstalltemps.FirstOrDefault(x => x.Srid == beanIN.IV_SRID);
+
+                if (beanAPP != null)
+                {
+                    cID = beanAPP.Id.ToString();
+                }
+                #endregion
+
+                string tURL = beanIN.IV_APIURLName + "/API/API_CURRENTINSTALLINFO_UPDATE";
+
+                var client = new RestClient(tURL);
+
+                var request = new RestRequest();
+                request.Method = RestSharp.Method.Post;
+
+                Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+                parameters.Add("IV_LOGINEMPNO", beanIN.IV_LOGINEMPNO);
+                parameters.Add("IV_SRID", beanIN.IV_SRID);
+                parameters.Add("IV_CID", cID);
+                parameters.Add("IV_InstallDate", beanIN.IV_InstallDate);
+                parameters.Add("IV_ExpectedDate", beanIN.IV_ExpectedDate);
+                parameters.Add("IV_TotalQuantity", beanIN.IV_TotalQuantity);
+                parameters.Add("IV_InstallQuantity", beanIN.IV_InstallQuantity);
+                parameters.Add("IV_IsFromAPP", beanIN.IV_IsFromAPP);                
+
+                request.AddHeader("Content-Type", "application/json");
+                request.AddParameter("application/json", parameters, ParameterType.RequestBody);
+
+                RestResponse response = client.Execute(request);
+
+                #region 取得回傳訊息(成功或失敗)
+                var data = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+                OUTBean.EV_MSGT = data["EV_MSGT"].ToString().Trim();
+                OUTBean.EV_MSG = data["EV_MSG"].ToString().Trim();
+                #endregion
+
+                if (OUTBean.EV_MSGT == "Y")
+                {
+                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 更新裝機現況資訊接口成功";
+                }
+                else
+                {
+                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 更新裝機現況資訊接口失敗，原因:" + OUTBean.EV_MSG;
+                }
+            }
+            catch (Exception ex)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 更新裝機現況資訊接口失敗，原因:" + ex.Message + Environment.NewLine;
+                pMsg += " 失敗行數：" + ex.ToString();
+            }
+
+            writeToLog(beanIN.IV_SRID, "GetAPI_CURRENTINSTALLINFO_Update", pMsg, beanIN.IV_LOGINEMPNAME);
+
+            return OUTBean;
+        }
+        #endregion
 
         #endregion -----↑↑↑↑↑裝機服務 ↑↑↑↑↑-----
 
