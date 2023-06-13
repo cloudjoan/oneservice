@@ -927,89 +927,100 @@ namespace OneService.Controllers
             string OldcContactStoreID = string.Empty;
             string OldcContactStoreName = string.Empty;
 
+            bool tIsDouble = false; //判斷是否有重覆
+
             getLoginAccount();
             getEmployeeInfo();
 
-            if (!string.IsNullOrEmpty(cID)) //修改
+            tIsDouble = CMF.checkIsExitsMainEngineer(cContractID, cID); //判斷該文件編號是否已有主要工程師(true.已存在 false.未存在)
+
+            if (!tIsDouble)
             {
-                var bean = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.CId == int.Parse(cID));
-
-                if (bean != null)
+                if (!string.IsNullOrEmpty(cID)) //修改
                 {
-                    #region 紀錄新舊值
-                    OldcEngineerID = bean.CEngineerId;
-                    tLog += CMF.getNewAndOldLog("工程師ERPID", OldcEngineerID, cEngineerID);
+                    var bean = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.CId == int.Parse(cID));
 
-                    OldcEngineerName = bean.CEngineerName;
-                    tLog += CMF.getNewAndOldLog("工程師姓名", OldcEngineerName, cEngineerName);
+                    if (bean != null)
+                    {
+                        #region 紀錄新舊值
+                        OldcEngineerID = bean.CEngineerId;
+                        tLog += CMF.getNewAndOldLog("工程師ERPID", OldcEngineerID, cEngineerID);
 
-                    OldcIsMainEngineer = bean.CIsMainEngineer;
-                    tLog += CMF.getNewAndOldLog("是否為主要工程師", OldcIsMainEngineer, cIsMainEngineer);
+                        OldcEngineerName = bean.CEngineerName;
+                        tLog += CMF.getNewAndOldLog("工程師姓名", OldcEngineerName, cEngineerName);
 
-                    OldcContactStoreID = bean.CContactStoreId.ToString();
-                    tLog += CMF.getNewAndOldLog("門市代號", OldcContactStoreID, cContactStoreID);
+                        OldcIsMainEngineer = bean.CIsMainEngineer;
+                        tLog += CMF.getNewAndOldLog("是否為主要工程師", OldcIsMainEngineer, cIsMainEngineer);
 
-                    OldcContactStoreName = bean.CContactStoreName;
-                    tLog += CMF.getNewAndOldLog("門市名稱", OldcContactStoreName, cContactStoreName);
-                    #endregion
+                        OldcContactStoreID = bean.CContactStoreId.ToString();
+                        tLog += CMF.getNewAndOldLog("門市代號", OldcContactStoreID, cContactStoreID);
 
-                    bean.CEngineerId = cEngineerID;
-                    bean.CEngineerName = cEngineerName;
-                    bean.CIsMainEngineer = cIsMainEngineer;
+                        OldcContactStoreName = bean.CContactStoreName;
+                        tLog += CMF.getNewAndOldLog("門市名稱", OldcContactStoreName, cContactStoreName);
+                        #endregion
+
+                        bean.CEngineerId = cEngineerID;
+                        bean.CEngineerName = cEngineerName;
+                        bean.CIsMainEngineer = cIsMainEngineer;
+
+                        if (!string.IsNullOrEmpty(cContactStoreID))
+                        {
+                            bean.CContactStoreId = new Guid(cContactStoreID);
+                        }
+
+                        if (!string.IsNullOrEmpty(cContactStoreName))
+                        {
+                            bean.CContactStoreName = cContactStoreName;
+                        }
+
+                        bean.ModifiedDate = DateTime.Now;
+                        bean.ModifiedUserName = ViewBag.empEngName;
+                    }
+                }
+                else //新增
+                {
+                    TbOneContractDetailEng beanENG = new TbOneContractDetailEng();
+
+                    beanENG.CContractId = cContractID;
+                    beanENG.CEngineerId = cEngineerID;
+                    beanENG.CEngineerName = cEngineerName;
+                    beanENG.CIsMainEngineer = cIsMainEngineer;
 
                     if (!string.IsNullOrEmpty(cContactStoreID))
                     {
-                        bean.CContactStoreId = new Guid(cContactStoreID);
+                        beanENG.CContactStoreId = new Guid(cContactStoreID);
                     }
 
                     if (!string.IsNullOrEmpty(cContactStoreName))
                     {
-                        bean.CContactStoreName = cContactStoreName;
+                        beanENG.CContactStoreName = cContactStoreName;
                     }
 
-                    bean.ModifiedDate = DateTime.Now;
-                    bean.ModifiedUserName = ViewBag.empEngName;
+                    beanENG.Disabled = 0;
+                    beanENG.CreatedDate = DateTime.Now;
+                    beanENG.CreatedUserName = ViewBag.empEngName;
+
+                    dbOne.TbOneContractDetailEngs.Add(beanENG);
                 }
-            }
-            else //新增
-            {
-                TbOneContractDetailEng beanENG = new TbOneContractDetailEng();
 
-                beanENG.CContractId = cContractID;
-                beanENG.CEngineerId = cEngineerID;
-                beanENG.CEngineerName = cEngineerName;
-                beanENG.CIsMainEngineer = cIsMainEngineer;
+                int result = dbOne.SaveChanges();
 
-                if (!string.IsNullOrEmpty(cContactStoreID))
+                if (result <= 0)
                 {
-                    beanENG.CContactStoreId = new Guid(cContactStoreID);
+                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
+                    CMF.writeToLog(cContractID, "saveDetailENG", pMsg, ViewBag.empEngName);
                 }
-
-                if (!string.IsNullOrEmpty(cContactStoreName))
+                else
                 {
-                    beanENG.CContactStoreName = cContactStoreName;
+                    if (!string.IsNullOrEmpty(tLog))
+                    {
+                        CMF.writeToLog(cContractID, "saveDetailENG", tLog, ViewBag.empEngName);
+                    }
                 }
-
-                beanENG.Disabled = 0;
-                beanENG.CreatedDate = DateTime.Now;
-                beanENG.CreatedUserName = ViewBag.empEngName;
-
-                dbOne.TbOneContractDetailEngs.Add(beanENG);
-            }
-
-            int result = dbOne.SaveChanges();
-
-            if (result <= 0)
-            {
-                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
-                CMF.writeToLog(cContractID, "saveDetailENG", pMsg, ViewBag.empEngName);
             }
             else
             {
-                if (!string.IsNullOrEmpty(tLog))
-                {
-                    CMF.writeToLog(cContractID, "saveDetailENG", tLog, ViewBag.empEngName);
-                }
+                reValue = "文件編號【" + cContractID + "】已經有主要工程師，請重新再確認！";
             }
 
             return Json(reValue);

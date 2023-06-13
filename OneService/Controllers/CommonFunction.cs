@@ -1850,6 +1850,29 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 判斷該文件編號是否已有主要工程師(true.已存在 false.未存在)
+        /// <summary>
+        /// 判斷該文件編號是否已有主要工程師(true.已存在 false.未存在)
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public bool checkIsExitsMainEngineer(string cContractID, string cID)
+        {
+            bool reValue = false;
+
+            var beanM = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID && x.CIsMainEngineer == "Y" && 
+                                                                      (string.IsNullOrEmpty(cID) ? true : x.CId != int.Parse(cID)));
+
+            if (beanM != null)
+            {
+                reValue = true;
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑合約管理 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
