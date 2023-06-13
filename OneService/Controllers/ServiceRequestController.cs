@@ -26,6 +26,7 @@ using System.Runtime.ConstrainedExecution;
 using System.Net;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using NPOI.SS.Formula.Functions;
+using NPOI.XSSF.Streaming.Values;
 
 namespace OneService.Controllers
 {
@@ -2728,7 +2729,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 修改服務團隊
         /// </summary>
-        /// <param name="cTeamID">目前的服務團隊ERPID(;號隔開)</param>
+        /// <param name="cTeamID">目前的服務團隊的ID(;號隔開)</param>
         /// <param name="cTeamAcc">欲修改的服務團隊ERPID</param>
         /// <returns></returns>
         public IActionResult SavepjTeam(string cTeamID, string cTeamAcc)
@@ -2792,7 +2793,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 取得服務團隊
         /// </summary>
-        /// <param name="cTeamID">服務團隊ERPID(;號隔開)</param>
+        /// <param name="cTeamID">服務團隊的ID(;號隔開)</param>
         /// <returns></returns>
         public IActionResult GetpjTeam(string cTeamID)
         {
@@ -2823,6 +2824,12 @@ namespace OneService.Controllers
                         tDeptName += qPm.CTeamNewName + "</br>";
                     }
 
+                    //若是舊的服務團隊，至少塞服務團隊的ID
+                    if (tEmpName == "")
+                    {
+                        tEmpName = AssAcc;
+                    }
+
                     SRTeamInfo pmBean = new SRTeamInfo(pmId, AssAcc, tEmpName, tDeptID, tDeptName);
                     liSRTeamInfo.Add(pmBean);
                 }
@@ -2836,7 +2843,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 刪除服務團隊
         /// </summary>
-        /// <param name="cTeamID">目前的服務團隊ERPID(;號隔開)</param>
+        /// <param name="cTeamID">目前的服務團隊的ID(;號隔開)</param>
         /// <param name="cTeamAcc">欲刪除的服務團隊ERPID</param>
         /// <returns></returns>
         public IActionResult DeletepjTeam(string cTeamID, string cTeamAcc)
@@ -6078,15 +6085,14 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region Ajax用中文或英文姓名查詢人員
+        #region Ajax用中文或英文姓名查詢人員(在職人員)
         /// <summary>
-        /// Ajax用中文或英文姓名查詢人員
+        /// Ajax用中文或英文姓名查詢人員(在職人員)
         /// </summary>
         /// <param name="keyword">中文/英文姓名</param>        
         /// <returns></returns>
         public IActionResult AjaxfindEmployeeByKeyword(string keyword)
-        {           
-
+        {
             object contentObj = null;
 
             contentObj = bpmDB.TblEmployees.Where(x => (x.CEmployeeAccount.Contains(keyword) || x.CEmployeeCName.Contains(keyword)) &&
@@ -6097,9 +6103,26 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region Ajax用中文或英文姓名查詢人員(by服務團隊)
+        #region Ajax用中文或英文姓名查詢人員(含離職人員)
         /// <summary>
-        /// Ajax用中文或英文姓名查詢人員(by服務團隊)
+        /// Ajax用中文或英文姓名查詢人員(含離職人員)
+        /// </summary>
+        /// <param name="keyword">中文/英文姓名</param>        
+        /// <returns></returns>
+        public IActionResult AjaxfindEmployeeInCludeLeaveByKeyword(string keyword)
+        {
+            object contentObj = null;
+
+            contentObj = bpmDB.TblEmployees.Where(x => (x.CEmployeeAccount.Contains(keyword) || x.CEmployeeCName.Contains(keyword))).Take(5);
+
+            string json = JsonConvert.SerializeObject(contentObj);
+            return Content(json, "application/json");
+        }
+        #endregion
+
+        #region Ajax用中文或英文姓名查詢人員(by新的服務團隊)
+        /// <summary>
+        /// Ajax用中文或英文姓名查詢人員(by新的服務團隊)
         /// </summary>
         /// <param name="cTeamID">服務團隊ID</param>
         /// <param name="keyword">中文/英文姓名</param>        
@@ -6117,7 +6140,7 @@ namespace OneService.Controllers
             string json = JsonConvert.SerializeObject(contentObj);
             return Content(json, "application/json");
         }
-        #endregion
+        #endregion       
 
         #region Ajax用關鍵字查詢SQ人員
         /// <summary>

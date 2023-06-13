@@ -7,7 +7,8 @@
 @section js_section{
 	<script>
 		$(document).ready(function () {
-			initTable();			
+			initTable();
+			getpjTeam();	//取得服務團隊
 		});
 
 		function initTable() {
@@ -92,6 +93,11 @@
 				getHistoryLog();			//顯示更改歷史記錄
 				$('#dialog_ShowHistoryLog').modal('show');				
             })
+
+			//顯示服務團隊設定popup
+			$('#btn_pjTeam').click(function () {
+				$('#dialog_pjTeam').modal('show');
+			})
 
 			//判斷是否可以編輯
 			var hid_IsCanEdit = $('#hid_IsCanEdit');
@@ -302,7 +308,7 @@
 
 		//要略過的清單(Input)
 		function checkInputSkipList(tID) {
-			var ArrayList = ["tbx_cContractID", "tbx_cCustomerID", "tbx_cCustomerName", "tbx_cSoSales", "tbx_cSoSalesName", "tbx_cSoSalesASS", "tbx_cSoSalesASSName", "tbx_cMASales", "tbx_cMASalesName", "tbx_cStartDate", "tbx_cEndDate", "tbx_cSLARESP", "tbx_cSLASRV", "tbx_cMainEngineerName"];
+			var ArrayList = ["tbx_cContractID", "tbx_cCustomerID", "tbx_cCustomerName", "tbx_cSoSales", "tbx_cSoSalesName", "tbx_cSoSalesASS", "tbx_cSoSalesASSName", "tbx_cMASales", "tbx_cMASalesName", "tbx_cStartDate", "tbx_cEndDate", "tbx_cSLARESP", "tbx_cSLASRV", "tbx_cMainEngineerName", "tbx_cTeamName"];
 			return SkiptList(tID, ArrayList);
 		}
 
@@ -341,6 +347,125 @@
 			return tIsExits;
 		}
 
+		//-----↓↓↓↓↓服務團隊 ↓↓↓↓↓-----
+		//修改服務團隊
+		function savepjTeam() {
+			var hid_cTeamID = $("#hid_cTeamID");
+
+			if ($("#ddl_cTeamID").val() == "") {
+				alert("請選擇服務團隊");
+			}
+			else {
+				$("#btn_savepjTeam").hide();
+				$("#img_waiting_savepjTeam").show();
+
+				$.ajax({
+					url: '@Url.Action("SavepjTeam", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cTeamID: hid_cTeamID.val(),
+						cTeamAcc: $("#ddl_cTeamID").val(),
+					},
+					success: function (result) {
+						if (result.indexOf("Error") >= 0) {
+							alert("儲存失敗！" + result);
+						}
+						else {
+							//alert("儲存成功");
+							hid_cTeamID.val(result);
+							getpjTeam();
+						}
+					}
+				});
+
+				$("#img_waiting_savepjTeam").hide();
+				$("#btn_savepjTeam").show();
+			}
+		}
+
+		//取得服務團隊
+		function getpjTeam() {
+			$("#ddl_cTeamID").val("");
+
+			var hid_cTeamID = $("#hid_cTeamID");
+
+			$.ajax({
+				url: '@Url.Action("GetpjTeam", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cTeamID: hid_cTeamID.val(),
+				},
+				success: function (result) {
+					var list = "";
+					var pjTeamName = "";
+					$.each(result, function (i, bean) {
+						if (bean != null) {
+							pjTeamName += bean.teamName + ";";
+
+							list += '<tr id="tr_pjTeam_' + bean.id + '">'
+								+ "<input type='hidden' class='hidpjTeamAcc' value='" + bean.teamID + "'>"
+								+ '<td>'
+								+ '<button class="btn btn-danger btn-sm btnCtDelete btnPreventDefault" type="button" onclick="deletepjTeam(this);" style="margin: 2px;">'
+								+ '<i class="fa fa-trash"></i>'
+								+ '</button>'
+								+ '</td>'
+								+ "<td style='vertical-align: middle;'>" + bean.teamName + "</td>"
+								+ "<td style='vertical-align: middle;'>" + bean.deptId + "</td>"
+								+ "<td style='vertical-align: middle;'>" + bean.deptName + "</td>"
+								+ "</tr>";
+						}
+					});
+
+					if (list != "") {
+						list = "<table class='table table-striple table-bordered table-hover dataTables-example' style='word-break: keep-all; white-space: nowrap; text-align: center;'>"
+							+ "<thead><tr>"
+							+ "<th>刪除</th>"
+							+ "<th>服務團隊</th>"
+							+ "<th>部門ID</th>"
+							+ "<th>部門名稱</th>"
+							+ "</tr></thead><tbody>"
+							+ list
+							+ "</tbody></table>";
+					}
+					$("#tb_pjTeam").html(list);
+
+					pjTeamName = pjTeamName.substr(0, pjTeamName.length - 1);
+					$("#tbx_cTeamName").val(pjTeamName);
+				}
+			});
+		}
+
+		//刪除服務團隊
+		function deletepjTeam(obj) {
+			var pjTeamAcc = $(obj).parent().parent().find(".hidpjTeamAcc").val();
+			var hid_cTeamID = $("#hid_cTeamID");
+
+			if (confirm("確認刪除此服務團隊？")) {
+				$.ajax({
+					url: '@Url.Action("DeletepjTeam", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cTeamID: hid_cTeamID.val(),
+						cTeamAcc: pjTeamAcc,
+					},
+					success: function (result) {
+						if (result.indexOf("Error") >= 0) {
+							alert("刪除失敗！");
+						}
+						else {
+							//alert("刪除成功");
+							hid_cTeamID.val(result);
+							getpjTeam();
+						}
+					}
+				});
+			}
+		}
+		//-----↑↑↑↑↑服務團隊 ↑↑↑↑↑-----
+
 		//按下編輯事件
 		function EditContract() {
 			$("#btn_Edit").hide();
@@ -363,11 +488,16 @@
 
 			var Msg = "";
 			
+			var hid_cTeamID = $("#hid_cTeamID");				//服務團隊
 			var tbx_cMACycle = $("#tbx_cMACycle");				//維護週期
 			var tbx_cMANotes = $("#tbx_cMANotes");				//維護備註
 			var tbx_cMAAddress = $("#tbx_cMAAddress");			//維護地址
 			var tbx_cContractNotes = $("#tbx_cContractNotes");	//合約備註
 			var tbx_cBillNotes = $("#tbx_cBillNotes");			//請款備註			
+
+			if (hid_cTeamID.val() == "") {
+				Msg += "【服務團隊】不得為空！\n";
+			}
 
 			if (tbx_cMACycle.val() == "") {
 				Msg += "【維護週期】不得為空！\n";
@@ -456,7 +586,7 @@
 						<!--是否可顯示合約書link-->
 						<input type="hidden" id="hid_IsCanRead" name="hid_IsCanRead" value="@ViewBag.IsCanRead">
 						<!--文件編號隱藏欄位-->
-						<input type="hidden" id="hid_cContractID" name="hid_cContractID" value="@ViewBag.cContractID">
+						<input type="hidden" id="hid_cContractID" name="hid_cContractID" value="@ViewBag.cContractID">						
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">文件編號</label>
 							<div class="col-lg-4">
@@ -512,6 +642,18 @@
 							<div class="col-lg-4">
 								<textarea rows="3" class="form-control" placeholder="訂單說明" id="tbx_cDesc" name="tbx_cDesc" title="@ViewBag.cDesc">@ViewBag.cDesc</textarea>
 							</div>							
+						</div>
+						<div class="form-group row">							
+							<label class="col-lg-2 col-form-label">*服務團隊</label>
+							<div class="col-lg-6 col-sm-10 input-group">
+								<input type="hidden" id="hid_cTeamID" name="hid_cTeamID" value="@ViewBag.cTeamID">
+								<input id="tbx_cTeamName" name="tbx_cTeamName" type="text" class="form-control labelDisabled" placeholder="服務團隊名稱" disabled>
+								<div class="input-group-append">
+									<button id="btn_pjTeam" class="btn btn-primary" type="button" @(ViewBag.cSRID == "" ? "" : "disabled")>
+										<i class="fa fa-user-plus" aria-hidden="true"></i>
+									</button>
+								</div>
+							</div>
 						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">維護日期</label>
@@ -655,6 +797,37 @@
 				<div class="modal-footer">
 					<button id="BtnCancel" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">取消</button>
 					<button id="BtnSave" type="button" class="btn btn-lg btn-primary" data-dismiss="modal" onclick="onclickBtnSave();">確認</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--服務團隊彈出視窗-->
+	<div class="modal fade" id="dialog_pjTeam" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<label class="col-form-label"><i class="fa fa-users"></i> 服務團隊設定</label>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">服務團隊名稱</label>
+						<div class="input-group col-sm-10 col-lg-6" style="height: 36px;">
+							@Html.DropDownList("ddl_cTeamID", (IEnumerable<SelectListItem>)ViewBag.SRTeamIDList, new { @class = "form-control" })
+						</div>
+						<div class="col-lg-2">
+							<button id="btn_savepjTeam" class="btn btn-primary col-lg-12 col-xs-12" type="button" onclick="savepjTeam();">
+								<i class="fa fa-save" style="margin-right: 4px;"></i> 儲 存
+							</button>
+							<img id="img_waiting_savepjTeam" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+						</div>
+					</div>
+				</div>
+				<hr style="border: 1px solid lightgray; width: 98%;" />
+				<div class="modal-body" id="tb_pjTeam" style="overflow: scroll;">
 				</div>
 			</div>
 		</div>

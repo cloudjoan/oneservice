@@ -8,8 +8,9 @@
 	<script>
 		$(document).ready(function () {
 			initTable();
-			init_iChceck();			
-			PeopleSearch();
+			init_iChceck();
+			PeopleSearch();				//Ajax用中文或英文姓名查詢人員帳號
+			PeopleTeamSearch();			//Ajax用中文或英文姓名查詢人員帳號(by服務團隊)
 		});
 
 		function initTable() {
@@ -125,7 +126,7 @@
 				radioClass: 'iradio_square-green',
 			});
 
-			//保固SLA產生時，要初始本次使用的chang事件
+			//初始勾選主要工程師的chang事件
 			$(".i-checks input[name='chk_QuerycIsMainEngineer']").on('ifChanged', function (event) {
 				var objUsed = $("#hid_QuerycIsMainEngineer"); //主要工程師(Y、N)
 
@@ -137,7 +138,7 @@
 				}
 			});
 		}
-		
+
 		//Ajax用中文或英文姓名查詢人員帳號
 		function PeopleSearch() {
 			$(".Peoploe").unbind();
@@ -148,15 +149,14 @@
 					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
 						var keyword = $(this).val();
 						if (keyword.length > 1) {
-							var obj = $(this);
-							var ojbID = $(this).attr("id");
+							var obj = $(this);							
 
 							$.ajax({
-								url: '@Url.Action("AjaxfindEmployeeByKeyword", "ServiceRequest")',
+								url: '@Url.Action("AjaxfindEmployeeInCludeLeaveByKeyword", "ServiceRequest")',
 								type: 'post',
 								dataType: 'json',
 								data: {
-									functionName: 'AjaxfindEmployeeByKeyword', keyword: keyword
+									keyword: keyword
 								},
 								success: function (result) {
 									objects = [];
@@ -164,17 +164,19 @@
 										objects[i] = {
 											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
 											idx: i,
-											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉
+											Name: idata.CEmployeeCName + " " + idata.CEmployeeEname,
+											value: idata.CEmployeeErpid  //value這個值，一定要在label裡才能顯示出下拉
 										};
 									});
 
 									//綁定foucs事件
 									obj.autocomplete({
 										source: objects
-									}).bind('focus', function () { obj.autocomplete("search"); });
+									}).bind('focus', function () { $(this).autocomplete("search"); });
 
 									//開啟autocomplete選單
 									obj.focus();
+									$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
 								}
 							})
 
@@ -184,98 +186,182 @@
 			})
 		}
 
+		//Ajax用中文或英文姓名查詢人員帳號(by服務團隊)
+		function PeopleTeamSearch() {
+			$(".PeoploeTeam").unbind();
+
+			$(".PeoploeTeam").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						var cLoginUser_BUKRS= $("#hid_cLoginUser_BUKRS").val();
+						var cTeamID = $("#hid_cTeamID").val();						
+						var cIsOldContractID = $("#hid_cIsOldContractID").val();
+
+						if (keyword.length > 1) {
+
+							if (cTeamID == "") {
+								alert("合約主數據無服務團隊資訊，請確認後再輸入關鍵字查詢!");
+								$(this).val("");
+							}
+							else {
+								var obj = $(this);
+								var ojbID = $(this).attr("id");
+
+								$.ajax({
+									url: '@Url.Action("AjaxfindContractTeamEmployeeByKeyword", "Contract")',
+									type: 'post',
+									dataType: 'json',
+									data: {		
+										cBUKRS: cLoginUser_BUKRS,
+										cIsOldContractID: cIsOldContractID,
+										cTeamID: cTeamID, 
+										keyword: keyword
+									},
+									success: function (result) {
+										objects = [];
+										$.each(result, function (i, idata) {
+											objects[i] = {
+												label: idata.Name2 + "\\" + idata.Name + "\\" + idata.ErpId,
+												idx: i,
+												Name: idata.Name2 + " " + idata.Name,
+												value: idata.ErpId  //value這個值，一定要在label裡才能顯示出下拉
+											};
+										});
+
+										//綁定foucs事件
+										obj.autocomplete({
+											source: objects,
+											select: function (event, ui) {
+												$('#txt_cEngineerName').val(ui.item.Name);
+											}
+										}).bind('focus', function () { obj.autocomplete("search"); });
+
+										//開啟autocomplete選單
+										obj.focus();
+										$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
+									}
+								})
+							}
+						}
+					}
+				}
+			})
+		}
+
+		//popup各欄位reset
+        function resetPopup(popupId) {
+            $(popupId).find("input").each(function (index, value) {
+                $(this).val("");
+            });
+            $(popupId).find("select").each(function (index, value) {
+                $(this).val("-1");
+            });
+            $(popupId).find("textarea").each(function (index, value) {
+                $(this).val("");
+            });			
+        }
+
+		//新增工程師明細內容
+		function addDetailENG()
+		{
+			resetPopup("#dialog_DetailENG"); //新增/編輯工程師popup各欄位reset				
+
+			//設定各欄位資料
+			$("#hid_taskcID").val("");											//系統ID
+			$("#txt_cContractID").val($("#hid_cContractID").val());					//文件編號
+			$("#hid_cTeamID").val($("#hid_cMainTeamID").val());						//服務團隊ID
+			$("#hid_cIsOldContractID").val($("#hid_cMainIsOldContractID").val());		//是否為舊文件編號
+			
+			$("#dialog_DetailENG").modal('show');
+		}
+
 		//編輯工程師明細內容
-		function editTask(obj) {
-			var strMsg = "";
+		function editDetailENG(obj) {
+			resetPopup("#dialog_DetailENG"); //新增/編輯工程師popup各欄位reset				
 
-			if (strMsg == "") {
+			//設定各欄位資料
+			$("#hid_taskcID").val($(obj).parent().parent().find('.taskcID').val());							//系統ID				
+			$("#hid_cTeamID").val($(obj).parent().parent().find('.taskcTeamID').val());							//服務團隊ID
+			$("#hid_cIsOldContractID").val($(obj).parent().parent().find('.taskcIsOldContractID').val());			//是否為舊文件編號
+			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').text());					//文件編號
+			$("#txt_cEngineerID").val($(obj).parent().parent().find('.taskEngERPID').text());					//工程師ERPID
+			$("#txt_cEngineerName").val($(obj).parent().parent().find('.taskEngName').text());					//工程師姓名
+			$("#ddl_cIsMainEngineer").val($(obj).parent().parent().find('.taskIsMain').text());					//是否為主要工程師
+			$("#txt_cContactStoreID").val($(obj).parent().parent().find('.taskStoreID').text());					//門市代號
+			$("#txt_cContactStoreName").val($(obj).parent().parent().find('.taskStoreName').text());				//門市名稱
 
-				resetPopup("#dialog_task"); //執行紀錄popup各欄位reset
-				var stateVal = $(obj).parent().parent().find('.taskState').text(); //狀態說明
-				var state = stateVal == "進行中" ? "Progress" : stateVal == "延遲" ? "Delay" : stateVal == "已完成" ? "Close" : stateVal == "未開始" ? "NotYet" : stateVal == "取消" ? "Cancel" : "";
-				var stair2No = $(obj).parent().parent().find('.taskNo').text().split('.')[1] == null ? "0" : $(obj).parent().parent().find('.taskNo').text().split('.')[1];
-				var stair3No = $(obj).parent().parent().find('.taskNo').text().split('.')[2] == null ? "0" : $(obj).parent().parent().find('.taskNo').text().split('.')[2];
-				var checkedHoliday = $(obj).parent().parent().find('.hidIncludeHoliday').val() == "Y" ? "Y" : "";
-
-				//設定各欄位資料
-				$("#hid_taskId").val($(obj).parent().parent().find('.hidTaskId').val()); //任務ID
-				$("#ddl_taskBundleMs").val($(obj).parent().parent().find('.taskBundleMs').text()); //對應里程碑
-				$("#ddl_stair1No").val($(obj).parent().parent().find('.taskNo').text().split('.')[0]); //主要任務編號
-				$("#ddl_stair2No").val(stair2No); //次要任務編號
-				$("#ddl_stair3No").val(stair3No); //第三階任務編號
-				$("#txt_taskDesc").val($(obj).parent().parent().find('.taskDesc').text()); //工作任務
-				$("#txt_tPreWork").val($(obj).parent().parent().find('.taskPreWork').text().trim()); //前置作業 edit by elvis 2022/07/28
-				$("#txt_tExpStartDate").val($(obj).parent().parent().find('.taskExpStartD').text().trim()); //預計起始
-				$("#txt_tExpEndDate").val($(obj).parent().parent().find('.taskExpEndD').text()); //預計完成
-				$("#txt_tExpWorkHours").val($(obj).parent().parent().find('.taskExpWorkHours').text()); //預估工時
-				$("#txt_tStartDate").val($(obj).parent().parent().find('.taskStartD').text()); //實際開始
-				$("#txt_tEndDate").val($(obj).parent().parent().find('.taskEndD').text()); //實際完成
-				$("#txt_tWorkHours").val($(obj).parent().parent().find('.taskWorkHours').text()); //實際工時
-				$("#txt_tProgressPercentage").val($(obj).parent().parent().find('.taskProgressPercentage').text()); //進度% edit by elvis 2022/07/28
-				$("#txt_tImpBy").val($(obj).parent().parent().find('.taskImpBy').text()); //負責人
-				$("#ddl_taskState").val(state); //任務狀態
-				$("#txt_tNote").val($(obj).parent().parent().find('.taskNote').text()); //備註 edit by elvis 2022/07/28
-
-				//edit by elvis 2022/07/28 Start
-				if (checkedHoliday == "Y") {
-					$("#ckb_IncludeHoliday").prop('checked', true); //日曆天(含六、日)
-					$("#ckb_NotIncludeHoliday").prop('checked', false); //工作天(不含六、日)
-				}
-
-				if (checkedHoliday == "N") {
-					$("#ckb_NotIncludeHoliday").prop('checked', true); //工作天(不含六、日)
-					$("#ckb_IncludeHoliday").prop('checked', false); //日曆天(含六、日)
-				}
-				//edit by elvis 2022/07/28 End
-
-				//若為第一階任務，則工時自動統計
-				if ($("#ddl_stair3No").val() == "0") {
-					$("#txt_tExpWorkHours").attr('disabled', true);
-					$("#txt_tWorkHours").attr('disabled', true);
-				}
-				else if ($("#ddl_stair2No").val() == "0") {
-					$("#txt_tExpWorkHours").attr('disabled', true);
-					$("#txt_tWorkHours").attr('disabled', true);
-				}
-				else {
-					$("#txt_tExpWorkHours").attr('disabled', true);
-					$("#txt_tWorkHours").attr('disabled', true);
-				}
-
-				$("#dialog_task .modal-content").css({ 'width': '110%' });
-				$("#dialog_task").modal('show');
-			}
+			//$("#dialog_DetailENG .modal-content").css({ 'width': '110%' });
+			$("#dialog_DetailENG").modal('show');
 		}
 
 		//刪除工程師明細內容
-        function deleteTask(obj) {
-            var taskId = parseInt($(obj).closest("tr").find(".hidTaskId").val());
+        function deleteDetailENG(obj) {
+            var cID = parseInt($(obj).closest("tr").find(".hidcID").val());
 
             if (confirm("確認刪除此筆任務說明？")) {
                 $.ajax({
-					url: '@Url.Action("DeleteTask", "Pro")',
+					url: '@Url.Action("DeleteDetailENG", "Pro")',
 					type: 'post',
 					dataType: 'json',
                     data: {
-                        taskId: taskId,
+                        cID: cID,
                     },
                     success: function (result) {
-                        if (result) {
-							ajaxGetTask(pMilestone); //ajax取得任務說明
-                            hidePopupInit();
-                            alert("刪除成功");
-                            //$(obj).parent().parent().remove();
+                        if (result) {						
+                            alert("刪除成功");                            
                         }
                         else {
                             alert("刪除失敗");
                         }
-                    },
-                    error: function (jqXHR, exception) {
-                        ajaxErrorFunc(jqXHR, exception, "deleteTask(obj)");
-                    },
+                    },                    
 				});
             }
         }
+
+		//儲存工程師明細內容
+		function saveDetailENG(cID) {
+			
+			var strMsg = "";
+
+			if ($("#txt_cEngineerID").val() == "") strMsg += "工程師ERPID不得為空！\n";
+			if ($("#txt_cEngineerName").val() == "") strMsg += "您未下拉選取【工程師姓名】，請輸入關鍵字後再重新選取！\n";
+			if ($("#ddl_cIsMainEngineer").val() == "-1") strMsg += "請選擇是否為主要工程師！\n";
+
+			if (strMsg != "") {
+				alert(strMsg);
+			}
+			else {
+				$("#btn_saveDetailENG").hide();
+				$("#img_waiting_saveDetailENG").show();
+				$.ajax({
+					url: '@Url.Action("saveDetailENG", "Contract")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: cID,
+						cContractID: $("#txt_cContractID").val(),
+						cEngineerID: $("#txt_cEngineerID").val(),
+						cEngineerName: $("#txt_cEngineerName").val(),
+						cIsMainEngineer: $("#ddl_cIsMainEngineer").val(),
+						cContactStoreID: $("#txt_cContactStoreID").val(),
+						cContactStoreName: $("#txt_cContactStoreName").val(),						
+					},
+					success: function (result) {
+						if (result == "SUCCESS") {
+							alert("儲存成功！");
+							$("#dialog_DetailENG").modal('hide');
+						}
+						else {
+							alert("儲存失敗！原因：" + result);
+                        }
+					},					
+				});
+				$("#btn_saveDetailENG").show();
+				$("#img_waiting_saveDetailENG").hide();
+			}
+		}
 
 		//查詢
 		function Query() {
@@ -377,19 +463,23 @@
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 						<!--登人者公司別(T012、T016...)-->
 						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
-						<!--文件編號隱藏欄位-->
+						<!--文件編號隱藏欄位(從主約過來才會有值)-->
 						<input type="hidden" id="hid_cContractID" name="hid_cContractID" value="@ViewBag.cContractID">
+						<!--服務團隊隱藏欄位(從主約過來才會有值)-->
+						<input type="hidden" id="hid_cMainTeamID" name="hid_cMainTeamID" value="@ViewBag.cMainTeamID" />
+						<!--是否為舊文件編號隱藏欄位(從主約過來才會有值)-->
+						<input type="hidden" id="hid_cMainIsOldContractID" name="hid_cMainIsOldContractID" value="@ViewBag.cMainIsOldContractID" />
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">文件編號</label>
 							<div class="col-lg-4">
 								@{
 									if (ViewBag.cContractID != "")
 									{
-										<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
+											<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
 									}
 									else
 									{
-										<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
+											<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
 									}
 								}
 								
@@ -427,7 +517,14 @@
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
-					<h5>工程師明細查詢結果</h5>
+					<h5>
+						工程師明細查詢結果
+
+						@if (ViewBag.cContractID != "")
+						{
+							<button type="button" class="btn btn-success" onclick="addDetailENG();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+						}
+					</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
 							<i class="fa fa-chevron-up"></i>
@@ -453,32 +550,36 @@
 								{
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
-										<tr>
-										@if (@QueryInfo[0] == "Y")
+											<tr>
+											@if (@QueryInfo[0] == "Y")
 										{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-												<button id="taskBtnEdit' + @QueryInfo[1] + '" class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editTask(this);" style="margin: 2px;">
-													<i class="glyphicon glyphicon-pencil"></i>
-												</button>
-												<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteTask(this);" style="margin: 2px;">
-													<i class="fa fa-trash"></i>
-												</button>
-											</td>
+												<td>
+													<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+													<input type="hidden" value="@QueryInfo[2]" class="taskcTeamID" />
+													<input type="hidden" value="@QueryInfo[3]" class="taskcIsOldContractID" />
+													<button id="taskBtnEdit' + @QueryInfo[1] + '" class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailENG(this);" style="margin: 2px;">
+														<i class="glyphicon glyphicon-pencil"></i>
+													</button>
+													<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailENG(this);" style="margin: 2px;">
+														<i class="fa fa-trash"></i>
+													</button>
+												</td>
 										}
 										else
 										{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-											</td>
+												<td>
+													<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+													<input type="hidden" value="@QueryInfo[2]" class="taskcTeamID" />
+													<input type="hidden" value="@QueryInfo[3]" class="taskcIsOldContractID" />
+												</td>
 										}
-											<td class="taskContractID">@Html.Raw(QueryInfo[2])</td>
-											<td class="taskEngERPID">@Html.Raw(QueryInfo[3])</td>
-											<td class="taskEngName">@Html.Raw(QueryInfo[4])</td>
-											<td class="taskIsMain">@Html.Raw(QueryInfo[5])</td>
-											<td class="taskStoreID">@Html.Raw(QueryInfo[6])</td>
-											<td class="taskStoreName">@Html.Raw(QueryInfo[7])</td>
-										</tr>
+												<td class="taskContractID">@Html.Raw(QueryInfo[4])</td>
+												<td class="taskEngERPID">@Html.Raw(QueryInfo[5])</td>
+												<td class="taskEngName">@Html.Raw(QueryInfo[6])</td>
+												<td class="taskIsMain">@Html.Raw(QueryInfo[7])</td>
+												<td class="taskStoreID">@Html.Raw(QueryInfo[8])</td>
+												<td class="taskStoreName">@Html.Raw(QueryInfo[9])</td>
+											</tr>
 									}
 								}
 							}
@@ -490,7 +591,7 @@
 	</div>
 
 	<!--新增/編輯工程師明細彈出視窗-->
-	<div class="modal fade" id="dialog_task" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal fade" id="dialog_DetailENG" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -500,19 +601,23 @@
 					</button>
 				</div>
 				<div class="modal-body">					
-					<input type="hidden" id="hid_taskcID" />					
+					<input type="hidden" id="hid_taskcID" />
+					<!--服務團隊隱藏欄位-->
+					<input type="hidden" id="hid_cTeamID" />
+					<!--是否為舊文件編號隱藏欄位-->
+					<input type="hidden" id="hid_cIsOldContractID" />
 					<div class="form-group row">
 						<label class="col-lg-2 col-form-label">文件編號*</label>
 						<input type="text" id="txt_cContractID" class="col-lg-4" placeholder="文件編號" disabled/>
 					</div>								
 					<div class="form-group row">
 						<label class="col-lg-2 col-form-label">工程師ERPID*</label>
-						<input type="text" id="txt_cEngineerID" class="col-lg-4" placeholder="請輸入人名或英文關鍵字搜尋"/>
-						<label class="col-lg-2 col-form-label">工程師姓名</label>
+					<input type="text" id="txt_cEngineerID" class="col-lg-4 PeoploeTeam" placeholder="請輸入人名或英文關鍵字搜尋" />
+						<label class="col-lg-2 col-form-label">工程師姓名*</label>
 						<input type="text" id="txt_cEngineerName" class="col-lg-4" placeholder="工程師姓名" disabled />
 					</div>
 					<div class="form-group row">
-						<label class="col-lg-2 col-form-label">是否為主要工程師</label>
+						<label class="col-lg-2 col-form-label">是否為主要工程師*</label>
 						<select class='form-control col-lg-4' id='ddl_cIsMainEngineer'>
 							<option value='-1'>請選擇</option>
 							<option value='Y'>Y</option>
@@ -521,15 +626,15 @@
 					</div>
 					<div class="form-group row">
 						<label class="col-lg-2 col-form-label">門市代號</label>
-						<input type="text" id="txt_ContactStoreID" class="col-lg-4" placeholder="請輸入代號或名稱關鍵字搜尋" />
+						<input type="text" id="txt_cContactStoreID" class="col-lg-4" placeholder="請輸入代號或名稱關鍵字搜尋" />
 						<label class="col-lg-2 col-form-label">門市名稱</label>
-						<input type="text" id="txt_ContactStoreName" class="col-lg-4" placeholder="門市名稱" disabled />
+						<input type="text" id="txt_cContactStoreName" class="col-lg-4" placeholder="門市名稱" disabled />
 					</div>
 				</div>
 				<div class="modal-footer">
 					<div class="col-lg-5"></div>
-					<button id="btn_saveTask" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="savePjTask($('#hid_taskcID').val());"> <i class="fa fa-save"></i> 儲 存</button>
-					<img id="img_waiting_saveTask" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<button id="btn_saveDetailENG" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveDetailENG($('#hid_taskcID').val());"> <i class="fa fa-save"></i> 儲 存</button>
+					<img id="img_waiting_saveDetailENG" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
 					<div class="col-lg-5"></div>
 				</div>
 			</div>

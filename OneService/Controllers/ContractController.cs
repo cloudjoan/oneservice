@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using NPOI.SS.Formula.Functions;
 using OneService.Models;
 using OneService.Utils;
@@ -9,8 +10,10 @@ using Org.BouncyCastle.Asn1.X509;
 using System.Data;
 using System.DirectoryServices.ActiveDirectory;
 using System.Net.NetworkInformation;
+using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
+using static OneService.Controllers.ServiceRequestController;
 
 namespace OneService.Controllers
 {
@@ -185,7 +188,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 合約主數據查詢結果
         /// </summary>
-        /// <param name="cIsSubContract">合約類型(空白.客戶 Y.供應商)</param>
+        /// <param name="cIsSubContract">合約類型(N.客戶 Y.供應商)</param>
         /// <param name="cContractID">文件編號</param>
         /// <param name="cCustomerID">客戶代號</param>
         /// <param name="cCustomerName">客戶名稱</param>
@@ -224,7 +227,7 @@ namespace OneService.Controllers
             }
             else
             {
-                ttWhere += "AND (M.cIsSubContract = '' or M.cIsSubContract is null) " + Environment.NewLine;
+                ttWhere += "AND (M.cIsSubContract = 'N' or M.cIsSubContract is null) " + Environment.NewLine;
             }
             #endregion
 
@@ -422,6 +425,11 @@ namespace OneService.Controllers
                 ViewBag.cBillNotes = beanM.CBillNotes;
                 ViewBag.cContractReport = beanM.CContractReport;
 
+                #region 取得服務團隊清單
+                var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, true);
+                ViewBag.SRTeamIDList = SRTeamIDList;
+                #endregion
+
                 #region 是否可編輯合約主數據相關內容                
                 pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, beanM.CContractId, "MAIN");
 
@@ -541,6 +549,7 @@ namespace OneService.Controllers
             getEmployeeInfo();
 
             string tLog = string.Empty;
+            string OldCTeamId = string.Empty;
             string OldCMACycle = string.Empty;
             string OldCMANotes = string.Empty;
             string OldCMAAddress = string.Empty;
@@ -548,6 +557,7 @@ namespace OneService.Controllers
             string OldCBillNotes = string.Empty;
 
             pContractID = formCollection["hid_cContractID"].FirstOrDefault();
+            string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CMACycle = formCollection["tbx_cMACycle"].FirstOrDefault();
             string CMANotes = formCollection["tbx_cMANotes"].FirstOrDefault();
             string CMAAddress = formCollection["tbx_cMAAddress"].FirstOrDefault();
@@ -561,6 +571,9 @@ namespace OneService.Controllers
                 if (beanM != null)
                 {
                     #region 紀錄新舊值
+                    OldCTeamId = beanM.CTeamId;
+                    tLog += CMF.getNewAndOldLog("服務團隊", OldCTeamId, CTeamId);
+
                     OldCMACycle = beanM.CMacycle;
                     tLog += CMF.getNewAndOldLog("維護週期", OldCMACycle, CMACycle);
 
@@ -578,6 +591,7 @@ namespace OneService.Controllers
                     #endregion
 
                     #region 主資料表
+                    beanM.CTeamId = CTeamId;
                     beanM.CMacycle = CMACycle;
                     beanM.CManotes = CMANotes;
                     beanM.CMaaddress = CMAAddress;
@@ -736,6 +750,9 @@ namespace OneService.Controllers
 
                 #region 更新明細的下包備註
                 beanSub.CSubNotes = CSubNotes;
+
+                beanSub.ModifiedDate = DateTime.Now;
+                beanSub.ModifiedUserName = ViewBag.empEngName;
                 #endregion
 
                 #region 更新主檔的維護備註
@@ -786,6 +803,8 @@ namespace OneService.Controllers
             getEmployeeInfo();
 
             ViewBag.cContractID = "";
+            ViewBag.cMainTeamID = "";
+            ViewBag.cMainIsOldContractID = "N";
 
             #region Request參數            
             if (HttpContext.Request.Query["ContractID"].FirstOrDefault() != null)
@@ -793,11 +812,11 @@ namespace OneService.Controllers
                 pContractID = HttpContext.Request.Query["ContractID"].FirstOrDefault();
                 ViewBag.cContractID = pContractID;
             }
-            #endregion
+            #endregion            
 
             if (pContractID != "")
             {
-                callQueryContractDetailEng(pContractID, "", "");
+                callQueryContractDetailEng(pContractID, "", "");               
             }
 
             return View();
@@ -820,44 +839,63 @@ namespace OneService.Controllers
 
             return View();
         }
-        #endregion
+        #endregion        
 
         #region 工程師明細查詢共用方法
         public void callQueryContractDetailEng(string cContractID, string cEngineerID, string cIsMainEngineer)
         {
             string IsCanEdit = string.Empty;
+            string CIsMainEngineer = string.Empty;
 
-            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
-                                                                  
-            if (!string.IsNullOrEmpty(cContractID)) //若有文件編號只要查一次
-            {
-                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, cContractID, "ENG");
-            }
+            List<string[]> QueryToList = new List<string[]>();  //查詢出來的清單
+            List<string> tContractIDList = new List<string>();   //文件編號清單
+            List<TbOneContractMain> tMainList = new List<TbOneContractMain>();
 
             var beans = dbOne.TbOneContractDetailEngs.Where(x => x.Disabled == 0 &&
                                                          (string.IsNullOrEmpty(cContractID) ? true : x.CContractId.Contains(cContractID.Trim())) &&
                                                          (string.IsNullOrEmpty(cEngineerID) ? true : x.CEngineerId == cEngineerID.Trim()) &&
                                                          (string.IsNullOrEmpty(cIsMainEngineer) ? true : x.CIsMainEngineer == cIsMainEngineer));
 
+            #region 取得查詢所有出來的文件編號之合約主檔
             foreach (var bean in beans)
             {
-                if (string.IsNullOrEmpty(cContractID)) //若沒有文件編號才跑迴圈查
+                if (!tContractIDList.Contains(bean.CContractId))
                 {
-                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, bean.CContractId, "ENG");
+                    tContractIDList.Add(bean.CContractId);
                 }
+            }
+
+            tMainList = dbOne.TbOneContractMains.Where(x => x.Disabled == 0  && tContractIDList.Contains(x.CContractId)).ToList();
+            #endregion
+
+            if (pContractID != "") //若有文件編號只要查一次(從主約過來)
+            {
+                string[] AryInfo = findExtraContractMainInfo(tMainList, cContractID);
+
+                ViewBag.cMainTeamID = AryInfo[0];           //服務團隊ID
+                ViewBag.cMainIsOldContractID = AryInfo[1];   //是否為舊文件編號
+            }
+
+            foreach (var bean in beans)
+            {
+                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, bean.CContractId, "ENG", tMainList);
 
                 IsCanEdit = pIsCanEdit ? "Y" : "N";
 
-                string[] QueryInfo = new string[8];
+                string[] QueryInfo = new string[10];
+
+                string[] AryInfo = findExtraContractMainInfo(tMainList, bean.CContractId);                
 
                 QueryInfo[0] = IsCanEdit;                          //是否可以編輯
                 QueryInfo[1] = bean.CId.ToString();                 //系統ID
-                QueryInfo[2] = bean.CContractId;                    //文件編號
-                QueryInfo[3] = bean.CEngineerId;                    //工程師ERPID                
-                QueryInfo[4] = bean.CEngineerName;                  //工程師姓名
-                QueryInfo[5] = bean.CIsMainEngineer;                //是否為主要工程師                
-                QueryInfo[6] = bean.CContactStoreId.ToString();     //門市代號                
-                QueryInfo[7] = bean.CContactStoreName;              //門市名稱                
+                QueryInfo[2] = AryInfo[0];                         //服務團隊ID
+                QueryInfo[3] = AryInfo[1];                         //是否為舊文件編號
+                QueryInfo[4] = bean.CContractId;                    //文件編號
+                QueryInfo[5] = bean.CEngineerId;                    //工程師ERPID                
+                QueryInfo[6] = bean.CEngineerName;                  //工程師姓名
+                QueryInfo[7] = bean.CIsMainEngineer;                //是否為主要工程師                
+                QueryInfo[8] = bean.CContactStoreId.ToString();     //門市代號                
+                QueryInfo[9] = bean.CContactStoreName;              //門市名稱                
 
                 QueryToList.Add(QueryInfo);
             }
@@ -866,9 +904,199 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 儲存工程師明細內容
+        /// <summary>
+        /// 儲存工程師明細內容
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cEngineerID">工程師ERPID</param>
+        /// <param name="cEngineerName">工程師姓名</param>
+        /// <param name="cIsMainEngineer">是否為主要工程師</param>
+        /// <param name="cContactStoreID">門市代號</param>
+        /// <param name="cContactStoreName">門市名稱</param>
+        /// <returns></returns>
+        public IActionResult saveDetailENG(string cID, string cContractID, string cEngineerID, string cEngineerName, string cIsMainEngineer, string cContactStoreID, string cContactStoreName)
+        {
+            string reValue = "SUCCESS";
+            string tLog = string.Empty;
+
+            string OldcEngineerID = string.Empty;
+            string OldcEngineerName = string.Empty;
+            string OldcIsMainEngineer = string.Empty;
+            string OldcContactStoreID = string.Empty;
+            string OldcContactStoreName = string.Empty;
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            if (!string.IsNullOrEmpty(cID)) //修改
+            {
+                var bean = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.CId == int.Parse(cID));
+
+                if (bean != null)
+                {
+                    #region 紀錄新舊值
+                    OldcEngineerID = bean.CEngineerId;
+                    tLog += CMF.getNewAndOldLog("工程師ERPID", OldcEngineerID, cEngineerID);
+
+                    OldcEngineerName = bean.CEngineerName;
+                    tLog += CMF.getNewAndOldLog("工程師姓名", OldcEngineerName, cEngineerName);
+
+                    OldcIsMainEngineer = bean.CIsMainEngineer;
+                    tLog += CMF.getNewAndOldLog("是否為主要工程師", OldcIsMainEngineer, cIsMainEngineer);
+
+                    OldcContactStoreID = bean.CContactStoreId.ToString();
+                    tLog += CMF.getNewAndOldLog("門市代號", OldcContactStoreID, cContactStoreID);
+
+                    OldcContactStoreName = bean.CContactStoreName;
+                    tLog += CMF.getNewAndOldLog("門市名稱", OldcContactStoreName, cContactStoreName);
+                    #endregion
+
+                    bean.CEngineerId = cEngineerID;
+                    bean.CEngineerName = cEngineerName;
+                    bean.CIsMainEngineer = cIsMainEngineer;
+
+                    if (!string.IsNullOrEmpty(cContactStoreID))
+                    {
+                        bean.CContactStoreId = new Guid(cContactStoreID);
+                    }
+
+                    if (!string.IsNullOrEmpty(cContactStoreName))
+                    {
+                        bean.CContactStoreName = cContactStoreName;
+                    }
+
+                    bean.ModifiedDate = DateTime.Now;
+                    bean.ModifiedUserName = ViewBag.empEngName;
+                }
+            }
+            else //新增
+            {
+                TbOneContractDetailEng beanENG = new TbOneContractDetailEng();
+
+                beanENG.CContractId = cContractID;
+                beanENG.CEngineerId = cEngineerID;
+                beanENG.CEngineerName = cEngineerName;
+                beanENG.CIsMainEngineer = cIsMainEngineer;
+
+                if (!string.IsNullOrEmpty(cContactStoreID))
+                {
+                    beanENG.CContactStoreId = new Guid(cContactStoreID);
+                }
+
+                if (!string.IsNullOrEmpty(cContactStoreName))
+                {
+                    beanENG.CContactStoreName = cContactStoreName;
+                }
+
+                beanENG.Disabled = 0;
+                beanENG.CreatedDate = DateTime.Now;
+                beanENG.CreatedUserName = ViewBag.empEngName;
+
+                dbOne.TbOneContractDetailEngs.Add(beanENG);
+            }
+
+            int result = dbOne.SaveChanges();
+
+            if (result <= 0)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
+                CMF.writeToLog(cContractID, "saveDetailENG", pMsg, ViewBag.empEngName);
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(tLog))
+                {
+                    CMF.writeToLog(cContractID, "saveDetailENG", tLog, ViewBag.empEngName);
+                }
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 取得服務團隊ID和是否為舊文件編號
+        /// <summary>
+        /// 取得服務團隊ID和是否為舊文件編號
+        /// </summary>
+        /// <param name="tMainList">合約主檔清單</param>
+        /// <param name="tContractID">文件編號</param>
+        /// <returns></returns>
+        public string[] findExtraContractMainInfo(List<TbOneContractMain> tMainList, string tContractID)
+        {
+            string[] AryValue = new string[2];
+            AryValue[0] = "";   //服務團隊ID
+            AryValue[1] = "";   //是否為舊文件編號
+
+            if (tMainList.Count > 0)
+            {
+                var beanM = tMainList.FirstOrDefault(x => x.CContractId == tContractID);
+
+                if (beanM != null)
+                {
+                    AryValue[0] = beanM.CTeamId;
+
+                    bool tIsOldContractID = CMF.checkIsOldContractID(pOperationID_Contract, tContractID); //判斷是否為舊文件編號(true.舊組織 false.新組織)
+                    AryValue[1] = tIsOldContractID ? "Y" : "N";
+                }
+            }
+
+            return AryValue;
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑工程師明細查詢/維謢 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
+
+        #region Ajax用中文或英文姓名查詢人員(by服務團隊-含新舊)
+        /// <summary>
+        /// Ajax用中文或英文姓名查詢人員(by服務團隊-含新舊)
+        /// </summary>
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cIsOldContractID">是否為舊文件編號(Y.是 N.否)</param>
+        /// <param name="cTeamID">服務團隊ID</param>        
+        /// <param name="keyword">中文/英文姓名</param>        
+        /// <returns></returns>
+        public IActionResult AjaxfindContractTeamEmployeeByKeyword(string cBUKRS, string cIsOldContractID, string cTeamID, string keyword)
+        {
+            object contentObj = null;
+
+            List<string> tList = new List<string>();
+
+            if (cIsOldContractID == "Y")
+            {
+                #region 先取得所有舊CRM合約組織人員AD帳號
+                var beans = psipDb.TbOneRoleParameters.Where(x => x.Disabled == 0 && x.COperationId.ToString() == pOperationID_Contract &&
+                                                              x.CFunctionId == "PERSON" && x.CCompanyId == cBUKRS && x.CNo == "OLDORG");
+
+                foreach (var bean in beans)
+                {
+                    if (!tList.Contains(bean.CValue))
+                    {
+                        tList.Add(bean.CValue);
+                    }
+                }
+                #endregion
+
+                contentObj = dbEIP.People.Where(x => tList.Contains(x.Account) &&
+                                                   (x.LeaveReason == null && x.LeaveDate == null) &&
+                                                   (x.Account.Contains(keyword) || x.Name2.Contains(keyword))).Take(5);
+            }
+            else
+            {
+                tList = CMF.findALLDeptIDListbyTeamID(cTeamID);
+
+                contentObj = dbEIP.People.Where(x => tList.Contains(x.DeptId) &&
+                                                   (x.Account.Contains(keyword) || x.Name2.Contains(keyword)) &&
+                                                   (x.LeaveReason == null && x.LeaveDate == null)).Take(5);
+            }
+
+            string json = JsonConvert.SerializeObject(contentObj);
+            return Content(json, "application/json");
+        }
+        #endregion
 
         #region 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
         /// <summary>

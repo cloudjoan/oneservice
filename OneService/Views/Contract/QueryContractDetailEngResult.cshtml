@@ -134,10 +134,12 @@
 						{
 							<td>
 								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-								<button id="taskBtnEdit' + @QueryInfo[1] + '" class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editTask(this);" style="margin: 2px;">
+								<input type="hidden" value="@QueryInfo[2]" class="taskcTeamID" />
+								<input type="hidden" value="@QueryInfo[3]" class="taskcIsOldContractID" />
+								<button id="taskBtnEdit' + @QueryInfo[1] + '" class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailENG(this);" style="margin: 2px;">
 									<i class="glyphicon glyphicon-pencil"></i>
 								</button>
-								<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteTask(this);" style="margin: 2px;">
+								<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailENG(this);" style="margin: 2px;">
 									<i class="fa fa-trash"></i>
 								</button>
 							</td>
@@ -146,14 +148,16 @@
 						{
 							<td>
 								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+								<input type="hidden" value="@QueryInfo[2]" class="taskcTeamID" />
+								<input type="hidden" value="@QueryInfo[3]" class="taskcIsOldContractID" />
 							</td>
 						}
-						<td class="taskContractID">@Html.Raw(QueryInfo[2])</td>
-						<td class="taskEngERPID">@Html.Raw(QueryInfo[3])</td>
-						<td class="taskEngName">@Html.Raw(QueryInfo[4])</td>
-						<td class="taskIsMain">@Html.Raw(QueryInfo[5])</td>
-						<td class="taskStoreID">@Html.Raw(QueryInfo[6])</td>
-						<td class="taskStoreName">@Html.Raw(QueryInfo[7])</td>
+						<td class="taskContractID">@Html.Raw(QueryInfo[4])</td>
+						<td class="taskEngERPID">@Html.Raw(QueryInfo[5])</td>
+						<td class="taskEngName">@Html.Raw(QueryInfo[6])</td>
+						<td class="taskIsMain">@Html.Raw(QueryInfo[7])</td>
+						<td class="taskStoreID">@Html.Raw(QueryInfo[8])</td>
+						<td class="taskStoreName">@Html.Raw(QueryInfo[9])</td>
 					</tr>
 				}
 			}

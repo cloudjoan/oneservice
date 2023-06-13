@@ -1617,9 +1617,34 @@ namespace OneService.Controllers
         /// <returns></returns>
         public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, string cContractID, string tType)
         {
-            bool reValue = false;
+            bool reValue = checkIsCanEditContracInfo(pOperationID_Contract, tLoginERPID, tLoginAccout, tBUKRS, tCostCenterID, tDeptID, tIsMIS, tIsCSManager, cContractID, tType, null);
 
-            string ContractIDLimit = findSysParameterValue(pOperationID_Contract, "OTHER", "T012", "ContractIDLimit");
+            return reValue;
+        }
+        #endregion
+
+        #region 取得合約主數據相關人員資訊
+        /// <summary>
+        /// 取得合約主數據相關資訊
+        /// </summary>        
+        /// <param name="pOperationID_Contract">程式作業編號檔系統ID(合約主數據查詢/維護)</param>
+        /// <param name="tLoginERPID">登入者ERPID</param>
+        /// <param name="tLoginAccout">登入者AD帳號</param>
+        /// <param name="tBUKRS">登入者公司別(T012、T016、C069、T022)</param>
+        /// <param name="tCostCenterID">登入者成本中心ID</param>
+        /// <param name="tDeptID">登人者部門ID</param>
+        /// <param name="tIsMIS">登入者是否為MIS</param>
+        /// <param name="tIsCSManager">登入者是否為客服主管</param>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="tType">MAIN.主數據(含下包) ENG.工程師明細 OBJ.合約標的</param>
+        /// <param name="tMainList">合約主檔清單</param>
+        /// <returns></returns>
+        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, string cContractID, string tType, List<TbOneContractMain> tMainList)
+        {
+            bool reValue = false;
+            bool tIsOldContractID = checkIsOldContractID(pOperationID_Contract, cContractID.Trim()); //判斷是否為舊文件編號(true.舊組織 false.新組織)
+
+            TbOneContractMain beanM = new TbOneContractMain();
 
             if (tIsMIS || tIsCSManager)
             {
@@ -1627,10 +1652,17 @@ namespace OneService.Controllers
             }
             else
             {
-                var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID.Trim());
+                if (tMainList == null)
+                {
+                     beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID.Trim());
+                }
+                else
+                {
+                    beanM = tMainList.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID.Trim());
+                }
 
                 if (beanM != null)
-                { 
+                {
                     switch (tType)
                     {
                         case "MAIN":
@@ -1649,7 +1681,7 @@ namespace OneService.Controllers
                             if (!reValue)
                             {
                                 //先判斷是否為服務團隊主管
-                                if (int.Parse(cContractID.Trim()) < int.Parse(ContractIDLimit))
+                                if (tIsOldContractID)
                                 {
                                     reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
                                 }
@@ -1671,7 +1703,7 @@ namespace OneService.Controllers
                         case "ENG":
                             #region 工程師明細
                             //先判斷是否為服務團隊主管
-                            if (int.Parse(cContractID.Trim()) < int.Parse(ContractIDLimit))
+                            if (tIsOldContractID)
                             {
                                 reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
                             }
@@ -1692,7 +1724,7 @@ namespace OneService.Controllers
                         case "OBJ":
                             #region 合約標的
                             //先判斷是否為服務團隊主管
-                            if (int.Parse(cContractID.Trim()) < int.Parse(ContractIDLimit))
+                            if (tIsOldContractID)
                             {
                                 reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
                             }
@@ -1788,6 +1820,28 @@ namespace OneService.Controllers
                                                                      (string.IsNullOrEmpty(cIsMainEngineer) ? true : x.CIsMainEngineer == cIsMainEngineer));
 
             if (bean != null)
+            {
+                reValue = true;
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷是否為舊文件編號(true.舊組織 false.新組織)
+        /// <summary>
+        /// 判斷是否為舊文件編號(true.舊組織 false.新組織)
+        /// </summary>
+        /// <param name="pOperationID_Contract">程式作業編號檔系統ID(合約主數據查詢/維護)</param>
+        /// <param name="cContractID">文件編號</param>
+        /// <returns></returns>
+        public bool checkIsOldContractID(string pOperationID_Contract, string cContractID)
+        {
+            bool reValue = false;
+
+            string ContractIDLimit = findSysParameterValue(pOperationID_Contract, "OTHER", "T012", "ContractIDLimit");
+
+            if (int.Parse(cContractID.Trim()) < int.Parse(ContractIDLimit))
             {
                 reValue = true;
             }
