@@ -690,7 +690,16 @@
 								{
 									count++;
 									<tr id='tr@(count)'>
-										<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+										<td>
+											@if (QueryInfo[58] == "Y")
+											{
+												<a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a>
+											}
+											else
+											{
+												@Html.Raw(QueryInfo[0])
+											}
+										</td>
 										<td>@Html.Raw(QueryInfo[2])</td>
 										<td>@Html.Raw(QueryInfo[3])</td>
 										<td>@Html.Raw(QueryInfo[4])</td>

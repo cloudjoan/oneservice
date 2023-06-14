@@ -1211,6 +1211,46 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region Ajax判斷維護週期格式是否正確
+        /// <summary>
+        /// Ajax判斷維護週期格式是否正確
+        /// </summary>
+        /// <param name="cMACycle">維護週期</param>
+        /// <returns></returns>
+        public IActionResult AjaxcheckCycle(string cMACycle)
+        {
+            string reValue = string.Empty;
+            string tTempCycle = string.Empty;
+
+            if (cMACycle.Trim().ToUpper() != "NA")
+            {
+                string[] AryCycle = cMACycle.Trim().Split('_');
+
+                foreach (string tCycle in AryCycle)
+                {
+                    try
+                    {
+                        if (tCycle.Length == 6)
+                        {
+                            tTempCycle = tCycle.Substring(0, 4) + "-" + tCycle.Substring(4, 2);
+                            DateTime dt = Convert.ToDateTime(tTempCycle);
+                        }
+                        else
+                        {
+                            reValue += "【" + tCycle + "】維護週期格式不正確！\n";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        reValue += "【" + tCycle + "】維護週期格式不正確！\n";
+                    }
+                }               
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
         #region 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
         /// <summary>
         /// 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁

@@ -466,6 +466,30 @@
 		}
 		//-----↑↑↑↑↑服務團隊 ↑↑↑↑↑-----
 
+		//維護週期格式檢查
+		function checkCycle() {
+			var reValue = false;
+			var cMACycle = $("#tbx_cMACycle").val(); //維護週期
+
+			$.ajax({
+				url: '@Url.Action("AjaxcheckCycle", "Contract")',
+				type: 'post',
+				dataType: 'json',
+				async: false, //同步執行
+				data: {
+					cMACycle: cMACycle					
+				},
+				success: function (result) {
+					if (result != "") {
+						reValue = true;						
+						alert(result);
+					}					
+				}
+			});
+
+			return reValue;
+		}
+
 		//按下編輯事件
 		function EditContract() {
 			$("#btn_Edit").hide();
@@ -525,7 +549,14 @@
 				$("#btn_submit").show();
 				$("#waitingImg").hide();
 				return false;
-			}			
+			}
+
+			if (checkCycle()) //維護週期格式檢查
+			{
+				$("#btn_submit").show();
+				$("#waitingImg").hide();
+				return false;
+			}
 
 			return true;
 		}
@@ -703,11 +734,11 @@
 								@{
 									if (ViewBag.IsCanRead == "Y")
 									{
-											<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
+																	<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
 									}
 									else
 									{
-											<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
+																	<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
 									}
 								}								
 							</div>
@@ -765,13 +796,13 @@
 								{
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
-											<tr>
-												<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
-												<td>@Html.Raw(QueryInfo[2])</td>
-												<td>@Html.Raw(QueryInfo[3])</td>
-												<td>@Html.Raw(QueryInfo[4])</td>
-												<td><a href="@QueryInfo[5]" target="_blank">查詢</a></td>
-											</tr>
+																	<tr>
+																		<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
+																		<td>@Html.Raw(QueryInfo[2])</td>
+																		<td>@Html.Raw(QueryInfo[3])</td>
+																		<td>@Html.Raw(QueryInfo[4])</td>
+																		<td><a href="@QueryInfo[5]" target="_blank">查詢</a></td>
+																	</tr>
 									}
 								}
 							}

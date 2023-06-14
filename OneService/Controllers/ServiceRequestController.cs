@@ -242,6 +242,7 @@ namespace OneService.Controllers
             string cUsed = string.Empty;
             string cWTYSDATE = string.Empty;
             string cWTYEDATE = string.Empty;
+            string cIsShowLink = string.Empty;
 
             getLoginAccount();
 
@@ -533,7 +534,7 @@ namespace OneService.Controllers
 
             foreach (DataRow dr in dt.Rows)
             {
-                string[] QueryInfo = new string[58];
+                string[] QueryInfo = new string[59];
 
                 CreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd");
                 tSRIDUrl = CMF.findSRIDUrl(dr["cSRID"].ToString());
@@ -547,6 +548,15 @@ namespace OneService.Controllers
                     tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
                 }
 
+                if (dr["cSRID"].ToString().Substring(0,1) == "6") //新版SR才要顯示連結
+                {
+                    cIsShowLink = "Y";
+                }
+                else
+                {
+                    cIsShowLink = "N";
+                }
+
                 cNotes = dr["cNotes"].ToString().Replace("\r\n", "<br/>");
                 cReceiveTime = Convert.ToDateTime(dr["cReceiveTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cReceiveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cStartTime = Convert.ToDateTime(dr["cStartTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cStartTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
@@ -556,7 +566,7 @@ namespace OneService.Controllers
                 cSRReportURL = CMF.findAttachUrl(dr["cSRReport"].ToString(), tAttachURLName);
                 cUsed = (dr["cWTYID"].ToString() != "" || dr["cWTYName"].ToString() != "") ? "Y" : "N";
                 cWTYSDATE = Convert.ToDateTime(dr["cWTYSDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYSDATE"].ToString()).ToString("yyyy-MM-dd");
-                cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");
+                cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");                
 
                 QueryInfo[0] = dr["cSRID"].ToString();              //SR_ID
                 QueryInfo[1] = tSRIDUrl;                           //服務案件URL
@@ -616,6 +626,7 @@ namespace OneService.Controllers
                 QueryInfo[55] = dr["CountOUT"].ToString();        //計數器(OUT)
                 QueryInfo[56] = dr["SO"].ToString();             //銷售單號
                 QueryInfo[57] = dr["DN"].ToString();             //出貨單號
+                QueryInfo[58] = cIsShowLink;                    //是否要顯示Link
 
                 QueryToList.Add(QueryInfo);
             }
