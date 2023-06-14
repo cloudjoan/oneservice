@@ -962,7 +962,13 @@ namespace OneService.Controllers
 
             if (cIsMainEngineer == "Y")
             {
-                tIsDouble = CMF.checkIsExitsMainEngineer(cContractID, cID); //判斷該文件編號是否已有主要工程師(true.已存在 false.未存在)
+                //判斷該文件編號是否已有主要工程師(true.已存在 false.未存在)
+                tIsDouble = CMF.checkIsExitsEngineer(cContractID, cID, "Y", "");
+            }
+            else
+            {
+                //判斷傳入的工程師，是否已存在該文件編號裡的工程師明細內容(true.已存在 false.未存在)
+                tIsDouble = CMF.checkIsExitsEngineer(cContractID, cID, "", cEngineerID);
             }
 
             if (!tIsDouble)

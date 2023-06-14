@@ -1848,20 +1848,24 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion
+        #endregion       
 
-        #region 判斷該文件編號是否已有主要工程師(true.已存在 false.未存在)
+        #region 判斷傳入的工程師，是否已存在該文件編號裡的工程師明細內容(true.已存在 false.未存在)
         /// <summary>
-        /// 判斷該文件編號是否已有主要工程師(true.已存在 false.未存在)
+        /// 判斷傳入的工程師，是否已存在該文件編號裡的工程師明細內容(true.已存在 false.未存在)
         /// </summary>
-        /// <param name="cContractID">文件編號</param>
+        /// <param name="cContractID">文件編號</param>        
         /// <param name="cID">系統ID</param>
+        /// <param name="cIsMainEngineer">是否為主要工程師(Y or 空白)</param>
+        /// <param name="cEngineerID">工程師ERPID</param>
         /// <returns></returns>
-        public bool checkIsExitsMainEngineer(string cContractID, string cID)
+        public bool checkIsExitsEngineer(string cContractID, string cID, string cIsMainEngineer, string cEngineerID)
         {
             bool reValue = false;
 
-            var beanM = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID && x.CIsMainEngineer == "Y" && 
+            var beanM = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID && 
+                                                                      (string.IsNullOrEmpty(cIsMainEngineer) ? true :  x.CIsMainEngineer == cIsMainEngineer) &&
+                                                                      (string.IsNullOrEmpty(cEngineerID) ? true : x.CEngineerId == cEngineerID) &&
                                                                       (string.IsNullOrEmpty(cID) ? true : x.CId != int.Parse(cID)));
 
             if (beanM != null)
