@@ -134,8 +134,9 @@
 						{
 							<td>
 								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-								<input type="hidden" value="@QueryInfo[2]" class="taskcTeamID" />
-								<input type="hidden" value="@QueryInfo[3]" class="taskcIsOldContractID" />
+								<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
+								<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
+								<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
 								<button id="taskBtnEdit' + @QueryInfo[1] + '" class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailENG(this);" style="margin: 2px;">
 									<i class="glyphicon glyphicon-pencil"></i>
 								</button>
@@ -148,16 +149,17 @@
 						{
 							<td>
 								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-								<input type="hidden" value="@QueryInfo[2]" class="taskcTeamID" />
-								<input type="hidden" value="@QueryInfo[3]" class="taskcIsOldContractID" />
+								<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
+								<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
+								<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
 							</td>
 						}
-						<td class="taskContractID">@Html.Raw(QueryInfo[4])</td>
-						<td class="taskEngERPID">@Html.Raw(QueryInfo[5])</td>
-						<td class="taskEngName">@Html.Raw(QueryInfo[6])</td>
-						<td class="taskIsMain">@Html.Raw(QueryInfo[7])</td>
-						<td class="taskStoreID">@Html.Raw(QueryInfo[8])</td>
-						<td class="taskStoreName">@Html.Raw(QueryInfo[9])</td>
+						<td class="taskContractID">@Html.Raw(QueryInfo[5])</td>
+						<td class="taskEngERPID">@Html.Raw(QueryInfo[6])</td>
+						<td class="taskEngName">@Html.Raw(QueryInfo[7])</td>
+						<td class="taskIsMain">@Html.Raw(QueryInfo[8])</td>
+						<td class="taskStoreID">@Html.Raw(QueryInfo[9])</td>
+						<td class="taskStoreName">@Html.Raw(QueryInfo[10])</td>
 					</tr>
 				}
 			}
