@@ -353,20 +353,21 @@
 		}
 
 		//刪除工程師明細內容
-        function deleteDetailENG(obj) {
-            var cID = parseInt($(obj).closest("tr").find(".hidcID").val());
+		function deleteDetailENG(obj, rowId) {
+			var cID = parseInt($(obj).closest("tr").find(".taskcID").val());
 
-            if (confirm("確認刪除此筆任務說明？")) {
+			if (confirm("確認刪除此筆工程師明細內容？")) {
                 $.ajax({
-					url: '@Url.Action("DeleteDetailENG", "Pro")',
+					url: '@Url.Action("DeleteDetailENG", "Contract")',
 					type: 'post',
 					dataType: 'json',
                     data: {
                         cID: cID,
                     },
                     success: function (result) {
-                        if (result) {						
-                            alert("刪除成功");                            
+                        if (result > 0) {
+							alert("刪除成功");
+							Query();                                                 
                         }
                         else {
                             alert("刪除失敗");
@@ -617,31 +618,31 @@
 								{
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
-										<tr>
-										@if (@QueryInfo[0] == "Y")
-										{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-												<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
-												<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
-												<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
-												<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailENG(this);" style="margin: 2px;">
-													<i class="glyphicon glyphicon-pencil"></i>
-												</button>
-												<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailENG(this);" style="margin: 2px;">
-													<i class="fa fa-trash"></i>
-												</button>
-											</td>
-										}
-										else
-										{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-												<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
-												<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
-												<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
-											</td>
-										}
+										<tr id='tr@(QueryInfo[1])'>
+											@if (@QueryInfo[0] == "Y")
+											{
+												<td>
+													<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+													<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
+													<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
+													<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
+													<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailENG(this);" style="margin: 2px;">
+														<i class="glyphicon glyphicon-pencil"></i>
+													</button>
+													<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailENG(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
+														<i class="fa fa-trash"></i>
+													</button>
+												</td>
+											}
+											else
+											{
+												<td>
+													<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+													<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
+													<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
+													<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
+												</td>
+											}
 											<td class="taskContractID">@Html.Raw(QueryInfo[5])</td>
 											<td class="taskEngERPID">@Html.Raw(QueryInfo[6])</td>
 											<td class="taskEngName">@Html.Raw(QueryInfo[7])</td>

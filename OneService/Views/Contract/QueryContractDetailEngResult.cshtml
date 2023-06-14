@@ -129,7 +129,7 @@
 			{
 				foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 				{
-					<tr>
+					<tr id='tr@(QueryInfo[1])'>
 						@if (@QueryInfo[0] == "Y")
 						{
 							<td>
@@ -140,7 +140,7 @@
 								<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailENG(this);" style="margin: 2px;">
 									<i class="glyphicon glyphicon-pencil"></i>
 								</button>
-								<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailENG(this);" style="margin: 2px;">
+								<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailENG(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
 									<i class="fa fa-trash"></i>
 								</button>
 							</td>

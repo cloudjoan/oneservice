@@ -1058,6 +1058,37 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 刪除工程師明細內容
+        /// <summary>
+        /// 刪除保固資訊
+        /// </summary>
+        /// <param name="WTId">流水號</param>
+        /// <returns></returns>
+        public ActionResult deleteDetailENG(int cID)
+        {
+            int result = 0;
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            var bean = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.CId == cID);
+            if (bean != null)
+            {
+                bean.Disabled = 1;
+                bean.ModifiedDate = DateTime.Now;
+                bean.ModifiedUserName = ViewBag.empEngName;
+
+                result = dbOne.SaveChanges();                 
+            }
+
+            return Json(result);
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑工程師明細查詢/維謢 ↑↑↑↑↑-----
+
+        #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
+
         #region 取得服務團隊ID和是否為舊文件編號
         /// <summary>
         /// 取得服務團隊ID和是否為舊文件編號
@@ -1099,10 +1130,6 @@ namespace OneService.Controllers
             return AryValue;
         }
         #endregion
-
-        #endregion -----↑↑↑↑↑工程師明細查詢/維謢 ↑↑↑↑↑-----
-
-        #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
         #region Ajax用中文或英文姓名查詢人員(by服務團隊-含新舊)
         /// <summary>
