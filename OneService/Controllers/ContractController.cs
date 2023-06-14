@@ -1057,7 +1057,14 @@ namespace OneService.Controllers
             }
             else
             {
-                reValue = "文件編號【" + cContractID + "】已經有主要工程師，請重新再確認！";
+                if (cIsMainEngineer == "Y")
+                {
+                    reValue = "文件編號【" + cContractID + "】已經有主要工程師，請重新再確認！";
+                }
+                else
+                {
+                    reValue = "文件編號【" + cContractID + "】工程師已存在，請重新再確認！";
+                }
             }
 
             return Json(reValue);
