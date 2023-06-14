@@ -845,7 +845,9 @@ namespace OneService.Controllers
         public void callQueryContractDetailEng(string cContractID, string cEngineerID, string cIsMainEngineer)
         {
             string IsCanEdit = string.Empty;
-            string CIsMainEngineer = string.Empty;
+            string cMainCustomerID = string.Empty;          //客戶ID
+            string cMainTeamID = string.Empty;              //服務團隊ID
+            string cMainIsOldContractID = string.Empty;     //是否為舊文件編號
 
             List<string[]> QueryToList = new List<string[]>();  //查詢出來的清單
             List<string> tContractIDList = new List<string>();   //文件編號清單
@@ -872,9 +874,13 @@ namespace OneService.Controllers
             {
                 string[] AryInfo = findExtraContractMainInfo(tMainList, pContractID);
 
-                ViewBag.cMainCustomerID = AryInfo[0];        //客戶ID
-                ViewBag.cMainTeamID = AryInfo[1];           //服務團隊ID
-                ViewBag.cMainIsOldContractID = AryInfo[2];   //是否為舊文件編號
+                ViewBag.cMainCustomerID = AryInfo[0];        
+                ViewBag.cMainTeamID = AryInfo[1];           
+                ViewBag.cMainIsOldContractID = AryInfo[2];
+
+                cMainCustomerID = AryInfo[0];
+                cMainTeamID = AryInfo[1];
+                cMainIsOldContractID = AryInfo[2];
 
                 #region 是否可編輯合約主數據相關內容
                 pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pContractID, "ENG", tMainList);
@@ -892,19 +898,26 @@ namespace OneService.Controllers
 
             foreach (var bean in beans)
             {
-                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, bean.CContractId, "ENG", tMainList);               
+                if (pContractID == "") //非從主約過來                
+                {
+                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, bean.CContractId, "ENG", tMainList);                                      
+
+                    string[] AryInfo = findExtraContractMainInfo(tMainList, bean.CContractId);
+
+                    cMainCustomerID = AryInfo[0];
+                    cMainTeamID = AryInfo[1];
+                    cMainIsOldContractID = AryInfo[2];
+                }
 
                 IsCanEdit = pIsCanEdit ? "Y" : "N";
 
                 string[] QueryInfo = new string[11];
 
-                string[] AryInfo = findExtraContractMainInfo(tMainList, bean.CContractId);                
-
                 QueryInfo[0] = IsCanEdit;                          //是否可以編輯
                 QueryInfo[1] = bean.CId.ToString();                 //系統ID
-                QueryInfo[2] = AryInfo[0];                         //客戶ID
-                QueryInfo[3] = AryInfo[1];                         //服務團隊ID
-                QueryInfo[4] = AryInfo[2];                         //是否為舊文件編號
+                QueryInfo[2] = cMainCustomerID;                    //客戶ID
+                QueryInfo[3] = cMainTeamID;                        //服務團隊ID
+                QueryInfo[4] = cMainIsOldContractID;               //是否為舊文件編號
                 QueryInfo[5] = bean.CContractId;                    //文件編號
                 QueryInfo[6] = bean.CEngineerId;                    //工程師ERPID                
                 QueryInfo[7] = bean.CEngineerName;                  //工程師姓名
@@ -1065,7 +1078,17 @@ namespace OneService.Controllers
 
                 if (beanM != null)
                 {
-                    AryValue[0] = beanM.CCustomerId;
+                    #region 若無客戶ID，代表是供應商，則取供應商ID
+                    if (beanM.CCustomerId == "")
+                    {
+                        AryValue[0] = CMF.findSubSupplierID(tContractID);
+                    }
+                    else
+                    {
+                        AryValue[0] = beanM.CCustomerId;
+                    }
+                    #endregion
+
                     AryValue[1] = beanM.CTeamId;
 
                     bool tIsOldContractID = CMF.checkIsOldContractID(pOperationID_Contract, tContractID); //判斷是否為舊文件編號(true.舊組織 false.新組織)
@@ -1123,6 +1146,25 @@ namespace OneService.Controllers
                                                    (x.Account.Contains(keyword) || x.Name2.Contains(keyword)) &&
                                                    (x.LeaveReason == null && x.LeaveDate == null)).Take(5);
             }
+
+            string json = JsonConvert.SerializeObject(contentObj);
+            return Content(json, "application/json");
+        }
+        #endregion
+
+        #region Ajax用門市名稱查詢門市代號相關資訊
+        /// <summary>
+        /// Ajax用門市名稱查詢門市代號相關資訊
+        /// </summary>
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cCustomerID">客戶ID</param>
+        /// <param name="keyword">門市名稱</param>
+        /// <returns></returns>
+        public IActionResult findContactStoreInfoByKeyword(string cBUKRS, string cCustomerID, string keyword)
+        {
+            object contentObj = null;
+
+            contentObj = dbProxy.CustomerContactStores.Where(x => x.Disabled == 0 && x.ContactStoreName.Contains(keyword));
 
             string json = JsonConvert.SerializeObject(contentObj);
             return Content(json, "application/json");

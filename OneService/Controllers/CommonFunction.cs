@@ -1873,6 +1873,27 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得下包合約供應商代號
+        /// <summary>
+        /// 取得下包合約供應商代號
+        /// </summary>
+        /// <param name="cSubContractID">下包文件編號</param>
+        /// <returns></returns>
+        public string findSubSupplierID(string cSubContractID)
+        {
+            string reValue = string.Empty;
+
+            var beanSub = dbOne.TbOneContractDetailSubs.FirstOrDefault(x => x.Disabled == 0 && x.CSubContractId == cSubContractID);
+
+            if (beanSub != null)
+            {
+                reValue = beanSub.CSubSupplierId;
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑合約管理 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
