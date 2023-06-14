@@ -1063,7 +1063,7 @@ namespace OneService.Controllers
                 }
                 else
                 {
-                    reValue = "文件編號【" + cContractID + "】工程師已存在，請重新再確認！";
+                    reValue = "【" + cEngineerName + "】工程師已存在，請重新再確認！";
                 }
             }
 
