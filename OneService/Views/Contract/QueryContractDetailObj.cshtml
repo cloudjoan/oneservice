@@ -155,48 +155,48 @@
 			return reValue;
 		}
 
-		//新增工程師明細內容
-		function addDetailENG() {
-			resetPopup("#dialog_DetailENG"); //新增/編輯工程師popup各欄位reset
+		//新增合約標的明細內容
+		function addDetailOBJ() {
+			resetPopup("#dialog_DetailOBJ"); //新增/編輯合約標的popup各欄位reset
 
 			//設定各欄位資料
-			$("#hid_taskcID").val("");											//系統ID
+			$("#hid_taskcID").val("");								//系統ID
+			$("#txt_cContractID").val($("#hid_cContractID").val());		//文件編號			
 
-			$("#txt_cContractID").val($("#hid_cContractID").val());					//文件編號
-			$("#hid_cCustomerID").val($("#hid_cMainCustomerID").val());				//客戶ID
-			$("#hid_cTeamID").val($("#hid_cMainTeamID").val());						//服務團隊ID
-			$("#hid_cIsOldContractID").val($("#hid_cMainIsOldContractID").val());		//是否為舊文件編號
-
-			$("#dialog_DetailENG").modal('show');
+			$("#dialog_DetailOBJ").modal('show');
 		}
 
-		//編輯工程師明細內容
-		function editDetailENG(obj) {
-			resetPopup("#dialog_DetailENG"); //新增/編輯工程師popup各欄位reset
+		//編輯合約標的明細內容
+		function editDetailOBJ(obj) {
+			resetPopup("#dialog_DetailOBJ"); //新增/編輯合約標的popup各欄位reset
 
 			//設定各欄位資料
-			$("#hid_taskcID").val($(obj).parent().parent().find('.taskcID').val());							//系統ID
-			$("#hid_cCustomerID").val($(obj).parent().parent().find('.taskcCustomerID').val());					//客戶ID
-			$("#hid_cTeamID").val($(obj).parent().parent().find('.taskcTeamID').val());							//服務團隊ID
-			$("#hid_cIsOldContractID").val($(obj).parent().parent().find('.taskcIsOldContractID').val());			//是否為舊文件編號
-			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').text());					//文件編號
-			$("#txt_cEngineerID").val($(obj).parent().parent().find('.taskEngERPID').text());					//工程師ERPID
-			$("#txt_cEngineerName").val($(obj).parent().parent().find('.taskEngName').text());					//工程師姓名
-			$("#ddl_cIsMainEngineer").val($(obj).parent().parent().find('.taskIsMain').text());					//是否為主要工程師
-			$("#txt_cContactStoreID").val($(obj).parent().parent().find('.taskStoreID').text());					//門市代號
-			$("#txt_cContactStoreName").val($(obj).parent().parent().find('.taskStoreName').text());				//門市名稱
+			$("#hid_taskcID").val($(obj).parent().parent().find('.taskcID').val());					//系統ID
+			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').text());			//文件編號
+			$("#txt_cHostName").val($(obj).parent().parent().find('.taskHostName').text());				//HostName
+			$("#txt_cSerialID").val($(obj).parent().parent().find('.taskSerialID').text());				//序號
+			$("#txt_cPID").val($(obj).parent().parent().find('.taskPID').text());						//ProductID
+			$("#txt_cBrands").val($(obj).parent().parent().find('.taskBrands').text());					//廠牌
+			$("#txt_cModel").val($(obj).parent().parent().find('.taskModel').text());					//ProductModel
+			$("#txt_cLocation").val($(obj).parent().parent().find('.taskLocation').text());				//Location
+			$("#txt_cAddress").val($(obj).parent().parent().find('.taskAddress').text());				//地點
+			$("#txt_cArea").val($(obj).parent().parent().find('.taskArea').text());					//區域
+			$("#ddl_cSLARESP").val($(obj).parent().parent().find('.taskSLARESP').text());				//回應條件
+			$("#ddl_cSLASRV").val($(obj).parent().parent().find('.taskSLASRV').text());					//服務條件
+			$("#tbx_cNotes").val($(obj).parent().parent().find('.taskNotes').text());					//備註
+			$("#txt_cSubContractID").val($(obj).parent().parent().find('.taskSubContractID').text());	//下包文件編號
 
-			//$("#dialog_DetailENG .modal-content").css({ 'width': '110%' });
-			$("#dialog_DetailENG").modal('show');
+			//$("#dialog_DetailOBJ .modal-content").css({ 'width': '110%' });
+			$("#dialog_DetailOBJ").modal('show');
 		}
 
-		//刪除工程師明細內容
-		function deleteDetailENG(obj, rowId) {
+		//刪除合約標的明細內容
+		function deleteDetailOBJ(obj, rowId) {
 			var cID = parseInt($(obj).closest("tr").find(".taskcID").val());
 
-			if (confirm("確認刪除此筆工程師明細內容？")) {
+			if (confirm("確認刪除此筆合約標的明細內容？")) {
 				$.ajax({
-					url: '@Url.Action("DeleteDetailENG", "Contract")',
+					url: '@Url.Action("DeleteDetailOBJ", "Contract")',
 					type: 'post',
 					dataType: 'json',
 					data: {
@@ -215,14 +215,14 @@
 			}
 		}
 
-		//儲存工程師明細內容
-		function saveDetailENG(cID) {
+		//儲存合約標的明細內容
+		function saveDetailOBJ(cID) {
 
 			var strMsg = "";
 
-			if ($("#txt_cEngineerID").val() == "") strMsg += "工程師ERPID不得為空！\n";
-			if ($("#txt_cEngineerName").val() == "") strMsg += "您未下拉選取【工程師姓名】，請輸入關鍵字後再重新選取！\n";
-			if ($("#ddl_cIsMainEngineer").val() == "-1") strMsg += "請選擇是否為主要工程師！\n";
+			if ($("#txt_cEngineerID").val() == "") strMsg += "合約標的ERPID不得為空！\n";
+			if ($("#txt_cEngineerName").val() == "") strMsg += "您未下拉選取【合約標的姓名】，請輸入關鍵字後再重新選取！\n";
+			if ($("#ddl_cIsMainEngineer").val() == "-1") strMsg += "請選擇是否為主要合約標的！\n";
 
 			if ($("#txt_cContactStoreID").val() != "") {
 				if ($("#txt_cContactStoreName").val() == "") {
@@ -234,10 +234,10 @@
 				alert(strMsg);
 			}
 			else {
-				$("#btn_saveDetailENG").hide();
-				$("#img_waiting_saveDetailENG").show();
+				$("#btn_saveDetailOBJ").hide();
+				$("#img_waiting_saveDetailOBJ").show();
 				$.ajax({
-					url: '@Url.Action("saveDetailENG", "Contract")',
+					url: '@Url.Action("saveDetailOBJ", "Contract")',
 					type: 'post',
 					dataType: 'json',
 					data: {
@@ -253,15 +253,15 @@
 						if (result == "SUCCESS") {
 							alert("儲存成功！");
 							Query();
-							$("#dialog_DetailENG").modal('hide');
+							$("#dialog_DetailOBJ").modal('hide');
 						}
 						else {
 							alert("儲存失敗！原因：" + result);
 						}
 					},
 				});
-				$("#btn_saveDetailENG").show();
-				$("#img_waiting_saveDetailENG").hide();
+				$("#btn_saveDetailOBJ").show();
+				$("#img_waiting_saveDetailOBJ").hide();
 			}
 		}
 
@@ -342,7 +342,7 @@
 				<a href="#">合約管理</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>合約主數據查詢/維護作業</strong>
+				<strong>合約標的明細查詢/上傳/維護作業</strong>
 			</li>
 		</ol>
 	</div>
@@ -466,39 +466,39 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-										<tr id='tr@(QueryInfo[1])'>
-											@if (@QueryInfo[0] == "Y")
-										{
-												<td>
-													<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
-													<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
-														<i class="glyphicon glyphicon-pencil"></i>
-													</button>
-													<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
-														<i class="fa fa-trash"></i>
-													</button>
-												</td>
-										}
-										else
-										{
-												<td>
-													<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
-												</td>
-										}										
-											<td>@Html.Raw(QueryInfo[2])</td>
-											<td>@Html.Raw(QueryInfo[3])</td>
-											<td>@Html.Raw(QueryInfo[4])</td>
-											<td>@Html.Raw(QueryInfo[5])</td>
-											<td>@Html.Raw(QueryInfo[6])</td>
-											<td>@Html.Raw(QueryInfo[7])</td>
-											<td>@Html.Raw(QueryInfo[8])</td>
-											<td>@Html.Raw(QueryInfo[9])</td>
-											<td>@Html.Raw(QueryInfo[10])</td>
-											<td>@Html.Raw(QueryInfo[11])</td>
-											<td>@Html.Raw(QueryInfo[12])</td>
-											<td>@Html.Raw(QueryInfo[13])</td>
-											<td>@Html.Raw(QueryInfo[14])</td>
-										</tr>
+									<tr id='tr@(QueryInfo[1])'>
+									@if (@QueryInfo[0] == "Y")
+									{
+											<td>
+												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
+												<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
+													<i class="glyphicon glyphicon-pencil"></i>
+												</button>
+												<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
+													<i class="fa fa-trash"></i>
+												</button>
+											</td>
+									}
+									else
+									{
+											<td>
+												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
+											</td>
+									}
+										<td class="taskContractID">@Html.Raw(QueryInfo[2])</td>
+										<td class="taskHostName">@Html.Raw(QueryInfo[3])</td>
+										<td class="taskSerialID">@Html.Raw(QueryInfo[4])</td>
+										<td class="taskPID">@Html.Raw(QueryInfo[5])</td>
+										<td class="taskBrands">@Html.Raw(QueryInfo[6])</td>
+										<td class="taskModel">@Html.Raw(QueryInfo[7])</td>
+										<td class="taskLocation">@Html.Raw(QueryInfo[8])</td>
+										<td class="taskAddress">@Html.Raw(QueryInfo[9])</td>
+										<td class="taskArea">@Html.Raw(QueryInfo[10])</td>
+										<td class="taskSLARESP">@Html.Raw(QueryInfo[11])</td>
+										<td class="taskSLASRV">@Html.Raw(QueryInfo[12])</td>
+										<td class="taskNotes">@Html.Raw(QueryInfo[13])</td>
+										<td class="taskSubContractID">@Html.Raw(QueryInfo[14])</td>
+									</tr>
 								}
 							}
 						}
@@ -509,55 +509,65 @@
 	</div>
 </div>
 
-<!--新增/編輯工程師明細彈出視窗-->
-<div class="modal fade" id="dialog_DetailENG" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!--新增/編輯合約標的明細彈出視窗-->
+<div class="modal fade" id="dialog_DetailOBJ" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<label class="col-form-label"><i class="fa fa-check-square-o" aria-hidden="true"></i> 新增/編輯工程師明細</label>
+				<label class="col-form-label"><i class="fa fa-check-square-o" aria-hidden="true"></i> 新增/編輯合約標的明細</label>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>
 			<div class="modal-body">
-				<input type="hidden" id="hid_taskcID" />
-				<!--客戶ID隱藏欄位-->
-				<input type="hidden" id="hid_cCustomerID" />
-				<!--服務團隊隱藏欄位-->
-				<input type="hidden" id="hid_cTeamID" />
-				<!--是否為舊文件編號隱藏欄位-->
-				<input type="hidden" id="hid_cIsOldContractID" />
+				<input type="hidden" id="hid_taskcID" />				
 				<div class="form-group row">
 					<label class="col-lg-2 col-form-label">文件編號*</label>
-					<input type="text" id="txt_cContractID" class="col-lg-4" placeholder="文件編號" disabled />
+					<input type="text" id="txt_cContractID" class="form-control col-lg-4" placeholder="文件編號" disabled/>
+					<label class="col-lg-2 col-form-label">HostName</label>
+					<input type="text" id="txt_cHostName" class="form-control col-lg-4" placeholder="HostName" />
+				</div>
+				<div class="form-group row">					
+					<label class="col-lg-2 col-form-label">序號*</label>
+					<input type="text" id="txt_cSerialID" class="form-control col-lg-4" placeholder="序號" />
+					<label class="col-lg-2 col-form-label">ProductID*</label>
+					<input type="text" id="txt_cPID" class="form-control col-lg-4" placeholder="ProductID" />
+				</div>
+				<div class="form-group row">					
+					<label class="col-lg-2 col-form-label">廠牌*</label>
+					<input type="text" id="txt_cBrands" class="form-control col-lg-4" placeholder="廠牌" />
+					<label class="col-lg-2 col-form-label">ProductModel*</label>
+					<input type="text" id="txt_cModel" class="form-control col-lg-4" placeholder="ProductModel" />
+				</div>
+				<div class="form-group row">					
+					<label class="col-lg-2 col-form-label">Location*</label>
+					<input type="text" id="txt_cLocation" class="form-control col-lg-4" placeholder="Location" />
+					<label class="col-lg-2 col-form-label">區域</label>
+					<input type="text" id="txt_cArea" class="form-control col-lg-4" placeholder="區域" />
 				</div>
 				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">工程師ERPID*</label>
-					<input type="text" id="txt_cEngineerID" class="col-lg-4 PeoploeTeam" placeholder="請輸入人名或英文關鍵字搜尋" />
-					<label class="col-lg-2 col-form-label">工程師姓名*</label>
-					<input type="text" id="txt_cEngineerName" class="col-lg-4" placeholder="工程師姓名" disabled />
+					<label class="col-lg-2 col-form-label">地點*</label>
+					<input type="text" id="txt_cAddress" class="form-control col-lg-10" placeholder="地點" />					
 				</div>
 				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">是否為主要工程師*</label>
-					<select class='form-control col-lg-4' id='ddl_cIsMainEngineer'>
-						<option value='-1'>請選擇</option>
-						<option value='Y'>Y</option>
-						<option value='N'>N</option>
-					</select>
+					<label class="col-lg-2 col-form-label">回應條件*</label>
+					@Html.DropDownList("ddl_cSLARESP", (IEnumerable<SelectListItem>)ViewBag.SLARESPList, new { @class = "form-control col-lg-4" })	
+					<label class="col-lg-2 col-form-label">服務條件*</label>
+					@Html.DropDownList("ddl_cSLASRV", (IEnumerable<SelectListItem>)ViewBag.SLASRVList, new { @class = "form-control col-lg-4" })
+				</div>
+				<div class="form-group row">					
+					<label class="col-lg-2 col-form-label">下包文件編號</label>
+					<input type="text" id="txt_cSubContractID" class="form-control col-lg-4" placeholder="下包文件編號" />
 				</div>
 				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">門市代號</label>
-					<input type="text" id="txt_cContactStoreID" class="col-lg-10 ContactStore" placeholder="請輸入門市名稱關鍵字搜尋" />
-				</div>
-				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">門市名稱</label>
-					<input type="text" id="txt_cContactStoreName" class="col-lg-10" placeholder="門市名稱" disabled />
-				</div>
+					<label class="col-lg-2 col-form-label">備註</label>
+					<textarea rows="3" class="form-control col-lg-10" placeholder="備註" id="tbx_cNotes"></textarea>					
+				</div>				
 			</div>
 			<div class="modal-footer">
 				<div class="col-lg-5"></div>
-				<button id="btn_saveDetailENG" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveDetailENG($('#hid_taskcID').val());"> <i class="fa fa-save"></i> 儲 存</button>
-				<img id="img_waiting_saveDetailENG" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<button id="btn_saveDetailOBJ" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveDetailOBJ($('#hid_taskcID').val());"> <i class="fa fa-save"></i> 儲 存</button>
+				<img id="img_waiting_saveDetailOBJ" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
 				<div class="col-lg-5"></div>
 			</div>
 		</div>

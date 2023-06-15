@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -1137,6 +1138,16 @@ namespace OneService.Controllers
             {
                 callQueryContractDetailObj(pContractID, "", "", "");
             }
+
+            #region 回應條件
+            List<SelectListItem> SLARESPList = CMF.findSysParameterListItem(pOperationID_Contract, "OTHER", ViewBag.cLoginUser_BUKRS, "SLARESP", true);
+            ViewBag.SLARESPList = SLARESPList;
+            #endregion
+
+            #region 服務條件
+            List<SelectListItem> SLASRVList = CMF.findSysParameterListItem(pOperationID_Contract, "OTHER", ViewBag.cLoginUser_BUKRS, "SLASRV", true);
+            ViewBag.SLASRVList = SLASRVList;
+            #endregion
 
             return View();
         }
