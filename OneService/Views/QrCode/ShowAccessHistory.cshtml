@@ -1,0 +1,112 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "人員進出記錄";
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+@section js_section{
+
+}
+
+@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>人員進出記錄</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">智慧門禁系統</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>人員進出記錄</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+
+<div class="row">
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>範例</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content">
+				<form name="form" action='#' method="post">
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">姓名</label>
+						<div class="col-lg-4"><input type="text" id="tbx_CustName" name="tbx_CustName" class="form-control" placeholder="姓名" required></div>
+						<label class="col-lg-2 col-form-label">電話</label>
+						<div class="col-lg-4"><input type="text" name="tbx_CustTel" class="form-control" placeholder="電話"></div>
+					</div>
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">Email</label>
+						<div class="col-lg-4"><input type="text" name="tbx_CustEmail" class="form-control" placeholder="Email"></div>
+					</div>
+					<!-- 檔案上傳start-->
+					<div class="form-group row">
+						<div class="col-lg-3 dropzone" id="zone_1">
+							<div class="fallback">
+								<input name="file" type="file" multiple />
+							</div>
+						</div>
+						<div class="col-lg-9">
+							<div class="attachment" id="filezone_1"></div>
+							<input type="hidden" class="fileids" id="hid_filezone_1" />
+						</div>
+					</div>
+					<!-- 檔案上傳end-->
+					<div class="hr-line-dashed"></div>
+					<button class="btn btn-success btn-lg" type="submit"><i class="fa fa-save"></i> 儲 存 </button>
+					<button class="btn btn-primary btn-lg" type="button" onclick="searchCust()">
+						<i class="fa fa-search"></i> 查 詢
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>DataTable列表</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="dataDiv">
+				<table id="table1" class="table table-striple table-bordered table-hover dataTables-example">
+					<thead>
+						<tr>
+							<th>姓名</th>
+							<th>地點</th>
+							<th>結果</th>
+							<th width="130">時間</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach(var bean in ViewBag.beans)
+						{
+							<tr>
+								<td>@bean.UserName</td>
+								<td>@bean.AccessLocation</td>
+								<td>@bean.AccessResulst</td>
+								<td>@bean.InsertTime</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+</div>
+

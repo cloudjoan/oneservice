@@ -52,7 +52,7 @@ namespace OneService.Controllers
         {
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != null && HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == "true")
             {
-				return RedirectToAction("ToDoList", "ServiceRequest");
+				return RedirectToAction("ShowAccessHistory", "QrCode");
 			}
             else
             {
