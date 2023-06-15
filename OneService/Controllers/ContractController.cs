@@ -475,7 +475,7 @@ namespace OneService.Controllers
                 string[] QueryInfo = new string[6];
 
                 tSubUrl = "../Contract/ContractDetailSub?SubContractID=" + beanSub.CSubContractId;
-                tObjUrl = "javascript:void(0);";
+                tObjUrl = "../Contract/QueryContractDetailObj?ContractID=" + beanSub.CContractId + "&SubContractID=" + beanSub.CSubContractId;
                 tSubNotes = beanSub.CSubNotes.Replace("\n", "<br/>");                
 
                 QueryInfo[0] = beanSub.CSubContractId;      //下包文件編號
@@ -1114,14 +1114,22 @@ namespace OneService.Controllers
             getEmployeeInfo();
 
             ViewBag.cContractID = "";
+            ViewBag.cSubContractID = "";
             ViewBag.cMainTeamID = "";
             ViewBag.cMainIsOldContractID = "N";
 
             #region Request參數            
             if (HttpContext.Request.Query["ContractID"].FirstOrDefault() != null)
             {
-                pContractID = HttpContext.Request.Query["ContractID"].FirstOrDefault();
+                pContractID = HttpContext.Request.Query["ContractID"].FirstOrDefault();                
                 ViewBag.cContractID = pContractID;
+            }
+
+            if (HttpContext.Request.Query["SubContractID"].FirstOrDefault() != null)
+            {
+                pSubContractID = HttpContext.Request.Query["SubContractID"].FirstOrDefault();
+                pContractID = pSubContractID; //將下包約指定給主約
+                ViewBag.cSubContractID = pSubContractID;
             }
             #endregion            
 

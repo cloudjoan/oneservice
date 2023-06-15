@@ -902,6 +902,7 @@ namespace OneService.Controllers
                             parameters.Add("IV_SERIAL", IV_SERIAL);
 
                             request.AddHeader("Content-Type", "application/json");
+                            request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
                             request.AddParameter("application/json", parameters, ParameterType.RequestBody);
 
                             RestResponse response = client.Execute(request);
@@ -1226,6 +1227,7 @@ namespace OneService.Controllers
                 parameters.Add("IV_CONTRACTID", NO);
 
                 request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
                 request.AddParameter("application/json", parameters, ParameterType.RequestBody);
 
                 RestResponse response = client.Execute(request);
@@ -1427,6 +1429,7 @@ namespace OneService.Controllers
                 parameters.Add("IV_STATUS", beanIN.IV_STATUS);                
 
                 request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
                 request.AddParameter("application/json", parameters, ParameterType.RequestBody);
 
                 RestResponse response = client.Execute(request);
@@ -1505,6 +1508,7 @@ namespace OneService.Controllers
                 parameters.Add("IV_IsFromAPP", beanIN.IV_IsFromAPP);                
 
                 request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
                 request.AddParameter("application/json", parameters, ParameterType.RequestBody);
 
                 RestResponse response = client.Execute(request);
@@ -1567,6 +1571,7 @@ namespace OneService.Controllers
                 parameters.Add("IV_SRTEAM", beanIN.IV_SRTEAM);
 
                 request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
                 request.AddParameter("application/json", parameters, ParameterType.RequestBody);
 
                 RestResponse response = client.Execute(request);
@@ -3435,6 +3440,7 @@ namespace OneService.Controllers
                         parameters.Add("IV_IO", "O");
 
                         request.AddHeader("Content-Type", "application/json");
+                        request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
                         request.AddParameter("application/json", parameters, ParameterType.RequestBody);
 
                         RestResponse response = client.Execute(request);

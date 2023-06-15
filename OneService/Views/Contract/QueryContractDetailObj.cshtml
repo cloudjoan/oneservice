@@ -276,7 +276,7 @@
 			var tbx_QuerycModel = $('#tbx_QuerycModel');			//ProductModel			
 
 			if (tbx_QuerycContractID.val() == "" && tbx_QuerycHostName.val() == "" && tbx_QuerycSerialID.val() == "" && tbx_QuerycModel.val() == "") {
-				tMsg += "請至少勾選或輸入一項查詢條件！\n";
+				tMsg += "請至少輸入一項查詢條件！\n";
 			}
 
 			if (tMsg != "") {
@@ -366,13 +366,19 @@
 					<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 					<!--登人者公司別(T012、T016...)-->
 					<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
-					<!--文件編號隱藏欄位(從主約過來才會有值)-->
-					<input type="hidden" id="hid_cContractID" name="hid_cContractID" value="@ViewBag.cContractID">					
+					<!--主約文件編號隱藏欄位(從主約過來才會有值)-->
+					<input type="hidden" id="hid_cContractID" name="hid_cContractID" value="@ViewBag.cContractID">
+					<!--下包文件編號隱藏欄位(從主約過來才會有值)-->
+					<input type="hidden" id="hid_cSubContractID" name="hid_cSubContractID" value="@ViewBag.cSubContractID">
 					<div class="form-group row">
 						<label class="col-lg-2 col-form-label">文件編號</label>
 						<div class="col-lg-4">
 							@{
-								if (ViewBag.cContractID != "")
+								if (ViewBag.cSubContractID != "")
+								{
+									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cSubContractID" placeholder="文件編號" disabled>
+								}
+								else if (ViewBag.cContractID != "")
 								{
 									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
 								}
@@ -460,39 +466,39 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-									<tr id='tr@(QueryInfo[1])'>
-										@if (@QueryInfo[0] == "Y")
+										<tr id='tr@(QueryInfo[1])'>
+											@if (@QueryInfo[0] == "Y")
 										{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
-												<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
-													<i class="glyphicon glyphicon-pencil"></i>
-												</button>
-												<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
-													<i class="fa fa-trash"></i>
-												</button>
-											</td>
+												<td>
+													<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
+													<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
+														<i class="glyphicon glyphicon-pencil"></i>
+													</button>
+													<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
+														<i class="fa fa-trash"></i>
+													</button>
+												</td>
 										}
 										else
 										{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
-											</td>
+												<td>
+													<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
+												</td>
 										}										
-										<td>@Html.Raw(QueryInfo[2])</td>
-										<td>@Html.Raw(QueryInfo[3])</td>
-										<td>@Html.Raw(QueryInfo[4])</td>
-										<td>@Html.Raw(QueryInfo[5])</td>
-										<td>@Html.Raw(QueryInfo[6])</td>
-										<td>@Html.Raw(QueryInfo[7])</td>
-										<td>@Html.Raw(QueryInfo[8])</td>
-										<td>@Html.Raw(QueryInfo[9])</td>
-										<td>@Html.Raw(QueryInfo[10])</td>
-										<td>@Html.Raw(QueryInfo[11])</td>
-										<td>@Html.Raw(QueryInfo[12])</td>
-										<td>@Html.Raw(QueryInfo[13])</td>
-										<td>@Html.Raw(QueryInfo[14])</td>
-									</tr>
+											<td>@Html.Raw(QueryInfo[2])</td>
+											<td>@Html.Raw(QueryInfo[3])</td>
+											<td>@Html.Raw(QueryInfo[4])</td>
+											<td>@Html.Raw(QueryInfo[5])</td>
+											<td>@Html.Raw(QueryInfo[6])</td>
+											<td>@Html.Raw(QueryInfo[7])</td>
+											<td>@Html.Raw(QueryInfo[8])</td>
+											<td>@Html.Raw(QueryInfo[9])</td>
+											<td>@Html.Raw(QueryInfo[10])</td>
+											<td>@Html.Raw(QueryInfo[11])</td>
+											<td>@Html.Raw(QueryInfo[12])</td>
+											<td>@Html.Raw(QueryInfo[13])</td>
+											<td>@Html.Raw(QueryInfo[14])</td>
+										</tr>
 								}
 							}
 						}
