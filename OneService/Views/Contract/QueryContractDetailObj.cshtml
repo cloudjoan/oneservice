@@ -162,6 +162,8 @@
 			//設定各欄位資料
 			$("#hid_taskcID").val("");								//系統ID
 			$("#txt_cContractID").val($("#hid_cContractID").val());		//文件編號			
+			$("#ddl_cSLARESP").val("");								//回應條件
+			$("#ddl_cSLASRV").val("");								//服務條件
 
 			$("#dialog_DetailOBJ").modal('show');
 		}
@@ -181,8 +183,15 @@
 			$("#txt_cLocation").val($(obj).parent().parent().find('.taskLocation').text());				//Location
 			$("#txt_cAddress").val($(obj).parent().parent().find('.taskAddress').text());				//地點
 			$("#txt_cArea").val($(obj).parent().parent().find('.taskArea').text());					//區域
-			$("#ddl_cSLARESP").val($(obj).parent().parent().find('.taskSLARESP').text());				//回應條件
-			$("#ddl_cSLASRV").val($(obj).parent().parent().find('.taskSLASRV').text());					//服務條件
+
+			var cSLARESP = $(obj).parent().parent().find('.taskSLARESP').text();
+			if (cSLARESP == "") cSLARESP = "-1";
+			$("#ddl_cSLARESP").val(cSLARESP);															//回應條件
+
+			var SLASRV = $(obj).parent().parent().find('.taskSLASRV').text();
+			if (SLASRV == "") SLASRV = "-1";
+			$("#ddl_cSLASRV").val(SLASRV);																//服務條件
+
 			$("#tbx_cNotes").val($(obj).parent().parent().find('.taskNotes').text());					//備註
 			$("#txt_cSubContractID").val($(obj).parent().parent().find('.taskSubContractID').text());	//下包文件編號
 
@@ -219,16 +228,28 @@
 		function saveDetailOBJ(cID) {
 
 			var strMsg = "";
+			var txt_cContractID = $("#txt_cContractID");		//文件編號
+			var txt_cHostName = $("#txt_cHostName");			//HostName
+			var txt_cSerialID = $("#txt_cSerialID");			//序號
+			var txt_cPID = $("#txt_cPID");						//ProductID
+			var txt_cBrands = $("#txt_cBrands");				//廠牌
+			var txt_cModel = $("#txt_cModel");					//ProductModel
+			var txt_cLocation = $("#txt_cLocation");			//Location
+			var txt_cAddress = $("#txt_cAddress");				//地點
+			var txt_cArea = $("#txt_cArea");					//區域
+			var ddl_cSLARESP = $("#ddl_cSLARESP");				//回應條件
+			var ddl_cSLASRV = $("#ddl_cSLASRV");				//服務條件
+			var tbx_cNotes = $("#tbx_cNotes");					//備註
+			var txt_cSubContractID = $("#txt_cSubContractID");	//下包文件編號
 
-			if ($("#txt_cEngineerID").val() == "") strMsg += "合約標的ERPID不得為空！\n";
-			if ($("#txt_cEngineerName").val() == "") strMsg += "您未下拉選取【合約標的姓名】，請輸入關鍵字後再重新選取！\n";
-			if ($("#ddl_cIsMainEngineer").val() == "-1") strMsg += "請選擇是否為主要合約標的！\n";
-
-			if ($("#txt_cContactStoreID").val() != "") {
-				if ($("#txt_cContactStoreName").val() == "") {
-					strMsg += "您未下拉選取【門市代號】，請輸入關鍵字後再重新選取！\n";
-				}
-			}
+			if (txt_cSerialID.val() == "") strMsg += "【序號】不得為空！\n";
+			if (txt_cPID.val() == "") strMsg += "【ProductID】不得為空！\n";
+			if (txt_cBrands.val() == "") strMsg += "【廠牌】不得為空！\n";
+			if (txt_cModel.val() == "") strMsg += "【ProductModel】不得為空！\n";
+			if (txt_cLocation.val() == "") strMsg += "【Location】不得為空！\n";
+			if (txt_cAddress.val() == "") strMsg += "【地點】不得為空！\n";
+			if (ddl_cSLARESP.val() == "") strMsg += "請選擇【回應條件】！\n";
+			if (ddl_cSLASRV.val() == "") strMsg += "請選擇【服務條件】！\n";
 
 			if (strMsg != "") {
 				alert(strMsg);
@@ -242,12 +263,19 @@
 					dataType: 'json',
 					data: {
 						cID: cID,
-						cContractID: $("#txt_cContractID").val(),
-						cEngineerID: $("#txt_cEngineerID").val(),
-						cEngineerName: $("#txt_cEngineerName").val(),
-						cIsMainEngineer: $("#ddl_cIsMainEngineer").val(),
-						cContactStoreID: $("#txt_cContactStoreID").val(),
-						cContactStoreName: $("#txt_cContactStoreName").val(),
+						cContractID: txt_cContractID.val(),
+						cHostName: txt_cHostName.val(),
+						cSerialID: txt_cSerialID.val(),
+						cPID: txt_cPID.val(),
+						cBrands: txt_cBrands.val(),
+						cModel: txt_cModel.val(),
+						cLocation: txt_cLocation.val(),
+						cAddress: txt_cAddress.val(),
+						cArea: txt_cArea.val(),
+						cSLARESP: ddl_cSLARESP.val(),
+						cSLASRV: ddl_cSLASRV.val(),
+						cNotes: tbx_cNotes.val(),
+						cSubContractID: txt_cSubContractID.val()
 					},
 					success: function (result) {
 						if (result == "SUCCESS") {
@@ -376,15 +404,15 @@
 							@{
 								if (ViewBag.cSubContractID != "")
 								{
-									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cSubContractID" placeholder="文件編號" disabled>
+											<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cSubContractID" placeholder="文件編號" disabled>
 								}
 								else if (ViewBag.cContractID != "")
 								{
-									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
+											<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
 								}
 								else
 								{
-									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
+											<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
 								}
 							}
 
@@ -466,39 +494,39 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-									<tr id='tr@(QueryInfo[1])'>
-									@if (@QueryInfo[0] == "Y")
+											<tr id='tr@(QueryInfo[1])'>
+											@if (@QueryInfo[0] == "Y")
 									{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
-												<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
-													<i class="glyphicon glyphicon-pencil"></i>
-												</button>
-												<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
-													<i class="fa fa-trash"></i>
-												</button>
-											</td>
+													<td>
+														<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
+														<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
+															<i class="glyphicon glyphicon-pencil"></i>
+														</button>
+														<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
+															<i class="fa fa-trash"></i>
+														</button>
+													</td>
 									}
 									else
 									{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
-											</td>
+													<td>
+														<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
+													</td>
 									}
-										<td class="taskContractID">@Html.Raw(QueryInfo[2])</td>
-										<td class="taskHostName">@Html.Raw(QueryInfo[3])</td>
-										<td class="taskSerialID">@Html.Raw(QueryInfo[4])</td>
-										<td class="taskPID">@Html.Raw(QueryInfo[5])</td>
-										<td class="taskBrands">@Html.Raw(QueryInfo[6])</td>
-										<td class="taskModel">@Html.Raw(QueryInfo[7])</td>
-										<td class="taskLocation">@Html.Raw(QueryInfo[8])</td>
-										<td class="taskAddress">@Html.Raw(QueryInfo[9])</td>
-										<td class="taskArea">@Html.Raw(QueryInfo[10])</td>
-										<td class="taskSLARESP">@Html.Raw(QueryInfo[11])</td>
-										<td class="taskSLASRV">@Html.Raw(QueryInfo[12])</td>
-										<td class="taskNotes">@Html.Raw(QueryInfo[13])</td>
-										<td class="taskSubContractID">@Html.Raw(QueryInfo[14])</td>
-									</tr>
+												<td class="taskContractID">@Html.Raw(QueryInfo[2])</td>
+												<td class="taskHostName">@Html.Raw(QueryInfo[3])</td>
+												<td class="taskSerialID">@Html.Raw(QueryInfo[4])</td>
+												<td class="taskPID">@Html.Raw(QueryInfo[5])</td>
+												<td class="taskBrands">@Html.Raw(QueryInfo[6])</td>
+												<td class="taskModel">@Html.Raw(QueryInfo[7])</td>
+												<td class="taskLocation">@Html.Raw(QueryInfo[8])</td>
+												<td class="taskAddress">@Html.Raw(QueryInfo[9])</td>
+												<td class="taskArea">@Html.Raw(QueryInfo[10])</td>
+												<td class="taskSLARESP">@Html.Raw(QueryInfo[11])</td>
+												<td class="taskSLASRV">@Html.Raw(QueryInfo[12])</td>
+												<td class="taskNotes">@Html.Raw(QueryInfo[13])</td>
+												<td class="taskSubContractID">@Html.Raw(QueryInfo[14])</td>
+											</tr>
 								}
 							}
 						}

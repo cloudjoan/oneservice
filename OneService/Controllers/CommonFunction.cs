@@ -1903,6 +1903,31 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 判斷傳入的序號是否已存在合約標的明細內容(true.已存在 false.未存在)
+        /// <summary>
+        /// 判斷傳入的序號是否已存在合約標的明細內容(true.已存在 false.未存在)
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cSerialID">序號</param>
+        /// <returns></returns>
+        public bool checkIsExitsContractDetailObj(string cContractID, string cID, string cSerialID)
+        {
+            bool reValue = false;
+
+            var beanM = dbOne.TbOneContractDetailObjs.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID &&
+                                                                      (string.IsNullOrEmpty(cSerialID) ? true : x.CSerialId == cSerialID) &&                                                                      
+                                                                      (string.IsNullOrEmpty(cID) ? true : x.CId != int.Parse(cID)));
+
+            if (beanM != null)
+            {
+                reValue = true;
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑合約管理 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----

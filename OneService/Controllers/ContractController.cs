@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using NPOI.SS.Formula.Functions;
+using NPOI.SS.Formula.PTG;
 using OneService.Models;
 using OneService.Utils;
 using Org.BouncyCastle.Asn1.X509;
@@ -722,7 +723,7 @@ namespace OneService.Controllers
 
         #region 儲存下包合約明細內容
         /// <summary>
-        /// 
+        /// 儲存下包合約明細內容
         /// </summary>
         /// <param name="cID">系統ID</param>
         /// <param name="cSubNotes">下包備註</param>
@@ -775,6 +776,7 @@ namespace OneService.Controllers
             {
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
                 CMF.writeToLog(tSubContractID, "saveDetailSub", pMsg, ViewBag.empEngName);
+                reValue = pMsg;
             }
             else
             {
@@ -1047,6 +1049,7 @@ namespace OneService.Controllers
                 {
                     pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
                     CMF.writeToLog(cContractID, "saveDetailENG", pMsg, ViewBag.empEngName);
+                    reValue = pMsg;
                 }
                 else
                 {
@@ -1287,6 +1290,167 @@ namespace OneService.Controllers
 
             ViewBag.QueryToListBean = QueryToList;
             #endregion
+        }
+        #endregion
+
+        #region 儲存合約標的明細內容
+        /// <summary>
+        /// 儲存合約標的明細內容
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cHostName">HostName</param>
+        /// <param name="cSerialID">序號</param>
+        /// <param name="cPID">ProductID</param>
+        /// <param name="cBrands">廠牌</param>
+        /// <param name="cModel">ProductModel</param>
+        /// <param name="cLocation">Location</param>
+        /// <param name="cAddress">地點</param>
+        /// <param name="cArea">區域</param>
+        /// <param name="cSLARESP">回應條件</param>
+        /// <param name="cSLASRV">服務條件</param>
+        /// <param name="cNotes">備註</param>
+        /// <param name="cSubContractID">下包文件編號</param>
+        /// <returns></returns>
+        public IActionResult saveDetailOBJ(string cID, string cContractID, string cHostName, string cSerialID, string cPID, 
+                                         string cBrands, string cModel, string cLocation, string cAddress, string cArea, 
+                                         string cSLARESP, string cSLASRV, string cNotes, string cSubContractID)
+
+        {
+            string reValue = "SUCCESS";
+            string tLog = string.Empty;
+
+            string OldcHostName = string.Empty;
+            string OldcSerialID = string.Empty;
+            string OldcPID = string.Empty;
+            string OldcBrands = string.Empty;
+            string OldcModel = string.Empty;
+            string OldcLocation = string.Empty;
+            string OldcAddress = string.Empty;
+            string OldcArea = string.Empty;
+            string OldcSLARESP = string.Empty;
+            string OldcSLASRV = string.Empty;
+            string OldcNotes = string.Empty;
+            string OldcSubContractID = string.Empty;
+
+            bool tIsDouble = false; //判斷是否有重覆
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            //判斷傳入的序號是否已存在合約標的明細內容(true.已存在 false.未存在)
+            tIsDouble = CMF.checkIsExitsContractDetailObj(cContractID, cID, cSerialID);
+
+            if (!tIsDouble)
+            {
+                if (!string.IsNullOrEmpty(cID)) //修改
+                {
+                    var bean = dbOne.TbOneContractDetailObjs.FirstOrDefault(x => x.CId == int.Parse(cID));
+
+                    if (bean != null)
+                    {
+                        #region 紀錄新舊值
+                        OldcHostName = bean.CHostName;
+                        tLog += CMF.getNewAndOldLog("HostName", OldcHostName, cHostName);
+
+                        OldcSerialID = bean.CSerialId;
+                        tLog += CMF.getNewAndOldLog("序號", OldcSerialID, cSerialID);
+
+                        OldcPID = bean.CPid;
+                        tLog += CMF.getNewAndOldLog("ProductID", OldcPID, cPID);
+
+                        OldcBrands = bean.CBrands;
+                        tLog += CMF.getNewAndOldLog("廠牌", OldcBrands, cBrands);
+
+                        OldcModel = bean.CModel;
+                        tLog += CMF.getNewAndOldLog("ProductModel", OldcModel, cModel);
+
+                        OldcLocation = bean.CLocation;
+                        tLog += CMF.getNewAndOldLog("Location", OldcLocation, cLocation);
+
+                        OldcAddress = bean.CAddress;
+                        tLog += CMF.getNewAndOldLog("地點", OldcAddress, cAddress);
+
+                        OldcArea = bean.CArea;
+                        tLog += CMF.getNewAndOldLog("區域", OldcArea, cArea);
+
+                        OldcSLARESP = bean.CSlaresp;
+                        tLog += CMF.getNewAndOldLog("回應條件", OldcSLARESP, cSLARESP);
+
+                        OldcSLASRV = bean.CSlasrv;
+                        tLog += CMF.getNewAndOldLog("服務條件", OldcSLASRV, cSLASRV);
+
+                        OldcNotes = bean.CNotes;
+                        tLog += CMF.getNewAndOldLog("備註", OldcNotes, cNotes);
+
+                        OldcSubContractID = bean.CSubContractId;
+                        tLog += CMF.getNewAndOldLog("下包文件編號", OldcSubContractID, cSubContractID);
+                        #endregion
+
+                        bean.CHostName = string.IsNullOrEmpty(cHostName) ? "" : cHostName;
+                        bean.CSerialId = string.IsNullOrEmpty(cSerialID) ? "" : cSerialID;
+                        bean.CPid = string.IsNullOrEmpty(cPID) ? "" : cPID;
+                        bean.CBrands = string.IsNullOrEmpty(cBrands) ? "" : cBrands;
+                        bean.CModel = string.IsNullOrEmpty(cModel) ? "" : cModel;
+                        bean.CLocation = string.IsNullOrEmpty(cLocation) ? "" : cLocation;
+                        bean.CAddress = string.IsNullOrEmpty(cAddress) ? "" : cAddress;
+                        bean.CArea = string.IsNullOrEmpty(cArea) ? "" : cArea;
+                        bean.CSlaresp = string.IsNullOrEmpty(cSLARESP) ? "" : cSLARESP;
+                        bean.CSlasrv = string.IsNullOrEmpty(cSLASRV) ? "" : cSLASRV;
+                        bean.CNotes = string.IsNullOrEmpty(cNotes) ? "" : cNotes;
+                        bean.CSubContractId = string.IsNullOrEmpty(cSubContractID) ? "" : cSubContractID;
+
+                        bean.ModifiedDate = DateTime.Now;
+                        bean.ModifiedUserName = ViewBag.empEngName;
+                    }
+                }
+                else //新增
+                {
+                    TbOneContractDetailObj beanOBJ = new TbOneContractDetailObj();
+
+                    beanOBJ.CContractId = string.IsNullOrEmpty(cContractID) ? "" : cContractID;
+                    beanOBJ.CHostName = string.IsNullOrEmpty(cHostName) ? "" : cHostName;
+                    beanOBJ.CSerialId = string.IsNullOrEmpty(cSerialID) ? "" : cSerialID;
+                    beanOBJ.CPid = string.IsNullOrEmpty(cPID) ? "" : cPID;
+                    beanOBJ.CBrands = string.IsNullOrEmpty(cBrands) ? "" : cBrands;
+                    beanOBJ.CModel = string.IsNullOrEmpty(cModel) ? "" : cModel;
+                    beanOBJ.CLocation = string.IsNullOrEmpty(cLocation) ? "" : cLocation;
+                    beanOBJ.CAddress = string.IsNullOrEmpty(cAddress) ? "" : cAddress;
+                    beanOBJ.CArea = string.IsNullOrEmpty(cArea) ? "" : cArea;
+                    beanOBJ.CSlaresp = string.IsNullOrEmpty(cSLARESP) ? "" : cSLARESP;
+                    beanOBJ.CSlasrv = string.IsNullOrEmpty(cSLASRV) ? "" : cSLASRV;
+                    beanOBJ.CNotes = string.IsNullOrEmpty(cNotes) ? "" : cNotes;
+                    beanOBJ.CSubContractId = string.IsNullOrEmpty(cSubContractID) ? "" : cSubContractID;
+
+                    beanOBJ.Disabled = 0;
+                    beanOBJ.CreatedDate = DateTime.Now;
+                    beanOBJ.CreatedUserName = ViewBag.empEngName;
+
+                    dbOne.TbOneContractDetailObjs.Add(beanOBJ);
+                }
+
+                int result = dbOne.SaveChanges();
+
+                if (result <= 0)
+                {
+                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
+                    CMF.writeToLog(cContractID, "saveDetailOBJ", pMsg, ViewBag.empEngName);
+                    reValue = pMsg;
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(tLog))
+                    {
+                        CMF.writeToLog(cContractID, "saveDetailOBJ", tLog, ViewBag.empEngName);
+                    }
+                }
+            }
+            else
+            {
+                reValue = "序號【" + cSerialID + "】已存在，請重新再確認！";
+            }
+
+            return Json(reValue);
         }
         #endregion
 
