@@ -15,6 +15,7 @@ namespace OneService.Controllers
 
 		public IActionResult Accessable()
 		{
+			ViewBag.beans = appDB.TbAccessables;
 			return View();
 		}
 

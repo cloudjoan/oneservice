@@ -85,7 +85,7 @@ namespace OneService.Controllers
                 HttpContext.Session.SetString(SessionKey.DEPT_NAME, empBean.DeptName);
                 HttpContext.Session.SetString(SessionKey.LOGIN_MESSAGE, "");
 
-                return RedirectToAction("ToDoList", "ServiceRequest");
+                return RedirectToAction("ShowAccessHistory", "QrCode");
             }
             else
             {
