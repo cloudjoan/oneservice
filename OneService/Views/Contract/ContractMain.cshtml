@@ -320,7 +320,7 @@
 
 		//要略過的清單(button)
 		function checkButtonSkipList(tID) {
-			var ArrayList = ["btnEng"];
+			var ArrayList = ["btnEng", "btnObj"];
 			return SkiptList(tID, ArrayList);
 		}
 
@@ -565,6 +565,11 @@
 		function goToQueryContractDetailEng() {
 			window.location.href = "@Url.Action("QueryContractDetailEng", "Contract", new { ContractID = ViewBag.cContractID })";
 		}
+
+		//程至標的明細查詢/上傳/維護
+		function goToQueryContractDetailObj() {
+			window.location.href = "@Url.Action("QueryContractDetailObj", "Contract", new { ContractID = ViewBag.cContractID })";
+		}
 	</script>
 }
 
@@ -734,11 +739,11 @@
 								@{
 									if (ViewBag.IsCanRead == "Y")
 									{
-																	<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
+										<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
 									}
 									else
 									{
-																	<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
+										<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
 									}
 								}								
 							</div>
@@ -760,8 +765,12 @@
 							</button>
 							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
 							&nbsp;&nbsp;&nbsp;&nbsp;
-							<button id="btnEng" name="btnEng" class="btn btn-info btn-lg" type="button" onclick="goToQueryContractDetailEng();">
-							<i class="fa fa-users" style="font-size:large"> 工程師</i>
+						<button id="btnEng" name="btnEng" class="btn btn-outline-primary btn-lg" type="button" onclick="goToQueryContractDetailEng();">
+								<i class="fa fa-users" style="font-size:large"> 工程師</i>
+							</button>
+							&nbsp;&nbsp;&nbsp;&nbsp;
+						<button id="btnObj" name="btnObj" class="btn btn-outline-success btn-lg" type="button" onclick="goToQueryContractDetailObj();">
+								<i class="fa fa-tasks" style="font-size:large"> 標的</i>
 							</button>
 						</div>
 					</form>
@@ -796,13 +805,13 @@
 								{
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
-																	<tr>
-																		<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
-																		<td>@Html.Raw(QueryInfo[2])</td>
-																		<td>@Html.Raw(QueryInfo[3])</td>
-																		<td>@Html.Raw(QueryInfo[4])</td>
-																		<td><a href="@QueryInfo[5]" target="_blank">查詢</a></td>
-																	</tr>
+										<tr>
+											<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
+											<td>@Html.Raw(QueryInfo[2])</td>
+											<td>@Html.Raw(QueryInfo[3])</td>
+											<td>@Html.Raw(QueryInfo[4])</td>
+											<td><a href="@QueryInfo[5]" target="_blank">查詢</a></td>
+										</tr>
 									}
 								}
 							}

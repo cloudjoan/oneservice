@@ -9,8 +9,9 @@
 		$(document).ready(function () {
 			initTable();
 			init_iChceck();
-			PeopleSearch();				//Ajax用中文或英文姓名查詢人員帳號
-			PeopleTeamSearch();			//Ajax用中文或英文姓名查詢人員帳號(by服務團隊)
+			PeopleSearch();			//Ajax用中文或英文姓名查詢人員帳號
+			PeopleTeamSearch();		//Ajax用中文或英文姓名查詢人員帳號(by服務團隊)
+			StoreSearch();			//Ajax用門市名稱查詢門市代號相關資訊
 		});
 
 		function initTable() {
@@ -250,7 +251,7 @@
 		}
 
 		//Ajax用門市名稱查詢門市代號相關資訊
-		function PeopleSearch() {
+		function StoreSearch() {
 			$(".ContactStore").unbind();
 
 			$(".ContactStore").koala({
@@ -515,7 +516,7 @@
 			<div class="ibox ">
 				<div class="ibox-title">
 					<h5>
-						工程師明細查詢作業
+						工程師明細查詢/維護作業
 					</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
@@ -543,11 +544,11 @@
 								@{
 									if (ViewBag.cContractID != "")
 									{
-																<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
+										<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
 									}
 									else
 									{
-																<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
+										<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
 									}
 								}
 								
@@ -586,8 +587,7 @@
 			<div class="ibox ">
 				<div class="ibox-title">
 					<h5>
-						工程師明細查詢結果
-
+						工程師明細查詢/維護結果
 						@if (ViewBag.cContractID != "" && ViewBag.IsCanEdit == "Y")
 						{
 							<button type="button" class="btn btn-success" onclick="addDetailENG();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>

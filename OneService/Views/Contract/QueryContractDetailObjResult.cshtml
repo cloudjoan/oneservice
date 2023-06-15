@@ -1,0 +1,190 @@
+﻿@{
+	Layout = null;
+}
+
+<script>
+	$(document).ready(function () {
+		initTable();
+	});
+
+	function initTable() {
+		var buttonCommon = {
+			exportOptions: {
+				format: {
+					body: function (data, row, column, node) {
+						//替換&符號
+						var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+							translate = {
+								'nbsp': String.fromCharCode(160),
+								'amp': '&',
+								'quot': '"',
+								'lt': '<',
+								'gt': '>'
+							},
+							translator = function ($0, $1) {
+								return translate[$1];
+							};
+
+						if (typeof data === 'string')
+							data = data.replace(translate_re, translator);
+
+
+						if (column === 0) //去除連結的部份
+						{
+							var splitName = data.split(">");
+							var length = splitName.length;
+
+							if (length > 1) {
+								return data.split(">")[1].split("<")[0];
+							}
+							else {
+								return data;
+							}
+						}
+						else if (column === 12 || column === 13) //將換行符號<br>換成excel可以識別的\n
+						{
+							return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
+						}
+						else
+							return data;
+					}
+				}
+			}
+		};
+
+		$('#tableAll').DataTable({
+			language: {
+				"lengthMenu": "每頁顯示筆數 _MENU_ ",
+				"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+				"search": " 關鍵字篩選"
+			},
+			pageLength: 25,
+			responsive: true,
+			dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+			buttons: [
+				$.extend(true, {}, buttonCommon, {
+					extend: 'excelHtml5',
+					title: '合約標的明細查詢_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+					text: '匯出Excel',
+					sheetName: '合約標的明細查詢',
+					exportOptions: {
+						columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] //要顯示的欄位
+					},
+					customize: function (xlsx) {
+						addCustomNumberFormat(xlsx, '0');
+						formatTargetColumn(xlsx, 'A');
+						formatTargetColumn(xlsx, 'B');
+						formatTargetColumn(xlsx, 'C');
+						formatTargetColumn(xlsx, 'D');
+						formatTargetColumn(xlsx, 'E');
+						formatTargetColumn(xlsx, 'F');
+						formatTargetColumn(xlsx, 'G');
+						formatTargetColumn(xlsx, 'H');
+						formatTargetColumn(xlsx, 'I');
+						formatTargetColumn(xlsx, 'J');
+						formatTargetColumn(xlsx, 'K');
+						formatTargetColumn(xlsx, 'L');
+						formatTargetColumn(xlsx, 'M');
+					}
+				}),
+			],
+		});
+
+		$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+	}
+
+	function addCustomNumberFormat(xlsx, numberFormat) {
+		// this adds a new custom number format to the Excel "styles" document:
+		var numFmtsElement = xlsx.xl['styles.xml'].getElementsByTagName('numFmts')[0];
+		// assume 6 custom number formats already exist, and next available ID is 176:
+		var numFmtElement = '<numFmt numFmtId="176" formatCode="' + numberFormat + '"/>';
+		$(numFmtsElement).append(numFmtElement);
+		$(numFmtsElement).attr("count", "7"); // increment the count
+
+		// now add a new "cellXfs" cell formatter, which uses our new number format (numFmt 176):
+		var celXfsElement = xlsx.xl['styles.xml'].getElementsByTagName('cellXfs');
+		var cellStyle = '<xf numFmtId="176" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"'
+			+ ' applyFont="1" applyFill="1" applyBorder="1"/>';
+		// this will be the 8th "xf" element - and will therefore have an index of "7", when we use it later:
+		$(celXfsElement).append(cellStyle);
+		$(celXfsElement).attr("count", "66"); //(1.2.3版)官方提供0-64共65種格式，在此自己新增加一種
+	}
+
+	function formatTargetColumn(xlsx, col) {
+		var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+		if (col == "A") {
+			$('row c[r^="' + col + '"]', sheet).attr('s', '65'); //使用自定義格式
+		}
+		else {
+			$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
+		}
+	}
+</script>
+
+<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+	<thead>
+		<tr>
+			<th>編輯/刪除</th>
+			<th>文件編號</th>
+			<th>HostName</th>
+			<th>序號</th>
+			<th>ProductID</th>
+			<th>廠牌</th>
+			<th>ProductModel</th>
+			<th>Location</th>
+			<th>地點</th>
+			<th>區域</th>
+			<th>回應條件</th>
+			<th>服務條件</th>
+			<th>備註</th>
+			<th>下包文件編號</th>
+		</tr>
+	</thead>
+	<tbody>
+		@{
+			if (ViewBag.QueryToListBean != null)
+			{
+				int count = 0;
+				foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+				{
+					count++;
+					<tr id='tr@(QueryInfo[1])'>
+						@if (@QueryInfo[0] == "Y")
+						{
+							<td>
+								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+								<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
+									<i class="glyphicon glyphicon-pencil"></i>
+								</button>
+								<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
+									<i class="fa fa-trash"></i>
+								</button>
+							</td>
+						}
+						else
+						{
+							<td>
+								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+							</td>
+						}
+						<td>@Html.Raw(QueryInfo[2])</td>
+						<td>@Html.Raw(QueryInfo[3])</td>
+						<td>@Html.Raw(QueryInfo[4])</td>
+						<td>@Html.Raw(QueryInfo[5])</td>
+						<td>@Html.Raw(QueryInfo[6])</td>
+						<td>@Html.Raw(QueryInfo[7])</td>
+						<td>@Html.Raw(QueryInfo[8])</td>
+						<td>@Html.Raw(QueryInfo[9])</td>
+						<td>@Html.Raw(QueryInfo[10])</td>
+						<td>@Html.Raw(QueryInfo[11])</td>
+						<td>@Html.Raw(QueryInfo[12])</td>
+						<td>@Html.Raw(QueryInfo[13])</td>
+						<td>@Html.Raw(QueryInfo[14])</td>
+					</tr>
+				}
+			}
+		}
+	</tbody>
+</table>
+

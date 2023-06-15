@@ -1100,6 +1100,179 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑工程師明細查詢/維謢 ↑↑↑↑↑-----
 
+        #region -----↓↓↓↓↓合約標的明細查詢/上傳/維護 ↓↓↓↓↓----- 
+
+        #region 合約標的明細查詢
+        public IActionResult QueryContractDetailObj()
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            ViewBag.cContractID = "";
+            ViewBag.cMainTeamID = "";
+            ViewBag.cMainIsOldContractID = "N";
+
+            #region Request參數            
+            if (HttpContext.Request.Query["ContractID"].FirstOrDefault() != null)
+            {
+                pContractID = HttpContext.Request.Query["ContractID"].FirstOrDefault();
+                ViewBag.cContractID = pContractID;
+            }
+            #endregion            
+
+            if (pContractID != "")
+            {
+                callQueryContractDetailObj(pContractID, "", "", "");
+            }
+
+            return View();
+        }
+        #endregion
+
+        #region 合約標的明細查詢結果
+        /// <summary>
+        /// 合約標的明細查詢結果
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cHostName">HostName</param>
+        /// <param name="cSerialID">序號</param>
+        /// <param name="cModel">Product Model</param>        
+        /// <returns></returns>
+        public IActionResult QueryContractDetailObjResult(string cContractID, string cHostName, string cSerialID, string cModel)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+            callQueryContractDetailObj(cContractID, cHostName, cSerialID, cModel);
+
+            return View();
+        }
+        #endregion
+
+        #region 合約標的明細查詢共用方法
+        public void callQueryContractDetailObj(string cContractID, string cHostName, string cSerialID, string cModel)
+        {
+            DataTable dt = null;
+            StringBuilder tSQL = new StringBuilder();
+
+            string IsCanEdit = string.Empty;
+            string ttWhere = string.Empty;
+            string tNotes = string.Empty;
+            string tSubContractID = string.Empty;            
+
+            List<string[]> QueryToList = new List<string[]>();  //查詢出來的清單
+            List<string> tContractIDList = new List<string>();   //文件編號清單
+            List<TbOneContractMain> tMainList = new List<TbOneContractMain>();           
+
+            #region 文件編號
+            if (!string.IsNullOrEmpty(cContractID))
+            {
+                ttWhere += "AND cContractID LIKE N'%" + cContractID.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region HostName
+            if (!string.IsNullOrEmpty(cHostName))
+            {
+                ttWhere += "AND cHostName LIKE N'%" + cHostName.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 序號
+            if (!string.IsNullOrEmpty(cSerialID))
+            {
+                ttWhere += "AND cSerialID LIKE N'%" + cSerialID.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region Product Model
+            if (!string.IsNullOrEmpty(cModel))
+            {
+                ttWhere += "AND cModel LIKE N'%" + cModel.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion           
+
+            #region SQL語法
+            tSQL.AppendLine(" Select * ");
+            tSQL.AppendLine(" From TB_ONE_ContractDetail_OBJ ");            
+            tSQL.AppendLine(" Where 1=1 AND disabled = 0 " + ttWhere);
+            #endregion
+
+            dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
+
+            #region 取得查詢所有出來的文件編號之合約主檔
+            foreach (DataRow dr in dt.Rows)
+            {
+                if (!tContractIDList.Contains(dr["cContractID"].ToString()))
+                {
+                    tContractIDList.Add(dr["cContractID"].ToString());
+                }
+            }
+
+            tMainList = dbOne.TbOneContractMains.Where(x => x.Disabled == 0 && tContractIDList.Contains(x.CContractId)).ToList();
+            #endregion
+
+            if (pContractID != "") //若有文件編號只要查一次(從主約過來)
+            {
+                #region 是否可編輯合約主數據相關內容
+                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pContractID, "OBJ", tMainList);
+
+                if (pIsCanEdit)
+                {
+                    ViewBag.IsCanEdit = "Y";
+                }
+                else
+                {
+                    ViewBag.IsCanEdit = "N";
+                }
+                #endregion
+            }
+
+            #region 組待查詢清單
+            foreach (DataRow dr in dt.Rows)
+            {
+                if (pContractID == "") //非從主約過來                
+                {
+                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, dr["cContractID"].ToString(), "OBJ", tMainList);                   
+                }
+
+                IsCanEdit = pIsCanEdit ? "Y" : "N";
+
+                string[] QueryInfo = new string[15];
+
+                tNotes = dr["cNotes"].ToString().Replace("\r\n", "<br/>");
+                tSubContractID = dr["cSubContractID"].ToString().Replace("\r\n", "<br/>");
+
+                QueryInfo[0] = IsCanEdit;                       //是否可以編輯
+                QueryInfo[1] = dr["cID"].ToString();             //系統ID
+                QueryInfo[2] = dr["cContractID"].ToString();      //文件編號
+                QueryInfo[3] = dr["cHostName"].ToString();        //HostName
+                QueryInfo[4] = dr["cSerialID"].ToString();        //序號
+                QueryInfo[5] = dr["cPID"].ToString();            //ProductID
+                QueryInfo[6] = dr["cBrands"].ToString();         //廠牌                
+                QueryInfo[7] = dr["cModel"].ToString();          //ProductModel
+                QueryInfo[8] = dr["cLocation"].ToString();       //Location                
+                QueryInfo[9] = dr["cAddress"].ToString();        //地點                
+                QueryInfo[10] = dr["cArea"].ToString();          //區域                
+                QueryInfo[11] = dr["cSLARESP"].ToString();       //回應條件                
+                QueryInfo[12] = dr["cSLASRV"].ToString();        //服務條件                
+                QueryInfo[13] = tNotes;                        //備註                
+                QueryInfo[14] = tSubContractID;                //下包文件編號                
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑合約標的明細查詢/上傳/維護 ↑↑↑↑↑-----
+
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
         #region 取得服務團隊ID和是否為舊文件編號

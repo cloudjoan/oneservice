@@ -1,0 +1,559 @@
+﻿@{
+	ViewData["Title"] = "QueryContractDetailObj";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>
+		$(document).ready(function () {			
+			initTable();			
+		});
+
+		function initTable() {
+			var buttonCommon = {
+				exportOptions: {
+					format: {
+						body: function (data, row, column, node) {
+							//替換&符號
+							var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+								translate = {
+									'nbsp': String.fromCharCode(160),
+									'amp': '&',
+									'quot': '"',
+									'lt': '<',
+									'gt': '>'
+								},
+								translator = function ($0, $1) {
+									return translate[$1];
+								};
+
+							if (typeof data === 'string')
+								data = data.replace(translate_re, translator);
+
+							if (column === 0) //去除連結的部份
+							{
+								var splitName = data.split(">");
+								var length = splitName.length;
+
+								if (length > 1) {
+									return data.split(">")[1].split("<")[0];
+								}
+								else {
+									return data;
+								}
+							}
+							else if (column === 12 || column === 13) //將換行符號<br>換成excel可以識別的\n
+							{
+								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
+							}
+							else
+								return data;
+						}
+					}
+				}
+			};
+
+			$('#tableAll').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+				buttons: [
+					$.extend(true, {}, buttonCommon, {
+						extend: 'excelHtml5',
+						title: '合約標的明細查詢_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						text: '匯出Excel',
+						sheetName: '合約標的明細查詢',
+						exportOptions: {
+							columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] //要顯示的欄位
+						},
+						customize: function (xlsx) {
+							addCustomNumberFormat(xlsx, '0');
+							formatTargetColumn(xlsx, 'A');
+							formatTargetColumn(xlsx, 'B');
+							formatTargetColumn(xlsx, 'C');
+							formatTargetColumn(xlsx, 'D');
+							formatTargetColumn(xlsx, 'E');
+							formatTargetColumn(xlsx, 'F');
+							formatTargetColumn(xlsx, 'G');
+							formatTargetColumn(xlsx, 'H');
+							formatTargetColumn(xlsx, 'I');
+							formatTargetColumn(xlsx, 'J');
+							formatTargetColumn(xlsx, 'K');
+							formatTargetColumn(xlsx, 'L');
+							formatTargetColumn(xlsx, 'M');
+						}
+					}),
+				],
+			});
+
+			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+
+			$(".btnPreventDefault").click(function (e) {
+				e.preventDefault();
+			});
+		}
+
+		function addCustomNumberFormat(xlsx, numberFormat) {
+			// this adds a new custom number format to the Excel "styles" document:
+			var numFmtsElement = xlsx.xl['styles.xml'].getElementsByTagName('numFmts')[0];
+			// assume 6 custom number formats already exist, and next available ID is 176:
+			var numFmtElement = '<numFmt numFmtId="176" formatCode="' + numberFormat + '"/>';
+			$(numFmtsElement).append(numFmtElement);
+			$(numFmtsElement).attr("count", "7"); // increment the count
+
+			// now add a new "cellXfs" cell formatter, which uses our new number format (numFmt 176):
+			var celXfsElement = xlsx.xl['styles.xml'].getElementsByTagName('cellXfs');
+			var cellStyle = '<xf numFmtId="176" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"'
+				+ ' applyFont="1" applyFill="1" applyBorder="1"/>';
+			// this will be the 8th "xf" element - and will therefore have an index of "7", when we use it later:
+			$(celXfsElement).append(cellStyle);
+			$(celXfsElement).attr("count", "66"); //(1.2.3版)官方提供0-64共65種格式，在此自己新增加一種
+		}
+
+		function formatTargetColumn(xlsx, col) {
+			var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+			if (col == "A") {
+				$('row c[r^="' + col + '"]', sheet).attr('s', '65'); //使用自定義格式
+			}
+			else {
+				$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
+			}
+		}		
+
+		//popup各欄位reset
+		function resetPopup(popupId) {
+			$(popupId).find("input").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find("select").each(function (index, value) {
+				$(this).val("-1");
+			});
+			$(popupId).find("textarea").each(function (index, value) {
+				$(this).val("");
+			});
+		}
+
+		//檢查上傳Excel檔案路徑是否有填寫
+		function checkEmpty() {
+			var reValue = false;
+			var strFileName = $("#file").val();
+
+			if (strFileName == "") {
+				alert('請先選擇欲上傳的檔案！');
+			}
+			else {
+				reValue = confirm('上傳的檔案會覆蓋原本資料，是否確定繼續上傳?');
+			}
+
+			return reValue;
+		}
+
+		//新增工程師明細內容
+		function addDetailENG() {
+			resetPopup("#dialog_DetailENG"); //新增/編輯工程師popup各欄位reset
+
+			//設定各欄位資料
+			$("#hid_taskcID").val("");											//系統ID
+
+			$("#txt_cContractID").val($("#hid_cContractID").val());					//文件編號
+			$("#hid_cCustomerID").val($("#hid_cMainCustomerID").val());				//客戶ID
+			$("#hid_cTeamID").val($("#hid_cMainTeamID").val());						//服務團隊ID
+			$("#hid_cIsOldContractID").val($("#hid_cMainIsOldContractID").val());		//是否為舊文件編號
+
+			$("#dialog_DetailENG").modal('show');
+		}
+
+		//編輯工程師明細內容
+		function editDetailENG(obj) {
+			resetPopup("#dialog_DetailENG"); //新增/編輯工程師popup各欄位reset
+
+			//設定各欄位資料
+			$("#hid_taskcID").val($(obj).parent().parent().find('.taskcID').val());							//系統ID
+			$("#hid_cCustomerID").val($(obj).parent().parent().find('.taskcCustomerID').val());					//客戶ID
+			$("#hid_cTeamID").val($(obj).parent().parent().find('.taskcTeamID').val());							//服務團隊ID
+			$("#hid_cIsOldContractID").val($(obj).parent().parent().find('.taskcIsOldContractID').val());			//是否為舊文件編號
+			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').text());					//文件編號
+			$("#txt_cEngineerID").val($(obj).parent().parent().find('.taskEngERPID').text());					//工程師ERPID
+			$("#txt_cEngineerName").val($(obj).parent().parent().find('.taskEngName').text());					//工程師姓名
+			$("#ddl_cIsMainEngineer").val($(obj).parent().parent().find('.taskIsMain').text());					//是否為主要工程師
+			$("#txt_cContactStoreID").val($(obj).parent().parent().find('.taskStoreID').text());					//門市代號
+			$("#txt_cContactStoreName").val($(obj).parent().parent().find('.taskStoreName').text());				//門市名稱
+
+			//$("#dialog_DetailENG .modal-content").css({ 'width': '110%' });
+			$("#dialog_DetailENG").modal('show');
+		}
+
+		//刪除工程師明細內容
+		function deleteDetailENG(obj, rowId) {
+			var cID = parseInt($(obj).closest("tr").find(".taskcID").val());
+
+			if (confirm("確認刪除此筆工程師明細內容？")) {
+				$.ajax({
+					url: '@Url.Action("DeleteDetailENG", "Contract")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: cID,
+					},
+					success: function (result) {
+						if (result > 0) {
+							alert("刪除成功");
+							Query();
+						}
+						else {
+							alert("刪除失敗");
+						}
+					},
+				});
+			}
+		}
+
+		//儲存工程師明細內容
+		function saveDetailENG(cID) {
+
+			var strMsg = "";
+
+			if ($("#txt_cEngineerID").val() == "") strMsg += "工程師ERPID不得為空！\n";
+			if ($("#txt_cEngineerName").val() == "") strMsg += "您未下拉選取【工程師姓名】，請輸入關鍵字後再重新選取！\n";
+			if ($("#ddl_cIsMainEngineer").val() == "-1") strMsg += "請選擇是否為主要工程師！\n";
+
+			if ($("#txt_cContactStoreID").val() != "") {
+				if ($("#txt_cContactStoreName").val() == "") {
+					strMsg += "您未下拉選取【門市代號】，請輸入關鍵字後再重新選取！\n";
+				}
+			}
+
+			if (strMsg != "") {
+				alert(strMsg);
+			}
+			else {
+				$("#btn_saveDetailENG").hide();
+				$("#img_waiting_saveDetailENG").show();
+				$.ajax({
+					url: '@Url.Action("saveDetailENG", "Contract")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: cID,
+						cContractID: $("#txt_cContractID").val(),
+						cEngineerID: $("#txt_cEngineerID").val(),
+						cEngineerName: $("#txt_cEngineerName").val(),
+						cIsMainEngineer: $("#ddl_cIsMainEngineer").val(),
+						cContactStoreID: $("#txt_cContactStoreID").val(),
+						cContactStoreName: $("#txt_cContactStoreName").val(),
+					},
+					success: function (result) {
+						if (result == "SUCCESS") {
+							alert("儲存成功！");
+							Query();
+							$("#dialog_DetailENG").modal('hide');
+						}
+						else {
+							alert("儲存失敗！原因：" + result);
+						}
+					},
+				});
+				$("#btn_saveDetailENG").show();
+				$("#img_waiting_saveDetailENG").hide();
+			}
+		}
+
+		//查詢
+		function Query() {
+			$("#waitingImg").show();
+
+			var tMsg = "";
+			var tbx_QuerycContractID = $('#tbx_QuerycContractID');	//文件編號
+			var tbx_QuerycHostName = $('#tbx_QuerycHostName');		//HostName
+			var tbx_QuerycSerialID = $('#tbx_QuerycSerialID');		//序號
+			var tbx_QuerycModel = $('#tbx_QuerycModel');			//ProductModel			
+
+			if (tbx_QuerycContractID.val() == "" && tbx_QuerycHostName.val() == "" && tbx_QuerycSerialID.val() == "" && tbx_QuerycModel.val() == "") {
+				tMsg += "請至少勾選或輸入一項查詢條件！\n";
+			}
+
+			if (tMsg != "") {
+				alert(tMsg);
+				$("#waitingImg").hide();
+				return false;
+			}
+			else {
+				searchQuery(tbx_QuerycContractID.val(), tbx_QuerycHostName.val(), tbx_QuerycSerialID.val(), tbx_QuerycModel.val());
+			}
+
+			return true;
+		}
+
+		//查詢結果
+		function searchQuery(cContractID, cHostName, cSerialID, cModel) {
+			$("#dataDiv").html('');
+
+			$.ajax({
+				url: '@Url.Action("QueryContractDetailObjResult", "Contract")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cContractID: cContractID,
+					cHostName: cHostName,
+					cSerialID: cSerialID,
+					cModel: cModel					
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#dataDiv").html(result.responseText);
+					$("#waitingImg").hide();
+				}
+			});
+		}
+
+		//清除
+		function clearQuery() {
+			if ($('#hid_cContractID').val() == "") //若不是透過主約進來的才可以清掉
+			{
+				$('#tbx_QuerycContractID').val("");
+			}
+
+			$('#tbx_QuerycHostName').val("");
+			$('#tbx_QuerycSerialID').val("");
+			$('#tbx_QuerycModel').val("");
+			$("#chk_QuerycIsNoUpload").iCheck('uncheck'); //拿掉勾勾			
+		}
+
+		//返回合約主數據主檔
+		function backToContractMain() {
+			window.location.href = "@Url.Action("ContractMain", "Contract", new { ContractID = ViewBag.cContractID })";
+		}
+	</script>
+}
+
+@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>合約主數據查詢/維護作業</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">合約管理</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>合約主數據查詢/維護作業</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+<div class="row">
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>合約標的明細查詢/上傳/維護作業</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content">
+				<form name="form" action='@Url.Action("ImportContractObjExcel", "Contract")' enctype="multipart/form-data" method="post">
+					<!--登人者公司別(Comp-1、Comp-2...)-->
+					<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+					<!--登人者公司別(T012、T016...)-->
+					<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+					<!--文件編號隱藏欄位(從主約過來才會有值)-->
+					<input type="hidden" id="hid_cContractID" name="hid_cContractID" value="@ViewBag.cContractID">					
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">文件編號</label>
+						<div class="col-lg-4">
+							@{
+								if (ViewBag.cContractID != "")
+								{
+									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
+								}
+								else
+								{
+									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
+								}
+							}
+
+						</div>
+						<label class="col-lg-2 col-form-label">HostName</label>
+						<div class="col-lg-4">
+							<input type="text" name="tbx_QuerycHostName" id="tbx_QuerycHostName" class="form-control" placeholder="HostName">
+						</div>
+					</div>
+					<div class="form-group row">						
+						<label class="col-lg-2 col-form-label">序號</label>
+						<div class="col-lg-4">
+							<input type="text" name="tbx_QuerycSerialID" id="tbx_QuerycSerialID" class="form-control" placeholder="序號">
+						</div>
+						<label class="col-lg-2 col-form-label">ProductModel</label>
+						<div class="col-lg-4">
+							<input type="text" name="tbx_QuerycModel" id="tbx_QuerycModel" class="form-control" placeholder="ProductModel">
+						</div>		
+					</div>					
+					<div class="hr-line-dashed"></div>
+					<div class="form-group row">
+						<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+						&nbsp;&nbsp;&nbsp;&nbsp;
+						<button class="btn btn-default btn-lg" type="button" onclick="clearQuery();"><i class="fa fa-trash"></i> 清 除 </button>
+						&nbsp;&nbsp;&nbsp;&nbsp;
+
+						@if (ViewBag.cContractID != "")
+						{
+							<button id="btnBack" name="btnBack" class="btn btn-secondary btn-lg" type="button" onclick="backToContractMain();"><i class="fa fa-reply"></i> 返回主約</button>
+						}
+						<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>
+					合約標的明細查詢/上傳/維護結果
+					@if (ViewBag.cContractID != "" && ViewBag.IsCanEdit == "Y")
+					{
+						<button type="button" class="btn btn-success" onclick="addDetailOBJ();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+					}
+				</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+				<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+					<thead>
+						<tr>
+							<th>編輯/刪除</th>
+							<th>文件編號</th>
+							<th>HostName</th>
+							<th>序號</th>
+							<th>ProductID</th>
+							<th>廠牌</th>
+							<th>ProductModel</th>
+							<th>Location</th>
+							<th>地點</th>
+							<th>區域</th>
+							<th>回應條件</th>
+							<th>服務條件</th>
+							<th>備註</th>
+							<th>下包文件編號</th>
+						</tr>
+					</thead>
+					<tbody>
+						@{
+							if (ViewBag.QueryToListBean != null)
+							{
+								int count = 0;
+								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								{
+									count++;
+									<tr id='tr@(QueryInfo[1])'>
+										@if (@QueryInfo[0] == "Y")
+										{
+											<td>
+												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
+												<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
+													<i class="glyphicon glyphicon-pencil"></i>
+												</button>
+												<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
+													<i class="fa fa-trash"></i>
+												</button>
+											</td>
+										}
+										else
+										{
+											<td>
+												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
+											</td>
+										}										
+										<td>@Html.Raw(QueryInfo[2])</td>
+										<td>@Html.Raw(QueryInfo[3])</td>
+										<td>@Html.Raw(QueryInfo[4])</td>
+										<td>@Html.Raw(QueryInfo[5])</td>
+										<td>@Html.Raw(QueryInfo[6])</td>
+										<td>@Html.Raw(QueryInfo[7])</td>
+										<td>@Html.Raw(QueryInfo[8])</td>
+										<td>@Html.Raw(QueryInfo[9])</td>
+										<td>@Html.Raw(QueryInfo[10])</td>
+										<td>@Html.Raw(QueryInfo[11])</td>
+										<td>@Html.Raw(QueryInfo[12])</td>
+										<td>@Html.Raw(QueryInfo[13])</td>
+										<td>@Html.Raw(QueryInfo[14])</td>
+									</tr>
+								}
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--新增/編輯工程師明細彈出視窗-->
+<div class="modal fade" id="dialog_DetailENG" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-check-square-o" aria-hidden="true"></i> 新增/編輯工程師明細</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<input type="hidden" id="hid_taskcID" />
+				<!--客戶ID隱藏欄位-->
+				<input type="hidden" id="hid_cCustomerID" />
+				<!--服務團隊隱藏欄位-->
+				<input type="hidden" id="hid_cTeamID" />
+				<!--是否為舊文件編號隱藏欄位-->
+				<input type="hidden" id="hid_cIsOldContractID" />
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">文件編號*</label>
+					<input type="text" id="txt_cContractID" class="col-lg-4" placeholder="文件編號" disabled />
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">工程師ERPID*</label>
+					<input type="text" id="txt_cEngineerID" class="col-lg-4 PeoploeTeam" placeholder="請輸入人名或英文關鍵字搜尋" />
+					<label class="col-lg-2 col-form-label">工程師姓名*</label>
+					<input type="text" id="txt_cEngineerName" class="col-lg-4" placeholder="工程師姓名" disabled />
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">是否為主要工程師*</label>
+					<select class='form-control col-lg-4' id='ddl_cIsMainEngineer'>
+						<option value='-1'>請選擇</option>
+						<option value='Y'>Y</option>
+						<option value='N'>N</option>
+					</select>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">門市代號</label>
+					<input type="text" id="txt_cContactStoreID" class="col-lg-10 ContactStore" placeholder="請輸入門市名稱關鍵字搜尋" />
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">門市名稱</label>
+					<input type="text" id="txt_cContactStoreName" class="col-lg-10" placeholder="門市名稱" disabled />
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="col-lg-5"></div>
+				<button id="btn_saveDetailENG" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveDetailENG($('#hid_taskcID').val());"> <i class="fa fa-save"></i> 儲 存</button>
+				<img id="img_waiting_saveDetailENG" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<div class="col-lg-5"></div>
+			</div>
+		</div>
+	</div>
+</div>
