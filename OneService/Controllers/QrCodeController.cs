@@ -21,10 +21,18 @@ namespace OneService.Controllers
 
 		public IActionResult SaveAccessable(TbAccessable bean)
 		{
+			bean.InsertTime = string.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
 			appDB.TbAccessables.Add(bean);
 			appDB.SaveChanges();
 
-			return View();
+			return RedirectToAction("Accessable");
+		}
+
+		public IActionResult DelAccessableById(int id)
+		{
+			appDB.TbAccessables.Remove(appDB.TbAccessables.FirstOrDefault(x => x.Id == id));
+			appDB.SaveChanges();
+			return Json(true);
 		}
 
 		public IActionResult ShowAccessHistory()

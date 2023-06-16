@@ -7,7 +7,67 @@
 }
 
 @section js_section{
+	<script>
 
+		$(document).ready(function(){
+
+			$("#tbx_EmpName").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13) {
+						var keyword = $(this).val();
+						var obj = $(this);
+						$.ajax({
+							url: '@Url.Action("AjaxHandler", "Ajax")',
+							type: 'post',
+							dataType: 'json',
+							data: { functionName: 'findEmployeeByKeyword', keyword: keyword },
+							success: function (result) {
+								objects = [];
+								$.each(result, function (i, idata) {
+									objects[i] = {
+										label: idata.EmpEname + "\\" + idata.EmpName,
+										idx: i,
+										value: idata.EmpName,
+										account: idata.Account,
+										erpId: idata.ErpId,
+										deptName: idata.DeptName
+									};
+								});
+
+								//綁定foucs事件
+								obj.autocomplete({
+									source: objects,
+									select: function (event, ui) {
+										$("#hie_ErpId").val(ui.item.erpId);
+									}
+								}).bind('focus', function () { $(this).autocomplete("search"); });
+
+								//開啟autocomplete選單
+								obj.focus();
+							}
+						})
+					}
+
+				}
+			});
+
+		});
+
+		function delAccessable(id){
+			$.ajax({
+				url: '@Url.Action("DelAccessableById","QrCode")',
+				type:'post',
+				dataType:'json',
+				data:{"id":id},
+				success:function(result){
+					console.log(result);
+					location.reload();
+				}
+			})
+		}
+
+	</script>
 }
 
 @section breadcrumb_section{
@@ -37,14 +97,23 @@
 				</div>
 			</div>
 			<div class="ibox-content">
-				<form name="form" action='#' method="post">
+				<form name="form" action='@Url.Action("SaveAccessable", "QrCode")' method="post">
 					<div class="form-group row">
 						<label class="col-lg-2 col-form-label">姓名</label>
-						<div class="col-lg-4"><input type="text" id="tbx_CustName" name="tbx_CustName" class="form-control" placeholder="姓名" required></div>
+						<div class="col-lg-4"><input type="text" id="tbx_EmpName" name="UserName" class="form-control" placeholder="姓名" required></div>
+						<input type="hidden" id="hie_ErpId" name="ErpId">
+					</div>
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">地點</label>
+						<div class="col-lg-4">
+							<select name="AccessLocation" class="form-control">
+								<option value="台中機房">台中機房</option>
+							</select>
+						</div>
 					</div>
 
 					<div class="hr-line-dashed"></div>
-					<button class="btn btn-success btn-lg" type="button" onclick="searchCust()">
+					<button class="btn btn-success btn-lg" type="submit">
 						<i class="fa fa-search"></i> 儲存
 					</button>
 					<button class="btn btn-primary btn-lg" type="button" onclick="searchCust()">
@@ -78,9 +147,15 @@
 						@foreach(var bean in ViewBag.beans)
 						{
 							<tr>
-								<td>@bean.ErpId</td>
-								<td></td>
-								<td></td>
+								<td>@bean.AccessLocation</td>
+								<td>
+									@bean.UserName
+								</td>
+								<td>
+									<button type="button" class="btn btn-danger btn-lg" onclick="delAccessable(@bean.Id)">
+										<i class="fa fa-trash"></i>刪除
+									</button>
+								</td>
 							</tr>
 						}
 					</tbody>

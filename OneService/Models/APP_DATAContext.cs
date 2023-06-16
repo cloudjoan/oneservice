@@ -68,6 +68,11 @@ namespace OneService.Models
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
+                entity.Property(e => e.AccessLocation)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("ACCESS_LOCATION");
+
                 entity.Property(e => e.ErpId)
                     .HasMaxLength(20)
                     .IsUnicode(false)
@@ -77,6 +82,11 @@ namespace OneService.Models
                     .HasMaxLength(22)
                     .IsUnicode(false)
                     .HasColumnName("INSERT_TIME");
+
+                entity.Property(e => e.UserName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("USER_NAME");
             });
 
             OnModelCreatingPartial(modelBuilder);

@@ -7,6 +7,8 @@ namespace OneService.Models
     {
         public int Id { get; set; }
         public string? ErpId { get; set; }
+        public string? UserName { get; set; }
+        public string? AccessLocation { get; set; }
         public string? InsertTime { get; set; }
     }
 }
