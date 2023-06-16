@@ -25,6 +25,9 @@ using System.Net;
 using System.Web;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
+using NPOI.SS.Formula.Functions;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 
 namespace OneService.Controllers
 {
@@ -3919,5 +3922,110 @@ namespace OneService.Controllers
         #endregion
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----
+
+        #region -----↓↓↓↓↓匯入Excel ↓↓↓↓↓-----
+
+        #region 匯入Excel並轉換成DataTable
+        /// <summary>
+        /// 匯入Excel並轉換成DataTable
+        /// </summary>
+        /// <param name="postedFile">傳入的Excel</param>
+        /// <param name="tSheetName">傳入的頁籤名稱</param>
+        /// <returns>回傳的result若為空白代表執行成功，若非空白代表執行失敗並回傳錯誤訊息</returns>
+        public Dictionary<string, DataTable> ImportExcelToDataTable(IFormFile postedFile, string tSheetName)
+        {
+            Dictionary<string, DataTable> Dic = new Dictionary<string, DataTable>();
+
+            string result = string.Empty;
+
+            DataTable dt = new DataTable();
+           
+            if (postedFile.Length > 0)
+            {
+                try
+                {
+                    XSSFWorkbook workbook;
+
+                    using (var ms = new MemoryStream())
+                    {
+                        postedFile.CopyTo(ms);
+
+                        Stream stream = new MemoryStream(ms.ToArray());
+                        workbook = new XSSFWorkbook(stream);
+                    }
+
+                    #region 讀取內容
+                    // 0表示：第一個 worksheet工作表
+                    XSSFSheet u_sheet = (XSSFSheet)workbook.GetSheetAt(0);
+
+                    //-- Excel 表頭列
+                    XSSFRow headerRow = (XSSFRow)u_sheet.GetRow(0);
+
+                    if (u_sheet.SheetName == tSheetName)
+                    {
+                        // 表頭列，共有幾個 "欄位"?（取得最後一欄的數字）                                                                     
+                        for (int k = headerRow.FirstCellNum; k < headerRow.LastCellNum; k++)
+                        {   // 把上傳的 Excel「表頭列」，每一欄位抓到
+                            if (headerRow.GetCell(k) != null)
+                            {
+                                dt.Columns.Add(new DataColumn(headerRow.GetCell(k).StringCellValue));
+                            }
+                        }
+
+                        // for迴圈的「啟始值」要加一，表示不包含 Excel表頭列
+                        for (int i = (u_sheet.FirstRowNum + 1); i <= u_sheet.LastRowNum; i++)
+                        {   // 每一列做迴圈
+                            XSSFRow row = (XSSFRow)u_sheet.GetRow(i);  //不包含 Excel表頭列的 "其他資料列"
+
+                            if (row == null) continue;
+
+                            DataRow dataRow = dt.NewRow();
+
+                            #region 跑明細Loop
+                            for (int j = row.FirstCellNum; j < row.LastCellNum; j++)
+                            {
+                                ICell cell = row.GetCell(j);
+
+                                //-- 每一個欄位（行）做迴圈
+                                if (cell != null)
+                                {
+                                    switch (cell.CellType)
+                                    {
+                                        case CellType.Numeric:
+                                            dataRow[j] = cell.NumericCellValue;
+                                            break;
+
+                                        default:
+                                            dataRow[j] = cell.StringCellValue.Trim();
+                                            break;
+                                    }
+                                }
+                            }
+
+                            dt.Rows.Add(dataRow);
+                            #endregion
+                        }
+                    }
+                    else
+                    {
+                        result = "請確認傳入的Excel頁籤是否為【" + tSheetName + "】？";
+                    }
+                }
+                catch(Exception ex)
+                {
+                    result = ex.Message;
+                }
+                finally
+                {
+                    Dic.Add(result, dt);
+                }
+            }
+            #endregion
+
+            return Dic;
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑匯入Excel ↑↑↑↑↑-----
     }
 }

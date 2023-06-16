@@ -143,13 +143,13 @@
 		//檢查上傳Excel檔案路徑是否有填寫
 		function checkEmpty() {
 			var reValue = false;
-			var strFileName = $("#file").val();
+			var strFileName = $("#postedFile").val();
 
 			if (strFileName == "") {
 				alert('請先選擇欲上傳的檔案！');
 			}
 			else {
-				reValue = confirm('上傳的檔案會覆蓋原本資料，是否確定繼續上傳?');
+				reValue = confirm('上傳的檔案會覆蓋原本該文件編號裡【序號】相同的資料，是否確定繼續上傳?');
 			}
 
 			return reValue;
@@ -359,6 +359,18 @@
 		function backToContractMain() {
 			window.location.href = "@Url.Action("ContractMain", "Contract", new { ContractID = ViewBag.cContractID })";
 		}
+
+		function fillCsv(csv) {
+			var rows = csv.split('\n');
+			//TODO: 未考慮筆數不吻合的情況
+			for (var r = 0; r < rows.length; r++) {
+				var cells = rows[r].split('\t');
+				for (var c = 0; c < cells.length; c++) {
+					var inp = document.getElementById("C" + r + c);
+					if (inp) inp.value = cells[c];
+				}
+			}
+		}
 	</script>
 }
 
@@ -388,8 +400,18 @@
 					</a>
 				</div>
 			</div>
-			<div class="ibox-content">
-				<form name="form" action='@Url.Action("ImportContractObjExcel", "Contract")' enctype="multipart/form-data" method="post">
+			<div class="ibox-content">				
+				<form name="form" asp-controller="Contract" asp-action="ImportContractOBJExcel" method="post" enctype="multipart/form-data">
+					<div class="form-group row">
+						<div class="col-lg-12" id="div_excelFile">							
+							<input type="file" id="postedFile" name="postedFile" />
+							<input type="submit" value="匯入Excel" class="btn btn-success btn-lg" onclick="if (!checkEmpty()){event.returnValue=false;return false;}" />
+						</div>
+					</div>
+					<div class="form-group row">
+						<!--顯示匯入成功或失敗訊息-->
+						<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;">@ViewBag.Message</label>
+					</div>
 					<!--登人者公司別(Comp-1、Comp-2...)-->
 					<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 					<!--登人者公司別(T012、T016...)-->
@@ -397,22 +419,22 @@
 					<!--主約文件編號隱藏欄位(從主約過來才會有值)-->
 					<input type="hidden" id="hid_cContractID" name="hid_cContractID" value="@ViewBag.cContractID">
 					<!--下包文件編號隱藏欄位(從主約過來才會有值)-->
-					<input type="hidden" id="hid_cSubContractID" name="hid_cSubContractID" value="@ViewBag.cSubContractID">
+					<input type="hidden" id="hid_cSubContractID" name="hid_cSubContractID" value="@ViewBag.cSubContractID">					
 					<div class="form-group row">
 						<label class="col-lg-2 col-form-label">文件編號</label>
 						<div class="col-lg-4">
 							@{
 								if (ViewBag.cSubContractID != "")
 								{
-											<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cSubContractID" placeholder="文件編號" disabled>
+									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cSubContractID" placeholder="文件編號" disabled>
 								}
 								else if (ViewBag.cContractID != "")
 								{
-											<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
+									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" value="@ViewBag.cContractID" placeholder="文件編號" disabled>
 								}
 								else
 								{
-											<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
+									<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
 								}
 							}
 

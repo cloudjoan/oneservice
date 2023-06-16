@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using NPOI.SS.Formula.Functions;
@@ -16,6 +17,10 @@ using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
 using static OneService.Controllers.ServiceRequestController;
+using NPOI.XSSF.UserModel;
+using System.Diagnostics.Contracts;
+using Microsoft.CodeAnalysis.Operations;
+using NPOI.SS.UserModel;
 
 namespace OneService.Controllers
 {
@@ -105,7 +110,7 @@ namespace OneService.Controllers
         TSTIONEContext dbOne = new TSTIONEContext();
         TAIFContext bpmDB = new TAIFContext();
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
-        MCSWorkflowContext dbEIP = new MCSWorkflowContext();
+        MCSWorkflowContext dbEIP = new MCSWorkflowContext();        
 
         public IActionResult Index()
         {
@@ -1106,6 +1111,227 @@ namespace OneService.Controllers
 
         #region -----↓↓↓↓↓合約標的明細查詢/上傳/維護 ↓↓↓↓↓----- 
 
+        #region 匯入合約標的明細Excel
+        [HttpPost]
+        public IActionResult ImportContractOBJExcel(IFormFile postedFile)
+        {            
+            string tLog = string.Empty;
+            string tErrorMsg = string.Empty;
+
+            string cContractID = string.Empty;
+            string cHostName = string.Empty;
+            string cSerialID = string.Empty;
+            string cPID = string.Empty;
+            string cBrands= string.Empty; 
+            string cModel= string.Empty; 
+            string cLocation= string.Empty; 
+            string cAddress= string.Empty; 
+            string cArea= string.Empty;                                         
+            string cSLARESP= string.Empty; 
+            string cSLASRV= string.Empty; 
+            string cNotes= string.Empty;
+            string cSubContractID = string.Empty;
+
+            string OldcHostName = string.Empty;
+            string OldcSerialID = string.Empty;
+            string OldcPID = string.Empty;
+            string OldcBrands = string.Empty;
+            string OldcModel = string.Empty;
+            string OldcLocation = string.Empty;
+            string OldcAddress = string.Empty;
+            string OldcArea = string.Empty;
+            string OldcSLARESP = string.Empty;
+            string OldcSLASRV = string.Empty;
+            string OldcNotes = string.Empty;
+            string OldcSubContractID = string.Empty;
+
+            bool tIsNew = false;               //判斷是否為新建
+
+            Dictionary<string, DataTable> Dic = new Dictionary<string, DataTable>();            
+            DataTable dt = new DataTable();
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            try
+            {
+                #region 取得匯入Excel相關
+                Dic = CMF.ImportExcelToDataTable(postedFile, "合約標的");
+
+                foreach (KeyValuePair<string, DataTable> item in Dic)
+                {
+                    #region 回傳結果訊息
+                    tErrorMsg = item.Key;
+                    #endregion
+
+                    #region 回傳的DataTable
+                    dt = item.Value.Clone();
+
+                    foreach (DataRow dr in item.Value.Rows)
+                    {
+                        dt.Rows.Add(dr.ItemArray);
+                    }
+                    #endregion
+
+                    break;
+                }
+                #endregion
+
+                if (tErrorMsg == "")
+                {
+                    #region 寫入DataTable到資料庫                    
+                    foreach(DataRow dr in dt.Rows)
+                    {
+                        try
+                        {
+                            tIsNew = false;
+
+                            cContractID = dr["cContractID"].ToString();
+                            cHostName = dr["cHostName"].ToString();
+                            cSerialID = dr["cSerialID"].ToString();
+                            cPID = dr["cPID"].ToString();
+                            cBrands = dr["cBrands"].ToString();
+                            cModel = dr["cModel"].ToString();
+                            cLocation = dr["cLocation"].ToString();
+                            cAddress = dr["cAddress"].ToString();
+                            cArea = dr["cArea"].ToString();
+                            cSLARESP = dr["cSLARESP"].ToString();
+                            cSLASRV = dr["cSLASRV"].ToString();
+                            cNotes = dr["cNotes"].ToString();
+                            cSubContractID = dr["cSubContractID"].ToString();
+
+                            if (cSerialID.ToUpper() == "N/A")
+                            {
+                                tIsNew = true;
+                            }
+                            else
+                            {
+                                var bean = dbOne.TbOneContractDetailObjs.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID && x.CSerialId == cSerialID);
+
+                                if (bean != null)
+                                {
+                                    #region 紀錄新舊值
+                                    OldcHostName = bean.CHostName;
+                                    tLog += CMF.getNewAndOldLog("HostName", OldcHostName, cHostName);
+
+                                    OldcSerialID = bean.CSerialId;
+                                    tLog += CMF.getNewAndOldLog("序號", OldcSerialID, cSerialID);
+
+                                    OldcPID = bean.CPid;
+                                    tLog += CMF.getNewAndOldLog("ProductID", OldcPID, cPID);
+
+                                    OldcBrands = bean.CBrands;
+                                    tLog += CMF.getNewAndOldLog("廠牌", OldcBrands, cBrands);
+
+                                    OldcModel = bean.CModel;
+                                    tLog += CMF.getNewAndOldLog("ProductModel", OldcModel, cModel);
+
+                                    OldcLocation = bean.CLocation;
+                                    tLog += CMF.getNewAndOldLog("Location", OldcLocation, cLocation);
+
+                                    OldcAddress = bean.CAddress;
+                                    tLog += CMF.getNewAndOldLog("地點", OldcAddress, cAddress);
+
+                                    OldcArea = bean.CArea;
+                                    tLog += CMF.getNewAndOldLog("區域", OldcArea, cArea);
+
+                                    OldcSLARESP = bean.CSlaresp;
+                                    tLog += CMF.getNewAndOldLog("回應條件", OldcSLARESP, cSLARESP);
+
+                                    OldcSLASRV = bean.CSlasrv;
+                                    tLog += CMF.getNewAndOldLog("服務條件", OldcSLASRV, cSLASRV);
+
+                                    OldcNotes = bean.CNotes;
+                                    tLog += CMF.getNewAndOldLog("備註", OldcNotes, cNotes);
+
+                                    OldcSubContractID = bean.CSubContractId;
+                                    tLog += CMF.getNewAndOldLog("下包文件編號", OldcSubContractID, cSubContractID);
+                                    #endregion
+
+                                    bean.CHostName = cHostName;
+                                    bean.CSerialId = cSerialID;
+                                    bean.CPid = cPID;
+                                    bean.CBrands = cBrands;
+                                    bean.CModel = cModel;
+                                    bean.CLocation = cLocation;
+                                    bean.CAddress = cAddress;
+                                    bean.CArea = cArea;
+                                    bean.CSlaresp = cSLARESP;
+                                    bean.CSlasrv = cSLASRV;
+                                    bean.CNotes = cNotes;
+                                    bean.CSubContractId = cSubContractID;
+
+                                    bean.ModifiedDate = DateTime.Now;
+                                    bean.ModifiedUserName = ViewBag.empEngName;
+                                }
+                            }
+
+                            if (tIsNew) //為新建才進來執行
+                            {
+                                TbOneContractDetailObj beanOBJ = new TbOneContractDetailObj();
+
+                                beanOBJ.CContractId = cContractID;
+                                beanOBJ.CHostName = cHostName;
+                                beanOBJ.CSerialId = cSerialID;
+                                beanOBJ.CPid = cPID;
+                                beanOBJ.CBrands = cBrands;
+                                beanOBJ.CModel = cModel;
+                                beanOBJ.CLocation = cLocation;
+                                beanOBJ.CAddress = cAddress;
+                                beanOBJ.CArea = cArea;
+                                beanOBJ.CSlaresp = cSLARESP;
+                                beanOBJ.CSlasrv = cSLASRV;
+                                beanOBJ.CNotes = cNotes;
+                                beanOBJ.CSubContractId = cSubContractID;
+
+                                beanOBJ.Disabled = 0;
+                                beanOBJ.CreatedDate = DateTime.Now;
+                                beanOBJ.CreatedUserName = ViewBag.empEngName;
+
+                                dbOne.TbOneContractDetailObjs.Add(beanOBJ);
+                            }
+
+                            int result = dbOne.SaveChanges();
+
+                            if (result <= 0)
+                            {
+                                tErrorMsg += "寫入合約標的資料庫失敗！" + Environment.NewLine;
+                                CMF.writeToLog(cContractID, "saveDetailOBJ", tErrorMsg, ViewBag.empEngName);                                
+                            }
+                            else
+                            {
+                                if (!string.IsNullOrEmpty(tLog))
+                                {
+                                    CMF.writeToLog(cContractID, "saveDetailOBJ", tLog, ViewBag.empEngName);
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            tErrorMsg += "寫入合約標的資料庫失敗！" + e.Message + Environment.NewLine;
+                        }
+                    }
+                    #endregion
+                }               
+
+                if (tErrorMsg == "")
+                {
+                    ViewBag.Message = "匯入成功！";
+                }
+                else
+                {
+                    ViewBag.Message = "匯入失敗！原因：" + Environment.NewLine + tErrorMsg;
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Message = "匯入失敗！原因：" + ex.Message;
+            }
+
+            return RedirectToAction("QueryContractDetailObj", new { ContractID = cContractID, tMessage = ViewBag.Message });
+        }
+        #endregion
+
         #region 合約標的明細查詢
         public IActionResult QueryContractDetailObj()
         {
@@ -1134,6 +1360,12 @@ namespace OneService.Controllers
                 pSubContractID = HttpContext.Request.Query["SubContractID"].FirstOrDefault();
                 pContractID = pSubContractID; //將下包約指定給主約
                 ViewBag.cSubContractID = pSubContractID;
+            }
+
+            if (HttpContext.Request.Query["tMessage"].FirstOrDefault() != null)
+            {
+                //記錄匯入Excel成功或失敗訊息！
+                ViewBag.Message = HttpContext.Request.Query["tMessage"].FirstOrDefault();                
             }
             #endregion            
 
