@@ -1113,10 +1113,11 @@ namespace OneService.Controllers
 
         #region 匯入合約標的明細Excel
         [HttpPost]
-        public IActionResult ImportContractOBJExcel(IFormFile postedFile)
+        public IActionResult ImportContractOBJExcel(IFormCollection formCollection, IFormFile postedFile)
         {            
             string tLog = string.Empty;
             string tErrorMsg = string.Empty;
+            string cMainContractID = string.Empty; //主約文件編號，用來判斷Excel裡的文件編號都要同一個
 
             string cContractID = string.Empty;
             string cHostName = string.Empty;
@@ -1155,6 +1156,8 @@ namespace OneService.Controllers
 
             try
             {
+                cMainContractID = formCollection["hid_cContractID"].FirstOrDefault();
+
                 #region 取得匯入Excel相關
                 Dic = CMF.ImportExcelToDataTable(postedFile, "合約標的");
 
@@ -1174,6 +1177,17 @@ namespace OneService.Controllers
                     #endregion
 
                     break;
+                }
+                #endregion
+
+                #region 判斷Excel裡的文件編號是否都跟主約文件編號一樣
+                foreach (DataRow dr in dt.Rows)
+                {
+                    if (dr[0].ToString() != cMainContractID)
+                    {
+                        tErrorMsg = "Excel的文件編號【" + dr[0].ToString() + "】與主約文件編號【"+ cMainContractID + "】不一致，請重新確認後再匯入！";
+                        break;
+                    }
                 }
                 #endregion
 
@@ -1326,7 +1340,7 @@ namespace OneService.Controllers
                 ViewBag.Message = "匯入失敗！原因：" + ex.Message;
             }
 
-            return RedirectToAction("QueryContractDetailObj", new { ContractID = cContractID, tMessage = ViewBag.Message });
+            return RedirectToAction("QueryContractDetailObj", new { ContractID = cMainContractID, tMessage = ViewBag.Message });
         }
         #endregion
 
