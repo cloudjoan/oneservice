@@ -1084,7 +1084,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 刪除保固資訊
         /// </summary>
-        /// <param name="WTId">流水號</param>
+        /// <param name="cID">系統ID</param>
         /// <returns></returns>
         public ActionResult deleteDetailENG(int cID)
         {
@@ -1145,7 +1145,7 @@ namespace OneService.Controllers
             string OldcNotes = string.Empty;
             string OldcSubContractID = string.Empty;
 
-            bool tIsNew = false;               //判斷是否為新建
+            bool tIsNew = true;               //判斷是否為新建
 
             Dictionary<string, DataTable> Dic = new Dictionary<string, DataTable>();            
             DataTable dt = new DataTable();
@@ -1184,32 +1184,30 @@ namespace OneService.Controllers
                     {
                         try
                         {
-                            tIsNew = false;
+                            tIsNew = true;
 
-                            cContractID = dr["cContractID"].ToString();
-                            cHostName = dr["cHostName"].ToString();
-                            cSerialID = dr["cSerialID"].ToString();
-                            cPID = dr["cPID"].ToString();
-                            cBrands = dr["cBrands"].ToString();
-                            cModel = dr["cModel"].ToString();
-                            cLocation = dr["cLocation"].ToString();
-                            cAddress = dr["cAddress"].ToString();
-                            cArea = dr["cArea"].ToString();
-                            cSLARESP = dr["cSLARESP"].ToString();
-                            cSLASRV = dr["cSLASRV"].ToString();
-                            cNotes = dr["cNotes"].ToString();
-                            cSubContractID = dr["cSubContractID"].ToString();
+                            cContractID = dr[0].ToString();
+                            cHostName = dr[1].ToString();
+                            cSerialID = dr[2].ToString();
+                            cPID = dr[3].ToString();
+                            cBrands = dr[4].ToString();
+                            cModel = dr[5].ToString();
+                            cLocation = dr[6].ToString();
+                            cAddress = dr[7].ToString();
+                            cArea = dr[8].ToString();
+                            cSLARESP = dr[9].ToString();
+                            cSLASRV = dr[10].ToString();
+                            cNotes = dr[11].ToString();
+                            cSubContractID = dr[12].ToString();
 
-                            if (cSerialID.ToUpper() == "N/A")
-                            {
-                                tIsNew = true;
-                            }
-                            else
+                            if (cSerialID.ToUpper() != "N/A")                          
                             {
                                 var bean = dbOne.TbOneContractDetailObjs.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID && x.CSerialId == cSerialID);
 
                                 if (bean != null)
                                 {
+                                    tIsNew = false;
+
                                     #region 紀錄新舊值
                                     OldcHostName = bean.CHostName;
                                     tLog += CMF.getNewAndOldLog("HostName", OldcHostName, cHostName);
@@ -1295,7 +1293,7 @@ namespace OneService.Controllers
 
                             if (result <= 0)
                             {
-                                tErrorMsg += "寫入合約標的資料庫失敗！" + Environment.NewLine;
+                                tErrorMsg += "序號為【" + cSerialID + "】，寫入合約標的資料庫失敗！" + Environment.NewLine;
                                 CMF.writeToLog(cContractID, "saveDetailOBJ", tErrorMsg, ViewBag.empEngName);                                
                             }
                             else
@@ -1308,7 +1306,7 @@ namespace OneService.Controllers
                         }
                         catch (Exception e)
                         {
-                            tErrorMsg += "寫入合約標的資料庫失敗！" + e.Message + Environment.NewLine;
+                            tErrorMsg += "序號為【" + cSerialID + "】，寫入合約標的資料庫失敗！" + e.Message + Environment.NewLine;
                         }
                     }
                     #endregion
@@ -1683,6 +1681,33 @@ namespace OneService.Controllers
             }
 
             return Json(reValue);
+        }
+        #endregion
+
+        #region 刪除合約標的明細內容
+        /// <summary>
+        /// 刪除合約標的明細內容
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public ActionResult deleteDetailOBJ(int cID)
+        {
+            int result = 0;
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            var bean = dbOne.TbOneContractDetailObjs.FirstOrDefault(x => x.CId == cID);
+            if (bean != null)
+            {
+                bean.Disabled = 1;
+                bean.ModifiedDate = DateTime.Now;
+                bean.ModifiedUserName = ViewBag.empEngName;
+
+                result = dbOne.SaveChanges();
+            }
+
+            return Json(result);
         }
         #endregion
 

@@ -313,6 +313,7 @@
 				return false;
 			}
 			else {
+				$('#lbl_Message').html("");
 				searchQuery(tbx_QuerycContractID.val(), tbx_QuerycHostName.val(), tbx_QuerycSerialID.val(), tbx_QuerycModel.val());
 			}
 
@@ -349,6 +350,7 @@
 				$('#tbx_QuerycContractID').val("");
 			}
 
+			$('#lbl_Message').html("");
 			$('#tbx_QuerycHostName').val("");
 			$('#tbx_QuerycSerialID').val("");
 			$('#tbx_QuerycModel').val("");
@@ -402,15 +404,18 @@
 			</div>
 			<div class="ibox-content">				
 				<form name="form" asp-controller="Contract" asp-action="ImportContractOBJExcel" method="post" enctype="multipart/form-data">
-					<div class="form-group row">
-						<div class="col-lg-12" id="div_excelFile">							
-							<input type="file" id="postedFile" name="postedFile" />
-							<input type="submit" value="匯入Excel" class="btn btn-success btn-lg" onclick="if (!checkEmpty()){event.returnValue=false;return false;}" />
+					@if (ViewBag.cContractID != "" && ViewBag.IsCanEdit == "Y")
+					{
+						<div class="form-group row">
+							<div class="col-lg-12" id="div_excelFile">							
+								<input type="file" id="postedFile" name="postedFile" />
+								<input type="submit" value="匯入Excel" class="btn btn-success btn-lg" onclick="if (!checkEmpty()){event.returnValue=false;return false;}" />
+							</div>
 						</div>
-					</div>
+					}
 					<div class="form-group row">
 						<!--顯示匯入成功或失敗訊息-->
-						<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;">@ViewBag.Message</label>
+						<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;" id="lbl_Message">@Html.Raw(ViewBag.Message)</label>
 					</div>
 					<!--登人者公司別(Comp-1、Comp-2...)-->
 					<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
