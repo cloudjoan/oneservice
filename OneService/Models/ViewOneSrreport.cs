@@ -5,7 +5,7 @@ namespace OneService.Models
 {
     public partial class ViewOneSrreport
     {
-        public string CSrid { get; set; } = null!;
+        public string? CSrid { get; set; }
         public string? CDesc { get; set; }
         public string? CNotes { get; set; }
         public string? CSrtype { get; set; }
@@ -37,9 +37,9 @@ namespace OneService.Models
         public string Pn { get; set; } = null!;
         public string CSerialId { get; set; } = null!;
         public DateTime CReceiveTime { get; set; }
-        public DateTime CStartTime { get; set; }
-        public DateTime CArriveTime { get; set; }
-        public DateTime CFinishTime { get; set; }
+        public DateTime? CStartTime { get; set; }
+        public DateTime? CArriveTime { get; set; }
+        public DateTime? CFinishTime { get; set; }
         public decimal CWorkHours { get; set; }
         public string CEngineerId { get; set; } = null!;
         public string CEngineerName { get; set; } = null!;

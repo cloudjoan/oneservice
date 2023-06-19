@@ -273,12 +273,12 @@ namespace OneService.Models
                     .HasComment("客戶代號");
 
                 entity.Property(e => e.CCustomerName)
-                    .HasMaxLength(35)
+                    .HasMaxLength(255)
                     .HasColumnName("cCustomerName")
                     .HasComment("客戶名稱");
 
                 entity.Property(e => e.CDesc)
-                    .HasMaxLength(255)
+                    .HasMaxLength(512)
                     .HasColumnName("cDesc")
                     .HasComment("訂單說明");
 
@@ -363,7 +363,7 @@ namespace OneService.Models
                     .HasComment("維護開始日期");
 
                 entity.Property(e => e.CTeamId)
-                    .HasMaxLength(36)
+                    .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("cTeamID")
                     .HasComment("服務團隊ID");
@@ -914,6 +914,10 @@ namespace OneService.Models
 
                 entity.Property(e => e.CAttachementStockNo).HasColumnName("cAttachementStockNo");
 
+                entity.Property(e => e.CContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cContractID");
+
                 entity.Property(e => e.CCustomerId)
                     .HasMaxLength(10)
                     .HasColumnName("cCustomerID");
@@ -1252,7 +1256,7 @@ namespace OneService.Models
                     .HasColumnName("cArriveTime");
 
                 entity.Property(e => e.CContractId)
-                    .HasMaxLength(10)
+                    .HasMaxLength(20)
                     .HasColumnName("cContractID");
 
                 entity.Property(e => e.CCustomerId)
@@ -1260,7 +1264,7 @@ namespace OneService.Models
                     .HasColumnName("cCustomerID");
 
                 entity.Property(e => e.CCustomerName)
-                    .HasMaxLength(35)
+                    .HasMaxLength(40)
                     .HasColumnName("cCustomerName");
 
                 entity.Property(e => e.CDelayReason)
@@ -1272,7 +1276,7 @@ namespace OneService.Models
                     .HasColumnName("cDesc");
 
                 entity.Property(e => e.CDescR)
-                    .HasMaxLength(255)
+                    .HasMaxLength(2048)
                     .HasColumnName("cDesc_R");
 
                 entity.Property(e => e.CEngineerId)
@@ -1295,12 +1299,11 @@ namespace OneService.Models
                     .HasColumnName("cIsAPPClose");
 
                 entity.Property(e => e.CIsSecondFix)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
+                    .HasMaxLength(2)
                     .HasColumnName("cIsSecondFix");
 
                 entity.Property(e => e.CMaserviceType)
-                    .HasMaxLength(9)
+                    .HasMaxLength(20)
                     .HasColumnName("cMAServiceType");
 
                 entity.Property(e => e.CMaterialId).HasColumnName("cMaterialID");
@@ -1328,7 +1331,7 @@ namespace OneService.Models
                     .HasColumnName("cRepairAddress");
 
                 entity.Property(e => e.CRepairEmail)
-                    .HasMaxLength(200)
+                    .HasMaxLength(250)
                     .HasColumnName("cRepairEmail");
 
                 entity.Property(e => e.CRepairMobile)
@@ -1344,15 +1347,15 @@ namespace OneService.Models
                     .HasColumnName("cRepairPhone");
 
                 entity.Property(e => e.CSerialId)
-                    .HasMaxLength(40)
+                    .HasMaxLength(500)
                     .HasColumnName("cSerialID");
 
                 entity.Property(e => e.CSlaresp)
-                    .HasMaxLength(10)
+                    .HasMaxLength(20)
                     .HasColumnName("cSLARESP");
 
                 entity.Property(e => e.CSlasrv)
-                    .HasMaxLength(10)
+                    .HasMaxLength(20)
                     .HasColumnName("cSLASRV");
 
                 entity.Property(e => e.CSqpersonName)
@@ -1364,7 +1367,7 @@ namespace OneService.Models
                     .HasColumnName("cSRID");
 
                 entity.Property(e => e.CSrprocessWay)
-                    .HasMaxLength(4)
+                    .HasMaxLength(20)
                     .HasColumnName("cSRProcessWay");
 
                 entity.Property(e => e.CSrreport).HasColumnName("cSRReport");
@@ -1374,7 +1377,7 @@ namespace OneService.Models
                     .HasColumnName("cSRType");
 
                 entity.Property(e => e.CSrtypeNote)
-                    .HasMaxLength(9)
+                    .HasMaxLength(40)
                     .HasColumnName("cSRTypeNote");
 
                 entity.Property(e => e.CSrtypeOne)
@@ -1410,12 +1413,11 @@ namespace OneService.Models
                     .HasColumnName("cStatus");
 
                 entity.Property(e => e.CStatusNote)
-                    .HasMaxLength(12)
+                    .HasMaxLength(40)
                     .HasColumnName("cStatusNote");
 
                 entity.Property(e => e.CTeamId)
                     .HasMaxLength(255)
-                    .IsUnicode(false)
                     .HasColumnName("cTeamID");
 
                 entity.Property(e => e.CWorkHours)
@@ -1431,8 +1433,7 @@ namespace OneService.Models
                     .HasColumnName("cWTYID");
 
                 entity.Property(e => e.CWtyname)
-                    .HasMaxLength(8)
-                    .IsUnicode(false)
+                    .HasMaxLength(40)
                     .HasColumnName("cWTYName");
 
                 entity.Property(e => e.CWtysdate)
@@ -1442,13 +1443,11 @@ namespace OneService.Models
                 entity.Property(e => e.CXchp).HasColumnName("cXCHP");
 
                 entity.Property(e => e.CountIn)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
+                    .HasMaxLength(20)
                     .HasColumnName("CountIN");
 
                 entity.Property(e => e.CountOut)
-                    .HasMaxLength(1)
-                    .IsUnicode(false)
+                    .HasMaxLength(20)
                     .HasColumnName("CountOUT");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
