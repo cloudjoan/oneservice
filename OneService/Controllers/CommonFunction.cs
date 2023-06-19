@@ -1608,6 +1608,65 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region call ONE SERVICE 合約主數據資料新增/異動時發送Mail通知接口
+        /// <summary>
+        /// call ONE SERVICE 合約主數據資料新增/異動時發送Mail通知接口
+        /// </summary>
+        /// <param name="beanIN"></param>
+        public CONTRACTCHANGE_OUTPUT GetAPI_CONTRACTCHANGE_SENDMAIL(CONTRACTCHANGE_INPUT beanIN)
+        {
+            CONTRACTCHANGE_OUTPUT OUTBean = new CONTRACTCHANGE_OUTPUT();
+
+            string pMsg = string.Empty;
+
+            try
+            {
+                string tURL = beanIN.IV_APIURLName + "/API/API_CONTRACTCHANGE_SENDMAIL";
+
+                var client = new RestClient(tURL);
+
+                var request = new RestRequest();
+                request.Method = RestSharp.Method.Post;
+
+                Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+                parameters.Add("IV_LOGINEMPNO", beanIN.IV_LOGINEMPNO);
+                parameters.Add("IV_CONTRACTID", beanIN.IV_CONTRACTID);
+                parameters.Add("IV_LOG", beanIN.IV_LOG);
+
+                request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
+                request.AddParameter("application/json", parameters, ParameterType.RequestBody);
+
+                RestResponse response = client.Execute(request);
+
+                #region 取得回傳訊息(成功或失敗)
+                var data = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+                OUTBean.EV_MSGT = data["EV_MSGT"].ToString().Trim();
+                OUTBean.EV_MSG = data["EV_MSG"].ToString().Trim();
+                #endregion
+
+                if (OUTBean.EV_MSGT == "Y")
+                {
+                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 合約主數據資料新增/異動時發送Mail通知接口成功";
+                }
+                else
+                {
+                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 合約主數據資料新增/異動時發送Mail通知接口失敗，原因:" + OUTBean.EV_MSG;
+                }
+            }
+            catch (Exception ex)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 合約主數據資料新增/異動時發送Mail通知接口失敗，原因:" + ex.Message + Environment.NewLine;
+                pMsg += " 失敗行數：" + ex.ToString();
+            }
+
+            writeToLog(beanIN.IV_CONTRACTID, "GetAPI_CONTRACTCHANGE_SENDMAIL", pMsg, beanIN.IV_LOGINEMPNAME);
+
+            return OUTBean;
+        }
+        #endregion
+
         #region 取得合約主數據相關人員資訊
         /// <summary>
         /// 取得合約主數據相關資訊

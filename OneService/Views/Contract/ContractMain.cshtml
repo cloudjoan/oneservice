@@ -326,7 +326,7 @@
 
 		//要略過的清單(textarea)
 		function checkTextareaSkipList(tID) {
-			var ArrayList = ["tbx_cBillCycle"];
+			var ArrayList = ["tbx_cDesc","tbx_cBillCycle"];
 			return SkiptList(tID, ArrayList);
 		}
 
@@ -676,7 +676,7 @@
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">訂單說明</label>
 							<div class="col-lg-4">
-								<textarea rows="3" class="form-control" placeholder="訂單說明" id="tbx_cDesc" name="tbx_cDesc" title="@ViewBag.cDesc">@ViewBag.cDesc</textarea>
+								<textarea rows="3" class="form-control" placeholder="訂單說明" id="tbx_cDesc" name="tbx_cDesc" title="@ViewBag.cDesc" disabled>@ViewBag.cDesc</textarea>
 							</div>							
 						</div>
 						<div class="form-group row">							
@@ -739,11 +739,11 @@
 								@{
 									if (ViewBag.IsCanRead == "Y")
 									{
-										<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
+											<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
 									}
 									else
 									{
-										<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
+											<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
 									}
 								}								
 							</div>
@@ -805,13 +805,13 @@
 								{
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
-										<tr>
-											<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
-											<td>@Html.Raw(QueryInfo[2])</td>
-											<td>@Html.Raw(QueryInfo[3])</td>
-											<td>@Html.Raw(QueryInfo[4])</td>
-											<td><a href="@QueryInfo[5]">查詢</a></td>
-										</tr>
+											<tr>
+												<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
+												<td>@Html.Raw(QueryInfo[2])</td>
+												<td>@Html.Raw(QueryInfo[3])</td>
+												<td>@Html.Raw(QueryInfo[4])</td>
+												<td><a href="@QueryInfo[5]">查詢</a></td>
+											</tr>
 									}
 								}
 							}

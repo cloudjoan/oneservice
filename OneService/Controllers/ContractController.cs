@@ -555,7 +555,12 @@ namespace OneService.Controllers
             getLoginAccount();
             getEmployeeInfo();
 
-            string tLog = string.Empty;
+            bool tIsFormal = false;
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+            string tLog = string.Empty;            
             string OldCTeamId = string.Empty;
             string OldCMACycle = string.Empty;
             string OldCMANotes = string.Empty;
@@ -563,7 +568,7 @@ namespace OneService.Controllers
             string OldCContractNotes = string.Empty;
             string OldCBillNotes = string.Empty;
 
-            pContractID = formCollection["hid_cContractID"].FirstOrDefault();
+            pContractID = formCollection["hid_cContractID"].FirstOrDefault();            
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CMACycle = formCollection["tbx_cMACycle"].FirstOrDefault();
             string CMANotes = formCollection["tbx_cMANotes"].FirstOrDefault();
@@ -571,8 +576,21 @@ namespace OneService.Controllers
             string CContractNotes = formCollection["tbx_cContractNotes"].FirstOrDefault();
             string CBillNotes = formCollection["tbx_cBillNotes"].FirstOrDefault();
 
+            CONTRACTCHANGE_INPUT beanIN = new CONTRACTCHANGE_INPUT();
+
             try
             {
+                #region 取得系統位址參數相關資訊
+                SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+                tIsFormal = ParaBean.IsFormal;
+
+                tBPMURLName = ParaBean.BPMURLName;
+                tPSIPURLName = ParaBean.PSIPURLName;
+                tAPIURLName = ParaBean.APIURLName;
+                tAttachURLName = ParaBean.AttachURLName;
+                #endregion
+
                 var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == pContractID);
 
                 if (beanM != null)
@@ -597,7 +615,7 @@ namespace OneService.Controllers
                     tLog += CMF.getNewAndOldLog("請款備註", OldCBillNotes, CBillNotes);
                     #endregion
 
-                    #region 主資料表
+                    #region 主資料表                    
                     beanM.CTeamId = CTeamId;
                     beanM.CMacycle = CMACycle;
                     beanM.CManotes = CMANotes;
@@ -621,6 +639,16 @@ namespace OneService.Controllers
                         if (!string.IsNullOrEmpty(tLog))
                         {
                             CMF.writeToLog(pContractID, "saveContractMain", tLog, ViewBag.empEngName);
+
+                            #region call ONE SERVICE 合約主數據資料新增/異動時發送Mail通知接口
+                            beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
+                            beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
+                            beanIN.IV_CONTRACTID = pContractID;
+                            beanIN.IV_LOG = tLog;
+                            beanIN.IV_APIURLName = tAPIURLName;
+
+                            CMF.GetAPI_CONTRACTCHANGE_SENDMAIL(beanIN);
+                            #endregion
                         }
                     }
                 }

@@ -6985,4 +6985,32 @@ namespace OneService.Controllers
         public string EV_IsCanRead { get; set; }
     }
     #endregion
+
+    #region 合約主數據資料新增/異動時發送Mail通知資料INPUT資訊
+    /// <summary>合約主數據資料新增/異動時發送Mail通知資料INPUT資訊</summary>
+    public struct CONTRACTCHANGE_INPUT
+    {
+        /// <summary>登入者員工編號ERPID</summary>
+        public string IV_LOGINEMPNO { get; set; }
+        /// <summary>修改者員工姓名(中文+英文)</summary>
+        public string IV_LOGINEMPNAME { get; set; }
+        /// <summary>文件編號</summary>
+        public string IV_CONTRACTID { get; set; }
+        /// <summary>LOG記錄</summary>
+        public string IV_LOG { get; set; }
+        /// <summary>APIURL開頭網址</summary>
+        public string IV_APIURLName { get; set; }
+    }
+    #endregion
+
+    #region 合約主數據資料新增/異動時發送Mail通知資料OUTPUT資訊
+    /// <summary>合約主數據資料新增/異動時發送Mail通知資料OUTPUT資訊</summary>
+    public struct CONTRACTCHANGE_OUTPUT
+    {
+        /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+        public string EV_MSGT { get; set; }
+        /// <summary>消息內容</summary>
+        public string EV_MSG { get; set; }
+    }
+    #endregion
 }
