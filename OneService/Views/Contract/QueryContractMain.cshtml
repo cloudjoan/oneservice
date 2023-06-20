@@ -257,8 +257,8 @@
 			var tbx_cSoSales = $('#tbx_cSoSales');						//業務員ERPID
 			var tbx_cMASales = $('#tbx_cMASales');						//維護業務員ERPID			
 			var tbx_cMainEngineerID = $('#tbx_cMainEngineerID');			//主要工程師ERPID
-			var tbx_cStartDate = $('#tbx_cStartDate');					//合約到期日(起)
-			var tbx_cEndDate = $('#tbx_cEndDate');						//合約到期日(迄)
+			var tbx_cStartDate = $('#tbx_cStartDate');					//合約期間(起)
+			var tbx_cEndDate = $('#tbx_cEndDate');						//合約期間(迄)
 			var hid_cAssignMainEngineer = $("#hid_cAssignMainEngineer");	//未指派主要工程師
 
 			if (tbx_cContractID.val() == "" && tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && 
@@ -272,7 +272,7 @@
 			if (tbx_cStartDate.val() != "" && tbx_cEndDate.val() != "") {
 
 				if (tbx_cStartDate.val() > tbx_cEndDate.val()) {
-					tMsg += '合約到期日(起)不能大於合約到期日(迄)！\n';
+					tMsg += '合約期間(起)不能大於合約期間(迄)！\n';
 					tbx_cEndDate.val(""); //清空
 				}
 			}
@@ -419,7 +419,7 @@
 							</label>
 						</div>						
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">合約到期日</label>
+							<label class="col-lg-2 col-form-label">合約期間</label>
 							<div class="input-group col-md-10 col-lg-6">
 								<span class="input-group-addon">起</span>
 								<input type="text" name="tbx_cStartDate" id="tbx_cStartDate" class="calendar form-control" placeholder="起始日期"><span class="input-group-addon">迄</span>

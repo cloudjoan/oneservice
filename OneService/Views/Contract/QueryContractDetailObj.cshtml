@@ -303,8 +303,8 @@
 			var tbx_QuerycSerialID = $('#tbx_QuerycSerialID');		//序號
 			var tbx_QuerycModel = $('#tbx_QuerycModel');			//ProductModel
 			var txt_QuerycArea = $("#txt_QuerycArea");				//區域
-			var tbx_QuerycStartDate = $('#tbx_QuerycStartDate');		//合約到期日(起)
-			var tbx_QuerycEndDate = $('#tbx_QuerycEndDate');			//合約到期日(迄)
+			var tbx_QuerycStartDate = $('#tbx_QuerycStartDate');		//合約期間(起)
+			var tbx_QuerycEndDate = $('#tbx_QuerycEndDate');			//合約期間(迄)
 
 			if (tbx_QuerycContractID.val() == "" && tbx_QuerycHostName.val() == "" && tbx_QuerycSerialID.val() == "" &&
 				tbx_QuerycModel.val() == "" && txt_QuerycArea.val() == "" && tbx_QuerycStartDate.val() == "" && tbx_QuerycEndDate.val() == "") {
@@ -314,7 +314,7 @@
 			if (tbx_QuerycStartDate.val() != "" && tbx_QuerycEndDate.val() != "") {
 
 				if (tbx_QuerycStartDate.val() > tbx_QuerycEndDate.val()) {
-					tMsg += '合約到期日(起)不能大於合約到期日(迄)！\n';
+					tMsg += '合約期間(起)不能大於合約期間(迄)！\n';
 					tbx_QuerycEndDate.val(""); //清空
 				}
 			}
@@ -498,7 +498,7 @@
 						</div>						
 					</div>
 					<div class="form-group row">
-						<label class="col-lg-2 col-form-label">合約到期日</label>
+						<label class="col-lg-2 col-form-label">合約期間</label>
 						<div class="input-group col-md-10 col-lg-6">
 							<span class="input-group-addon">起</span>
 							<input type="text" name="tbx_QuerycStartDate" id="tbx_QuerycStartDate" class="calendar form-control" placeholder="起始日期"><span class="input-group-addon">迄</span>

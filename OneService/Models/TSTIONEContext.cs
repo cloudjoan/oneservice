@@ -258,6 +258,14 @@ namespace OneService.Models
                     .HasColumnName("cBillNotes")
                     .HasComment("請款備註");
 
+                entity.Property(e => e.CContactEmail)
+                    .HasMaxLength(200)
+                    .HasColumnName("cContactEmail");
+
+                entity.Property(e => e.CContactName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cContactName");
+
                 entity.Property(e => e.CContractNotes)
                     .HasMaxLength(512)
                     .HasColumnName("cContractNotes")

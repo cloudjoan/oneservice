@@ -102,6 +102,8 @@ namespace OneService.Models
         /// </summary>
         public string? CBillNotes { get; set; }
         public string? CInvalidReason { get; set; }
+        public string? CContactName { get; set; }
+        public string? CContactEmail { get; set; }
         public int? Disabled { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }

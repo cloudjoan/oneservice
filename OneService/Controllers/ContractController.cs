@@ -202,8 +202,8 @@ namespace OneService.Controllers
         /// <param name="cSoSales">業務員ERPID</param>
         /// <param name="cMASales">維護業務員ERPID</param>
         /// <param name="cMainEngineerID">主要工程師ERPID</param>
-        /// <param name="cStartDate">合約到期日(起)</param>
-        /// <param name="cEndDate">合約到期日(迄)</param>
+        /// <param name="cStartDate">合約期間(起)</param>
+        /// <param name="cEndDate">合約期間(迄)</param>
         /// <param name="cAssignMainEngineer">未指派主要工程師(Y.未指派)</param>
         /// <returns></returns>
         public IActionResult QueryContractMainResult(string cIsSubContract, string cContractID, string cCustomerID, string cCustomerName, 
@@ -273,7 +273,7 @@ namespace OneService.Controllers
             }
             #endregion           
 
-            #region 合約到期日
+            #region 合約期間
             if (!string.IsNullOrEmpty(cStartDate))
             {
                 ttWhere += "AND Convert(varchar(10),M.cStartDate,111) >= N'" + cStartDate.Replace("-", "/") + "' ";
@@ -430,7 +430,7 @@ namespace OneService.Controllers
                 ViewBag.cTeamID = beanM.CTeamId;
                 ViewBag.cBillCycle = beanM.CBillCycle;
                 ViewBag.cBillNotes = beanM.CBillNotes;
-                ViewBag.cContractReport = beanM.CContractReport;
+                ViewBag.cContractReport = beanM.CContractReport;                
 
                 #region 取得服務團隊清單
                 var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, true);
@@ -1462,8 +1462,8 @@ namespace OneService.Controllers
         /// <param name="cSerialID">序號</param>
         /// <param name="cModel">Product Model</param>        
         /// <param name="cArea">區域</param>
-        /// <param name="cStartDate">合約到期日(起)</param>
-        /// <param name="cEndDate">合約到期日(迄)</param>
+        /// <param name="cStartDate">合約期間(起)</param>
+        /// <param name="cEndDate">合約期間(迄)</param>
         /// <returns></returns>
         public IActionResult QueryContractDetailObjResult(string cContractID, string cHostName, string cSerialID, string cModel, string cArea, string cStartDate, string cEndDate)
         {
@@ -1527,7 +1527,7 @@ namespace OneService.Controllers
             }
             #endregion
 
-            #region 合約到期日
+            #region 合約期間
             if (!string.IsNullOrEmpty(cStartDate))
             {
                 ttWhere += "AND Convert(varchar(10),M.cStartDate,111) >= N'" + cStartDate.Replace("-", "/") + "' ";
