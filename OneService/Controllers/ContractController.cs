@@ -273,7 +273,7 @@ namespace OneService.Controllers
             }
             #endregion           
 
-            #region 申請日期
+            #region 合約到期日
             if (!string.IsNullOrEmpty(cStartDate))
             {
                 ttWhere += "AND Convert(varchar(10),M.cStartDate,111) >= N'" + cStartDate.Replace("-", "/") + "' ";
@@ -283,7 +283,7 @@ namespace OneService.Controllers
             {
                 ttWhere += "AND Convert(varchar(10),M.cEndDate,111) <= N'" + cEndDate.Replace("-", "/") + "' ";
             }
-            #endregion 申請日期
+            #endregion
 
             #region 主要工程師ERPID
             if (!string.IsNullOrEmpty(cMainEngineerID))
@@ -1411,7 +1411,7 @@ namespace OneService.Controllers
 
             if (pContractID != "")
             {
-                callQueryContractDetailObj(pContractID, "", "", "");
+                callQueryContractDetailObj(pContractID, "", "", "", "", "", "");
             }
 
             #region 回應條件
@@ -1436,25 +1436,29 @@ namespace OneService.Controllers
         /// <param name="cHostName">HostName</param>
         /// <param name="cSerialID">序號</param>
         /// <param name="cModel">Product Model</param>        
+        /// <param name="cArea">區域</param>
+        /// <param name="cStartDate">合約到期日(起)</param>
+        /// <param name="cEndDate">合約到期日(迄)</param>
         /// <returns></returns>
-        public IActionResult QueryContractDetailObjResult(string cContractID, string cHostName, string cSerialID, string cModel)
+        public IActionResult QueryContractDetailObjResult(string cContractID, string cHostName, string cSerialID, string cModel, string cArea, string cStartDate, string cEndDate)
         {
             getLoginAccount();
             getEmployeeInfo();
-            callQueryContractDetailObj(cContractID, cHostName, cSerialID, cModel);
+            callQueryContractDetailObj(cContractID, cHostName, cSerialID, cModel, cArea, cStartDate, cEndDate);
 
             return View();
         }
         #endregion
 
         #region 合約標的明細查詢共用方法
-        public void callQueryContractDetailObj(string cContractID, string cHostName, string cSerialID, string cModel)
+        public void callQueryContractDetailObj(string cContractID, string cHostName, string cSerialID, string cModel, string cArea, string cStartDate, string cEndDate)
         {
             DataTable dt = null;
             StringBuilder tSQL = new StringBuilder();
 
             string IsCanEdit = string.Empty;
             string ttWhere = string.Empty;
+            string tLefJoin = string.Empty;
             string tNotes = string.Empty;
             string tSubContractID = string.Empty;            
 
@@ -1465,35 +1469,57 @@ namespace OneService.Controllers
             #region 文件編號
             if (!string.IsNullOrEmpty(cContractID))
             {
-                ttWhere += "AND cContractID LIKE N'%" + cContractID.Trim() + "%' " + Environment.NewLine;
+                ttWhere += "AND O.cContractID LIKE N'%" + cContractID.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region HostName
             if (!string.IsNullOrEmpty(cHostName))
             {
-                ttWhere += "AND cHostName LIKE N'%" + cHostName.Trim() + "%' " + Environment.NewLine;
+                ttWhere += "AND O.cHostName LIKE N'%" + cHostName.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region 序號
             if (!string.IsNullOrEmpty(cSerialID))
             {
-                ttWhere += "AND cSerialID LIKE N'%" + cSerialID.Trim() + "%' " + Environment.NewLine;
+                ttWhere += "AND O.cSerialID LIKE N'%" + cSerialID.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
             #region Product Model
             if (!string.IsNullOrEmpty(cModel))
             {
-                ttWhere += "AND cModel LIKE N'%" + cModel.Trim() + "%' " + Environment.NewLine;
+                ttWhere += "AND O.cModel LIKE N'%" + cModel.Trim() + "%' " + Environment.NewLine;
             }
-            #endregion           
+            #endregion
+
+            #region 區域
+            if (!string.IsNullOrEmpty(cArea))
+            {
+                ttWhere += "AND O.cArea LIKE N'%" + cArea.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 合約到期日
+            if (!string.IsNullOrEmpty(cStartDate))
+            {
+                ttWhere += "AND Convert(varchar(10),M.cStartDate,111) >= N'" + cStartDate.Replace("-", "/") + "' ";
+                tLefJoin = " left join TB_ONE_ContractMain M on M.cContractID = O.cContractID";
+            }
+
+            if (!string.IsNullOrEmpty(cEndDate))
+            {
+                ttWhere += "AND Convert(varchar(10),M.cEndDate,111) <= N'" + cEndDate.Replace("-", "/") + "' ";
+                tLefJoin = " left join TB_ONE_ContractMain M on M.cContractID = O.cContractID";
+            }
+            #endregion
 
             #region SQL語法
-            tSQL.AppendLine(" Select * ");
-            tSQL.AppendLine(" From TB_ONE_ContractDetail_OBJ ");            
-            tSQL.AppendLine(" Where 1=1 AND disabled = 0 " + ttWhere);
+            tSQL.AppendLine(" Select O.* ");
+            tSQL.AppendLine(" From TB_ONE_ContractDetail_OBJ O");
+            tSQL.AppendLine(tLefJoin);
+            tSQL.AppendLine(" Where 1=1 AND O.disabled = 0 " + ttWhere);
             #endregion
 
             dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
