@@ -175,13 +175,17 @@
 										Customers[i] = {
 											label: idata.Kna1Kunnr + "\\" + idata.Kna1Name1, //顯示在清單的東西
 											idx: i,
+											Name: idata.Kna1Name1,
 											value: idata.Kna1Kunnr //這個是要填入textbox的值
 										};
 									});
 
 									//綁定foucs事件
 									obj.autocomplete({
-										source: Customers
+										source: Customers,
+										select: function (event, ui) {
+											$("#lbl_cCustomerName").html(ui.item.Name);
+										}
 									}).bind('focus', function () { $(this).autocomplete("search"); });
 
 									//開啟autocomplete選單
@@ -321,6 +325,7 @@
 			$('#tbx_cContractID').val("");
 			$('#ddl_cIsSubContract').val("N");
 			$('#tbx_cCustomerID').val("");
+			$("#lbl_cCustomerName").html("");
 			$('#tbx_cCustomerName').val("");
 			$('#tbx_cSoSales').val("");
 			$('#tbx_cMASales').val("");			
@@ -385,6 +390,7 @@
 							<label class="col-lg-2 col-form-label">客戶代號</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cCustomerID" id="tbx_cCustomerID" class="form-control CustName" placeholder="請輸入客戶名稱或統編的關鍵字">
+								<label id="lbl_cCustomerName" class="col-form-label" style="color:blue;"></label>
 							</div>
 							<label class="col-lg-2 col-form-label">客戶名稱</label>
 							<div class="col-lg-4">
@@ -471,25 +477,25 @@
 							{
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
-										<tr>
-											<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-											<td>@Html.Raw(QueryInfo[2])</td>
-											<td>@Html.Raw(QueryInfo[3])</td>
-											<td>@Html.Raw(QueryInfo[4])</td>
-											<td>@Html.Raw(QueryInfo[5])</td>
-											<td>@Html.Raw(QueryInfo[6])</td>
-											<td>@Html.Raw(QueryInfo[7])</td>
-											<td>@Html.Raw(QueryInfo[8])</td>
-											<td>@Html.Raw(QueryInfo[9])</td>
-											<td>@Html.Raw(QueryInfo[10])</td>
-											<td>@Html.Raw(QueryInfo[11])</td>
-											<td>@Html.Raw(QueryInfo[12])</td>
-											<td>@Html.Raw(QueryInfo[13])</td>
-											<td>@Html.Raw(QueryInfo[14])</td>
-											<td>@Html.Raw(QueryInfo[15])</td>
-											<td>@Html.Raw(QueryInfo[16])</td>
-											<td>@Html.Raw(QueryInfo[17])</td>											
-										</tr>
+												<tr>
+													<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+													<td>@Html.Raw(QueryInfo[2])</td>
+													<td>@Html.Raw(QueryInfo[3])</td>
+													<td>@Html.Raw(QueryInfo[4])</td>
+													<td>@Html.Raw(QueryInfo[5])</td>
+													<td>@Html.Raw(QueryInfo[6])</td>
+													<td>@Html.Raw(QueryInfo[7])</td>
+													<td>@Html.Raw(QueryInfo[8])</td>
+													<td>@Html.Raw(QueryInfo[9])</td>
+													<td>@Html.Raw(QueryInfo[10])</td>
+													<td>@Html.Raw(QueryInfo[11])</td>
+													<td>@Html.Raw(QueryInfo[12])</td>
+													<td>@Html.Raw(QueryInfo[13])</td>
+													<td>@Html.Raw(QueryInfo[14])</td>
+													<td>@Html.Raw(QueryInfo[15])</td>
+													<td>@Html.Raw(QueryInfo[16])</td>
+													<td>@Html.Raw(QueryInfo[17])</td>											
+												</tr>
 								}
 							}
 						}

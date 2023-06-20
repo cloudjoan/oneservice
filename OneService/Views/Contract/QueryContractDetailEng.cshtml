@@ -342,7 +342,7 @@
 			$("#hid_cCustomerID").val($(obj).parent().parent().find('.taskcCustomerID').val());					//客戶ID
 			$("#hid_cTeamID").val($(obj).parent().parent().find('.taskcTeamID').val());							//服務團隊ID
 			$("#hid_cIsOldContractID").val($(obj).parent().parent().find('.taskcIsOldContractID').val());			//是否為舊文件編號
-			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').text());					//文件編號
+			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').val());					//文件編號
 			$("#txt_cEngineerID").val($(obj).parent().parent().find('.taskEngERPID').text());					//工程師ERPID
 			$("#txt_cEngineerName").val($(obj).parent().parent().find('.taskEngName').text());					//工程師姓名
 			$("#ddl_cIsMainEngineer").val($(obj).parent().parent().find('.taskIsMain').text());					//是否為主要工程師
@@ -626,6 +626,7 @@
 													<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
 													<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
 													<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
+													<input type="hidden" value="@QueryInfo[5]" class="taskContractID" />
 													<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailENG(this);" style="margin: 2px;">
 														<i class="glyphicon glyphicon-pencil"></i>
 													</button>
@@ -641,9 +642,10 @@
 													<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
 													<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
 													<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
+													<input type="hidden" value="@QueryInfo[5]" class="taskContractID" />
 												</td>
 											}
-											<td class="taskContractID">@Html.Raw(QueryInfo[5])</td>
+											<td><a href="@QueryInfo[11]" target="_blank">@QueryInfo[5]</a></td>
 											<td class="taskEngERPID">@Html.Raw(QueryInfo[6])</td>
 											<td class="taskEngName">@Html.Raw(QueryInfo[7])</td>
 											<td class="taskIsMain">@Html.Raw(QueryInfo[8])</td>

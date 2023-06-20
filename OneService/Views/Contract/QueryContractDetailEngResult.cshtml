@@ -137,6 +137,7 @@
 								<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
 								<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
 								<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
+								<input type="hidden" value="@QueryInfo[5]" class="taskContractID" />
 								<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailENG(this);" style="margin: 2px;">
 									<i class="glyphicon glyphicon-pencil"></i>
 								</button>
@@ -152,9 +153,10 @@
 								<input type="hidden" value="@QueryInfo[2]" class="taskcCustomerID" />
 								<input type="hidden" value="@QueryInfo[3]" class="taskcTeamID" />
 								<input type="hidden" value="@QueryInfo[4]" class="taskcIsOldContractID" />
+								<input type="hidden" value="@QueryInfo[5]" class="taskContractID" />
 							</td>
 						}
-						<td class="taskContractID">@Html.Raw(QueryInfo[5])</td>
+						<td><a href="@QueryInfo[11]" target="_blank">@QueryInfo[5]</a></td>
 						<td class="taskEngERPID">@Html.Raw(QueryInfo[6])</td>
 						<td class="taskEngName">@Html.Raw(QueryInfo[7])</td>
 						<td class="taskIsMain">@Html.Raw(QueryInfo[8])</td>

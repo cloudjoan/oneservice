@@ -884,6 +884,7 @@ namespace OneService.Controllers
             string cMainCustomerID = string.Empty;          //客戶ID
             string cMainTeamID = string.Empty;              //服務團隊ID
             string cMainIsOldContractID = string.Empty;     //是否為舊文件編號
+            string tUrl = string.Empty;
 
             List<string[]> QueryToList = new List<string[]>();  //查詢出來的清單
             List<string> tContractIDList = new List<string>();   //文件編號清單
@@ -947,7 +948,9 @@ namespace OneService.Controllers
 
                 IsCanEdit = pIsCanEdit ? "Y" : "N";
 
-                string[] QueryInfo = new string[11];
+                tUrl = "../Contract/ContractMain?ContractID=" + bean.CContractId;
+
+                string[] QueryInfo = new string[12];
 
                 QueryInfo[0] = IsCanEdit;                          //是否可以編輯
                 QueryInfo[1] = bean.CId.ToString();                 //系統ID
@@ -959,7 +962,8 @@ namespace OneService.Controllers
                 QueryInfo[7] = bean.CEngineerName;                  //工程師姓名
                 QueryInfo[8] = bean.CIsMainEngineer;                //是否為主要工程師                
                 QueryInfo[9] = bean.CContactStoreId.ToString();     //門市代號                
-                QueryInfo[10] = bean.CContactStoreName;              //門市名稱                
+                QueryInfo[10] = bean.CContactStoreName;             //門市名稱                
+                QueryInfo[11] = tUrl;                             //URL
 
                 QueryToList.Add(QueryInfo);
             }
@@ -1270,7 +1274,7 @@ namespace OneService.Controllers
                                     tLog += CMF.getNewAndOldLog("Location", OldcLocation, cLocation);
 
                                     OldcAddress = bean.CAddress;
-                                    tLog += CMF.getNewAndOldLog("地點", OldcAddress, cAddress);
+                                    tLog += CMF.getNewAndOldLog("地址", OldcAddress, cAddress);
 
                                     OldcArea = bean.CArea;
                                     tLog += CMF.getNewAndOldLog("區域", OldcArea, cArea);
@@ -1380,13 +1384,34 @@ namespace OneService.Controllers
                 return RedirectToAction("Login", "Home");
             }
 
+            bool tIsFormal = false;
+
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+
             getLoginAccount();
             getEmployeeInfo();
 
+            
             ViewBag.cContractID = "";
             ViewBag.cSubContractID = "";
             ViewBag.cMainTeamID = "";
             ViewBag.cMainIsOldContractID = "N";
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+            
+            ViewBag.DownloadURL = "http://" + tAttachURLName + "/CSreport/ZCONTRACT_OBJ.XLSX";
+            #endregion
 
             #region Request參數            
             if (HttpContext.Request.Query["ContractID"].FirstOrDefault() != null)
@@ -1460,7 +1485,8 @@ namespace OneService.Controllers
             string ttWhere = string.Empty;
             string tLefJoin = string.Empty;
             string tNotes = string.Empty;
-            string tSubContractID = string.Empty;            
+            string tSubContractID = string.Empty;
+            string tUrl = string.Empty;
 
             List<string[]> QueryToList = new List<string[]>();  //查詢出來的清單
             List<string> tContractIDList = new List<string>();   //文件編號清單
@@ -1562,7 +1588,9 @@ namespace OneService.Controllers
 
                 IsCanEdit = pIsCanEdit ? "Y" : "N";
 
-                string[] QueryInfo = new string[15];
+                tUrl = "../Contract/ContractMain?ContractID=" + dr["cContractID"].ToString();
+
+                string[] QueryInfo = new string[16];
 
                 tNotes = dr["cNotes"].ToString().Replace("\r\n", "<br/>");
                 tSubContractID = dr["cSubContractID"].ToString().Replace("\r\n", "<br/>");
@@ -1576,12 +1604,13 @@ namespace OneService.Controllers
                 QueryInfo[6] = dr["cBrands"].ToString();         //廠牌                
                 QueryInfo[7] = dr["cModel"].ToString();          //ProductModel
                 QueryInfo[8] = dr["cLocation"].ToString();       //Location                
-                QueryInfo[9] = dr["cAddress"].ToString();        //地點                
+                QueryInfo[9] = dr["cAddress"].ToString();        //地址                
                 QueryInfo[10] = dr["cArea"].ToString();          //區域                
                 QueryInfo[11] = dr["cSLARESP"].ToString();       //回應條件                
                 QueryInfo[12] = dr["cSLASRV"].ToString();        //服務條件                
                 QueryInfo[13] = tNotes;                        //備註                
                 QueryInfo[14] = tSubContractID;                //下包文件編號                
+                QueryInfo[15] = tUrl;                          //URL
 
                 QueryToList.Add(QueryInfo);
             }
@@ -1603,7 +1632,7 @@ namespace OneService.Controllers
         /// <param name="cBrands">廠牌</param>
         /// <param name="cModel">ProductModel</param>
         /// <param name="cLocation">Location</param>
-        /// <param name="cAddress">地點</param>
+        /// <param name="cAddress">地址</param>
         /// <param name="cArea">區域</param>
         /// <param name="cSLARESP">回應條件</param>
         /// <param name="cSLASRV">服務條件</param>
@@ -1667,7 +1696,7 @@ namespace OneService.Controllers
                         tLog += CMF.getNewAndOldLog("Location", OldcLocation, cLocation);
 
                         OldcAddress = bean.CAddress;
-                        tLog += CMF.getNewAndOldLog("地點", OldcAddress, cAddress);
+                        tLog += CMF.getNewAndOldLog("地址", OldcAddress, cAddress);
 
                         OldcArea = bean.CArea;
                         tLog += CMF.getNewAndOldLog("區域", OldcArea, cArea);

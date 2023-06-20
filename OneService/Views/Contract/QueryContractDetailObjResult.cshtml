@@ -133,7 +133,7 @@
 			<th>廠牌</th>
 			<th>ProductModel</th>
 			<th>Location</th>
-			<th>地點</th>
+			<th>地址</th>
 			<th>區域</th>
 			<th>回應條件</th>
 			<th>服務條件</th>
@@ -154,6 +154,7 @@
 						{
 							<td>
 								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+								<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
 								<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
 									<i class="glyphicon glyphicon-pencil"></i>
 								</button>
@@ -166,9 +167,11 @@
 						{
 							<td>
 								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+								<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
 							</td>
 						}
-						<td class="taskContractID">@Html.Raw(QueryInfo[2])</td>
+
+						<td><a href="@QueryInfo[15]" target="_blank">@QueryInfo[2]</a></td>
 						<td class="taskHostName">@Html.Raw(QueryInfo[3])</td>
 						<td class="taskSerialID">@Html.Raw(QueryInfo[4])</td>
 						<td class="taskPID">@Html.Raw(QueryInfo[5])</td>

@@ -4222,9 +4222,9 @@ namespace OneService.Controllers
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
             #region 組待查詢清單
-            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 &&
-                                                         (string.IsNullOrEmpty(cTeamNew) ? true : x.CTeamNewId == cTeamNew) &&
-                                                         (string.IsNullOrEmpty(cTeamOld) ? true : x.CTeamOldId == cTeamOld));
+            var beans = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 &&
+                                                (string.IsNullOrEmpty(cTeamNew) ? true : x.CTeamNewId == cTeamNew) &&
+                                                (string.IsNullOrEmpty(cTeamOld) ? true : x.CTeamOldId == cTeamOld));
 
             foreach (var bean in beans)
             {

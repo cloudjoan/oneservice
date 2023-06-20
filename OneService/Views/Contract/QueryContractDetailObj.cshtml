@@ -174,14 +174,14 @@
 
 			//設定各欄位資料
 			$("#hid_taskcID").val($(obj).parent().parent().find('.taskcID').val());					//系統ID
-			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').text());			//文件編號
+			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').val());			//文件編號
 			$("#txt_cHostName").val($(obj).parent().parent().find('.taskHostName').text());				//HostName
 			$("#txt_cSerialID").val($(obj).parent().parent().find('.taskSerialID').text());				//序號
 			$("#txt_cPID").val($(obj).parent().parent().find('.taskPID').text());						//ProductID
 			$("#txt_cBrands").val($(obj).parent().parent().find('.taskBrands').text());					//廠牌
 			$("#txt_cModel").val($(obj).parent().parent().find('.taskModel').text());					//ProductModel
 			$("#txt_cLocation").val($(obj).parent().parent().find('.taskLocation').text());				//Location
-			$("#txt_cAddress").val($(obj).parent().parent().find('.taskAddress').text());				//地點
+			$("#txt_cAddress").val($(obj).parent().parent().find('.taskAddress').text());				//地址
 			$("#txt_cArea").val($(obj).parent().parent().find('.taskArea').text());					//區域
 
 			var cSLARESP = $(obj).parent().parent().find('.taskSLARESP').text();
@@ -235,7 +235,7 @@
 			var txt_cBrands = $("#txt_cBrands");				//廠牌
 			var txt_cModel = $("#txt_cModel");					//ProductModel
 			var txt_cLocation = $("#txt_cLocation");			//Location
-			var txt_cAddress = $("#txt_cAddress");				//地點
+			var txt_cAddress = $("#txt_cAddress");				//地址
 			var txt_cArea = $("#txt_cArea");					//區域
 			var ddl_cSLARESP = $("#ddl_cSLARESP");				//回應條件
 			var ddl_cSLASRV = $("#ddl_cSLASRV");				//服務條件
@@ -247,7 +247,7 @@
 			if (txt_cBrands.val() == "") strMsg += "【廠牌】不得為空！\n";
 			if (txt_cModel.val() == "") strMsg += "【ProductModel】不得為空！\n";
 			if (txt_cLocation.val() == "") strMsg += "【Location】不得為空！\n";
-			if (txt_cAddress.val() == "") strMsg += "【地點】不得為空！\n";
+			if (txt_cAddress.val() == "") strMsg += "【地址】不得為空！\n";
 			if (ddl_cSLARESP.val() == "") strMsg += "請選擇【回應條件】！\n";
 			if (ddl_cSLASRV.val() == "") strMsg += "請選擇【服務條件】！\n";
 
@@ -381,18 +381,15 @@
 			window.location.href = "@Url.Action("ContractMain", "Contract", new { ContractID = ViewBag.cContractID })";
 		}
 
-		function fillCsv(csv) {
-			var rows = csv.split('\n');
-			//TODO: 未考慮筆數不吻合的情況
-			for (var r = 0; r < rows.length; r++) {
-				var cells = rows[r].split('\t');
-				for (var c = 0; c < cells.length; c++) {
-					var inp = document.getElementById("C" + r + c);
-					if (inp) inp.value = cells[c];
-				}
-			}
+		function DownloadTaskSample(filePath) {
+			var link = document.createElement('a');
+			link.href = filePath;
+			link.download = "合約標的(匯入範本).xlsx";
+			link.target = "_blank";
+			link.click();
 		}
 	</script>
+
 }
 
 @section breadcrumb_section{
@@ -429,9 +426,25 @@
 							<div class="col-lg-12" id="div_excelFile">							
 								<input type="file" id="postedFile" name="postedFile" />
 								<input type="submit" value="匯入Excel" class="btn btn-success btn-lg" onclick="if (!checkEmpty()){event.returnValue=false;return false;}" />
+								<button id="btn_download_task" class="btn btn-primary" type="button" onclick="DownloadTaskSample('@ViewBag.DownloadURL');" style="margin-left: 10px;">
+									<i class="fa fa-download" aria-hidden="true" style="font-size: 16px;"></i>
+									<span style="font-weight: bold; margin: 2px;">合約標的範本下載</span>
+								</button>
 							</div>
 						</div>
 					}
+					else
+					{
+						<div class="form-group row">
+							<div class="col-lg-12" id="div_excelFile">
+								<button id="btn_download_task" class="btn btn-primary" type="button" onclick="DownloadTaskSample('@ViewBag.DownloadURL');" style="margin-left: 10px;">
+									<i class="fa fa-download" aria-hidden="true" style="font-size: 16px;"></i>
+									<span style="font-weight: bold; margin: 2px;">合約標的範本下載</span>
+								</button>
+							</div>
+						</div>
+					}
+
 					<div class="form-group row">
 						<!--顯示匯入成功或失敗訊息-->
 						<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;" id="lbl_Message">@Html.Raw(ViewBag.Message)</label>
@@ -538,7 +551,7 @@
 							<th>廠牌</th>
 							<th>ProductModel</th>
 							<th>Location</th>
-							<th>地點</th>
+							<th>地址</th>
 							<th>區域</th>
 							<th>回應條件</th>
 							<th>服務條件</th>
@@ -554,39 +567,42 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-												<tr id='tr@(QueryInfo[1])'>
-												@if (@QueryInfo[0] == "Y")
+									<tr id='tr@(QueryInfo[1])'>
+									@if (@QueryInfo[0] == "Y")
 									{
-														<td>
-															<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
-															<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
-																<i class="glyphicon glyphicon-pencil"></i>
-															</button>
-															<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
-																<i class="fa fa-trash"></i>
-															</button>
-														</td>
+										<td>
+											<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+											<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
+											<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailOBJ(this);" style="margin: 2px;">
+												<i class="glyphicon glyphicon-pencil"></i>
+											</button>
+											<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailOBJ(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
+												<i class="fa fa-trash"></i>
+											</button>
+										</td>
 									}
 									else
 									{
-														<td>
-															<input type="hidden" value="@QueryInfo[1]" class="taskcID" />												
-														</td>
+										<td>
+											<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+											<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
+										</td>
 									}
-													<td class="taskContractID">@Html.Raw(QueryInfo[2])</td>
-													<td class="taskHostName">@Html.Raw(QueryInfo[3])</td>
-													<td class="taskSerialID">@Html.Raw(QueryInfo[4])</td>
-													<td class="taskPID">@Html.Raw(QueryInfo[5])</td>
-													<td class="taskBrands">@Html.Raw(QueryInfo[6])</td>
-													<td class="taskModel">@Html.Raw(QueryInfo[7])</td>
-													<td class="taskLocation">@Html.Raw(QueryInfo[8])</td>
-													<td class="taskAddress">@Html.Raw(QueryInfo[9])</td>
-													<td class="taskArea">@Html.Raw(QueryInfo[10])</td>
-													<td class="taskSLARESP">@Html.Raw(QueryInfo[11])</td>
-													<td class="taskSLASRV">@Html.Raw(QueryInfo[12])</td>
-													<td class="taskNotes">@Html.Raw(QueryInfo[13])</td>
-													<td class="taskSubContractID">@Html.Raw(QueryInfo[14])</td>
-												</tr>
+
+									<td><a href="@QueryInfo[15]" target="_blank">@QueryInfo[2]</a></td>									
+									<td class="taskHostName">@Html.Raw(QueryInfo[3])</td>
+									<td class="taskSerialID">@Html.Raw(QueryInfo[4])</td>
+									<td class="taskPID">@Html.Raw(QueryInfo[5])</td>
+									<td class="taskBrands">@Html.Raw(QueryInfo[6])</td>
+									<td class="taskModel">@Html.Raw(QueryInfo[7])</td>
+									<td class="taskLocation">@Html.Raw(QueryInfo[8])</td>
+									<td class="taskAddress">@Html.Raw(QueryInfo[9])</td>
+									<td class="taskArea">@Html.Raw(QueryInfo[10])</td>
+									<td class="taskSLARESP">@Html.Raw(QueryInfo[11])</td>
+									<td class="taskSLASRV">@Html.Raw(QueryInfo[12])</td>
+									<td class="taskNotes">@Html.Raw(QueryInfo[13])</td>
+									<td class="taskSubContractID">@Html.Raw(QueryInfo[14])</td>
+								</tr>
 								}
 							}
 						}
@@ -634,8 +650,8 @@
 					<input type="text" id="txt_cArea" class="form-control col-lg-4" placeholder="區域" />
 				</div>
 				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">地點*</label>
-					<input type="text" id="txt_cAddress" class="form-control col-lg-10" placeholder="地點" />					
+					<label class="col-lg-2 col-form-label">地址*</label>
+					<input type="text" id="txt_cAddress" class="form-control col-lg-10" placeholder="地址" />					
 				</div>
 				<div class="form-group row">
 					<label class="col-lg-2 col-form-label">回應條件*</label>
