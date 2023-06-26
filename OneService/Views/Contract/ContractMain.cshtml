@@ -586,6 +586,28 @@
 		function goToQueryContractDetailObj() {
 			window.location.href = "@Url.Action("QueryContractDetailObj", "Contract", new { ContractID = ViewBag.cContractID })";
 		}
+
+		//檢測Email格式是否正確
+		function checkEmailFormat() {
+			var tbx_cContactEmail = $("#tbx_cContactEmail")
+
+			$.ajax({
+				url: '@Url.Action("ValidateEmail", "Contract")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					Email: tbx_cContactEmail.val()					
+				},
+				success: function (result) {
+					if (!result) {
+						alert("客戶聯絡人Email格式不正確！");
+						tbx_cContactEmail.val("");
+					}					
+				}
+			});
+
+			return true;
+		}
 	</script>
 }
 
@@ -650,7 +672,7 @@
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cContractID" id="tbx_cContractID" class="form-control" placeholder="文件編號" value="@ViewBag.cContractID" title="@ViewBag.cContractID"disabled>
 							</div>	
-							<label class="col-lg-2 col-form-label">*銷售單號</label>
+							<label class="col-lg-2 col-form-label">銷售單號</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSoNo" id="tbx_cSoNo" class="form-control" placeholder="銷售單號" value="@ViewBag.cSoNo" title="@ViewBag.cSoNo">
 							</div>
@@ -761,29 +783,39 @@
 							@{
 								if (ViewBag.IsCanRead == "Y" && ViewBag.IsShowOldURL == "Y")
 								{
-									<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>									
+											<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>									
 								}
 								else if (ViewBag.IsCanRead == "Y" && ViewBag.IsShowOldURL == "N")
 								{
-									<!-- 檔案上傳start-->
-									<div class="form-group row">
-										<div class="col-lg-3 dropzone" id="zone_1">
-											<div class="fallback file-box">
-												<input name="file" type="file" multiple />
+											<!-- 檔案上傳start-->
+											<div class="form-group row">
+												<div class="col-lg-3 dropzone" id="zone_1">
+													<div class="fallback file-box">
+														<input name="file" type="file" multiple />
+													</div>
+												</div>
+												<div class="col-lg-9">
+													<div class="attachment" id="filezone_1"></div>
+													<input type="hidden" class="fileids" name="hid_filezone_1" id="hid_filezone_1" value="@ViewBag.cContractReport" />
+												</div>
 											</div>
-										</div>
-										<div class="col-lg-9">
-											<div class="attachment" id="filezone_1"></div>
-											<input type="hidden" class="fileids" name="hid_filezone_1" id="hid_filezone_1" value="@ViewBag.cContractReport" />
-										</div>
-									</div>
-									<!-- 檔案上傳end-->
+											<!-- 檔案上傳end-->
 								}
 								else
 								{
-									<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
+											<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
 								}
 							}								
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">客戶聯絡人姓名</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cContactName" id="tbx_cContactName" class="form-control" placeholder="客戶聯絡人姓名" value="@ViewBag.cContactName" title="@ViewBag.cContactName">
+							</div>
+							<label class="col-lg-2 col-form-label">客戶聯絡人Email</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cContactEmail" id="tbx_cContactEmail" class="form-control" placeholder="客戶聯絡人Email" onblur="checkEmailFormat();" value="@ViewBag.cContactEmail" title="@ViewBag.cContactEmail">
 							</div>
 						</div>
 						<div class="hr-line-dashed"></div>
@@ -843,13 +875,13 @@
 								{
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
-															<tr>
-																<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
-																<td>@Html.Raw(QueryInfo[2])</td>
-																<td>@Html.Raw(QueryInfo[3])</td>
-																<td>@Html.Raw(QueryInfo[4])</td>
-																<td><a href="@QueryInfo[5]">查詢</a></td>
-															</tr>
+												<tr>
+													<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
+													<td>@Html.Raw(QueryInfo[2])</td>
+													<td>@Html.Raw(QueryInfo[3])</td>
+													<td>@Html.Raw(QueryInfo[4])</td>
+													<td><a href="@QueryInfo[5]">查詢</a></td>
+												</tr>
 									}
 								}
 							}

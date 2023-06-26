@@ -443,6 +443,8 @@ namespace OneService.Controllers
                 ViewBag.cTeamID = beanM.CTeamId;
                 ViewBag.cBillCycle = beanM.CBillCycle;
                 ViewBag.cBillNotes = beanM.CBillNotes;
+                ViewBag.cContactName = beanM.CContactName;
+                ViewBag.cContactEmail = beanM.CContactEmail;
                 ViewBag.cContractReport = beanM.CContractReport;                
 
                 #region 取得服務團隊清單
@@ -610,6 +612,8 @@ namespace OneService.Controllers
             string OldCContractNotes = string.Empty;
             string OldCBillNotes = string.Empty;
             string OldCContractReport = string.Empty;
+            string OldCContactName = string.Empty;
+            string OldCContactEmail = string.Empty;
 
             pContractID = formCollection["hid_cContractID"].FirstOrDefault();            
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
@@ -619,6 +623,8 @@ namespace OneService.Controllers
             string CContractNotes = formCollection["tbx_cContractNotes"].FirstOrDefault();
             string CBillNotes = formCollection["tbx_cBillNotes"].FirstOrDefault();
             string CContractReport = formCollection["hid_filezone_1"].FirstOrDefault();
+            string CContactName = formCollection["tbx_cContactName"].FirstOrDefault();
+            string CContactEmail = formCollection["tbx_cContactEmail"].FirstOrDefault();
 
             CONTRACTCHANGE_INPUT beanIN = new CONTRACTCHANGE_INPUT();
 
@@ -658,11 +664,17 @@ namespace OneService.Controllers
                     OldCBillNotes = beanM.CBillNotes;
                     tLog += CMF.getNewAndOldLog("請款備註", OldCBillNotes, CBillNotes);
 
+                    OldCContactName = beanM.CContactName;
+                    tLog += CMF.getNewAndOldLog("客戶聯絡人姓名", OldCContactName, CContactName);
+
+                    OldCContactEmail = beanM.CContactName;
+                    tLog += CMF.getNewAndOldLog("客戶聯絡人Email", OldCContactEmail, CContactEmail);
+
                     if (!string.IsNullOrEmpty(CContractReport))
                     {
                         OldCContractReport = beanM.CContractReport;
                         tLog += CMF.getNewAndOldLog("合約書", OldCContractReport, CContractReport);
-                    }
+                    }                    
                     #endregion
 
                     #region 主資料表                    
@@ -672,11 +684,13 @@ namespace OneService.Controllers
                     beanM.CMaaddress = CMAAddress;
                     beanM.CContractNotes = CContractNotes;
                     beanM.CBillNotes = CBillNotes;
+                    beanM.CContactName = CContactName;
+                    beanM.CContactEmail = CContactEmail;
 
                     if (!string.IsNullOrEmpty(CContractReport))
                     {
                         beanM.CContractReport = CContractReport;
-                    }
+                    }                   
 
                     beanM.ModifiedDate = DateTime.Now;
                     beanM.ModifiedUserName = ViewBag.empEngName;
@@ -2011,6 +2025,15 @@ namespace OneService.Controllers
                     }
                 }               
             }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region Ajax判斷Email格式是否正確
+        public IActionResult ValidateEmail(string Email)
+        {
+            bool reValue = CMF.ValidateEmail(Email);
 
             return Json(reValue);
         }

@@ -28,6 +28,7 @@ using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using System.Text.RegularExpressions;
 
 namespace OneService.Controllers
 {
@@ -3662,6 +3663,21 @@ namespace OneService.Controllers
             sda.Fill(dt);
 
             return dt;
+        }
+        #endregion
+
+        #region Email驗證
+        /// <summary>
+        /// Email驗證
+        /// </summary>
+        /// <param name="emailAddress">Email網址</param>
+        /// <returns></returns>
+        public bool ValidateEmail(string emailAddress)
+        {
+            var pattern = @"^[a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$";
+            var regex = new Regex(pattern);
+
+            return regex.IsMatch(emailAddress);
         }
         #endregion
 
