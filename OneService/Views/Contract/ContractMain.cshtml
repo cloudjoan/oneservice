@@ -275,7 +275,10 @@
 
 		//popup各欄位disabled
 		//popupId.傳入的obj、IsDisabled(true.不准許輸入 false.准許輸入)
-		function disabledPopup(popupId, IsDisabled) {			
+		function disabledPopup(popupId, IsDisabled) {
+			var pIsMIS = $("#hid_cLoginUser_IsMIS").val();
+			var pIsDCC = $("#hid_cLoginUser_IsDCC").val();
+			var pIsSalesASS = $("#hid_cLoginUser_IsSalesASS").val();
 
 			$(popupId).find("input").each(function (index, value) {
 				var reValue = checkInputSkipList($(this).attr("name"));
@@ -303,7 +306,20 @@
 				if (!reValue) {
 					$(this).prop('disabled', IsDisabled);
 				}
-			});			
+			});
+
+			setTimeout(function () {
+				if (IsDisabled) {
+					$(".dropzone").hide();
+					$(".btn-del").hide();
+				}
+				else {
+					if (pIsMIS == "Y" || pIsDCC == "Y" || pIsSalesASS == "Y") {
+						$(".dropzone").show();
+						$(".btn-del").show();
+					}
+				}
+			}, 500);
 		}
 
 		//要略過的清單(Input)
@@ -617,6 +633,12 @@
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 						<!--登人者公司別(T012、T016...)-->
 						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+						<!--登人者是否為MIS-->
+						<input type="hidden" id="hid_cLoginUser_IsMIS" name="hid_cLoginUser_IsMIS" value="@ViewBag.hidIsMIS">
+						<!--登人者是否為文管中心人員-->
+						<input type="hidden" id="hid_cLoginUser_IsDCC" name="hid_cLoginUser_IsDCC" value="@ViewBag.hidIsDCC">
+						<!--登人者是否為祕書人員-->
+						<input type="hidden" id="hid_cLoginUser_IsSalesASS" name="hid_cLoginUser_IsSalesASS" value="@ViewBag.pIsSalesASS">
 						<!--是否可編輯合約主數據相關內容-->
 						<input type="hidden" id="hid_IsCanEdit" name="hid_IsCanEdit" value="@ViewBag.IsCanEdit">
 						<!--是否可顯示合約書link-->
@@ -677,7 +699,11 @@
 							<label class="col-lg-2 col-form-label">訂單說明</label>
 							<div class="col-lg-4">
 								<textarea rows="3" class="form-control" placeholder="訂單說明" id="tbx_cDesc" name="tbx_cDesc" title="@ViewBag.cDesc" disabled>@ViewBag.cDesc</textarea>
-							</div>							
+							</div>	
+							<label class="col-lg-2 col-form-label">主要工程師姓名</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cMainEngineerName" id="tbx_cMainEngineerName" class="form-control" placeholder="主要工程師" value="@ViewBag.cMainEngineerName" title="@ViewBag.cMainEngineerName" disabled>
+							</div>		
 						</div>
 						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">*服務團隊</label>
@@ -728,26 +754,38 @@
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSLASRV" id="tbx_cSLASRV" class="form-control" placeholder="服務條件" value="@ViewBag.cSLASRV" title="@ViewBag.cSLASRV" disabled>
 							</div>
-						</div>
+						</div>						
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">主要工程師姓名</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cMainEngineerName" id="tbx_cMainEngineerName" class="form-control" placeholder="主要工程師" value="@ViewBag.cMainEngineerName" title="@ViewBag.cMainEngineerName" disabled>
+							<label class="col-lg-2 col-form-label">合約書</label>
+							<div class="col-lg-10">
+							@{
+								if (ViewBag.IsCanRead == "Y" && ViewBag.IsShowOldURL == "Y")
+								{
+									<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>									
+								}
+								else if (ViewBag.IsCanRead == "Y" && ViewBag.IsShowOldURL == "N")
+								{
+									<!-- 檔案上傳start-->
+									<div class="form-group row">
+										<div class="col-lg-3 dropzone" id="zone_1">
+											<div class="fallback file-box">
+												<input name="file" type="file" multiple />
+											</div>
+										</div>
+										<div class="col-lg-9">
+											<div class="attachment" id="filezone_1"></div>
+											<input type="hidden" class="fileids" name="hid_filezone_1" id="hid_filezone_1" value="@ViewBag.cContractReport" />
+										</div>
+									</div>
+									<!-- 檔案上傳end-->
+								}
+								else
+								{
+									<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
+								}
+							}								
 							</div>
-							<label class="col-lg-2 col-form-label">合約書link</label>
-							<div class="col-lg-4">
-								@{
-									if (ViewBag.IsCanRead == "Y")
-									{
-											<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cContractID</a>
-									}
-									else
-									{
-											<label class="col-form-label" style="color:blue;">您無權限查閱！</label>
-									}
-								}								
-							</div>
-						</div>											
+						</div>
 						<div class="hr-line-dashed"></div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">請款期間</label>
@@ -805,13 +843,13 @@
 								{
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
-											<tr>
-												<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
-												<td>@Html.Raw(QueryInfo[2])</td>
-												<td>@Html.Raw(QueryInfo[3])</td>
-												<td>@Html.Raw(QueryInfo[4])</td>
-												<td><a href="@QueryInfo[5]">查詢</a></td>
-											</tr>
+															<tr>
+																<td><a href="@QueryInfo[1]">@QueryInfo[0]</a></td>
+																<td>@Html.Raw(QueryInfo[2])</td>
+																<td>@Html.Raw(QueryInfo[3])</td>
+																<td>@Html.Raw(QueryInfo[4])</td>
+																<td><a href="@QueryInfo[5]">查詢</a></td>
+															</tr>
 									}
 								}
 							}
