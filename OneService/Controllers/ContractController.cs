@@ -200,6 +200,11 @@ namespace OneService.Controllers
             getLoginAccount();
             getEmployeeInfo();
 
+            #region 服務團隊
+            var selectTeamList = CMF.findSRTeamIDList(pCompanyCode, false);
+            ViewBag.ddl_cTeamID = selectTeamList;
+            #endregion
+
             return View();
         }
         #endregion
@@ -218,9 +223,10 @@ namespace OneService.Controllers
         /// <param name="cStartDate">合約期間(起)</param>
         /// <param name="cEndDate">合約期間(迄)</param>
         /// <param name="cAssignMainEngineer">未指派主要工程師(Y.未指派)</param>
+        /// <param name="cTeamID">服務團隊(新)</param>
         /// <returns></returns>
         public IActionResult QueryContractMainResult(string cIsSubContract, string cContractID, string cCustomerID, string cCustomerName, 
-                                                   string cSoSales, string cMASales, string cMainEngineerID, string cStartDate, string cEndDate, string cAssignMainEngineer)
+                                                   string cSoSales, string cMASales, string cMainEngineerID, string cStartDate, string cEndDate, string cAssignMainEngineer, string cTeamID)
         {
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
@@ -230,6 +236,7 @@ namespace OneService.Controllers
 
             string ttWhere = string.Empty;
             string ttSelect = string.Empty;
+            string ttStrItem = string.Empty;
             string tUrl = string.Empty;
             string tIsSubContract = string.Empty;
             string tStartDate = string.Empty;
@@ -310,6 +317,36 @@ namespace OneService.Controllers
             {
                 ttSelect = "'' as cEngineerID,'' as cEngineerName";
                 ttWhere += "AND (select count(*) from TB_ONE_ContractDetail_ENG D where M.cContractID = D.cContractID) = 0 " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 服務團隊
+            if (!string.IsNullOrEmpty(cTeamID))
+            {
+                ttStrItem = "";
+                string[] tAryTeam = cTeamID.TrimEnd(',').Split(',');
+
+                if (tAryTeam.Length >= 0)
+                {
+                    ttStrItem = "AND (";
+                }
+
+                foreach (string tTeam in tAryTeam)
+                {
+                    ttStrItem += " M.cTeamID like N'%" + tTeam + "%' or";
+                }
+
+                if (tAryTeam.Length >= 0)
+                {
+                    if (ttStrItem.EndsWith("or"))
+                    {
+                        ttStrItem = ttStrItem.Substring(0, ttStrItem.Length - 2); //去除最後一個or  
+                    }
+
+                    ttStrItem += ") ";
+                }
+
+                ttWhere += ttStrItem + Environment.NewLine;
             }
             #endregion
 

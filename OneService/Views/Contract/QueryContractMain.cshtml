@@ -260,10 +260,11 @@
 			var tbx_cStartDate = $('#tbx_cStartDate');					//合約期間(起)
 			var tbx_cEndDate = $('#tbx_cEndDate');						//合約期間(迄)
 			var hid_cAssignMainEngineer = $("#hid_cAssignMainEngineer");	//未指派主要工程師
+			var cTeamID = $("#ddl_cTeamID").val().join();			    //服務團隊
 
 			if (tbx_cContractID.val() == "" && tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && 
-			    tbx_cSoSales.val() == "" && tbx_cMASales.val() == "" && tbx_cMainEngineerID.val() == "" && 
-				tbx_cStartDate.val() == "" && tbx_cEndDate.val() == "" && hid_cAssignMainEngineer.val() == "") 
+			    tbx_cSoSales.val() == "" && tbx_cMASales.val() == "" && tbx_cMainEngineerID.val() == "" &&
+				tbx_cStartDate.val() == "" && tbx_cEndDate.val() == "" && hid_cAssignMainEngineer.val() == "" && cTeamID == "") 
 			{
 
 				tMsg += "除【合約類型】之外，請至少輸入一項查詢條件！\n";
@@ -285,14 +286,14 @@
 			else {
 				searchQuery(ddl_cIsSubContract.val(), tbx_cContractID.val(), tbx_cCustomerID.val(), tbx_cCustomerName.val(),
 					tbx_cSoSales.val(), tbx_cMASales.val(), tbx_cMainEngineerID.val(),
-					tbx_cStartDate.val(), tbx_cEndDate.val(), hid_cAssignMainEngineer.val());
+					tbx_cStartDate.val(), tbx_cEndDate.val(), hid_cAssignMainEngineer.val(), cTeamID);
 			}
 
 			return true;
 		}
 
 		//查詢結果
-		function searchQuery(cIsSubContract, cContractID, cCustomerID, cCustomerName, cSoSales, cMASales, cMainEngineerID, cStartDate, cEndDate, cAssignMainEngineer) {
+		function searchQuery(cIsSubContract, cContractID, cCustomerID, cCustomerName, cSoSales, cMASales, cMainEngineerID, cStartDate, cEndDate, cAssignMainEngineer, cTeamID) {
 			$("#dataDiv").html('');
 
 			$.ajax({
@@ -309,7 +310,8 @@
 					cMainEngineerID: cMainEngineerID,
 					cStartDate: cStartDate,
 					cEndDate: cEndDate,
-					cAssignMainEngineer: cAssignMainEngineer					
+					cAssignMainEngineer: cAssignMainEngineer,
+					cTeamID: cTeamID
 				},
 				success: function (result) {
 				},
@@ -334,6 +336,7 @@
 			$('#tbx_cEndDate').val("");
 			$("#chk_cMainEngineerID").iCheck('uncheck'); //拿掉勾勾
 			$("#hid_cAssignMainEngineer").val("");
+			$("#ddl_cTeamID").val("").trigger('chosen:updated');	//服務團隊
 		}
 	</script>
 }
@@ -366,7 +369,7 @@
 						</a>
 					</div>
 				</div>
-				<div class="ibox-content">					
+				<div class="ibox-content">
 					<form id="form1" name="form" action='#' method="post">
 						<!--登人者公司別(Comp-1、Comp-2...)-->
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
@@ -417,7 +420,13 @@
 								<input id="chk_cMainEngineerID" name="chk_cMainEngineerID" type="checkbox">
 								<input type="hidden" id="hid_cAssignMainEngineer" name="hid_cAssignMainEngineer">
 							</label>
-						</div>						
+						</div>
+						<div class="form-group row">							
+							<label class="col-lg-2 col-form-label">服務團隊</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_cTeamID", (IEnumerable<SelectListItem>)ViewBag.ddl_cTeamID, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務團隊" })
+							</div>
+						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">合約期間</label>
 							<div class="input-group col-md-10 col-lg-6">
