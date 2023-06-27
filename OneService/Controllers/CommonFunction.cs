@@ -621,7 +621,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 取得服務團隊清單
         /// </summary>
-        /// <param name="pCompanyCode">公司別(T012、T016、C069、T022)</param>
+        /// <param name="pCompanyCode">公司別(ALL、T012、T016、C069、T022)</param>
         /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>        
         /// <returns></returns>
         public List<SelectListItem> findSRTeamIDList(string pCompanyCode, bool cEmptyOption)
@@ -630,11 +630,19 @@ namespace OneService.Controllers
 
             string tKEY = string.Empty;
             string tNAME = string.Empty;
-            string tSRVID = "SRV." + pCompanyCode.Substring(2, 2);
+            string tSRVID = string.Empty;
 
-            List<TbOneSrteamMapping> TeamList = new List<TbOneSrteamMapping>();          
+            List<TbOneSrteamMapping> TeamList = new List<TbOneSrteamMapping>();
 
-            TeamList = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && (x.CTeamOldId.Contains(tSRVID))).ToList();
+            if (pCompanyCode.ToUpper() != "ALL")
+            {
+                tSRVID = "SRV." + pCompanyCode.Substring(2, 2);
+                TeamList = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && (x.CTeamOldId.Contains(tSRVID))).ToList();
+            }
+            else
+            {
+                TeamList = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0).ToList();
+            }
 
             var tList = new List<SelectListItem>();
 
@@ -667,10 +675,69 @@ namespace OneService.Controllers
         /// <returns></returns>
         public List<SelectListItem> findSRTeamOldIDList(string cOperationID_GenerallySR, string pCompanyCode, bool cEmptyOption)
         {
-            var tList = findSysParameterListItem(cOperationID_GenerallySR, "OTHER", pCompanyCode, "OLDTEAM", cEmptyOption);           
+            var tList = findSRTeamOldIDListItem(cOperationID_GenerallySR, "OTHER", pCompanyCode, "OLDTEAM", cEmptyOption);           
 
             return tList;
         }
+
+        #region 取得服務團隊清單(回傳SelectListItem)
+        /// <summary>
+        /// 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
+        /// </summary>
+        /// <param name="cOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cFunctionID">功能別(OTHER.其他自定義)</param>
+        /// <param name="cCompanyID">公司別(ALL.全集團、T012.大世科、T016.群輝、C069.大世科技上海、T022.協志科)</param>
+        /// <param name="cNo">參數No</param>
+        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>
+        /// <returns></returns>
+        public List<SelectListItem> findSRTeamOldIDListItem(string cOperationID, string cFunctionID, string cCompanyID, string cNo, bool cEmptyOption)
+        {
+            var tList = new List<SelectListItem>();
+            List<string> tTempList = new List<string>();
+
+            string tKEY = string.Empty;
+            string tNAME = string.Empty;
+
+            List<TbOneSysParameter> beans = new List<TbOneSysParameter>();
+
+            if (cCompanyID.ToUpper() != "ALL")
+            {
+                beans = psipDb.TbOneSysParameters.OrderBy(x => x.COperationId).ThenBy(x => x.CFunctionId).ThenBy(x => x.CCompanyId).ThenBy(x => x.CNo).ThenBy(x => x.CValue).
+                                                   Where(x => x.Disabled == 0 &&
+                                                              x.COperationId.ToString() == cOperationID &&
+                                                              x.CFunctionId == cFunctionID.Trim() &&
+                                                              x.CCompanyId == cCompanyID.Trim() &&
+                                                              x.CNo == cNo.Trim()).ToList();
+            }
+            else
+            {
+                 beans = psipDb.TbOneSysParameters.OrderBy(x => x.COperationId).ThenBy(x => x.CFunctionId).ThenBy(x => x.CCompanyId).ThenBy(x => x.CNo).ThenBy(x => x.CValue).
+                                                   Where(x => x.Disabled == 0 &&
+                                                              x.COperationId.ToString() == cOperationID &&
+                                                              x.CFunctionId == cFunctionID.Trim() &&                                                              
+                                                              x.CNo == cNo.Trim()).ToList();
+            }
+
+            if (cEmptyOption)
+            {
+                tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
+            }
+
+            foreach (var bean in beans)
+            {
+                if (!tTempList.Contains(bean.CValue))
+                {
+                    tNAME = bean.CValue + "_" + bean.CDescription;
+
+                    tList.Add(new SelectListItem { Text = tNAME, Value = bean.CValue });
+                    tTempList.Add(bean.CValue);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
         #endregion
 
         #region 取得服務團隊說明By List

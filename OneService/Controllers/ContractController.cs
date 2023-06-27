@@ -201,7 +201,7 @@ namespace OneService.Controllers
             getEmployeeInfo();
 
             #region 服務團隊
-            var selectTeamList = CMF.findSRTeamIDList(pCompanyCode, false);
+            var selectTeamList = CMF.findSRTeamIDList("ALL", false);
             ViewBag.ddl_cTeamID = selectTeamList;
             #endregion
 
@@ -485,7 +485,7 @@ namespace OneService.Controllers
                 ViewBag.cContractReport = beanM.CContractReport;                
 
                 #region 取得服務團隊清單
-                var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, true);
+                var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
                 ViewBag.SRTeamIDList = SRTeamIDList;
                 #endregion
 

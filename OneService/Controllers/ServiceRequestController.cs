@@ -150,12 +150,12 @@ namespace OneService.Controllers
             #endregion
 
             #region 服務團隊(新)
-            var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, false);
+            var SRTeamIDList = CMF.findSRTeamIDList("ALL", false);
             ViewBag.ddl_TeamID = SRTeamIDList;
             #endregion
 
             #region 服務團隊(舊)
-            var SRTeamOldIDList = CMF.findSRTeamOldIDList(pOperationID_GenerallySR, pCompanyCode, false);
+            var SRTeamOldIDList = CMF.findSRTeamOldIDList(pOperationID_GenerallySR, "ALL", false);
             ViewBag.ddl_TeamOldID = SRTeamOldIDList;
             #endregion
 
@@ -530,7 +530,7 @@ namespace OneService.Controllers
 
             DataTable dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
 
-            var tSRTeam_List = CMF.findSRTeamIDList(pCompanyCode, false);
+            var tSRTeam_List = CMF.findSRTeamIDList("ALL", false);
 
             foreach (DataRow dr in dt.Rows)
             {
@@ -689,7 +689,7 @@ namespace OneService.Controllers
             #endregion
 
             #region 服務團隊
-            var selectTeamList = CMF.findSRTeamIDList(pCompanyCode, false);
+            var selectTeamList = CMF.findSRTeamIDList("ALL", false);
             ViewBag.ddl_cTeamID = selectTeamList;
             #endregion
 
@@ -773,7 +773,7 @@ namespace OneService.Controllers
             List<string> tListAssAndTech = new List<string>();                          //記錄所有協助工程師和所有技術主管的ERPID
             Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();  //記錄所有協助工程師和所有技術主管的<ERPID,中、英文姓名>
 
-            var tSRTeam_List = CMF.findSRTeamIDList(cCompanyID, false);
+            var tSRTeam_List = CMF.findSRTeamIDList("ALL", false);
             var tSRContact_List = CMF.findSRDetailContactList();            
             List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
             List<SelectListItem> ListStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, cCompanyID);
@@ -1192,7 +1192,7 @@ namespace OneService.Controllers
             #endregion
 
             #region 取得服務團隊清單
-            var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, true);           
+            var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);           
             #endregion
 
             #region 取得SRID
@@ -3378,7 +3378,7 @@ namespace OneService.Controllers
             #endregion
 
             #region 取得服務團隊清單
-            var SRTeamIDList = CMF.findSRTeamIDList(pCompanyCode, true);
+            var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
             #endregion
 
             #region 取得SRID
@@ -6480,7 +6480,7 @@ namespace OneService.Controllers
             #region 服務團隊ID
             public string ddl_cQueryTeamID { get; set; }
             public string ddl_cTeamID { get; set; }
-            public List<SelectListItem> ListTeamID = findSRTeamMappingListItem(pCompanyCode, true);
+            public List<SelectListItem> ListTeamID = findSRTeamMappingListItem("ALL", true);
             #endregion          
         }
         #endregion
