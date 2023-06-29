@@ -183,7 +183,7 @@
 									obj.autocomplete({
 										source: Customers,
 										select: function (event, ui) {
-											$("#tbx_cCustomerName").val(ui.item.Name);
+											$("#lbl_QueryCustomerID").html(ui.item.Name);
 										}
 									}).bind('focus', function () { $(this).autocomplete("search"); });
 
@@ -225,14 +225,20 @@
 										objects[i] = {
 											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
 											idx: i,
+											Name: idata.CEmployeeCName + "\\" + idata.CEmployeeEname,
 											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉
 										};
 									});
 
 									//綁定foucs事件
 									obj.autocomplete({
-										source: objects
-									}).bind('focus', function () { obj.autocomplete("search"); });
+										source: objects,
+										select: function (event, ui) {
+											if (ojbID.indexOf('tbx_QueryEngineerID') >= 0) {
+												$('#lbl_QueryEngineerID').html(ui.item.Name);
+											}											
+										}
+									}).bind('focus', function () { $(this).autocomplete("search"); });
 
 									//開啟autocomplete選單
 									obj.focus();
@@ -415,17 +421,19 @@
 
 		//清除
 		function clearSRReport() {
-			$('#tbx_cStartCreatedDate').val("");
-			$('#tbx_cEndCreatedDate').val("");
+			$('#tbx_cStartCreatedDate').val($('#hid_initSDate').val());
+			$('#tbx_cEndCreatedDate').val($('#hid_initEDate').val());
 			$('#tbx_cStartFinishTime').val("");
 			$('#tbx_cEndFinishTime').val("");
 			$("#tbx_QuerySRID").val("");
 			$('#tbx_QueryCustomerID').val("");
+			$("#lbl_QueryCustomerID").html("");
 			$("#tbx_QueryRepairName").val("");
 			$("#tbx_QueryRepairAddress").val("");
 			$("#tbx_QuerySerialID").val("");
 			$("#tbx_QueryPID").val("");			
 			$("#tbx_QueryEngineerID").val("");
+			$('#lbl_QueryEngineerID').html("");
 			$("#tbx_QueryContractID").val("");
 			$("#tbx_QuerySO").val("");
 			$("#tbx_QueryXCHP").val("");
@@ -480,12 +488,16 @@
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 						<!--登人者工廠別-->
 						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+						<!--初始起始日期-->
+						<input type="hidden" id="hid_initSDate" name="hid_initSDate" value="@ViewBag.cStartCreatedDate">
+						<!--初始結束日期-->
+						<input type="hidden" id="hid_initEDate" name="hid_initEDate" value="@ViewBag.cEndCreatedDate">
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">建立日期</label>
 							<div class="input-group col-md-10 col-lg-6">
 								<span class="input-group-addon">起</span>
-								<input type="text" name="tbx_cStartCreatedDate" id="tbx_cStartCreatedDate" class="calendar form-control" placeholder="起始日期"><span class="input-group-addon">迄</span>
-								<input type="text" name="tbx_cEndCreatedDate" id="tbx_cEndCreatedDate" class="calendar form-control" placeholder="結束日期">
+								<input type="text" name="tbx_cStartCreatedDate" id="tbx_cStartCreatedDate" class="calendar form-control" placeholder="起始日期" value="@ViewBag.cStartCreatedDate"><span class="input-group-addon">迄</span>
+								<input type="text" name="tbx_cEndCreatedDate" id="tbx_cEndCreatedDate" class="calendar form-control" placeholder="結束日期" value="@ViewBag.cEndCreatedDate">
 							</div>
 						</div>
 						<div class="form-group row">
@@ -504,6 +516,7 @@
 							<label class="col-lg-2 col-form-label">客戶代號</label>
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QueryCustomerID" name="tbx_QueryCustomerID" class="form-control CustName" placeholder="請輸入客戶統編或名稱關鍵字">
+								<label id="lbl_QueryCustomerID" class="col-form-label" style="color:blue;"></label>
 							</div>
 						</div>
 						<div class="form-group row">
@@ -544,6 +557,7 @@
 							<label class="col-lg-2 col-form-label">工程師ERPID</label>
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QueryEngineerID" name="tbx_QueryEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+								<label id="lbl_QueryEngineerID" class="col-form-label" style="color:blue;"></label>
 							</div>							
 						</div>
 						<div class="form-group row">							
@@ -689,74 +703,74 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-									<tr id='tr@(count)'>
-										<td>
-											@if (QueryInfo[58] == "Y")
+											<tr id='tr@(count)'>
+												<td>
+													@if (QueryInfo[58] == "Y")
 											{
-												<a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a>
+														<a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a>
 											}
 											else
 											{
-												@Html.Raw(QueryInfo[0])
+														@Html.Raw(QueryInfo[0])
 											}
-										</td>
-										<td>@Html.Raw(QueryInfo[2])</td>
-										<td>@Html.Raw(QueryInfo[3])</td>
-										<td>@Html.Raw(QueryInfo[4])</td>
-										<td>@Html.Raw(QueryInfo[5])</td>
-										<td>@Html.Raw(QueryInfo[6])</td>
-										<td>@Html.Raw(QueryInfo[7])</td>
-										<td>@Html.Raw(QueryInfo[8])</td>
-										<td>@Html.Raw(QueryInfo[9])</td>
-										<td>@Html.Raw(QueryInfo[10])</td>
-										<td>@Html.Raw(QueryInfo[11])</td>
-										<td>@Html.Raw(QueryInfo[12])</td>
-										<td>@Html.Raw(QueryInfo[13])</td>
-										<td>@Html.Raw(QueryInfo[14])</td>
-										<td>@Html.Raw(QueryInfo[15])</td>
-										<td>@Html.Raw(QueryInfo[16])</td>
-										<td>@Html.Raw(QueryInfo[17])</td>
-										<td>@Html.Raw(QueryInfo[18])</td>
-										<td>@Html.Raw(QueryInfo[19])</td>
-										<td>@Html.Raw(QueryInfo[20])</td>
-										<td>@Html.Raw(QueryInfo[21])</td>
-										<td>@Html.Raw(QueryInfo[22])</td>
-										<td>@Html.Raw(QueryInfo[23])</td>
-										<td>@Html.Raw(QueryInfo[24])</td>
-										<td>@Html.Raw(QueryInfo[25])</td>
-										<td>@Html.Raw(QueryInfo[26])</td>
-										<td>@Html.Raw(QueryInfo[27])</td>
-										<td>@Html.Raw(QueryInfo[28])</td>
-										<td>@Html.Raw(QueryInfo[29])</td>
-										<td>@Html.Raw(QueryInfo[30])</td>
-										<td>@Html.Raw(QueryInfo[31])</td>
-										<td>@Html.Raw(QueryInfo[32])</td>
-										<td>@Html.Raw(QueryInfo[33])</td>
-										<td>@Html.Raw(QueryInfo[34])</td>
-										<td>@Html.Raw(QueryInfo[35])</td>
-										<td>@Html.Raw(QueryInfo[36])</td>
-										<td><a href="@QueryInfo[37]" target="_blank">@QueryInfo[37]</a></td>										
-										<td>@Html.Raw(QueryInfo[38])</td>
-										<td>@Html.Raw(QueryInfo[39])</td>
-										<td>@Html.Raw(QueryInfo[40])</td>
-										<td>@Html.Raw(QueryInfo[41])</td>
-										<td>@Html.Raw(QueryInfo[42])</td>
-										<td>@Html.Raw(QueryInfo[43])</td>
-										<td>@Html.Raw(QueryInfo[44])</td>
-										<td>@Html.Raw(QueryInfo[45])</td>
-										<td>@Html.Raw(QueryInfo[46])</td>
-										<td>@Html.Raw(QueryInfo[47])</td>
-										<td>@Html.Raw(QueryInfo[48])</td>
-										<td>@Html.Raw(QueryInfo[49])</td>
-										<td>@Html.Raw(QueryInfo[50])</td>
-										<td>@Html.Raw(QueryInfo[51])</td>
-										<td>@Html.Raw(QueryInfo[52])</td>
-										<td>@Html.Raw(QueryInfo[53])</td>
-										<td>@Html.Raw(QueryInfo[54])</td>
-										<td>@Html.Raw(QueryInfo[55])</td>
-										<td>@Html.Raw(QueryInfo[56])</td>
-										<td>@Html.Raw(QueryInfo[57])</td>
-									</tr>
+												</td>
+												<td>@Html.Raw(QueryInfo[2])</td>
+												<td>@Html.Raw(QueryInfo[3])</td>
+												<td>@Html.Raw(QueryInfo[4])</td>
+												<td>@Html.Raw(QueryInfo[5])</td>
+												<td>@Html.Raw(QueryInfo[6])</td>
+												<td>@Html.Raw(QueryInfo[7])</td>
+												<td>@Html.Raw(QueryInfo[8])</td>
+												<td>@Html.Raw(QueryInfo[9])</td>
+												<td>@Html.Raw(QueryInfo[10])</td>
+												<td>@Html.Raw(QueryInfo[11])</td>
+												<td>@Html.Raw(QueryInfo[12])</td>
+												<td>@Html.Raw(QueryInfo[13])</td>
+												<td>@Html.Raw(QueryInfo[14])</td>
+												<td>@Html.Raw(QueryInfo[15])</td>
+												<td>@Html.Raw(QueryInfo[16])</td>
+												<td>@Html.Raw(QueryInfo[17])</td>
+												<td>@Html.Raw(QueryInfo[18])</td>
+												<td>@Html.Raw(QueryInfo[19])</td>
+												<td>@Html.Raw(QueryInfo[20])</td>
+												<td>@Html.Raw(QueryInfo[21])</td>
+												<td>@Html.Raw(QueryInfo[22])</td>
+												<td>@Html.Raw(QueryInfo[23])</td>
+												<td>@Html.Raw(QueryInfo[24])</td>
+												<td>@Html.Raw(QueryInfo[25])</td>
+												<td>@Html.Raw(QueryInfo[26])</td>
+												<td>@Html.Raw(QueryInfo[27])</td>
+												<td>@Html.Raw(QueryInfo[28])</td>
+												<td>@Html.Raw(QueryInfo[29])</td>
+												<td>@Html.Raw(QueryInfo[30])</td>
+												<td>@Html.Raw(QueryInfo[31])</td>
+												<td>@Html.Raw(QueryInfo[32])</td>
+												<td>@Html.Raw(QueryInfo[33])</td>
+												<td>@Html.Raw(QueryInfo[34])</td>
+												<td>@Html.Raw(QueryInfo[35])</td>
+												<td>@Html.Raw(QueryInfo[36])</td>
+												<td><a href="@QueryInfo[37]" target="_blank">@QueryInfo[37]</a></td>										
+												<td>@Html.Raw(QueryInfo[38])</td>
+												<td>@Html.Raw(QueryInfo[39])</td>
+												<td>@Html.Raw(QueryInfo[40])</td>
+												<td>@Html.Raw(QueryInfo[41])</td>
+												<td>@Html.Raw(QueryInfo[42])</td>
+												<td>@Html.Raw(QueryInfo[43])</td>
+												<td>@Html.Raw(QueryInfo[44])</td>
+												<td>@Html.Raw(QueryInfo[45])</td>
+												<td>@Html.Raw(QueryInfo[46])</td>
+												<td>@Html.Raw(QueryInfo[47])</td>
+												<td>@Html.Raw(QueryInfo[48])</td>
+												<td>@Html.Raw(QueryInfo[49])</td>
+												<td>@Html.Raw(QueryInfo[50])</td>
+												<td>@Html.Raw(QueryInfo[51])</td>
+												<td>@Html.Raw(QueryInfo[52])</td>
+												<td>@Html.Raw(QueryInfo[53])</td>
+												<td>@Html.Raw(QueryInfo[54])</td>
+												<td>@Html.Raw(QueryInfo[55])</td>
+												<td>@Html.Raw(QueryInfo[56])</td>
+												<td>@Html.Raw(QueryInfo[57])</td>
+											</tr>
 								}
 							}
 						}

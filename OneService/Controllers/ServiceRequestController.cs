@@ -181,6 +181,11 @@ namespace OneService.Controllers
             ViewBag.SRTypeThrList = SRTypeThrList;
             #endregion
 
+            #region 建立日期
+            ViewBag.cStartCreatedDate = DateTime.Now.AddMonths(-3).ToString("yyyy-MM-01");
+            ViewBag.cEndCreatedDate = DateTime.Now.ToString("yyyy-MM-dd");
+            #endregion
+
             return View();
         }
 
@@ -273,24 +278,24 @@ namespace OneService.Controllers
             #region 建立日期
             if (!string.IsNullOrEmpty(StartCreatedDate))
             {
-                ttWhere += "AND CreatedDate >= N'" + StartCreatedDate.Replace("/", "-") + "' ";
+                ttWhere += "AND CreatedDate >= N'" + StartCreatedDate.Replace("/", "-") + " 00:00:00' ";
             }
 
             if (!string.IsNullOrEmpty(EndCreatedDate))
             {
-                ttWhere += "AND CreatedDate <= N'" + EndCreatedDate.Replace("/", "-") + "' ";
+                ttWhere += "AND CreatedDate <= N'" + EndCreatedDate.Replace("/", "-") + " 23:59:59' ";
             }
             #endregion
 
             #region 完成時間
             if (!string.IsNullOrEmpty(StartFinishTime))
             {
-                ttWhere += "AND cFinishTime >= N'" + StartFinishTime.Replace("/", "-") + "' ";
+                ttWhere += "AND cFinishTime >= N'" + StartFinishTime.Replace("/", "-") + " 00:00:00' ";
             }
 
             if (!string.IsNullOrEmpty(EndFinishTime))
             {
-                ttWhere += "AND cFinishTime <= N'" + EndFinishTime.Replace("/", "-") + "' ";
+                ttWhere += "AND cFinishTime <= N'" + EndFinishTime.Replace("/", "-") + " 23:59:59' ";
             }
             #endregion
 

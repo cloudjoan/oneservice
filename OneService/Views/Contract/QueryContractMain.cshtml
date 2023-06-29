@@ -225,14 +225,26 @@
 										objects[i] = {
 											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
 											idx: i,
+											Name: idata.CEmployeeCName + "\\" + idata.CEmployeeEname,
 											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉
 										};
 									});
 
 									//綁定foucs事件
 									obj.autocomplete({
-										source: objects
-									}).bind('focus', function () { obj.autocomplete("search"); });
+										source: objects,
+										select: function (event, ui) {											
+											if (ojbID.indexOf('tbx_cSoSales') >= 0) {
+												$('#lbl_cSoSales').html(ui.item.Name);
+											}
+											else if (ojbID.indexOf('tbx_cMASales') >= 0) {
+												$('#lbl_cMASales').html(ui.item.Name);
+											}
+											else if (ojbID.indexOf('tbx_cMainEngineerID') >= 0) {
+												$('#lbl_cMainEngineerID').html(ui.item.Name);
+											}
+										}
+									}).bind('focus', function () { $(this).autocomplete("search"); });
 
 									//開啟autocomplete選單
 									obj.focus();
@@ -330,8 +342,11 @@
 			$("#lbl_cCustomerName").html("");
 			$('#tbx_cCustomerName').val("");
 			$('#tbx_cSoSales').val("");
-			$('#tbx_cMASales').val("");			
+			$('#lbl_cSoSales').html("");
+			$('#tbx_cMASales').val("");
+			$('#lbl_cMASales').html("");
 			$('#tbx_cMainEngineerID').val("");
+			$('#lbl_cMainEngineerID').html("");
 			$('#tbx_cStartDate').val("");
 			$('#tbx_cEndDate').val("");
 			$("#chk_cMainEngineerID").iCheck('uncheck'); //拿掉勾勾
@@ -404,16 +419,19 @@
 							<label class="col-lg-2 col-form-label">業務員ERPID</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSoSales" id="tbx_cSoSales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+								<label id="lbl_cSoSales" class="col-form-label" style="color:blue;"></label>
 							</div>
 							<label class="col-lg-2 col-form-label">維護業務員ERPID</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cMASales" id="tbx_cMASales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+								<label id="lbl_cMASales" class="col-form-label" style="color:blue;"></label>
 							</div>
 						</div>
 						<div class="form-group row">						
 							<label class="col-lg-2 col-form-label">主要工程師ERPID</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cMainEngineerID" id="tbx_cMainEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+								<label id="lbl_cMainEngineerID" class="col-form-label" style="color:blue;"></label>
 							</div>
 							<label class="col-lg-2 i-checks" style="text-align: right;">
 								未指派主要工程師
@@ -486,25 +504,25 @@
 							{
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
-												<tr>
-													<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-													<td>@Html.Raw(QueryInfo[2])</td>
-													<td>@Html.Raw(QueryInfo[3])</td>
-													<td>@Html.Raw(QueryInfo[4])</td>
-													<td>@Html.Raw(QueryInfo[5])</td>
-													<td>@Html.Raw(QueryInfo[6])</td>
-													<td>@Html.Raw(QueryInfo[7])</td>
-													<td>@Html.Raw(QueryInfo[8])</td>
-													<td>@Html.Raw(QueryInfo[9])</td>
-													<td>@Html.Raw(QueryInfo[10])</td>
-													<td>@Html.Raw(QueryInfo[11])</td>
-													<td>@Html.Raw(QueryInfo[12])</td>
-													<td>@Html.Raw(QueryInfo[13])</td>
-													<td>@Html.Raw(QueryInfo[14])</td>
-													<td>@Html.Raw(QueryInfo[15])</td>
-													<td>@Html.Raw(QueryInfo[16])</td>
-													<td>@Html.Raw(QueryInfo[17])</td>											
-												</tr>
+													<tr>
+														<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+														<td>@Html.Raw(QueryInfo[2])</td>
+														<td>@Html.Raw(QueryInfo[3])</td>
+														<td>@Html.Raw(QueryInfo[4])</td>
+														<td>@Html.Raw(QueryInfo[5])</td>
+														<td>@Html.Raw(QueryInfo[6])</td>
+														<td>@Html.Raw(QueryInfo[7])</td>
+														<td>@Html.Raw(QueryInfo[8])</td>
+														<td>@Html.Raw(QueryInfo[9])</td>
+														<td>@Html.Raw(QueryInfo[10])</td>
+														<td>@Html.Raw(QueryInfo[11])</td>
+														<td>@Html.Raw(QueryInfo[12])</td>
+														<td>@Html.Raw(QueryInfo[13])</td>
+														<td>@Html.Raw(QueryInfo[14])</td>
+														<td>@Html.Raw(QueryInfo[15])</td>
+														<td>@Html.Raw(QueryInfo[16])</td>
+														<td>@Html.Raw(QueryInfo[17])</td>											
+													</tr>
 								}
 							}
 						}
