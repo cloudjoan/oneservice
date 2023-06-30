@@ -1,5 +1,5 @@
 ﻿@{
-	ViewData["Title"] = "InstallSR";
+	ViewData["Title"] = "MaintainSR";
 	Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
 
@@ -248,8 +248,9 @@
 		//要略過的清單(textarea)
 		function checkTextareaSkipList(tID)
 		{
-			var ArrayList = ["tbx_MIcMaterialName", "tbx_SFcMaterialName"]; 			
-			return SkiptList(tID, ArrayList);
+			//先不略過
+			//var ArrayList = ["tbx_MIcMaterialName", "tbx_SFcMaterialName"]; 			
+			//return SkiptList(tID, ArrayList);
 		}		
 
 		//執行要略過的清單
@@ -340,9 +341,7 @@
                     var ALLList = ""
 					var listOneLog = "";
 					var listContactChangLog = "";
-					var listContact = "";
-					var listMaterial = "";
-					var listFeedBack = "";
+					var listContact = "";					
 					var listRecord = "";					
 					
 					//↓↓↓↓↓歷史記錄資訊(共用) ↓↓↓↓↓/
@@ -457,89 +456,7 @@
                             + listContact
                             + "</tbody></table></div></div></div>";
 					}
-					//↑↑↑↑↑客戶聯絡人資訊(共用) ↑↑↑↑↑/
-
-					//↓↓↓↓↓物料訊息資訊(裝機) ↓↓↓↓↓/
-					$.each(result.srDetailMaterialInfo, function (i, bean) {
-                        if (bean != null) {
-							var tDate = TransDate(bean.modifiedDate);
-
-                            listMaterial += '<tr>'                                
-                                + "<td style='vertical-align: left;'>" + bean.cMaterialId + "</td>"
-                                + "<td style='vertical-align: left;'>" + bean.cMaterialName + "</td>"
-                                + "<td style='vertical-align: left;'>" + bean.cQuantity + "</td>"
-                                + "<td style='vertical-align: left;'>" + bean.cBasicContent + "</td>"
-								+ "<td style='vertical-align: left;'>" + bean.cMfpnumber + "</td>"
-                                + "<td style='vertical-align: left;'>" + bean.cBrand + "</td>"
-								+ "<td style='vertical-align: left;'>" + bean.cProductHierarchy + "</td>"
-								+ "<td style='vertical-align: left;'>" + tDate + "</td>"
-								+ "<td style='vertical-align: left;'>" + bean.modifiedUserName + "</td>"
-                            + "</tr>";
-						}
-                    });
-
-                    if (listMaterial != "") {
-                        listMaterial = "<div class='col-lg-12'>"
-						    + "	<div class='ibox'>"
-							+ "		<div class='ibox-title'>"
-							+ "			<h5>物料訊息資訊</h5>"
-							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
-							+ "      </div>"
-							+ "      <div class='ibox-content' style='display:none;'>"
-						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
-                            + "				<thead><tr>"                                
-                            + "				<th>物料代號</th>"
-                            + "				<th>料號說明</th>"
-							+ "				<th>數量</th>"
-                            + "				<th>基本內文</th>"
-                            + "				<th>製造商零件號碼</th>"
-							+ "				<th>廠牌</th>"
-                            + "				<th>產品階層</th>"
-							+ "				<th>異動時間</th>"
-                            + "				<th>異動人員</th>"
-                            + "				</tr></thead><tbody>"
-                            + listMaterial
-                            + "</tbody></table></div></div></div>";
-					}
-					//↑↑↑↑↑物料訊息資訊(裝機) ↑↑↑↑↑/
-
-					//↓↓↓↓↓序號回報資訊(裝機) ↓↓↓↓↓/
-					$.each(result.srDetailSerialFeedback, function (i, bean) {
-                        if (bean != null) {
-							var tDate = TransDate(bean.modifiedDate);
-
-                            listFeedBack += '<tr>'                                
-                                + "<td style='vertical-align: left;'>" + bean.cSerialId + "</td>"
-                                + "<td style='vertical-align: left;'>" + bean.cMaterialId + "</td>"
-                                + "<td style='vertical-align: left;'>" + bean.cMaterialName + "</td>"
-                                + "<td style='vertical-align: left;'>" + bean.cConfigReport + "</td>"                                
-								+ "<td style='vertical-align: left;'>" + tDate + "</td>"
-								+ "<td style='vertical-align: left;'>" + bean.modifiedUserName + "</td>"
-                            + "</tr>";
-						}
-                    });
-
-                    if (listFeedBack != "") {
-                        listFeedBack = "<div class='col-lg-12'>"
-						    + "	<div class='ibox'>"
-							+ "		<div class='ibox-title'>"
-							+ "			<h5>序號回報資訊</h5>"
-							+ "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
-							+ "      </div>"
-							+ "      <div class='ibox-content' style='display:none;'>"
-						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
-                            + "				<thead><tr>"     
-							+ "				<th>序號</th>"
-                            + "				<th>物料代號</th>"
-                            + "				<th>料號說明</th>"							
-                            + "				<th>裝機Config檔</th>"
-							+ "				<th>異動時間</th>"
-                            + "				<th>異動人員</th>"
-                            + "				</tr></thead><tbody>"
-                            + listFeedBack
-                            + "</tbody></table></div></div></div>";
-					}
-					//↑↑↑↑↑序號回報資訊(裝機) ↑↑↑↑↑/
+					//↑↑↑↑↑客戶聯絡人資訊(共用) ↑↑↑↑↑/					
 
 					//↓↓↓↓↓處理與工時紀錄資訊(共用) ↓↓↓↓↓/
 					$.each(result.srDetailRecord, function (i, bean) {
@@ -591,7 +508,7 @@
 					}
 					//↑↑↑↑↑處理與工時紀錄資訊(共用) ↑↑↑↑↑/					
 
-					ALLList += listOneLog + listContactChangLog + listContact + listMaterial + listFeedBack + listRecord;
+					ALLList += listOneLog + listContactChangLog + listContact + listRecord;
 
                     $("#tb_ShowHistoryLog").html(ALLList);  
 					callCollapse();
@@ -664,19 +581,14 @@
 			var hid_cCustomerID = $("#hid_cCustomerID");			//客戶ID							
 			var tbx_cDesc = $("#tbx_cDesc");						//說明
 			var tbx_cNotes = $("#tbx_cNotes");						//詳細描述						
-			var tbx_cSalesNo = $("#tbx_cSalesNo");					//銷售訂單號
-			var tbx_cShipmentNo = $("#tbx_cShipmentNo");			//出貨單號			
+			var tbx_cContractID = $("#tbx_cContractID");			//合約編號
 			//var ddl_cSRTypeOne = $("#ddl_cSRTypeOne");				//報修類別(大類)
 			//var ddl_cSRTypeSec = $("#ddl_cSRTypeSec");				//報修類別(中類)
 			//var ddl_cSRTypeThr = $("#ddl_cSRTypeThr");				//報修類別(小類)
 
 			var hid_cTeamID = $("#hid_cTeamID");					//服務團隊
 			var tbx_cMainEngineerName = $("#tbx_cMainEngineerName");	//主要工程師
-			var hid_cMainEngineerID = $("#hid_cMainEngineerID");		//主要工程師ERPID
-			var tbx_cSalesName = $("#tbx_cSalesName");				//業務人員
-			var hid_cSalesID = $("#hid_cSalesID");					//業務人員ERPID
-			var tbx_cSecretaryName = $("#tbx_cSecretaryName");		//業務祕書
-			var hid_cSecretaryID = $("#hid_cSecretaryID");			//業務祕書ERPID
+			var hid_cMainEngineerID = $("#hid_cMainEngineerID");		//主要工程師ERPID			
 
 			if (ddl_cStatus.val() == "") {
 				Msg += "請選擇【狀態】！\n";
@@ -707,12 +619,8 @@
 				Msg += "【詳細描述】不得為空！\n";
 			}
 
-			if (tbx_cSalesNo.val() == "") {
-				Msg += "【銷售訂單號】不得為空！\n";
-			}
-
-			if (tbx_cShipmentNo.val() == "") {
-				Msg += "【出貨單號】不得為空！\n";
+			if (tbx_cContractID.val() == "") {
+				Msg += "【合約編號】不得為空！\n";
 			}
 
 			//if (ddl_cSRTypeOne.val() == "") {
@@ -740,32 +648,10 @@
 
 			if (hid_cMainEngineerID.val() == "") {
 				Msg += "您未下拉選取【主要工程師】，請輸入關鍵字後再重新選取！\n";
-			}
-
-			if (tbx_cSalesName.val() == "") {
-				Msg += "【業務人員】不得為空！\n";
-			}
-
-			if (hid_cSalesID.val() == "") {
-				Msg += "您未下拉選取【業務人員】，請輸入關鍵字後再重新選取！\n";
-			}
-
-			if (tbx_cSecretaryName.val() == "") {
-				Msg += "【業務祕書】不得為空！\n";
-			}
-
-			if (hid_cSecretaryID.val() == "") {
-				Msg += "您未下拉選取【業務祕書】，請輸入關鍵字後再重新選取！\n";
-			}           
+			}			     
 
 			//【聯絡人窗口資訊】明細檢查
-			Msg += checkDetail_CO();
-
-			//【物料訊息資訊】明細檢查
-			Msg += checkDetail_MI();
-
-			//【序號回報資訊】明細檢查
-			Msg += checkDetail_SF();
+			Msg += checkDetail_CO();			
 
 			//【處理與工時紀錄】明細檢查
 			Msg += checkDetail_PE();			
@@ -840,92 +726,7 @@
 			}
 
 			return Msg;
-		}
-
-		//提交前【物料訊息資訊】明細檢查
-		function checkDetail_MI() {
-			var Msg = "";
-			var cStatus = $("#ddl_cStatus").val();			
-            var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
-			var tCount = 0; //記錄目前有效的明細
-
-			var tableName = "tableMI";
-			var trs = $("#" + tableName + " tr");			
-
-			$.each(trs, function (i, itr) {
-				var tds = $(itr).find('td');		
-				var tIsError = false;								//記錄是否有錯誤
-				var objRowNumber = tds.eq(0).children();			//項次
-				var objMaterialID = tds.eq(1).children().eq(0);	//物料代號
-				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
-				var objMaterialName = tds.eq(2).children();		//料號說明
-				var objQuantity = tds.eq(3).children();			//數量				
-
-				if (objMaterialID.val() != undefined) {
-                    if (objDisabled.val() == "0")
-					{
-						if (objMaterialID.val() == "") {
-							Msg += "明細【物料訊息資訊】「項次：" + objRowNumber.html() + "」的【物料代號】不得為空！\n";
-							tIsError = true;
-						}
-
-						if (objMaterialName.val() == "") {
-							Msg += "明細【物料訊息資訊】「項次：" + objRowNumber.html() + "」的【料號說明】不得為空！\n";
-							tIsError = true;
-						}
-
-						if (objQuantity.val() == "") {
-							Msg += "明細【物料訊息資訊】「項次：" + objRowNumber.html() + "」的【數量】不得為空！\n";
-							tIsError = true;
-						}
-
-						if (!tIsError)
-						{
-							tCount++;
-						}
-					}
-                }					
-			})	
-			
-			if (tCount == 0)
-			{
-				Msg += "請至少新增一筆【物料訊息資訊】明細！\n";
-			}
-
-			return Msg;
-		}
-
-		//提交前【序號回報資訊】明細檢查
-		function checkDetail_SF() {
-			var Msg = "";
-			var cStatus = $("#ddl_cStatus").val();						
-            var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
-
-			var tableName = "tableSF";
-			var trs = $("#" + tableName + " tr");			
-
-			$.each(trs, function (i, itr) {
-				var tds = $(itr).find('td');
-				var objRowNumber = tds.eq(0).children();			//項次
-				var objSerialID = tds.eq(1).children().eq(0);		//序號
-				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
-				//var objMaterialID = tds.eq(2).children();			//物料代號
-
-				if (objSerialID.val() != undefined) {                    
-					if (objDisabled.val() == "0"){
-						if (objSerialID.val() == "") {
-							Msg += "明細【序號回報資訊】「項次：" + objRowNumber.html() + "」的【序號】不得為空！\n";
-						}						
-
-						//if (objMaterialID.val() == "") {
-						//	Msg += "明細【序號回報資訊】「項次：" + objRowNumber.html() + "」的【物料代號】不得為空！\n";
-						//}						
-					}
-                }				
-			})			
-
-			return Msg;
-		}
+		}		
 
 		//提交前【處理與工時紀錄】明細檢查
 		function checkDetail_PE() {
@@ -2203,194 +2004,7 @@
 			$('#' + rowId).hide();
 			$('#hid_COcDisabled' + tNo).val("1");
 		}
-		//-----↑↑↑↑↑客戶聯絡窗口資訊 ↑↑↑↑↑-----
-
-		//-----↓↓↓↓↓物料訊息檔 ↓↓↓↓↓-----		
-
-		//新增明細
-		function AddDetailItem_Material(tableName) {
-			trMaterialNoCount = $("input[name='hid_trMaterialNo']").val();
-
-			if (trMaterialNoCount == "" || trMaterialNoCount == "0") {
-				trMaterialNoCount = 1;
-			}
-			else {
-				trMaterialNoCount = parseInt(trMaterialNoCount) + 1;
-			}
-
-			$("input[name='hid_trMaterialNo']").val(trMaterialNoCount);
-
-			var RowNumber = SetMIRowNumber();			
-			var MaterialID = SetMIMaterialID();
-			var MaterialName = SetMIMaterialName();
-			var Quantity = SetMIQuantity();
-			var BasicContent = SetMIBasicContent();
-			var MFPNumber = SetMIMFPNumber();
-			var Brand = SetMIBrand();
-			var ProductHierarchy = SetMIProductHierarchy();			
-			var tDelButton = SetMIDelButton();
-
-			var tAlltd = RowNumber + MaterialID + MaterialName + Quantity + BasicContent + MFPNumber + Brand + ProductHierarchy + tDelButton;
-
-			$("#" + tableName).append("<tr id='trMA" + trMaterialNoCount + "'>" + tAlltd + "</tr>");
-			
-			findMaterialByKeyword();	//用關鍵字查詢物料
-			initRow();
-		}
-
-		//組項次
-		function SetMIRowNumber() {
-			var reValue = "<td><label name='lbl_MIRowNumber' style='font-size:14pt'>"+ trMaterialNoCount +"</label></td>";
-			return reValue;
-		}
-
-		//組物料代號
-		function SetMIMaterialID() {
-			var reValue = "<td><input type='text' name='tbx_MIcMaterialID' id='tbx_MIcMaterialID" + trMaterialNoCount + "' class='form-control material' style='width:150px;' placeholder='請輸入料號或料號說明的關鍵字'>";
-			    reValue += "<input type='hidden' name='hid_MIcDisabled' id='hid_MIcDisabled" + trMaterialNoCount + "' value='0'></td>";
-			return reValue;
-		}
-
-		//組料號說明
-		function SetMIMaterialName() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_MIcMaterialName' id='tbx_MIcMaterialName" + trMaterialNoCount + "' readonly></textarea></td>";
-			return reValue;
-		}
-
-		//組數量
-		function SetMIQuantity() {
-			var reValue = "<td><input type='text' name='tbx_MIcQuantity' id='tbx_MIcQuantity" + trMaterialNoCount + "' class='form-control Quantity' style='width:100px;' placeholder='數量'></td>";
-			return reValue;
-		}
-
-		//組基本內文
-		function SetMIBasicContent() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='基本內文' name='tbx_MIcBasicContent' id='tbx_MIcBasicContent" + trMaterialNoCount + "' readonly></textarea></td>";
-			return reValue;
-		}
-
-		//組製造商零件號碼
-		function SetMIMFPNumber() {
-			var reValue = "<td><input type='text' name='tbx_MIcMFPNumber' id='tbx_MIcMFPNumber" + trMaterialNoCount + "' class='form-control' style='width:150px;' placeholder='製造商零件號碼' readonly></td>";
-			return reValue;
-		}
-
-		//組廠牌
-		function SetMIBrand() {
-			var reValue = "<td><input type='text' name='tbx_MIcBrand' id='tbx_MIcBrand" + trMaterialNoCount + "' class='form-control' style='width:150px;' placeholder='廠牌' readonly></td>";
-			return reValue;
-		}
-
-		//組產品階層
-		function SetMIProductHierarchy() {
-			var reValue = "<td><input type='text' name='tbx_MIcProductHierarchy' id='tbx_MIcProductHierarchy" + trMaterialNoCount + "' class='form-control' style='width:150px;' placeholder='產品階層' readonly></td>";
-			return reValue;
-		}
-
-		//組刪除按鈕
-		function SetMIDelButton() {
-			var tTrID = $("input[name='hid_trMaterialNo']").val();
-			var reValue = "<td><button name='btn_MaterialDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Material('trMA" + tTrID + "','" + trMaterialNoCount + "');><i class='fa fa-trash'></i></td>";
-			return reValue;
-		}		
-
-		//刪除明細
-		function DelDetailItem_Material(rowId, tNo) {			
-			$('#' + rowId).hide();
-			$('#hid_MIcDisabled' + tNo).val("1");
-		}		
-		//-----↑↑↑↑↑物料訊息檔 ↑↑↑↑↑-----
-
-		//-----↓↓↓↓↓序號回報檔 ↓↓↓↓↓-----		
-
-		//新增明細
-		function AddDetailItem_Serial(tableName) {
-			trSerialNoCount = $("input[name='hid_trSerialNo']").val();
-
-			if (trSerialNoCount == "" || trSerialNoCount == "0") {
-				trSerialNoCount = 1;
-			}
-			else {
-				trSerialNoCount = parseInt(trSerialNoCount) + 1;
-			}
-
-			$("input[name='hid_trSerialNo']").val(trSerialNoCount);
-
-			var RowNumber = SetSFRowNumber();
-			var SerialID = SetSFSerialID();	
-			var MaterialID = SetSFMaterialID();
-			var MaterialName = SetSFMaterialName();
-			var SRConfig = SetSRConfig();	
-			var tDelButton = SetSFDelButton();
-
-			var tAlltd = RowNumber + SerialID + MaterialID + MaterialName + SRConfig + tDelButton;
-
-			$("#" + tableName).append("<tr id='trSF" + trSerialNoCount + "'>" + tAlltd + "</tr>");
-
-			hidePopupInit_Serial();		//檔案元件
-			SerialSearch();				//產品序號資訊查詢
-			findMaterialByKeyword();	//用關鍵字查詢物料
-		}
-
-		//組項次
-		function SetSFRowNumber() {
-			var reValue = "<td><label name='lbl_SFRowNumber' style='font-size:14pt'>"+ trSerialNoCount +"</label></td>";
-			return reValue;
-		}
-		
-		//組序號
-		function SetSFSerialID() {
-			var reValue = "<td><input type='text' name='tbx_SFcSerialID' id='tbx_SFcSerialID" + trSerialNoCount + "' class='form-control Serial' style='width:200px;' placeholder='請輸入序號關鍵字查詢'>";			    
-				reValue += "<input type='hidden' name='hid_SFcDisabled' id='hid_SFcDisabled" + trSerialNoCount + "' value='0'></td>";
-			return reValue;
-		}			
-
-		//組物料代號
-		function SetSFMaterialID() {
-			var reValue = "<td><input type='text' name='tbx_SFcMaterialID' id='tbx_SFcMaterialID" + trSerialNoCount + "' class='form-control material' style='width:150px;' placeholder='請輸入料號或料號說明的關鍵字'></td>";
-			return reValue;
-		}
-
-		//組料號說明
-		function SetSFMaterialName() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_SFcMaterialName' id='tbx_SFcMaterialName" + trSerialNoCount + "' readonly></textarea></td>";
-			return reValue;
-		}
-
-		//組裝機Config檔
-		function SetSRConfig() {
-			 var reValue = "<td>";
-				reValue += "		<div class='dropzone' id='zoneSF_" + trSerialNoCount + "' style='width: 200px; min-height: 100px !important; padding: 0px; display: block !important;'>";
-				reValue += "		<div class='fallback file-box'><input name='file' type='file' multiple /></div>";
-				reValue += "		<div class='attachment' id='filezoneSF_" + trSerialNoCount + "'></div>";
-				reValue += "		<input type='hidden' class='fileids' name='hid_filezoneSF' id='hid_filezoneSF_" + trSerialNoCount + "' value='' />";
-				reValue += "</td>";
-
-			return reValue;
-		}
-
-		//組刪除按鈕
-		function SetSFDelButton()
-		{
-			var tTrID = $("input[name='hid_trSerialNo']").val();
-			var reValue = "<td><button name='btn_SerialDel' class='btn btn-danger' type='button' onclick=DelDetailItem_Serial('trSF" + tTrID + "','" + trSerialNoCount + "');><i class='fa fa-trash'></i></button></td>";
-			return reValue;
-		}		
-
-		//刪除明細
-		function DelDetailItem_Serial(rowId, tNo) {			
-			$('#' + rowId).hide();
-			$('#hid_SFcDisabled' + tNo).val("1");
-		}
-
-		//序號回報(For新增時呼叫)
-		function hidePopupInit_Serial() {
-            setTimeout(function () {                
-				initfile();
-            }, 500);
-
-        }
-		//-----↑↑↑↑↑序號回報檔 ↑↑↑↑↑-----		
+		//-----↑↑↑↑↑客戶聯絡窗口資訊 ↑↑↑↑↑-----		
 		
 		//-----↓↓↓↓↓處理與工時紀錄 ↓↓↓↓↓-----		
 
@@ -2688,13 +2302,13 @@
 
 	@section breadcrumb_section{
 	<div class="col-lg-10">
-		<h2>裝機服務</h2>
+		<h2>定維服務</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
 				<a href="#">服務管理</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>裝機服務</strong>
+				<strong>定維服務</strong>
 			</li>
 		</ol>
 	</div>
@@ -2706,7 +2320,7 @@
 			<div class="ibox ">
 				<div class="ibox-title">
 					<h5>
-						裝機資訊						
+						定維資訊						
 					</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
@@ -2772,7 +2386,7 @@
 							<input type="hidden" id="hid_cLoginUser_CostCenterID" name="hid_cLoginUser_CostCenterID" value="@ViewBag.cLoginUser_CostCenterID">
 							<!--登人者是否為主管-->
 							<input type="hidden" id="hid_cLoginUser_IsManager" name="hid_cLoginUser_IsManager" value="@ViewBag.pIsManager">
-							<!--程式作業編號檔系統ID(裝機服務)-->
+							<!--程式作業編號檔系統ID(定維服務)-->
 							<input type="hidden" id="hid_OperationID" name="hid_OperationID" value="@ViewBag.pOperationID">
 							<label class="col-lg-2 col-form-label">*狀態</label>
 							<div class="col-lg-4">
@@ -2820,25 +2434,7 @@
 								</div>
 								<!-- 檔案上傳end-->
 							</div>
-						</div>
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">備料服務通知單文件</label>
-							<div class="col-lg-10">
-								<!-- 檔案上傳start-->
-								<div class="form-group row">
-									<div class="col-lg-3 dropzone" id="zone_2">
-										<div class="fallback file-box">
-											<input name="file" type="file" multiple />
-										</div>
-									</div>
-									<div class="col-lg-9">
-										<div class="attachment" id="filezone_2"></div>
-										<input type="hidden" class="fileids" name="hid_filezone_2" id="hid_filezone_2" value="@ViewBag.cAttachementStockNo" />
-									</div>
-								</div>
-								<!-- 檔案上傳end-->
-							</div>
-						</div>
+						</div>					
 
 						<div class="hr-line-dashed"></div>
 						
@@ -2851,14 +2447,10 @@
 							</div>							
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">*銷售訂單號</label>
+							<label class="col-lg-2 col-form-label">*合約編號</label>
 							<div class="col-lg-4">								
-								<input type="text" id="tbx_cSalesNo" name="tbx_cSalesNo" class="form-control" placeholder="銷售訂單號" value="@ViewBag.cSalesNo" title="@ViewBag.cSalesNo">
-							</div>
-							<label class="col-lg-2 col-form-label">*出貨單號</label>
-							<div class="col-lg-4">								
-								<input type="text" id="tbx_cShipmentNo" name="tbx_cShipmentNo" class="form-control" placeholder="出貨單號" value="@ViewBag.cShipmentNo" title="@ViewBag.cShipmentNo">
-							</div>
+								<input type="text" id="tbx_cContractID" name="tbx_cContractID" class="form-control" placeholder="合約編號" value="@ViewBag.cContractID" title="@ViewBag.cContractID">
+							</div>							
 						</div>						
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">延遲結案原因</label>
@@ -2991,169 +2583,11 @@
 												</button>
 											</div>
 										</div>										
-									</div>									
-									<div class="form-group row">
-										<label class="col-lg-2 col-form-label">*業務人員</label>
-										<div class="col-lg-4">
-											<input type="text" id="tbx_cSalesName" name="tbx_cSalesName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSalesName">
-											<input type="hidden" id="hid_cSalesID" name="hid_cSalesID" value="@ViewBag.cSalesID" />
-										</div>
-										<label class="col-lg-2 col-form-label">*業務祕書</label>
-										<div class="col-lg-4">
-											<input type="text" id="tbx_cSecretaryName" name="tbx_cSecretaryName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSecretaryName">
-											<input type="hidden" id="hid_cSecretaryID" name="hid_cSecretaryID" value="@ViewBag.cSecretaryID" />
-										</div>										
 									</div>
 								</div>
 							</div>
 						</div>
-
-						<!--物料訊息資訊-->
-						<div class="col-lg-12">
-							<div class="ibox ">
-								<div class="ibox-title">
-									<h5>
-										*物料訊息資訊
-										<button type="button" class="btn btn-success" onclick="AddDetailItem_Material('tableMI');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
-									</h5>
-									<div class="ibox-tools">
-										<a class="collapse-link">
-											<i class="fa fa-chevron-up"></i>
-										</a>
-									</div>
-								</div>	
-								<div class="ibox-content" style="overflow: scroll">											
-									<table id="tableMI" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-										<thead>
-											<tr>
-												<th>項次</th>														
-												<th>*物料代號</th>
-												<th>*料號說明</th>
-												<th>*數量</th>
-												<th>基本內文</th>
-												<th>製造商零件號碼 </th>
-												<th>廠牌</th>
-												<th>產品階層</th>
-												<th width="130">刪除</th>
-											</tr>
-										</thead>
-										<tbody>
-											@{
-												if (ViewBag.cSRID != "")
-												{
-													int count = 0;
-													foreach (var bean in ViewBag.Detailbean_Material)
-													{
-														count++;
-																	<tr id='trMaterialNo@(count)'>
-																		<td>
-																			<label name='lbl_MIRowNumber' style='font-size:14pt'>@(count)</label>
-																		</td>
-																		<td>
-																			<input type='text' name='tbx_MIcMaterialID' @("id=tbx_MIcMaterialID" + count) class='form-control material' style='width:150px;' placeholder='物料代號' value="@bean.CMaterialId" title="@bean.CMaterialId">
-																			<input type='hidden' name='hid_MIcDisabled' @("id=hid_MIcDisabled" + count) value=@bean.Disabled>																		
-																		</td>																																	
-																		<td>
-																			<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_MIcMaterialName" @("id=tbx_MIcMaterialName" + count) title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
-																		</td>
-																		<td>
-																			<input type='text' name='tbx_MIcQuantity' @("id=tbx_MIcQuantity" + count) class='form-control Quantity' style='width:100px;' placeholder='數量' onkeyup="value=value.replace(/[^\d]/g,'')" value="@bean.CQuantity" title="@bean.CQuantity">
-																		</td>
-																		<td>
-																			<textarea rows="3" class="form-control" style='width:200px;' placeholder="基本內文" name="tbx_MIcBasicContent" title="@bean.CBasicContent" readonly>@bean.CBasicContent</textarea>
-																		</td>																
-																		<td>
-																			<input type='text' name='tbx_MIcMFPNumber' @("id=tbx_MIcMFPNumber" + count) class='form-control' style='width:150px;' placeholder='製造商零件號碼' value="@bean.CMfpnumber" title="@bean.CMfpnumber" disabled>
-																		</td>
-																		<td>
-																			<input type='text' name='tbx_MIcBrand' @("id=tbx_MIcBrand" + count) class='form-control' style='width:150px;' placeholder='廠牌' value="@bean.CBrand" title="@bean.CBrand" disabled>
-																		</td>
-																		<td>
-																			<input type='text' name='tbx_MIcProductHierarchy' @("id=tbx_MIcProductHierarchy" + count) class='form-control' style='width:150px;' placeholder='產品階層' value="@bean.CProductHierarchy" title="@bean.CProductHierarchy" disabled>
-																		</td>
-																		<td>
-																			<button name="btn_MaterialDel" class='btn btn-danger' type='button' onclick="DelDetailItem_Material('trMaterialNo@(count)', '@(count)')" ;><i class='fa fa-trash'></i></button>
-																		</td>																							
-																	</tr>
-													}
-												}
-											}
-										</tbody>
-									</table>
-								</div>							
-							</div>
-						</div>
-
-						<!--序號回報資訊-->
-						<div class="col-lg-12">
-							<div class="ibox ">
-								<div class="ibox-title">
-									<h5>
-										序號回報資訊
-										<button type="button" class="btn btn-success" onclick="AddDetailItem_Serial('tableSF');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
-									</h5>
-									<div class="ibox-tools">
-										<a class="collapse-link">
-											<i class="fa fa-chevron-up"></i>
-										</a>
-									</div>
-								</div>
-								<div class="ibox-content" style="overflow: scroll">											
-									<table id="tableSF" class="table table-striple table-bordered table-hover dataTables-example" style="width:1280px !important">
-										<thead>
-											<tr>
-												<th>項次</th>	
-												<th>*序號</th>
-												<th>物料代號</th>
-												<th>料號說明</th>
-												<th>裝機Config檔</th>
-												<th width="130">刪除</th>
-											</tr>
-										</thead>
-										<tbody>
-											@{
-												if (ViewBag.cSRID != "")
-												{
-													int count = 0;
-													foreach (var bean in ViewBag.Detailbean_Serial)
-													{
-														count++;
-																	<tr id='trSerialNo@(count)'>																	
-																		<td>
-																			<label name='lbl_SFRowNumber' style='font-size:14pt'>@(count)</label>
-																		</td>	
-																		<td>
-																			<input type='text' name='tbx_SFcSerialID' @("id=tbx_SFcSerialID" + count) class='form-control Serial' style='width:200px;' placeholder='序號' value="@bean.CSerialId" title="@bean.CSerialId">																		
-																			<input type='hidden' name='hid_SFcDisabled' @("id=hid_SFcDisabled" + count) value=@bean.Disabled>
-																		</td>															
-																		<td>
-																	<input type='text' name='tbx_SFcMaterialID' @("id=tbx_SFcMaterialID" + count) class='form-control' style='width:150px;' value="@bean.CMaterialId" title="@bean.CMaterialId">
-																		</td>
-																		<td>
-																			<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_SFcMaterialName" @("id=tbx_SFcMaterialName" + count) title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
-																		</td>
-																		<td>
-																			<div class="dropzone" @("id=zoneSF_" + count) style="width: 200px; min-height: 100px !important; padding: 0px;">
-																				<div class="fallback file-box" >
-																					<input name="file" type="file" multiple />
-																				</div>
-																			</div>
-																			<div class="attachment" @("id=filezoneSF_" + count) ></div>
-																			<input type="hidden" class="fileids" name="hid_filezoneSF" @("id=hid_filezoneSF_" + count) value="@bean.CConfigReport" />
-																		</td>
-																		<td>
-																			<button name="btn_SerialDel" class='btn btn-danger' type='button' onclick="DelDetailItem_Serial('trSerialNo@(count)', '@(count)')" ;><i class='fa fa-trash'></i></button>																		
-																		</td>																							
-																	</tr>
-													}
-												}
-											}
-										</tbody>
-									</table>
-								</div>
-							</div>
-						</div>
-
+						
 						<!--處理與工時紀錄-->
 						<div class="col-lg-12">
 							<div class="ibox ">

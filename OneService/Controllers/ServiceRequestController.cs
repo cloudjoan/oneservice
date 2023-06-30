@@ -4198,7 +4198,165 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #endregion -----↑↑↑↑↑裝機服務 ↑↑↑↑↑-----   
+        #endregion -----↑↑↑↑↑裝機服務 ↑↑↑↑↑----- 
+
+        #region -----↓↓↓↓↓定維服務 ↓↓↓↓↓-----
+
+        #region 定維服務index
+        public IActionResult MaintainSR()
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();
+
+            #region 取得登入人員資訊
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
+            ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
+            ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
+            ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
+            ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
+            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
+            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+            ViewBag.cLoginUser_IsManager = EmpBean.IsManager;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+
+            pCompanyCode = EmpBean.BUKRS;
+            #endregion
+
+            var model = new ViewModel_Install();
+
+            #region Request參數            
+            if (HttpContext.Request.Query["SRID"].FirstOrDefault() != null)
+            {
+                pSRID = HttpContext.Request.Query["SRID"].FirstOrDefault();
+            }
+            #endregion
+
+            #region 報修類別
+            //大類
+            var SRTypeOneList = CMF.findFirstKINDList();
+
+            //中類
+            var SRTypeSecList = new List<SelectListItem>();
+            SRTypeSecList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            //小類
+            var SRTypeThrList = new List<SelectListItem>();
+            SRTypeThrList.Add(new SelectListItem { Text = " ", Value = "" });
+            #endregion
+
+            #region 取得服務團隊清單
+            var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
+            #endregion
+
+            #region 取得SRID
+            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
+
+            if (beanM != null)
+            {
+                //記錄目前GUID，用來判斷更新的先後順序
+                ViewBag.pGUID = beanM.CSystemGuid.ToString();
+
+                //判斷登入者是否可以編輯服務案件
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, EmpBean.EmployeeERPID, pIsMIS, pIsCS);
+
+                #region 裝機資訊
+                ViewBag.cSRID = beanM.CSrid;
+                ViewBag.cCustomerID = beanM.CCustomerId;
+                ViewBag.cCustomerName = beanM.CCustomerName;
+                ViewBag.cDesc = beanM.CDesc;
+                ViewBag.cNotes = beanM.CNotes;
+                ViewBag.cAttachement = beanM.CAttachement;
+                ViewBag.cAttachementStockNo = beanM.CAttachementStockNo;
+                ViewBag.cDelayReason = beanM.CDelayReason;
+                ViewBag.cContractID = beanM.CContractId;
+                ViewBag.pStatus = beanM.CStatus;
+
+                ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+                #endregion                
+
+                #region 報修類別
+                if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                {
+                    SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
+                }
+
+                if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
+                {
+                    SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
+                    SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
+                }
+
+                if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
+                {
+                    SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
+                    SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
+                }
+                #endregion              
+
+                #region 服務團隊
+                ViewBag.cTeamID = beanM.CTeamId;
+                ViewBag.cMainEngineerID = beanM.CMainEngineerId;
+                ViewBag.cMainEngineerName = beanM.CMainEngineerName;
+                ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                ViewBag.cSalesID = beanM.CSalesId;
+                ViewBag.cSalesName = beanM.CSalesName;
+                ViewBag.cSecretaryID = beanM.CSecretaryId;
+                ViewBag.cSecretaryName = beanM.CSecretaryName;
+                #endregion
+
+                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
+
+                #region 取得客戶聯絡人資訊(明細)
+                var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                ViewBag.Detailbean_Contact = beansContact;
+                ViewBag.trContactNo = beansContact.Count();
+                #endregion              
+
+                #region 取得工時紀錄檔資訊(明細)
+                var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                ViewBag.Detailbean_Record = beansRecord;
+                ViewBag.trRecordNo = beansRecord.Count();
+                #endregion               
+            }
+            else
+            {
+                ViewBag.cSRID = "";
+                ViewBag.pStatus = "E0001";      //新建
+                ViewBag.cDelayReason = "";      //空值
+                ViewBag.cContractID = "";       //空值                
+            }
+            #endregion
+
+            #region 指派Option值
+            model.ddl_cStatus = ViewBag.pStatus;                //設定狀態            
+            model.ddl_cCustomerType = ViewBag.cCustomerType;     //客戶類型(P.個人 C.法人)
+            #endregion
+
+            ViewBag.SRTypeOneList = SRTypeOneList;
+            ViewBag.SRTypeSecList = SRTypeSecList;
+            ViewBag.SRTypeThrList = SRTypeThrList;
+            ViewBag.SRTeamIDList = SRTeamIDList;
+
+            ViewBag.pOperationID = pOperationID_MaintainSR;
+            ViewBag.pIsCanEditSR = pIsCanEditSR.ToString();  //登入者是否可以編輯服務案件
+
+            return View(model);
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑定維服務 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓服務團隊對照組織設定作業 ↓↓↓↓↓-----
         /// <summary>
