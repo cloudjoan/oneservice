@@ -230,6 +230,7 @@ namespace OneService.Controllers
             bool tIsFormal = false;
             string ttWhere = string.Empty;
             string ttStrItem = string.Empty;
+            string tONEURLName = string.Empty;
             string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
@@ -267,6 +268,7 @@ namespace OneService.Controllers
 
             tIsFormal = ParaBean.IsFormal;
 
+            tONEURLName = ParaBean.ONEURLName;
             tBPMURLName = ParaBean.BPMURLName;
             tPSIPURLName = ParaBean.PSIPURLName;
             tAPIURLName = ParaBean.APIURLName;
@@ -1475,6 +1477,7 @@ namespace OneService.Controllers
             pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
             bool tIsFormal = false;
+            string tONEURLName = string.Empty;
             string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
@@ -1591,7 +1594,8 @@ namespace OneService.Controllers
                 SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
 
                 tIsFormal = ParaBean.IsFormal;
-                
+
+                tONEURLName = ParaBean.ONEURLName;
                 tBPMURLName = ParaBean.BPMURLName;
                 tPSIPURLName = ParaBean.PSIPURLName;
                 tAPIURLName = ParaBean.APIURLName;
@@ -2388,6 +2392,7 @@ namespace OneService.Controllers
             string SDATE = string.Empty;
             string EDATE = string.Empty;
             string tURL = string.Empty;
+            string tONEURLName = string.Empty;
             string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
@@ -2400,6 +2405,7 @@ namespace OneService.Controllers
 
             tIsFormal = ParaBean.IsFormal;
 
+            tONEURLName = ParaBean.ONEURLName;
             tBPMURLName = ParaBean.BPMURLName;
             tPSIPURLName = ParaBean.PSIPURLName;
             tAPIURLName = ParaBean.APIURLName;
@@ -2415,7 +2421,7 @@ namespace OneService.Controllers
             try
             {
                 #region 呼叫RFC並回傳保固SLA Table清單
-                QueryToList = CMF.ZFM_TICC_SERIAL_SEARCHWTYList(ArySERIAL, ref NowCount, tBPMURLName, tPSIPURLName, tAPIURLName);
+                QueryToList = CMF.ZFM_TICC_SERIAL_SEARCHWTYList(ArySERIAL, ref NowCount, tBPMURLName, tONEURLName, tAPIURLName);
                 #endregion
 
                 #region 保固，因RFC已經有回傳所有清單，這邊暫時先不用
@@ -2504,6 +2510,7 @@ namespace OneService.Controllers
             ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
 
             bool tIsFormal = false;
+            string tONEURLName = string.Empty;
             string tBPMURLName = string.Empty;
             string tPSIPURLName = string.Empty;
             string tAPIURLName = string.Empty;
@@ -2514,6 +2521,7 @@ namespace OneService.Controllers
 
             tIsFormal = ParaBean.IsFormal;
 
+            tONEURLName = ParaBean.ONEURLName;
             tBPMURLName = ParaBean.BPMURLName;
             tPSIPURLName = ParaBean.PSIPURLName;
             tAPIURLName = ParaBean.APIURLName;
@@ -2526,7 +2534,7 @@ namespace OneService.Controllers
 
             try
             {                
-                QueryToList = CMF.SEARCHWTYList(cSRID, ref NowCount, tBPMURLName, tPSIPURLName);
+                QueryToList = CMF.SEARCHWTYList(cSRID, ref NowCount, tBPMURLName, tONEURLName);
                 QueryToList = QueryToList.OrderBy(x => x.cSerialID).ThenByDescending(x => x.cWTYEDATE).ToList();
             }
             catch (Exception ex)
@@ -3521,6 +3529,7 @@ namespace OneService.Controllers
 
             int pTotalQuantity = 0;  //總安裝數量
 
+            string tONEURLName = string.Empty;
             string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
@@ -3584,6 +3593,7 @@ namespace OneService.Controllers
 
                 tIsFormal = ParaBean.IsFormal;
 
+                tONEURLName = ParaBean.ONEURLName;
                 tBPMURLName = ParaBean.BPMURLName;
                 tPSIPURLName = ParaBean.PSIPURLName;
                 tAPIURLName = ParaBean.APIURLName;
@@ -6802,7 +6812,9 @@ namespace OneService.Controllers
     public class SRSYSPARAINFO
     {
         /// <summary>呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)</summary>
-        public bool IsFormal { get; set; }        
+        public bool IsFormal { get; set; }
+        /// <summary>OneService URL</summary>
+        public string ONEURLName { get; set; }        
         /// <summary>BPM URL</summary>
         public string BPMURLName { get; set; }
         /// <summary>PSIP URL</summary>

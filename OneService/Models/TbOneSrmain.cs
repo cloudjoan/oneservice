@@ -41,6 +41,8 @@ namespace OneService.Models
         public string? CSalesNo { get; set; }
         public string? CShipmentNo { get; set; }
         public string? CContractId { get; set; }
+        public int? CCountIn { get; set; }
+        public int? CCountOut { get; set; }
         public string? CFaultGroup { get; set; }
         public string? CFaultGroupNote1 { get; set; }
         public string? CFaultGroupNote2 { get; set; }

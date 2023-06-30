@@ -926,6 +926,10 @@ namespace OneService.Models
                     .HasMaxLength(10)
                     .HasColumnName("cContractID");
 
+                entity.Property(e => e.CCountIn).HasColumnName("cCountIN");
+
+                entity.Property(e => e.CCountOut).HasColumnName("cCountOUT");
+
                 entity.Property(e => e.CCustomerId)
                     .HasMaxLength(10)
                     .HasColumnName("cCustomerID");

@@ -162,8 +162,17 @@
 		function onChangecSRTypeSec_EDIT() {
 			AjaxfindSRRepairTypeKindKey("0", $('#ddl_cSRTypeOne').val(), $('#ddl_cSRTypeSec').val());
 			
-			$("#ddl_cKIND_LEVEL").val("3");
-			$("#tbx_cUP_KIND_KEY").val($('#ddl_cSRTypeSec').val());
+			if ($("#ddl_cSRTypeSec").val() == "")
+			{
+				$("#ddl_cKIND_LEVEL").val("2");
+				$("#tbx_cUP_KIND_KEY").val($('#ddl_cSRTypeOne').val());
+			}
+			else
+			{
+				$("#ddl_cKIND_LEVEL").val("3");
+				$("#tbx_cUP_KIND_KEY").val($('#ddl_cSRTypeSec').val());
+			}
+			
 			$("#tbx_cKIND_NAME").val("");
 		}
 
@@ -591,16 +600,16 @@
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
 										count++;
-																			<tr id='tr@(count)'>
-																				<td style="width:100px;">
-																					<button class="btn btn-info" type="button" onclick="EditSRRepairTypeDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
-																					<button class="btn btn-danger" type="button" onclick="deleteSRRepairType('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
-																				</td>
-																				<td class="tdcKIND_KEY">@Html.Raw(QueryInfo[1])</td>
-																				<td class="tdcKIND_NAME">@Html.Raw(QueryInfo[2])</td>
-																				<td class="tdcKIND_LEVEL">@Html.Raw(QueryInfo[3])</td>
-																				<td class="tdcUP_KIND_KEY">@Html.Raw(QueryInfo[4])</td>
-																			</tr>
+																						<tr id='tr@(count)'>
+																							<td style="width:100px;">
+																								<button class="btn btn-info" type="button" onclick="EditSRRepairTypeDialog(this, '@Html.Raw(QueryInfo[0])')" title="修改"><i class="glyphicon glyphicon-pencil"></i></button>
+																								<button class="btn btn-danger" type="button" onclick="deleteSRRepairType('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+																							</td>
+																							<td class="tdcKIND_KEY">@Html.Raw(QueryInfo[1])</td>
+																							<td class="tdcKIND_NAME">@Html.Raw(QueryInfo[2])</td>
+																							<td class="tdcKIND_LEVEL">@Html.Raw(QueryInfo[3])</td>
+																							<td class="tdcUP_KIND_KEY">@Html.Raw(QueryInfo[4])</td>
+																						</tr>
 									}
 								}
 							}
