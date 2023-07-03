@@ -2348,6 +2348,11 @@ namespace OneService.Controllers
                             TempStatus = CStatus + "|TRANS"; //轉單
                         }
 
+                        if (CStatus != "E0001" && OldCStatus != CStatus)
+                        {
+                            TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
+                        }
+
                         beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
@@ -3799,7 +3804,16 @@ namespace OneService.Controllers
                         beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
-                        beanIN.IV_STATUS = "E0001"; //新建
+
+                        if (CMainEngineerId != "")
+                        {
+                            beanIN.IV_STATUS = "E0008|ADD"; //新建但狀態是裝機中
+                        }
+                        else
+                        {
+                            beanIN.IV_STATUS = "E0001|ADD"; //新建
+                        }
+
                         beanIN.IV_APIURLName = tAPIURLName;
 
                         CMF.GetAPI_SRSTATUS_Update(beanIN);
@@ -4175,6 +4189,11 @@ namespace OneService.Controllers
                             TempStatus = CStatus + "|TRANS"; //轉單
                         }
 
+                        if (CStatus != "E0001" && OldCStatus != CStatus)
+                        {
+                            TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
+                        }
+
                         beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
@@ -4232,7 +4251,7 @@ namespace OneService.Controllers
             pCompanyCode = EmpBean.BUKRS;
             #endregion
 
-            var model = new ViewModel_Install();
+            var model = new ViewModel_Maintain();
 
             #region Request參數            
             if (HttpContext.Request.Query["SRID"].FirstOrDefault() != null)
@@ -4399,7 +4418,11 @@ namespace OneService.Controllers
             string OldCMainEngineerName = string.Empty;
             string OldCMainEngineerId = string.Empty;
             string OldCAssEngineerId = string.Empty;
-            
+            string OldCSalesName = string.Empty;
+            string OldCSalesId = string.Empty;
+            string OldCSecretaryName = string.Empty;
+            string OldCSecretaryId = string.Empty;
+
             string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
             string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
             string CCustomerId = formCollection["hid_cCustomerID"].FirstOrDefault();
@@ -4415,7 +4438,11 @@ namespace OneService.Controllers
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CMainEngineerName = formCollection["tbx_cMainEngineerName"].FirstOrDefault();
             string CMainEngineerId = formCollection["hid_cMainEngineerID"].FirstOrDefault();
-            string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();            
+            string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();
+            string CSalesName = formCollection["tbx_cSalesName"].FirstOrDefault();
+            string CSalesId = formCollection["hid_cSalesID"].FirstOrDefault();
+            string CSecretaryName = formCollection["tbx_cSecretaryName"].FirstOrDefault();
+            string CSecretaryId = formCollection["hid_cSecretaryID"].FirstOrDefault();
             string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
 
             SRCondition srCon = new SRCondition();
@@ -4462,7 +4489,11 @@ namespace OneService.Controllers
                     beanM.CTeamId = CTeamId;
                     beanM.CMainEngineerName = CMainEngineerName;
                     beanM.CMainEngineerId = CMainEngineerId;
-                    beanM.CAssEngineerId = CAssEngineerId;                    
+                    beanM.CAssEngineerId = CAssEngineerId;
+                    beanM.CSalesName = CSalesName;
+                    beanM.CSalesId = CSalesId;
+                    beanM.CSecretaryName = CSecretaryName;
+                    beanM.CSecretaryId = CSecretaryId;
 
                     beanM.CSystemGuid = Guid.NewGuid();
                     beanM.CIsAppclose = "";
@@ -4484,11 +4515,7 @@ namespace OneService.Controllers
                     beanM.CSqpersonName = "";
                     beanM.CIsAppclose = "";
                     beanM.CSalesNo = "";
-                    beanM.CShipmentNo = "";
-                    beanM.CSalesName = "";
-                    beanM.CSalesId = "";
-                    beanM.CSecretaryName = "";
-                    beanM.CSecretaryId = "";
+                    beanM.CShipmentNo = "";                    
                     #endregion
 
                     dbOne.TbOneSrmains.Add(beanM);
@@ -4553,7 +4580,16 @@ namespace OneService.Controllers
                         beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
-                        beanIN.IV_STATUS = "E0001"; //新建
+
+                        if (CMainEngineerId != "")
+                        {
+                            beanIN.IV_STATUS = "E0016|ADD"; //新建但狀態是定保處理中
+                        }
+                        else
+                        {
+                            beanIN.IV_STATUS = "E0001|ADD"; //新建
+                        }
+
                         beanIN.IV_APIURLName = tAPIURLName;
 
                         CMF.GetAPI_SRSTATUS_Update(beanIN);
@@ -4593,7 +4629,7 @@ namespace OneService.Controllers
                     tLog += CMF.getNewAndOldLog("報修類別(中類)", OldCSrtypeThr, CSrtypeThr);
 
                     OldCContractId = beanNowM.CContractId;
-                    tLog += CMF.getNewAndOldLog("合約編號", OldCContractId, CContractId);                   
+                    tLog += CMF.getNewAndOldLog("合約文件編號", OldCContractId, CContractId);                   
 
                     OldCDelayReason = beanNowM.CDelayReason;
                     tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
@@ -4608,8 +4644,19 @@ namespace OneService.Controllers
                     tLog += CMF.getNewAndOldLog("主要工程師ERPID", OldCMainEngineerId, CMainEngineerId);
 
                     OldCAssEngineerId = beanNowM.CAssEngineerId;
-                    tLog += CMF.getNewAndOldLog("協助工程師ERPID", OldCAssEngineerId, CAssEngineerId);                   
+                    tLog += CMF.getNewAndOldLog("協助工程師ERPID", OldCAssEngineerId, CAssEngineerId);
 
+                    OldCSalesName = beanNowM.CSalesName;
+                    tLog += CMF.getNewAndOldLog("業務人員", OldCSalesName, CSalesName);
+
+                    OldCSalesId = beanNowM.CSalesId;
+                    tLog += CMF.getNewAndOldLog("業務人員ERPID", OldCSalesId, CSalesId);
+
+                    OldCSalesName = beanNowM.CSalesName;
+                    tLog += CMF.getNewAndOldLog("業務祕書", OldCSalesName, CSalesName);
+
+                    OldCSalesId = beanNowM.CSalesId;
+                    tLog += CMF.getNewAndOldLog("業務祕書ERPID", OldCSalesId, CSalesId);
                     #endregion
 
                     //主表資料
@@ -4628,7 +4675,11 @@ namespace OneService.Controllers
                     beanNowM.CTeamId = CTeamId;
                     beanNowM.CMainEngineerName = CMainEngineerName;
                     beanNowM.CMainEngineerId = CMainEngineerId;
-                    beanNowM.CAssEngineerId = CAssEngineerId;                    
+                    beanNowM.CAssEngineerId = CAssEngineerId;
+                    beanNowM.CSalesName = CSalesName;
+                    beanNowM.CSalesId = CSalesId;
+                    beanNowM.CSecretaryName = CSecretaryName;
+                    beanNowM.CSecretaryId = CSecretaryId;
                     beanNowM.CSystemGuid = Guid.NewGuid();
 
                     if (CStatus == "E0017") //定保完成
@@ -4791,6 +4842,11 @@ namespace OneService.Controllers
                         if (OldCMainEngineerId != CMainEngineerId)
                         {
                             TempStatus = CStatus + "|TRANS"; //轉單
+                        }
+
+                        if (CStatus != "E0001" && OldCStatus != CStatus)
+                        {
+                            TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
                         }
 
                         beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
@@ -6926,6 +6982,49 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region Ajax用合約文件編號查詢業務人員和祕書
+        /// <summary>
+        ///  Ajax用合約文件編號查詢業務人員和祕書
+        /// </summary>
+        /// <param name="cContractID">合約文件編號</param>        
+        /// <returns></returns>
+        public IActionResult AjaxfindContractIDInfo(string cContractID)
+        {
+            string[] AryValue = new string[6];
+            AryValue[0] = "";   //回傳是否正確(Y.正確 N.有錯誤)
+            AryValue[1] = "";   //有錯誤訊息就回傳，沒有就是空白
+            AryValue[2] = "";   //業務員ERPID
+            AryValue[3] = "";   //業務員姓名
+            AryValue[4] = "";   //業務祕書ERPID
+            AryValue[5] = "";   //業務祕書姓名
+
+            cContractID = string.IsNullOrEmpty(cContractID) ? "" : cContractID.Trim();
+
+            var bean = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID);
+
+            if (bean != null)
+            {
+                AryValue[0] = "Y";
+                AryValue[1] = "";
+                AryValue[2] = bean.CSoSales;
+                AryValue[3] = bean.CSoSalesName;
+                AryValue[4] = bean.CSoSalesAss;
+                AryValue[5] = bean.CSoSalesAssname;
+            }
+            else
+            {
+                AryValue[0] = "N";
+                AryValue[1] = "您輸入的合約文件編號不存在或已作廢，請重新確認！";
+                AryValue[2] = "";
+                AryValue[3] = "";
+                AryValue[4] = "";
+                AryValue[5] = "";
+            }
+
+            return Json(AryValue);
+        }
+        #endregion
+
         #region 取得服務團隊清單
         /// <summary>
         /// 取得服務團隊清單
@@ -7095,6 +7194,35 @@ namespace OneService.Controllers
             //};
 
             public List<SelectListItem> ListStatus = findSysParameterList(pOperationID_InstallSR, "OTHER", pCompanyCode, "SRSTATUS", false);
+            #endregion           
+
+            #region 客戶類型
+            public string ddl_cCustomerType { get; set; }
+            public List<SelectListItem> ListCustomerType = findCustomerTypeList();
+            #endregion
+        }
+        #endregion
+
+        #region DropDownList選項Class(定維服務)
+        /// <summary>
+        /// DropDownList選項Class(定維服務)
+        /// </summary>
+        public class ViewModel_Maintain
+        {
+            #region 狀態
+            public string ddl_cStatus { get; set; }
+
+            //不抓DB參數的設定
+            //public List<SelectListItem> ListStatus { get; } = new List<SelectListItem>
+            //{                
+            //    new SelectListItem { Value = "E0001", Text = "新建" },
+            //    new SelectListItem { Value = "E0016", Text = "定保處理中" },
+            //    new SelectListItem { Value = "E0017", Text = "定保完成" },            
+            //    new SelectListItem { Value = "E0014", Text = "駁回" },
+            //    new SelectListItem { Value = "E0015", Text = "取消" },                
+            //};
+
+            public List<SelectListItem> ListStatus = findSysParameterList(pOperationID_MaintainSR, "OTHER", pCompanyCode, "SRSTATUS", false);
             #endregion           
 
             #region 客戶類型

@@ -120,7 +120,7 @@ namespace OneService.Controllers
 
                 string tSQL = @"select * from TB_ONE_SRMain
                                    where 
-                                   (cStatus <> 'E0015' and cStatus <> 'E0006' and cStatus <> 'E0010') and 
+                                   (cStatus <> 'E0015' and cStatus <> 'E0006' and cStatus <> 'E0010' and cStatus <> 'E0017') and 
                                    (
                                         (
                                             (CMainEngineerId = '{0}') or (cSalesID = '{0}') or (cSecretaryID = '{0}') or (cTechManagerID like '%{0}%')
@@ -189,7 +189,7 @@ namespace OneService.Controllers
             }
             else
             {
-                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006" && x.CStatus != "E0010") && 
+                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006" && x.CStatus != "E0010" && x.CStatus != "E0017") && 
                                                     (x.CMainEngineerId == tERPID || x.CSalesId == tERPID || x.CSecretaryId == tERPID || x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID))
                                               ).ToList();
 

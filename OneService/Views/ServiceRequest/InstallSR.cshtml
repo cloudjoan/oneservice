@@ -932,12 +932,14 @@
 			var Msg = "";
 			var cStatus = $("#ddl_cStatus").val();			
             var hid_cLoginUser_BUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
+			var tCount = 0; //記錄目前有效的明細
 
 			var tableName = "tableRecord";
 			var trs = $("#" + tableName + " tr");			
 
 			$.each(trs, function (i, itr) {
-				var tds = $(itr).find('td');				
+				var tds = $(itr).find('td');	
+				var tIsError = false;									//記錄是否有錯誤
 				var objRowNumber = tds.eq(0).children();				//項次
 				var objEngineerName = tds.eq(1).children().eq(0);		//服務工程師			
 				var objEngineerID = tds.eq(1).children().eq(1);		//服務工程師
@@ -955,34 +957,47 @@
 					{
 						if (objEngineerName.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【服務工程師】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objEngineerID.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」未下拉選取【服務工程師】，請輸入關鍵字後再重新選取！\n";
+							tIsError = true;
 						}
 
 						if (objReceiveTime.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【接單時間】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objStartTime.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【出發時間】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objArriveTime.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【到場時間】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objFinishTime.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【完成時間】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objWorkHours.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【工時(分鐘)】不得為空！\n";
+							tIsError = true;
 						}
 
 						if (objDesc.val() == "") {
 							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【處理紀錄】不得為空！\n";
+							tIsError = true;
+						}
+
+						if (!tIsError)
+						{
+							tCount++;
 						}
 
 						//if (objSRReport.val() == "") {
@@ -990,7 +1005,15 @@
 						//}
 					}
                 }					
-			})			
+			})	
+			
+			if (cStatus == "E0010") //下拉選擇裝機完成
+			{
+				if (tCount == 0)
+				{
+					Msg += "請至少新增一筆【處理與工時紀錄】明細！\n";
+				}
+			}
 
 			return Msg;
 		}		
