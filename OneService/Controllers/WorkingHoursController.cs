@@ -464,9 +464,10 @@ namespace OneService.Controllers
 
             // 填充表格
             IRow headerRow = sheet.CreateRow(0);
+            headerRow.Height = 150 * 20;
 			headerRow.CreateCell(0).SetCellValue("");
 			headerRow.CreateCell(1).SetCellValue("工時類型(輸入代號):\nB(專案導入)\nC(內部作業)\nD(專業服務)");
-            headerRow.CreateCell(2).SetCellValue("任務活動(輸入代號):\n");
+            headerRow.CreateCell(2).SetCellValue("任務活動(輸入代號):\nD(會議)\nE(需求訪談)\nF(分析/設計)\nG(開發/測試)\nH(佈版/版控)\nK(查修/維運)\nI(教育訓練)\nL(文書處理)");
 			headerRow.CreateCell(3).SetCellValue("專案(商機號碼):");
 			headerRow.CreateCell(4).SetCellValue("工作說明              ");
 			headerRow.CreateCell(5).SetCellValue("時間起");
@@ -488,8 +489,22 @@ namespace OneService.Controllers
 			dataRow.CreateCell(5).SetCellValue("2023-01-01 10:00");
 			dataRow.CreateCell(6).SetCellValue("2023-01-01 18:30");
 
-            //自動調格式長度
-            //for (int j = 0; j < 4; j++) sheet.AutoSizeColumn(j);
+			//自動調格式長度
+			//for (int i = 0; i < sheet.GetRow(0).LastCellNum; i++)
+			//{
+			//	sheet.AutoSizeColumn(i);
+			//}
+
+			//不知為什麼， AutoSizeColumn在.netcore會死掉…所以只能先手動調寬度了
+			sheet.SetColumnWidth(0, 25 * 256);
+			sheet.SetColumnWidth(1, 25 * 256);
+			sheet.SetColumnWidth(2, 25 * 256);
+			sheet.SetColumnWidth(3, 20 * 256);
+			sheet.SetColumnWidth(4, 20 * 256);
+			sheet.SetColumnWidth(5, 20 * 256);
+			sheet.SetColumnWidth(6, 20 * 256);
+
+
 
 			// 將工作簿寫入 MemoryStream
 			MemoryStream stream = new MemoryStream();
