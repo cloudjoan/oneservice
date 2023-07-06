@@ -149,6 +149,9 @@
 		//popup各欄位disabled
 		//popupId.傳入的obj、IsDisabled(true.不准許輸入 false.准許輸入)
 		function disabledPopup(popupId, IsDisabled) {
+			var pIsMIS = $("#hid_cLoginUser_IsMIS").val();
+			var pIsDCC = $("#hid_cLoginUser_IsDCC").val();
+			var pIsSalesASS = $("#hid_cLoginUser_IsSalesASS").val();
 
 			$(popupId).find("input").each(function (index, value) {
 				var reValue = checkInputSkipList($(this).attr("name"));
@@ -177,6 +180,19 @@
 					$(this).prop('disabled', IsDisabled);
 				}
 			});
+
+			setTimeout(function () {
+				if (IsDisabled) {
+					$(".dropzone").hide();
+					$(".btn-del").hide();
+				}
+				else {
+					if (pIsMIS == "Y" || pIsDCC == "Y" || pIsSalesASS == "Y") {
+						$(".dropzone").show();
+						$(".btn-del").show();
+					}
+				}
+			}, 500);
 		}
 
 		//要略過的清單(Input)
@@ -243,6 +259,7 @@
 
 			var hid_cID = $('#hid_cID');				//系統ID
 			var tbx_cSubNotes = $('#tbx_cSubNotes');	//下包備註
+			var hid_filezone_1 = $('#hid_filezone_1');	//合約書Link
 
 			if (tbx_cSubNotes.val() == "") {
 				tMsg += "下包備註不得為空！　\n";
@@ -255,21 +272,22 @@
 				return false;
 			}
 			else {
-				saveDetailSub(hid_cID.val(), tbx_cSubNotes.val());
+				saveDetailSub(hid_cID.val(), tbx_cSubNotes.val(), hid_filezone_1.val());
 			}
 
 			return true;
 		}
 
 		//儲存下包合約明細內容
-		function saveDetailSub(cID, cSubNotes) {
+		function saveDetailSub(cID, cSubNotes, cContractReport) {
 			$.ajax({
 				url: '@Url.Action("saveDetailSub", "Contract")',
 				type: 'post',
 				dataType: 'json',
 				data: {
 					cID: cID,
-					cSubNotes: cSubNotes					
+					cSubNotes: cSubNotes,
+					cContractReport: cContractReport
 				},
 				success: function (result) {
 					if (result == "SUCCESS") {
@@ -331,6 +349,12 @@
 				<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 				<!--登人者公司別(T012、T016...)-->
 				<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+				<!--登人者是否為MIS-->
+				<input type="hidden" id="hid_cLoginUser_IsMIS" name="hid_cLoginUser_IsMIS" value="@ViewBag.hidIsMIS">
+				<!--登人者是否為文管中心人員-->
+				<input type="hidden" id="hid_cLoginUser_IsDCC" name="hid_cLoginUser_IsDCC" value="@ViewBag.hidIsDCC">
+				<!--登人者是否為祕書人員-->
+				<input type="hidden" id="hid_cLoginUser_IsSalesASS" name="hid_cLoginUser_IsSalesASS" value="@ViewBag.pIsSalesASS">
 				<!--下包合約資料檔系統ID-->
 				<input type="hidden" id="hid_cID" name="hid_cID" value="@ViewBag.cID">
 				<!--是否可編輯下包合約相關內容-->
@@ -363,9 +387,28 @@
 					<label class="col-lg-2 col-form-label">下包合約書link</label>
 					<div class="col-lg-4">
 					@{
-						if (ViewBag.IsCanRead == "Y")
+						if (ViewBag.IsCanRead == "Y" && ViewBag.IsShowOldURL == "Y")
 						{
-							<a href="@ViewBag.cSubContractReport" target="_blank">@ViewBag.cSubContractID</a>
+							if (ViewBag.cContractReport != "")
+							{
+								<a href="@ViewBag.cContractReport" target="_blank">@ViewBag.cSubContractID</a>
+							}
+						}
+						else if (ViewBag.IsCanRead == "Y" && ViewBag.IsShowOldURL == "N")
+						{
+							<!-- 檔案上傳start-->
+							<div class="form-group row">
+								<div class="col-lg-3 dropzone" id="zone_1">
+									<div class="fallback file-box">
+										<input name="file" type="file" multiple />
+									</div>
+								</div>
+								<div class="col-lg-9">
+									<div class="attachment" id="filezone_1"></div>
+											<input type="hidden" class="fileids" name="hid_filezone_1" id="hid_filezone_1" value="@ViewBag.cContractReport" />
+								</div>
+							</div>
+							<!-- 檔案上傳end-->
 						}
 						else
 						{

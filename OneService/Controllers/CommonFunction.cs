@@ -1847,7 +1847,28 @@ namespace OneService.Controllers
 
             return OUTBean;
         }
-        #endregion       
+        #endregion
+
+        #region 取得合約主數據裡的合約書Link
+        /// <summary>
+        /// 取得合約主數據裡的合約書Link
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <returns></returns>
+        public string findContractMainReport(string cContractID)
+        {
+            string reValue = string.Empty;
+
+            var beanM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID.Trim());
+
+            if (beanM != null)
+            {
+                reValue = beanM.CContractReport.Trim();
+            }
+
+            return reValue;
+        }
+        #endregion
 
         #region 取得合約主數據相關人員資訊
         /// <summary>
@@ -2092,7 +2113,14 @@ namespace OneService.Controllers
 
             string ContractIDLimit = findSysParameterValue(pOperationID_Contract, "OTHER", "T012", "ContractIDLimit");
 
-            if (int.Parse(cContractID.Trim()) < int.Parse(ContractIDLimit))
+            try
+            {
+                if (int.Parse(cContractID.Trim()) < int.Parse(ContractIDLimit))
+                {
+                    reValue = true;
+                }
+            }
+            catch(Exception ex)
             {
                 reValue = true;
             }
