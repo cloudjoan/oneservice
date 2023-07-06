@@ -1,0 +1,130 @@
+﻿@{
+	ViewData["Title"] = "BatchUploadStockNo";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>	
+
+		$(document).ready(function () {
+			
+		});
+
+		//檢查上傳Excel檔案路徑是否有填寫
+		function checkEmpty() {
+			$("#btn_submit").hide();
+			$("#waitingImg").show();
+
+			var reValue = false;
+			var hid_filezone_1 = $("#hid_filezone_1");
+
+			if (hid_filezone_1.val() == "") {
+				alert('您未上傳任何檔案！');
+			}
+			else {
+				reValue = confirm('是否確定上傳?');
+			}
+
+			return reValue;
+		}
+
+		//儲存
+		function SaveBatchUploadStockNo() {
+			var strMsg = "";
+			var hid_filezone_1 = $("#hid_filezone_1");
+			var lbl_Message = $("#lbl_Message");
+
+			var reValue = checkEmpty();
+
+			if (reValue)
+			{				
+				$.ajax({
+					url: '@Url.Action("SaveBatchUploadStockNo", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						filezone: hid_filezone_1.val()						
+					},
+					success: function (result) {
+						lbl_Message.html(result);						
+					},
+				});
+			}			
+
+			$("#btn_submit").show();
+			$("#waitingImg").hide();
+        }	
+
+	</script>
+}
+
+	@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>批次上傳裝機備料服務通知單</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">服務管理</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>批次上傳裝機備料服務通知單</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+	<div class="row">
+		<!--裝機備料服務通知單資訊-->
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>
+						裝機備料服務通知單資訊						
+					</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content">					
+					<form id="form1" name="form" action='#' method="post">						
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">檢附文件</label>
+							<div class="col-lg-10">
+								<!-- 檔案上傳start-->
+								<div class="form-group row">
+									<div class="col-lg-3 dropzone" id="zone_1">
+										<div class="fallback file-box">
+											<input name="file" type="file" multiple />
+										</div>
+									</div>
+									<div class="col-lg-9">
+										<div class="attachment" id="filezone_1"></div>
+										<input type="hidden" class="fileids" name="hid_filezone_1" id="hid_filezone_1" />
+									</div>
+								</div>
+								<!-- 檔案上傳end-->
+							</div>
+						</div>
+						<div class="form-group row">
+							<button id="btn_submit" class="btn btn-primary btn-lg" type="button" onclick="SaveBatchUploadStockNo();">
+								<i class="fa fa-arrow-circle-up" style="font-size:large"> 上 傳</i>
+							</button>
+							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+						</div>
+						<div class="form-group row">
+							<!--顯示匯入成功或失敗訊息-->
+							<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;" id="lbl_Message"></label>
+						</div>
+						<div class="hr-line-dashed"></div>
+						<div class="form-group row">
+							<label class="col-lg-12 col-form-label" style="font-size:larger;">裝機備料服務通知單上傳格式：</label></br>
+							<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;">自開單和非自開單一律為：SRID(12碼)_出貨單號(10碼).PDF ex.632307030005_2500253468.PDF</label>
+						</div>						
+					</form>
+				</div>
+			</div>
+		</div>
+		
+	</div>

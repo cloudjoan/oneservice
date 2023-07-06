@@ -804,17 +804,17 @@ namespace OneService.Controllers
             if (tIsFormal)
             {
                 #region 正式區    
-                OUTBean.ONEURLName = "172.31.7.56:32200";
+                OUTBean.ONEURLName = @"https://oneservice.etatung.com";
                 OUTBean.BPMURLName = "tsti-bpm01.etatung.com.tw";
                 OUTBean.PSIPURLName = "psip-prd-ap";
-                OUTBean.AttachURLName = "tsticrmmbgw.etatung.com:8082";
-                OUTBean.APIURLName = @"https://api-qas.etatung.com";
+                OUTBean.AttachURLName = "tsticrmmbgw.etatung.com:8081";
+                OUTBean.APIURLName = @"https://api.etatung.com";
                 #endregion
             }
             else
             {
                 #region 測試區     
-                OUTBean.ONEURLName = "172.31.7.56:32200";
+                OUTBean.ONEURLName = @"http://172.31.7.56:32200";
                 OUTBean.BPMURLName = "tsti-bpm01.etatung.com.tw";
                 OUTBean.PSIPURLName = "psip-prd-ap";
                 OUTBean.AttachURLName = "tsticrmmbgw.etatung.com:8082";
@@ -1282,7 +1282,7 @@ namespace OneService.Controllers
                                 tURL = "http://" + tBPMURLName + "/ContractSeals/_layouts/FormServer.aspx?XmlLocation=%2fContractSeals%2fBPMContractSealsForm%2f" + tBPMNO + ".xml&ClientInstalled=true&DefaultItemOpen=1&source=/_layouts/TSTI.SharePoint.BPM/CloseWindow.aspx";
                             }
 
-                            cContractIDURL = "http://" + tONEURLName + "/Contract/ContractMain?ContractID=" + cContractID; //合約編號URL
+                            cContractIDURL = tONEURLName + "/Contract/ContractMain?ContractID=" + cContractID; //合約編號URL
                         }
                         catch (Exception ex)
                         {
@@ -1847,7 +1847,7 @@ namespace OneService.Controllers
 
             return OUTBean;
         }
-        #endregion
+        #endregion       
 
         #region 取得合約主數據相關人員資訊
         /// <summary>
@@ -3073,7 +3073,7 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion
+        #endregion         
 
         #region 判斷系統目前GUID是否已被異動
         /// <summary>

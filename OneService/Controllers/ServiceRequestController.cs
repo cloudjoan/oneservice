@@ -798,7 +798,7 @@ namespace OneService.Controllers
 
                 foreach (string tSRCaseType in tArySRCaseType)
                 {
-                    ttStrItem += " M.cSRID like N'%" + tSRCaseType + "%' or";
+                    ttStrItem += " M.cSRID like N'" + tSRCaseType + "%' or";
                 }
 
                 if (tArySRCaseType.Length >= 0)
@@ -6051,6 +6051,121 @@ namespace OneService.Controllers
         #endregion      
 
         #endregion -----↑↑↑↑↑序號異動設定作業 ↑↑↑↑↑-----   
+
+        #region -----↓↓↓↓↓批次上傳裝機備料服務通知單 ↓↓↓↓↓-----
+
+        #region 批次上傳裝機備料服務通知單index
+        public IActionResult BatchUploadStockNo()
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();           
+
+            return View();
+        }
+        #endregion
+
+        #region 儲存批次上傳裝機備料服務通知單
+        /// <summary>
+        /// 儲存批次上傳裝機備料服務通知單
+        /// </summary>
+        /// <param name="filezone">檔案GUID</param>
+        /// <returns></returns>
+        public IActionResult SaveBatchUploadStockNo(string filezone)
+        {
+            bool tIsFormal = false;
+
+            string reMsg = string.Empty;            
+            string tONEURLName = string.Empty;
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+            string cSRID = string.Empty;            //SRID
+            string cFile_Ext = string.Empty;        //副檔名
+
+            getLoginAccount();
+
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            pLoginName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " "); ;
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tONEURLName = ParaBean.ONEURLName;
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+            #endregion
+
+            List<SRATTACHINFO> tList = CMF.findSRATTACHINFO(filezone, tAttachURLName);
+
+            foreach (var bean in tList)
+            {
+                try
+                {
+                    cSRID = bean.FILE_ORG_NAME.Split('_')[0].Trim();
+                    cFile_Ext = bean.FILE_EXT.Trim();
+
+                    if (cFile_Ext != ".pdf")
+                    {
+                        reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：格式不為PDF！ </br>";
+                    }
+                    else if (cSRID.Substring(0, 2) != "63")
+                    {
+                        reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：SRID不為63開頭！ </br>";
+                    }
+                    else
+                    {
+                        var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == cSRID);
+
+                        if (beanM != null)
+                        {
+                            beanM.CAttachementStockNo += bean.ID + ",";
+
+                            int result = dbOne.SaveChanges();
+
+                            if (result <= 0)
+                            {
+                                reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：儲存批次上傳裝機備料服務通知單失敗！ </br>";
+                            }
+                            else
+                            {
+                                string tLog = "檔名【" + bean.FILE_ORG_NAME + "】上傳成功！";
+
+                                CMF.writeToLog(cSRID, "SaveBatchUploadStockNo", tLog, pLoginName);
+                            }
+                        }
+                        else
+                        {
+                            reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：SRID【" + cSRID + "】無相關主檔資訊！ </br>";
+                        }
+                    }
+                }
+                catch(Exception ex)
+                {
+                    reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：" + ex.Message + " </br>";
+                }
+            }
+
+            if (reMsg == "")
+            {
+                reMsg = "上傳成功！";
+            }
+
+            return Json(reMsg);
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑批次上傳裝機備料服務通知單 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
