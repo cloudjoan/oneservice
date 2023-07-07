@@ -33,6 +33,7 @@
 		function SaveBatchUploadStockNo() {
 			var strMsg = "";
 			var hid_filezone_1 = $("#hid_filezone_1");
+			var ddl_BatchUploadType = $("#ddl_BatchUploadType");
 			var lbl_Message = $("#lbl_Message");
 
 			var reValue = checkEmpty();
@@ -44,10 +45,17 @@
 					type: 'post',
 					dataType: 'json',
 					data: {
-						filezone: hid_filezone_1.val()						
+						filezone: hid_filezone_1.val(),
+						BatchUploadType: ddl_BatchUploadType.val()
 					},
 					success: function (result) {
-						lbl_Message.html(result);						
+						if (result[0] == "Y")
+						{							
+							hid_filezone_1.val("");
+							$(".file-box").hide();
+						}						
+
+						lbl_Message.html(result[1]);
 					},
 				});
 			}			
@@ -61,25 +69,25 @@
 
 	@section breadcrumb_section{
 	<div class="col-lg-10">
-		<h2>批次上傳裝機備料服務通知單</h2>
+		<h2>@ViewBag.pBatchUploadTypeNote</h2>
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item">
 				<a href="#">服務管理</a>
 			</li>
 			<li class="breadcrumb-item active">
-				<strong>批次上傳裝機備料服務通知單</strong>
+				<strong>@ViewBag.pBatchUploadTypeNote</strong>
 			</li>
 		</ol>
 	</div>
 }
 
 	<div class="row">
-		<!--裝機備料服務通知單資訊-->
+		<!--批次上傳(裝機備料服務通知單/合約書文件)資訊-->
 		<div class="col-lg-12">
 			<div class="ibox ">
 				<div class="ibox-title">
 					<h5>
-						裝機備料服務通知單資訊						
+						批次上傳檔案資訊
 					</h5>
 					<div class="ibox-tools">
 						<a class="collapse-link">
@@ -88,7 +96,13 @@
 					</div>
 				</div>
 				<div class="ibox-content">					
-					<form id="form1" name="form" action='#' method="post">						
+					<form id="form1" name="form" action='#' method="post">
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">批次上傳類型</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_BatchUploadType", (IEnumerable<SelectListItem>)ViewBag.SelectList, new { @class = "form-control ", @disabled = "disabled"})
+							</div>
+						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">檢附文件</label>
 							<div class="col-lg-10">
@@ -120,8 +134,12 @@
 						<div class="hr-line-dashed"></div>
 						<div class="form-group row">
 							<label class="col-lg-12 col-form-label" style="font-size:larger;">裝機備料服務通知單上傳格式：</label></br>
-							<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;">自開單和非自開單一律為：SRID(12碼)_出貨單號(10碼).PDF ex.632307030005_2500253468.PDF</label>
-						</div>						
+							<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;">自開單和非自開單一律為：SRID(12碼)_出貨單號(10碼).PDF	ex.632307030005_2500253468.PDF</label>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-12 col-form-label" style="font-size:larger;">合約書文件上傳格式：</label></br>
+							<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;">文件編號.PDF	ex.10507095.PDF</label>
+						</div>
 					</form>
 				</div>
 			</div>

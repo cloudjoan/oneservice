@@ -81,6 +81,16 @@ namespace OneService.Controllers
         string pSRID = string.Empty;
 
         /// <summary>
+        /// 批次上傳類型(裝機備料服務通知單/合約書文件)
+        /// </summary>
+        string pBatchUploadType = string.Empty;
+
+        /// <summary>
+        /// 批次上傳類型說明
+        /// </summary>
+        string pBatchUploadTypeNote = string.Empty;
+
+        /// <summary>
         /// 程式作業編號檔系統ID(ALL，固定的GUID)
         /// </summary>
         string pSysOperationID = "F8EFC55F-FA77-4731-BB45-2F2147244A2D";
@@ -6062,7 +6072,59 @@ namespace OneService.Controllers
                 return RedirectToAction("Login", "Home");
             }
 
-            getLoginAccount();           
+            getLoginAccount();
+
+            #region Request參數            
+            if (HttpContext.Request.Query["BatchUploadType"].FirstOrDefault() != null)
+            {
+                pBatchUploadType = HttpContext.Request.Query["BatchUploadType"].FirstOrDefault();                
+            }
+
+            ViewBag.pBatchUploadType = pBatchUploadType;
+            #endregion
+
+            #region 取得批次上傳類型說明
+            pBatchUploadTypeNote = "批次上傳(裝機備料服務通知單/合約書文件)";
+
+            if (pBatchUploadType != "")
+            {
+                switch(pBatchUploadType)
+                {
+                    case "INSTALL":
+                        pBatchUploadTypeNote = "批次上傳裝機備料服務通知單";
+                        break;
+
+                    case "CONTRACT":
+                        pBatchUploadTypeNote = "批次上傳合約書文件";
+                        break;
+                }
+            }
+
+            ViewBag.pBatchUploadTypeNote = pBatchUploadTypeNote;
+            #endregion
+
+            #region 批次上傳類型            
+            bool tRepType = false;
+            bool tIntType = false;
+
+            switch (pBatchUploadType)
+            {
+                case "INSTALL":
+                    tRepType = true;
+                    break;
+                case "CONTRACT":
+                    tIntType = true;
+                    break;
+            }
+
+            var selectList = new List<SelectListItem>()
+            {
+                new SelectListItem {Text="批次上傳裝機備料服務通知單", Value="INSTALL", Selected =tRepType },
+                new SelectListItem {Text="批次上傳合約書文件", Value="CONTRACT", Selected = tIntType },
+            };            
+
+            ViewBag.SelectList = selectList;
+            #endregion
 
             return View();
         }
@@ -6073,18 +6135,24 @@ namespace OneService.Controllers
         /// 儲存批次上傳裝機備料服務通知單
         /// </summary>
         /// <param name="filezone">檔案GUID</param>
+        /// <param name="BatchUploadType">批次上傳類型(INSTALL.裝機備料服務通知單 CONTRACT.合約書文件)</param>
         /// <returns></returns>
-        public IActionResult SaveBatchUploadStockNo(string filezone)
+        public IActionResult SaveBatchUploadStockNo(string filezone, string BatchUploadType)
         {
             bool tIsFormal = false;
 
-            string reMsg = string.Empty;            
+            string[] reValue = new string[2];
+            reValue[0] = "Y";   //回傳的結果(Y.成功 N.失敗)
+            reValue[1] = "";    //回傳的訊息
+
+            string reMsg = string.Empty;
             string tONEURLName = string.Empty;
             string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
             string tAttachURLName = string.Empty;
             string cSRID = string.Empty;            //SRID
+            string cContractID = string.Empty;      //文件編號
             string cFile_Ext = string.Empty;        //副檔名
 
             getLoginAccount();
@@ -6108,60 +6176,124 @@ namespace OneService.Controllers
 
             List<SRATTACHINFO> tList = CMF.findSRATTACHINFO(filezone, tAttachURLName);
 
-            foreach (var bean in tList)
+            switch (BatchUploadType)
             {
-                try
-                {
-                    cSRID = bean.FILE_ORG_NAME.Split('_')[0].Trim();
-                    cFile_Ext = bean.FILE_EXT.Trim();
-
-                    if (cFile_Ext != ".pdf")
+                case "INSTALL":
+                    #region 裝機備料服務通知單
+                    foreach (var bean in tList)
                     {
-                        reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：格式不為PDF！ </br>";
-                    }
-                    else if (cSRID.Substring(0, 2) != "63")
-                    {
-                        reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：SRID不為63開頭！ </br>";
-                    }
-                    else
-                    {
-                        var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == cSRID);
-
-                        if (beanM != null)
+                        try
                         {
-                            beanM.CAttachementStockNo += bean.ID + ",";
+                            cSRID = bean.FILE_ORG_NAME.Split('_')[0].Trim(); //抓SRID
+                            cFile_Ext = bean.FILE_EXT.Trim();
 
-                            int result = dbOne.SaveChanges();
-
-                            if (result <= 0)
+                            if (cFile_Ext != ".pdf")
                             {
-                                reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：儲存批次上傳裝機備料服務通知單失敗！ </br>";
+                                reValue[0] = "E";
+                                reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：格式不為PDF！ </br>";
+                            }
+                            else if (cSRID.Substring(0, 2) != "63")
+                            {
+                                reValue[0] = "E";
+                                reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：SRID不為63開頭！ </br>";
                             }
                             else
                             {
-                                string tLog = "檔名【" + bean.FILE_ORG_NAME + "】上傳成功！";
+                                var beanSRM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == cSRID);
 
-                                CMF.writeToLog(cSRID, "SaveBatchUploadStockNo", tLog, pLoginName);
+                                if (beanSRM != null)
+                                {
+                                    beanSRM.CAttachementStockNo = bean.ID + ",";
+
+                                    beanSRM.ModifiedDate = DateTime.Now;
+                                    beanSRM.ModifiedUserName = pLoginName;
+
+                                    int result = dbOne.SaveChanges();
+
+                                    if (result <= 0)
+                                    {
+                                        reValue[0] = "E";
+                                        reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：儲存批次上傳裝機備料服務通知單失敗！ </br>";
+                                    }
+                                    else
+                                    {
+                                        reMsg += "檔名【" + bean.FILE_ORG_NAME + "】上傳成功！ </br>";
+                                    }
+                                }
+                                else
+                                {
+                                    reValue[0] = "E";
+                                    reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：SRID【" + cSRID + "】無相關主檔資訊！ </br>";
+                                }
                             }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：SRID【" + cSRID + "】無相關主檔資訊！ </br>";
+                            reValue[0] = "E";
+                            reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：" + ex.Message + " </br>";
                         }
                     }
-                }
-                catch(Exception ex)
-                {
-                    reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：" + ex.Message + " </br>";
-                }
+                    #endregion
+
+                    break;
+                case "CONTRACT":
+                    #region 合約書文件
+                    foreach (var bean in tList)
+                    {
+                        try
+                        {
+                            cContractID = bean.FILE_ORG_NAME.Replace(bean.FILE_EXT.Trim(), "").Trim(); //去除副檔名
+                            cFile_Ext = bean.FILE_EXT.Trim();
+
+                            if (cFile_Ext != ".pdf")
+                            {
+                                reValue[0] = "E";
+                                reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：格式不為PDF！ </br>";
+                            }
+                            else
+                            {
+                                var beanCOM = dbOne.TbOneContractMains.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID);
+
+                                if (beanCOM != null)
+                                {
+                                    beanCOM.CContractReport = bean.ID + ",";
+
+                                    beanCOM.ModifiedDate = DateTime.Now;
+                                    beanCOM.ModifiedUserName = pLoginName;
+
+                                    int result = dbOne.SaveChanges();
+
+                                    if (result <= 0)
+                                    {
+                                        reValue[0] = "E";
+                                        reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：儲存批次上傳合約書文件失敗！ </br>";
+                                    }
+                                    else
+                                    {
+                                        reMsg += "檔名【" + bean.FILE_ORG_NAME + "】上傳成功！ </br>";
+                                    }
+                                }
+                                else
+                                {
+                                    reValue[0] = "E";
+                                    reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：文件編號【" + cContractID + "】無相關主數據資訊！ </br>";
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            reValue[0] = "E";
+                            reMsg += "檔名【" + bean.FILE_ORG_NAME + "】有誤，原因：" + ex.Message + " </br>";
+                        }
+                    }
+                    #endregion
+
+                    break;
             }
 
-            if (reMsg == "")
-            {
-                reMsg = "上傳成功！";
-            }
+            reValue[1] = reMsg;
 
-            return Json(reMsg);
+            return Json(reValue);
         }
         #endregion
 
