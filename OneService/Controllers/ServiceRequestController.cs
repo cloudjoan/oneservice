@@ -28,6 +28,7 @@ using Org.BouncyCastle.Bcpg.OpenPgp;
 using NPOI.SS.Formula.Functions;
 using NPOI.XSSF.Streaming.Values;
 using MathNet.Numerics;
+using NPOI.OpenXmlFormats.Wordprocessing;
 
 namespace OneService.Controllers
 {
@@ -5992,9 +5993,17 @@ namespace OneService.Controllers
         #region 匯入批次上傳裝機派工清單Excel
         [HttpPost]
         public IActionResult ImportBatchInstallExcel(IFormCollection formCollection, IFormFile postedFile)
-        {            
-            bool tIsOK = true;
+        {   
             string[] AryValue = new string[2];
+
+            bool tIsOK = true;
+            bool tIsFormal = false;
+
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+            string tUrl = string.Empty;
 
             string cID = string.Empty;
             string tLog = string.Empty;
@@ -6023,6 +6032,19 @@ namespace OneService.Controllers
 
             getLoginAccount();
             getEmployeeInfo();
+
+            Guid cGUID = Guid.NewGuid(); //本次系統GUID
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;            
+            #endregion
 
             try
             {
@@ -6076,8 +6098,6 @@ namespace OneService.Controllers
                     #region 寫入DataTable到主檔資料庫  
                     if (dtM.Rows.Count > 0)
                     {
-                        Guid cGUID = Guid.NewGuid(); //系統GUID
-
                         foreach (DataRow dr in dtM.Rows)
                         {
                             try
@@ -6195,7 +6215,7 @@ namespace OneService.Controllers
                                 {
                                     SRMain_INSTALLSR_INPUT beanIN = new SRMain_INSTALLSR_INPUT();
 
-                                    #region 設定主檔
+                                    #region 設定主檔                                    
                                     beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                                     beanIN.IV_LOGINEMPNAME = pLoginName;
                                     beanIN.IV_CUSTOMER = cCustomerID;
@@ -6207,6 +6227,7 @@ namespace OneService.Controllers
                                     beanIN.IV_LTXT = "【" + cShipmentNo + "】OneService系統批次裝機派單";
                                     beanIN.IV_SRTEAM = cTeamID;
                                     beanIN.IV_EMPNO = cMainEngineerID;
+                                    beanIN.IV_APIURLName = tAPIURLName;
                                     #endregion
 
                                     #region 取得聯絡人清單
@@ -6265,6 +6286,7 @@ namespace OneService.Controllers
                                         #region 回寫批次上傳裝機派工紀錄(主檔)
                                         TbOneSrbatchInstallRecord BInsM = new TbOneSrbatchInstallRecord();
 
+                                        BInsM.CGuid = cGUID;
                                         BInsM.CSrid = cSRID;
                                         BInsM.CCustomerId = cCustomerID;
                                         BInsM.CCustomerName = cCustomerName;
@@ -6348,7 +6370,7 @@ namespace OneService.Controllers
                 ViewBag.Message = "匯入失敗！原因：" + ex.Message;
             }
 
-            return RedirectToAction("QueryBatchInstall", new { cID = cID, tMessage = ViewBag.Message });
+            return RedirectToAction("QueryBatchInstall", new { cGUID = cGUID, tMessage = ViewBag.Message });
         }
         #endregion
 
@@ -6371,9 +6393,12 @@ namespace OneService.Controllers
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
             string tAttachURLName = string.Empty;
+            string tUrl = string.Empty;            
 
             getLoginAccount();
             getEmployeeInfo();
+
+            Guid cGUID = Guid.NewGuid();
 
             #region 取得系統位址參數相關資訊
             SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
@@ -6389,9 +6414,9 @@ namespace OneService.Controllers
             #endregion
 
             #region Request參數            
-            if (HttpContext.Request.Query["CID"].FirstOrDefault() != null)
+            if (HttpContext.Request.Query["cGUID"].FirstOrDefault() != null)
             {
-              
+                cGUID = new Guid(HttpContext.Request.Query["cGUID"].FirstOrDefault());
             }            
 
             if (HttpContext.Request.Query["tMessage"].FirstOrDefault() != null)
@@ -6399,172 +6424,48 @@ namespace OneService.Controllers
                 //記錄匯入Excel成功或失敗訊息！
                 ViewBag.Message = HttpContext.Request.Query["tMessage"].FirstOrDefault();
             }
-            #endregion     
+            #endregion
+
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            #region 組待查詢清單
+            var beans = dbOne.TbOneSrbatchInstallRecords.OrderBy(x => x.CSrid).Where(x => x.CGuid == cGUID);
+
+            foreach (var bean in beans)
+            {
+                string[] QueryInfo = new string[19];
+
+                tUrl = "../ServiceRequest/InstallSR?SRID=" + bean.CSrid;
+
+                QueryInfo[0] = bean.CSrid;               //SRID
+                QueryInfo[1] = tUrl;                    //SRID URL                 
+                QueryInfo[2] = bean.CCustomerId;         //客戶代號
+                QueryInfo[3] = bean.CCustomerName;       //客戶名稱
+                QueryInfo[4] = bean.CSalesNo;           //SO訂單號碼
+                QueryInfo[5] = bean.CShipmentNo;         //DN出貨單號碼
+                QueryInfo[6] = bean.CTeamId;            //服務團隊ID
+                QueryInfo[7] = bean.CContactName;        //聯絡人姓名
+                QueryInfo[8] = bean.CContactAddress;     //聯絡人地址
+                QueryInfo[9] = bean.CContactPhone;       //聯絡人電話
+                QueryInfo[10] = bean.CContactMobile;     //聯絡人手機
+                QueryInfo[11] = bean.CContactEmail;      //聯絡人信箱
+                QueryInfo[12] = bean.CSalesId;          //業務員工ERPID
+                QueryInfo[13] = bean.CSalesName;         //業務員工姓名
+                QueryInfo[14] = bean.CSecretaryId;       //業務祕書ERPID
+                QueryInfo[15] = bean.CSecretaryName;     //業務祕書姓名
+                QueryInfo[16] = bean.CMainEngineerId;    //指派主要工程師ERPID
+                QueryInfo[17] = bean.CMainEngineerName;  //指派主要工程師姓名
+                QueryInfo[18] = bean.CSerialId;         //序號      
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
 
             return View();
         }
-        #endregion       
-
-        #region 儲存合約標的明細內容
-        /// <summary>
-        /// 儲存合約標的明細內容
-        /// </summary>
-        /// <param name="cID">系統ID</param>
-        /// <param name="cContractID">文件編號</param>
-        /// <param name="cHostName">HostName</param>
-        /// <param name="cSerialID">序號</param>
-        /// <param name="cPID">ProductID</param>
-        /// <param name="cBrands">廠牌</param>
-        /// <param name="cModel">ProductModel</param>
-        /// <param name="cLocation">Location</param>
-        /// <param name="cAddress">地址</param>
-        /// <param name="cArea">區域</param>
-        /// <param name="cSLARESP">回應條件</param>
-        /// <param name="cSLASRV">服務條件</param>
-        /// <param name="cNotes">備註</param>
-        /// <param name="cSubContractID">下包文件編號</param>
-        /// <returns></returns>
-        public IActionResult saveDetailOBJ(string cID, string cContractID, string cHostName, string cSerialID, string cPID,
-                                         string cBrands, string cModel, string cLocation, string cAddress, string cArea,
-                                         string cSLARESP, string cSLASRV, string cNotes, string cSubContractID)
-
-        {
-            string reValue = "SUCCESS";
-            string tLog = string.Empty;
-
-            string OldcHostName = string.Empty;
-            string OldcSerialID = string.Empty;
-            string OldcPID = string.Empty;
-            string OldcBrands = string.Empty;
-            string OldcModel = string.Empty;
-            string OldcLocation = string.Empty;
-            string OldcAddress = string.Empty;
-            string OldcArea = string.Empty;
-            string OldcSLARESP = string.Empty;
-            string OldcSLASRV = string.Empty;
-            string OldcNotes = string.Empty;
-            string OldcSubContractID = string.Empty;
-
-            bool tIsDouble = false; //判斷是否有重覆
-
-            getLoginAccount();
-            getEmployeeInfo();
-
-            //判斷傳入的序號是否已存在合約標的明細內容(true.已存在 false.未存在)
-            tIsDouble = CMF.checkIsExitsContractDetailObj(cContractID, cID, cSerialID);
-
-            if (!tIsDouble)
-            {
-                if (!string.IsNullOrEmpty(cID)) //修改
-                {
-                    var bean = dbOne.TbOneContractDetailObjs.FirstOrDefault(x => x.CId == int.Parse(cID));
-
-                    if (bean != null)
-                    {
-                        #region 紀錄新舊值
-                        OldcHostName = bean.CHostName;
-                        tLog += CMF.getNewAndOldLog("HostName", OldcHostName, cHostName);
-
-                        OldcSerialID = bean.CSerialId;
-                        tLog += CMF.getNewAndOldLog("序號", OldcSerialID, cSerialID);
-
-                        OldcPID = bean.CPid;
-                        tLog += CMF.getNewAndOldLog("ProductID", OldcPID, cPID);
-
-                        OldcBrands = bean.CBrands;
-                        tLog += CMF.getNewAndOldLog("廠牌", OldcBrands, cBrands);
-
-                        OldcModel = bean.CModel;
-                        tLog += CMF.getNewAndOldLog("ProductModel", OldcModel, cModel);
-
-                        OldcLocation = bean.CLocation;
-                        tLog += CMF.getNewAndOldLog("Location", OldcLocation, cLocation);
-
-                        OldcAddress = bean.CAddress;
-                        tLog += CMF.getNewAndOldLog("地址", OldcAddress, cAddress);
-
-                        OldcArea = bean.CArea;
-                        tLog += CMF.getNewAndOldLog("區域", OldcArea, cArea);
-
-                        OldcSLARESP = bean.CSlaresp;
-                        tLog += CMF.getNewAndOldLog("回應條件", OldcSLARESP, cSLARESP);
-
-                        OldcSLASRV = bean.CSlasrv;
-                        tLog += CMF.getNewAndOldLog("服務條件", OldcSLASRV, cSLASRV);
-
-                        OldcNotes = bean.CNotes;
-                        tLog += CMF.getNewAndOldLog("備註", OldcNotes, cNotes);
-
-                        OldcSubContractID = bean.CSubContractId;
-                        tLog += CMF.getNewAndOldLog("下包文件編號", OldcSubContractID, cSubContractID);
-                        #endregion
-
-                        bean.CHostName = string.IsNullOrEmpty(cHostName) ? "" : cHostName;
-                        bean.CSerialId = string.IsNullOrEmpty(cSerialID) ? "" : cSerialID;
-                        bean.CPid = string.IsNullOrEmpty(cPID) ? "" : cPID;
-                        bean.CBrands = string.IsNullOrEmpty(cBrands) ? "" : cBrands;
-                        bean.CModel = string.IsNullOrEmpty(cModel) ? "" : cModel;
-                        bean.CLocation = string.IsNullOrEmpty(cLocation) ? "" : cLocation;
-                        bean.CAddress = string.IsNullOrEmpty(cAddress) ? "" : cAddress;
-                        bean.CArea = string.IsNullOrEmpty(cArea) ? "" : cArea;
-                        bean.CSlaresp = string.IsNullOrEmpty(cSLARESP) ? "" : cSLARESP;
-                        bean.CSlasrv = string.IsNullOrEmpty(cSLASRV) ? "" : cSLASRV;
-                        bean.CNotes = string.IsNullOrEmpty(cNotes) ? "" : cNotes;
-                        bean.CSubContractId = string.IsNullOrEmpty(cSubContractID) ? "" : cSubContractID;
-
-                        bean.ModifiedDate = DateTime.Now;
-                        bean.ModifiedUserName = ViewBag.empEngName;
-                    }
-                }
-                else //新增
-                {
-                    TbOneContractDetailObj beanOBJ = new TbOneContractDetailObj();
-
-                    beanOBJ.CContractId = string.IsNullOrEmpty(cContractID) ? "" : cContractID;
-                    beanOBJ.CHostName = string.IsNullOrEmpty(cHostName) ? "" : cHostName;
-                    beanOBJ.CSerialId = string.IsNullOrEmpty(cSerialID) ? "" : cSerialID;
-                    beanOBJ.CPid = string.IsNullOrEmpty(cPID) ? "" : cPID;
-                    beanOBJ.CBrands = string.IsNullOrEmpty(cBrands) ? "" : cBrands;
-                    beanOBJ.CModel = string.IsNullOrEmpty(cModel) ? "" : cModel;
-                    beanOBJ.CLocation = string.IsNullOrEmpty(cLocation) ? "" : cLocation;
-                    beanOBJ.CAddress = string.IsNullOrEmpty(cAddress) ? "" : cAddress;
-                    beanOBJ.CArea = string.IsNullOrEmpty(cArea) ? "" : cArea;
-                    beanOBJ.CSlaresp = string.IsNullOrEmpty(cSLARESP) ? "" : cSLARESP;
-                    beanOBJ.CSlasrv = string.IsNullOrEmpty(cSLASRV) ? "" : cSLASRV;
-                    beanOBJ.CNotes = string.IsNullOrEmpty(cNotes) ? "" : cNotes;
-                    beanOBJ.CSubContractId = string.IsNullOrEmpty(cSubContractID) ? "" : cSubContractID;
-
-                    beanOBJ.Disabled = 0;
-                    beanOBJ.CreatedDate = DateTime.Now;
-                    beanOBJ.CreatedUserName = ViewBag.empEngName;
-
-                    dbOne.TbOneContractDetailObjs.Add(beanOBJ);
-                }
-
-                int result = dbOne.SaveChanges();
-
-                if (result <= 0)
-                {
-                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
-                    CMF.writeToLog(cContractID, "saveDetailOBJ", pMsg, ViewBag.empEngName);
-                    reValue = pMsg;
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(tLog))
-                    {
-                        CMF.writeToLog(cContractID, "saveDetailOBJ", tLog, ViewBag.empEngName);
-                    }
-                }
-            }
-            else
-            {
-                reValue = "序號【" + cSerialID + "】已存在，請重新再確認！";
-            }
-
-            return Json(reValue);
-        }
-        #endregion        
+        #endregion
 
         #endregion -----↑↑↑↑↑合約標的明細查詢/上傳/維護 ↑↑↑↑↑-----
 
