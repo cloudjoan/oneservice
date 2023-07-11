@@ -27,6 +27,7 @@ using System.Net;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using NPOI.SS.Formula.Functions;
 using NPOI.XSSF.Streaming.Values;
+using MathNet.Numerics;
 
 namespace OneService.Controllers
 {
@@ -136,17 +137,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
-
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();         
 
             #region 服務案件類型
             var SRTypeList = new List<SelectListItem>()
@@ -261,17 +252,7 @@ namespace OneService.Controllers
             string cIsShowLink = string.Empty;
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
-
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion       
+            getEmployeeInfo();
 
             #region 取得系統位址參數相關資訊
             SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
@@ -666,27 +647,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
-            ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
-            ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
-            ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
-            ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
-            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
-            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
-            ViewBag.pIsManager = EmpBean.IsManager;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-
-            pCompanyCode = EmpBean.BUKRS;
-            pIsManager = EmpBean.IsManager;
-            #endregion
+            getEmployeeInfo();
 
             var model = new ViewModelQuerySRProgress();
 
@@ -1109,35 +1070,15 @@ namespace OneService.Controllers
             try
             {
                 getLoginAccount();
-
-                #region 取得登入人員資訊
-                CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-                EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-                ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-                ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
-                ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
-                ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
-                ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
-                ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
-                ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
-                ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
-                ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-                ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
-                ViewBag.pIsManager = EmpBean.IsManager;
-                ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-
-                pCompanyCode = EmpBean.BUKRS;
-                pIsManager = EmpBean.IsManager;
-                #endregion
+                getEmployeeInfo();
 
                 #region 一般服務
 
                 //取得登入人員所負責的服務團隊
-                List<string> tSRTeamList = CMF.findSRTeamMappingList(EmpBean.CostCenterID, EmpBean.DepartmentNO);
+                List<string> tSRTeamList = CMF.findSRTeamMappingList(ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO);
 
                 //取得登入人員所有要負責的SRID                
-                List<string[]> SRIDToDoList = CMF.findSRIDList(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode, pIsManager, EmpBean.EmployeeERPID, tSRTeamList);
+                List<string[]> SRIDToDoList = CMF.findSRIDList(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode, pIsManager, ViewBag.cLoginUser_ERPID, tSRTeamList);
 
                 ViewBag.SRIDToDoList = SRIDToDoList;
                 #endregion
@@ -1165,26 +1106,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
-            ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
-            ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
-            ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
-            ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
-            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
-            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
-            ViewBag.cLoginUser_IsManager = EmpBean.IsManager;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();
 
             var model = new ViewModel();
 
@@ -1221,7 +1143,7 @@ namespace OneService.Controllers
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
                 
                 //判斷登入者是否可以編輯服務案件
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, EmpBean.EmployeeERPID, pIsMIS, pIsCS);
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, pIsMIS, pIsCS);
 
                 #region 報修資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -1478,11 +1400,7 @@ namespace OneService.Controllers
         public IActionResult SaveGenerallySR(IFormCollection formCollection)
         {            
             getLoginAccount();
-
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            pLoginName = EmpBean.EmployeeCName;
+            getEmployeeInfo();           
 
             pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
@@ -1800,7 +1718,7 @@ namespace OneService.Controllers
                         #endregion
 
                         #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
-                        beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = "E0005|ADD"; //新建但狀態是L3處理中
@@ -2363,7 +2281,7 @@ namespace OneService.Controllers
                             TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
                         }
 
-                        beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = TempStatus;
@@ -2395,11 +2313,7 @@ namespace OneService.Controllers
         public IActionResult QuerySRDetail_Warranty(string[] ArySERIAL)
         {
             getLoginAccount();
-
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            getEmployeeInfo();          
 
             bool tIsFormal = false;
             string BPMNO = string.Empty;
@@ -2502,7 +2416,7 @@ namespace OneService.Controllers
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
 
-                CMF.writeToLog("", "QuerySRDetail_Warranty", pMsg, EmpBean.EmployeeCName);
+                CMF.writeToLog("", "QuerySRDetail_Warranty", pMsg, ViewBag.empEngName);
             }
 
             return Json(QueryToList);
@@ -2518,11 +2432,7 @@ namespace OneService.Controllers
         public IActionResult getSRDetail_Warranty(string cSRID)
         {
             getLoginAccount();
-
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            getEmployeeInfo();           
 
             bool tIsFormal = false;
             string tONEURLName = string.Empty;
@@ -2557,7 +2467,7 @@ namespace OneService.Controllers
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
                 
-                CMF.writeToLog(cSRID, "getSRDetail_Warranty", pMsg, EmpBean.EmployeeCName);
+                CMF.writeToLog(cSRID, "getSRDetail_Warranty", pMsg, ViewBag.empEngName);
             }
 
             return Json(QueryToList);
@@ -2582,12 +2492,8 @@ namespace OneService.Controllers
         public ActionResult SavepjRecord(int? prId, string cSRID, string cEngineerID, string cEngineerName, string cStartTime, string cReceiveTime, string cArriveTime, string cFinishTime, string cDesc, string cReport)
         {
             getLoginAccount();
-
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-            
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-
+            getEmployeeInfo();
+           
             bool reValue = false;
 
             try
@@ -2774,14 +2680,7 @@ namespace OneService.Controllers
         public IActionResult SavepjTeam(string cTeamID, string cTeamAcc)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();           
 
             string reValue = string.Empty;
 
@@ -2888,14 +2787,7 @@ namespace OneService.Controllers
         public IActionResult DeletepjTeam(string cTeamID, string cTeamAcc)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();           
 
             string reValue = cTeamID;
 
@@ -2954,14 +2846,7 @@ namespace OneService.Controllers
         public IActionResult SavepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();           
 
             string reValue = string.Empty;
 
@@ -3063,14 +2948,7 @@ namespace OneService.Controllers
         public IActionResult DeletepjAssEngineer(string cAssEngineerID, string cAssEngineerAcc)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-          
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();           
 
             string reValue = cAssEngineerID;                
 
@@ -3129,14 +3007,7 @@ namespace OneService.Controllers
         public IActionResult SavepjTechManager(string cTechManagerID, string cTechManagerAcc)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();
 
             string reValue = string.Empty;
 
@@ -3238,14 +3109,7 @@ namespace OneService.Controllers
         public IActionResult DeletepjTechManager(string cTechManagerID, string cTechManagerAcc)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();            
 
             string reValue = cTechManagerID;
 
@@ -3305,14 +3169,7 @@ namespace OneService.Controllers
             string reValue = string.Empty;
                 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion            
+            getEmployeeInfo();            
 
             try
             {
@@ -3362,26 +3219,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
-            ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
-            ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
-            ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
-            ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
-            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
-            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
-            ViewBag.cLoginUser_IsManager = EmpBean.IsManager;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();           
 
             var model = new ViewModel_Install();
 
@@ -3418,7 +3256,7 @@ namespace OneService.Controllers
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                 //判斷登入者是否可以編輯服務案件
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, EmpBean.EmployeeERPID, pIsMIS, pIsCS);
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, pIsMIS, pIsCS);
 
                 #region 裝機資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -3532,11 +3370,7 @@ namespace OneService.Controllers
         public IActionResult SaveInstallSR(IFormCollection formCollection)
         {
             getLoginAccount();
-
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            pLoginName = EmpBean.EmployeeCName;
+            getEmployeeInfo();           
 
             pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
@@ -3668,6 +3502,7 @@ namespace OneService.Controllers
                     beanM.CSqpersonId = "";
                     beanM.CSqpersonName = "";
                     beanM.CIsAppclose = "";
+                  
                     #endregion
 
                     dbOne.TbOneSrmains.Add(beanM);
@@ -3797,7 +3632,7 @@ namespace OneService.Controllers
                         #endregion
 
                         #region call ONE SERVICE更新裝機現況資訊接口   
-                        beanInstall.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanInstall.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                         beanInstall.IV_LOGINEMPNAME = LoginUser_Name;
                         beanInstall.IV_SRID = pSRID;
                         beanInstall.IV_InstallDate = "";
@@ -3811,7 +3646,7 @@ namespace OneService.Controllers
                         #endregion
 
                         #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
-                        beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
 
@@ -4178,7 +4013,7 @@ namespace OneService.Controllers
                         }
 
                         #region call ONE SERVICE更新裝機現況資訊接口   
-                        beanInstall.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanInstall.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                         beanInstall.IV_LOGINEMPNAME = LoginUser_Name;
                         beanInstall.IV_SRID = pSRID;
                         beanInstall.IV_InstallDate = "";
@@ -4204,7 +4039,7 @@ namespace OneService.Controllers
                             TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
                         }
 
-                        beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = TempStatus;
@@ -4240,26 +4075,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
-            ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
-            ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
-            ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
-            ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
-            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
-            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
-            ViewBag.cLoginUser_IsManager = EmpBean.IsManager;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();           
 
             var model = new ViewModel_Maintain();
 
@@ -4296,7 +4112,7 @@ namespace OneService.Controllers
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                 //判斷登入者是否可以編輯服務案件
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, EmpBean.EmployeeERPID, pIsMIS, pIsCS);
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, pIsMIS, pIsCS);
 
                 #region 裝機資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -4394,11 +4210,7 @@ namespace OneService.Controllers
         public IActionResult SaveMaintainSR(IFormCollection formCollection)
         {
             getLoginAccount();
-
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            pLoginName = EmpBean.EmployeeCName;
+            getEmployeeInfo();           
 
             pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
@@ -4587,7 +4399,7 @@ namespace OneService.Controllers
                         #endregion                      
 
                         #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
-                        beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
 
@@ -4859,7 +4671,7 @@ namespace OneService.Controllers
                             TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
                         }
 
-                        beanIN.IV_LOGINEMPNO = EmpBean.EmployeeERPID;
+                        beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                         beanIN.IV_LOGINEMPNAME = LoginUser_Name;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = TempStatus;
@@ -4897,14 +4709,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();           
 
             return View();
         }
@@ -4958,14 +4763,7 @@ namespace OneService.Controllers
         public ActionResult saveTeam(string cID, string cTeamOldID, string cTeamOldName, string cTeamNewID, string cTeamNewName)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();           
 
             string tMsg = string.Empty;
 
@@ -5041,14 +4839,7 @@ namespace OneService.Controllers
         public ActionResult DeleteSRTeamMapping(string cID)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();           
 
             var ctBean = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.CId.ToString() == cID);
             ctBean.Disabled = 1;
@@ -5076,17 +4867,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-
-            pCompanyCode = EmpBean.BUKRS;            
-            #endregion
+            getEmployeeInfo();           
 
             var model = new ViewModelTeam();
 
@@ -5155,14 +4936,7 @@ namespace OneService.Controllers
                                             string cContactPhone, string cContactMobile, string cContactEmail)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();           
 
             string tMsg = string.Empty;
 
@@ -5246,14 +5020,7 @@ namespace OneService.Controllers
         public ActionResult DeleteSRCustomerEmailMapping(string cID)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();          
 
             var ctBean = dbOne.TbOneSrcustomerEmailMappings.FirstOrDefault(x => x.CId.ToString() == cID);
             ctBean.Disabled = 1;
@@ -5281,16 +5048,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();           
 
             var model = new ViewModelSQ();
 
@@ -5348,14 +5106,7 @@ namespace OneService.Controllers
         public ActionResult saveSRSQPerson(string cID, string cEngineerID, string cEngineerName, string cSecondKEY, string cThirdKEY, string cContent)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();           
 
             string tMsg = string.Empty;
 
@@ -5449,14 +5200,7 @@ namespace OneService.Controllers
         public ActionResult DeleteSRSQPerson(string cID)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();         
 
             var ctBean = dbOne.TbOneSrsqpeople.FirstOrDefault(x => x.CId.ToString() == cID);
             ctBean.Disabled = 1;
@@ -5484,16 +5228,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion            
+            getEmployeeInfo();              
 
             return View();
         }
@@ -5558,14 +5293,7 @@ namespace OneService.Controllers
                                                string ContactPhone, string ContactCity, string ContactMobile, string ContactAddress, string ContactEmail)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();           
 
             string tMsg = string.Empty;
 
@@ -5592,7 +5320,7 @@ namespace OneService.Controllers
                     prBean1.ContactId = Guid.NewGuid();                    
                     prBean1.Kna1Kunnr = CNO;
                     prBean1.Kna1Name1 = KNA1_NAME1;
-                    prBean1.Knb1Bukrs = EmpBean.BUKRS;
+                    prBean1.Knb1Bukrs = pCompanyCode;
                     prBean1.ContactName = ContactName;
                     prBean1.ContactPhone = ContactPhone;
                     prBean1.ContactCity = ContactCity;
@@ -5653,14 +5381,7 @@ namespace OneService.Controllers
         public ActionResult DeleteSRPersonCustomer(string cID)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();           
 
             var ctBean = dbProxy.PersonalContacts.FirstOrDefault(x => x.ContactId.ToString() == cID);
             ctBean.Disabled = 1;
@@ -5688,16 +5409,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-
-            pCompanyCode = EmpBean.BUKRS;
-            #endregion
+            getEmployeeInfo();           
 
             #region 報修類別
             //大類
@@ -5803,14 +5515,7 @@ namespace OneService.Controllers
         public ActionResult saveSRRepairType(string cID, string cKIND_KEY, string cKIND_NAME, string cKIND_LEVEL, string cUP_KIND_KEY)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();           
 
             string tMsg = string.Empty;
 
@@ -5885,14 +5590,7 @@ namespace OneService.Controllers
         public ActionResult DeleteSRRepairType(string cID)
         {
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();           
 
             string reValue = string.Empty;
 
@@ -5960,13 +5658,7 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-
-            #region 取得登入人員資訊
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-            #endregion
+            getEmployeeInfo();          
 
             #region 取得API URL
             bool tIsFormal = CMF.getCallSAPERPPara(pOperationID_GenerallySR); //取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
@@ -6156,11 +5848,7 @@ namespace OneService.Controllers
             string cFile_Ext = string.Empty;        //副檔名
 
             getLoginAccount();
-
-            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
-            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
-
-            pLoginName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " "); ;
+            getEmployeeInfo();           
 
             #region 取得系統位址參數相關資訊
             SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
@@ -6299,6 +5987,587 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑批次上傳裝機備料服務通知單 ↑↑↑↑↑-----
 
+        #region -----↓↓↓↓↓批次上傳裝機派工作業 ↓↓↓↓↓----- 
+
+        #region 匯入批次上傳裝機派工清單Excel
+        [HttpPost]
+        public IActionResult ImportBatchInstallExcel(IFormCollection formCollection, IFormFile postedFile)
+        {            
+            bool tIsOK = true;
+            string[] AryValue = new string[2];
+
+            string cID = string.Empty;
+            string tLog = string.Empty;
+            string tErrorMsg = string.Empty;
+            string strItem = string.Empty;  //記錄Excel第幾列
+            string cSRID = string.Empty;
+            string cCustomerID = string.Empty;
+            string cCustomerName = string.Empty;
+            string cSalesNo = string.Empty;
+            string cShipmentNo = string.Empty;
+            string cTeamID = string.Empty;
+            string cContactName = string.Empty;
+            string cContactAddress = string.Empty;
+            string cContactPhone = string.Empty;
+            string cContactMobile = string.Empty;
+            string cContactEmail = string.Empty;
+            string cSalesID = string.Empty;
+            string cSecretaryID = string.Empty;
+            string cMainEngineerID = string.Empty;
+            string cSerialID = string.Empty;
+
+            Dictionary<string, DataTable> DicM = new Dictionary<string, DataTable>();
+            Dictionary<string, DataTable> DicD = new Dictionary<string, DataTable>();
+            DataTable dtM = new DataTable();
+            DataTable dtD = new DataTable();
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            try
+            {
+
+                #region 取得匯入Excel主檔相關(批次裝機派工)
+                DicM = CMF.ImportExcelToDataTable(postedFile, "批次裝機派工", 0);
+
+                foreach (KeyValuePair<string, DataTable> item in DicM)
+                {
+                    #region 回傳結果訊息
+                    tErrorMsg = item.Key;
+                    #endregion
+
+                    #region 回傳的DataTable
+                    dtM = item.Value.Clone();
+
+                    foreach (DataRow dr in item.Value.Rows)
+                    {
+                        dtM.Rows.Add(dr.ItemArray);
+                    }
+                    #endregion
+
+                    break;
+                }
+                #endregion
+
+                #region 取得匯入Excel明細相關(物料訊息明細)
+                DicD = CMF.ImportExcelToDataTable(postedFile, "物料訊息明細", 1);
+
+                foreach (KeyValuePair<string, DataTable> item in DicD)
+                {
+                    #region 回傳結果訊息
+                    tErrorMsg += item.Key;
+                    #endregion
+
+                    #region 回傳的DataTable
+                    dtD = item.Value.Clone();
+
+                    foreach (DataRow dr in item.Value.Rows)
+                    {
+                        dtD.Rows.Add(dr.ItemArray);
+                    }
+                    #endregion
+
+                    break;
+                }
+                #endregion       
+
+                if (tErrorMsg == "")
+                {
+                    #region 寫入DataTable到主檔資料庫  
+                    if (dtM.Rows.Count > 0)
+                    {
+                        Guid cGUID = Guid.NewGuid(); //系統GUID
+
+                        foreach (DataRow dr in dtM.Rows)
+                        {
+                            try
+                            {
+                                cSRID = "";
+                                tIsOK = true;
+                                strItem = dr[0].ToString().Trim();
+                                cCustomerID = dr[1].ToString().Trim();
+                                cCustomerName = dr[2].ToString().Trim();
+                                cSalesNo = dr[3].ToString().Trim();
+                                cShipmentNo = dr[4].ToString().Trim();
+                                cTeamID = dr[5].ToString().Trim();
+                                cContactName = dr[6].ToString().Trim();
+                                cContactAddress = dr[7].ToString().Trim();
+                                cContactPhone = dr[8].ToString().Trim();
+                                cContactMobile = dr[9].ToString().Trim();
+                                cContactEmail = dr[10].ToString().Trim();
+                                cSalesID = dr[11].ToString().Trim();
+                                cSecretaryID = dr[12].ToString().Trim();
+                                cMainEngineerID = dr[13].ToString().Trim();
+                                cSerialID = dr[14].ToString().Trim();
+
+                                #region Empty欄位檢查
+                                AryValue = CMF.ValidationImportExcelField(cCustomerID, "客戶代號", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "客戶名稱", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "SO訂單號碼", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "DN出貨單號碼", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "服務團隊ID", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "聯絡人姓名", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "聯絡人地址", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cContactPhone + cContactMobile, "聯絡人電話或聯絡人手機", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "業務員工ERPID", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "業務祕書ERPID", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "指派主要工程師ERPID", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+                                #endregion
+
+                                #region 呼叫建立ONE SERVICE報修SR（裝機服務）接口
+                                if (tIsOK)
+                                {
+                                    SRMain_INSTALLSR_INPUT beanIN = new SRMain_INSTALLSR_INPUT();
+
+                                    #region 設定主檔
+                                    beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
+                                    beanIN.IV_LOGINEMPNAME = pLoginName;
+                                    beanIN.IV_CUSTOMER = cCustomerID;
+                                    beanIN.IV_SALESNO = cSalesNo;
+                                    beanIN.IV_SHIPMENTNO = cShipmentNo;
+                                    beanIN.IV_SALESEMPNO = cSalesID;
+                                    beanIN.IV_SECRETARYEMPNO = cSecretaryID;
+                                    beanIN.IV_DESC = "【" + cShipmentNo + "】OneService系統批次裝機派單";
+                                    beanIN.IV_LTXT = "【" + cShipmentNo + "】OneService系統批次裝機派單";
+                                    beanIN.IV_SRTEAM = cTeamID;
+                                    beanIN.IV_EMPNO = cMainEngineerID;
+                                    #endregion
+
+                                    #region 取得聯絡人清單
+                                    List<CREATECONTACTINFO> tListCON = new List<CREATECONTACTINFO>();
+                                    
+                                    CREATECONTACTINFO Con = new CREATECONTACTINFO();
+                                    Con.CONTNAME = cContactName;
+                                    Con.CONTADDR = cContactAddress;
+                                    Con.CONTTEL = cContactPhone;
+                                    Con.CONTMOBILE = cContactMobile;
+                                    Con.CONTEMAIL = cContactEmail;
+                                    
+                                    tListCON.Add(Con);
+
+                                    beanIN.CREATECONTACT_LIST = tListCON;
+                                    #endregion
+
+                                    #region 取得物料訊息明細清單
+                                    List<CREATEMATERIAL> tListMA = new List<CREATEMATERIAL>();
+
+                                    foreach (DataRow drD in dtD.Rows)
+                                    {
+                                        if (drD[0].ToString() == cShipmentNo)
+                                        {
+                                            CREATEMATERIAL MA = new CREATEMATERIAL();
+                                            MA.MATERIALID = drD[1].ToString();
+                                            MA.MATERIALNAME = string.IsNullOrEmpty(drD[2].ToString()) ? CMF.findMATERIALName(drD[1].ToString()) : drD[2].ToString();
+                                            MA.QTY = drD[3].ToString();
+
+                                            tListMA.Add(MA);                                            
+                                        }
+                                    }
+
+                                    beanIN.CREATEMATERIAL_LIST = tListMA;
+                                    #endregion
+
+                                    #region 取得序號回報明細清單
+                                    List<CREATEFEEDBACK> tListFB = new List<CREATEFEEDBACK>();
+
+                                    if (cSerialID != "")
+                                    {
+                                        CREATEFEEDBACK FB = new CREATEFEEDBACK();
+                                        FB.SERIALID = cSerialID;
+                                        
+                                        tListFB.Add(FB);
+                                    }
+
+                                    beanIN.CREATEFEEDBACK_LIST = tListFB;
+                                    #endregion
+
+
+                                    cSRID = CMF.callAPI_INSTALLSR_CREATE(beanIN);
+
+                                    if (cSRID != "")
+                                    {
+                                        #region 回寫批次上傳裝機派工紀錄(主檔)
+                                        TbOneSrbatchInstallRecord BInsM = new TbOneSrbatchInstallRecord();
+
+                                        BInsM.CSrid = cSRID;
+                                        BInsM.CCustomerId = cCustomerID;
+                                        BInsM.CCustomerName = cCustomerName;
+                                        BInsM.CTeamId = CMF.findSRTeamIDandName(cTeamID);
+                                        BInsM.CContactName = cContactName;
+                                        BInsM.CContactAddress = cContactAddress;
+                                        BInsM.CContactPhone = cContactPhone;
+                                        BInsM.CContactMobile = cContactMobile;
+                                        BInsM.CContactEmail = cContactEmail;
+                                        BInsM.CMainEngineerId = cMainEngineerID;
+                                        BInsM.CMainEngineerName = CMF.findEmployeeName(cMainEngineerID);
+                                        BInsM.CSalesId = cSalesID;
+                                        BInsM.CSalesName = CMF.findEmployeeName(cSalesID);
+                                        BInsM.CSecretaryId = cSecretaryID;
+                                        BInsM.CSecretaryName = CMF.findEmployeeName(cSecretaryID);
+                                        BInsM.CSalesNo = cSalesNo;
+                                        BInsM.CShipmentNo = cShipmentNo;
+                                        BInsM.CSerialId = cSerialID;
+
+                                        BInsM.CreatedDate = DateTime.Now;
+                                        BInsM.CreatedUserName = pLoginName;
+
+                                        dbOne.TbOneSrbatchInstallRecords.Add(BInsM);
+                                        #endregion
+
+                                        #region 回寫批次上傳裝機派工紀錄(明細檔)
+                                        if (tListMA.Count > 0)
+                                        {
+                                            foreach (var MA in tListMA)
+                                            {
+                                                TbOneSrbatchInstallRecordDetail BInsD = new TbOneSrbatchInstallRecordDetail();
+
+                                                BInsD.CSrid = cSRID;
+                                                BInsD.CMaterialId = MA.MATERIALID;
+                                                BInsD.CMaterialName = MA.MATERIALNAME;
+                                                BInsD.CQuantity = int.Parse(MA.QTY);
+
+                                                BInsD.CreatedDate = DateTime.Now;
+                                                BInsD.CreatedUserName = pLoginName;
+
+                                                dbOne.TbOneSrbatchInstallRecordDetails.Add(BInsD);
+                                            }
+                                        }
+                                        #endregion
+
+                                        int result = dbOne.SaveChanges();
+
+                                        if (result <= 0)
+                                        {
+                                            pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "回寫批次上傳裝機派工紀錄檔失敗" + Environment.NewLine;
+                                            CMF.writeToLog(cSRID, "ImportBatchInstallExcel", pMsg, pLoginName);
+                                        }                                        
+                                    }
+                                }
+                                #endregion
+                            }
+                            catch (Exception e)
+                            {
+                                tErrorMsg += "項次【" + strItem + "】，產生裝機服務失敗！原因：" + e.Message + "</br>";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        tErrorMsg += "您未輸入任何批次上傳裝機派工清單！</br>";
+                    }
+                    #endregion
+                }
+
+                if (tErrorMsg == "")
+                {
+                    ViewBag.Message = "匯入成功！";
+                }
+                else
+                {
+                    ViewBag.Message = "匯入失敗！</br>" + tErrorMsg;
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Message = "匯入失敗！原因：" + ex.Message;
+            }
+
+            return RedirectToAction("QueryBatchInstall", new { cID = cID, tMessage = ViewBag.Message });
+        }
+        #endregion
+
+        #region 批次上傳裝機派工清單查詢
+        /// <summary>
+        /// 批次上傳裝機派工清單查詢
+        /// </summary>
+        /// <param name="cID">Log檔的系統ID</param>
+        /// <returns></returns>
+        public IActionResult QueryBatchInstall(string cID)
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            bool tIsFormal = false;
+
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+
+            ViewBag.DownloadURL = "http://" + tAttachURLName + "/CSreport/批次裝機派工.XLSX";
+            #endregion
+
+            #region Request參數            
+            if (HttpContext.Request.Query["CID"].FirstOrDefault() != null)
+            {
+              
+            }            
+
+            if (HttpContext.Request.Query["tMessage"].FirstOrDefault() != null)
+            {
+                //記錄匯入Excel成功或失敗訊息！
+                ViewBag.Message = HttpContext.Request.Query["tMessage"].FirstOrDefault();
+            }
+            #endregion     
+
+            return View();
+        }
+        #endregion       
+
+        #region 儲存合約標的明細內容
+        /// <summary>
+        /// 儲存合約標的明細內容
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cHostName">HostName</param>
+        /// <param name="cSerialID">序號</param>
+        /// <param name="cPID">ProductID</param>
+        /// <param name="cBrands">廠牌</param>
+        /// <param name="cModel">ProductModel</param>
+        /// <param name="cLocation">Location</param>
+        /// <param name="cAddress">地址</param>
+        /// <param name="cArea">區域</param>
+        /// <param name="cSLARESP">回應條件</param>
+        /// <param name="cSLASRV">服務條件</param>
+        /// <param name="cNotes">備註</param>
+        /// <param name="cSubContractID">下包文件編號</param>
+        /// <returns></returns>
+        public IActionResult saveDetailOBJ(string cID, string cContractID, string cHostName, string cSerialID, string cPID,
+                                         string cBrands, string cModel, string cLocation, string cAddress, string cArea,
+                                         string cSLARESP, string cSLASRV, string cNotes, string cSubContractID)
+
+        {
+            string reValue = "SUCCESS";
+            string tLog = string.Empty;
+
+            string OldcHostName = string.Empty;
+            string OldcSerialID = string.Empty;
+            string OldcPID = string.Empty;
+            string OldcBrands = string.Empty;
+            string OldcModel = string.Empty;
+            string OldcLocation = string.Empty;
+            string OldcAddress = string.Empty;
+            string OldcArea = string.Empty;
+            string OldcSLARESP = string.Empty;
+            string OldcSLASRV = string.Empty;
+            string OldcNotes = string.Empty;
+            string OldcSubContractID = string.Empty;
+
+            bool tIsDouble = false; //判斷是否有重覆
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            //判斷傳入的序號是否已存在合約標的明細內容(true.已存在 false.未存在)
+            tIsDouble = CMF.checkIsExitsContractDetailObj(cContractID, cID, cSerialID);
+
+            if (!tIsDouble)
+            {
+                if (!string.IsNullOrEmpty(cID)) //修改
+                {
+                    var bean = dbOne.TbOneContractDetailObjs.FirstOrDefault(x => x.CId == int.Parse(cID));
+
+                    if (bean != null)
+                    {
+                        #region 紀錄新舊值
+                        OldcHostName = bean.CHostName;
+                        tLog += CMF.getNewAndOldLog("HostName", OldcHostName, cHostName);
+
+                        OldcSerialID = bean.CSerialId;
+                        tLog += CMF.getNewAndOldLog("序號", OldcSerialID, cSerialID);
+
+                        OldcPID = bean.CPid;
+                        tLog += CMF.getNewAndOldLog("ProductID", OldcPID, cPID);
+
+                        OldcBrands = bean.CBrands;
+                        tLog += CMF.getNewAndOldLog("廠牌", OldcBrands, cBrands);
+
+                        OldcModel = bean.CModel;
+                        tLog += CMF.getNewAndOldLog("ProductModel", OldcModel, cModel);
+
+                        OldcLocation = bean.CLocation;
+                        tLog += CMF.getNewAndOldLog("Location", OldcLocation, cLocation);
+
+                        OldcAddress = bean.CAddress;
+                        tLog += CMF.getNewAndOldLog("地址", OldcAddress, cAddress);
+
+                        OldcArea = bean.CArea;
+                        tLog += CMF.getNewAndOldLog("區域", OldcArea, cArea);
+
+                        OldcSLARESP = bean.CSlaresp;
+                        tLog += CMF.getNewAndOldLog("回應條件", OldcSLARESP, cSLARESP);
+
+                        OldcSLASRV = bean.CSlasrv;
+                        tLog += CMF.getNewAndOldLog("服務條件", OldcSLASRV, cSLASRV);
+
+                        OldcNotes = bean.CNotes;
+                        tLog += CMF.getNewAndOldLog("備註", OldcNotes, cNotes);
+
+                        OldcSubContractID = bean.CSubContractId;
+                        tLog += CMF.getNewAndOldLog("下包文件編號", OldcSubContractID, cSubContractID);
+                        #endregion
+
+                        bean.CHostName = string.IsNullOrEmpty(cHostName) ? "" : cHostName;
+                        bean.CSerialId = string.IsNullOrEmpty(cSerialID) ? "" : cSerialID;
+                        bean.CPid = string.IsNullOrEmpty(cPID) ? "" : cPID;
+                        bean.CBrands = string.IsNullOrEmpty(cBrands) ? "" : cBrands;
+                        bean.CModel = string.IsNullOrEmpty(cModel) ? "" : cModel;
+                        bean.CLocation = string.IsNullOrEmpty(cLocation) ? "" : cLocation;
+                        bean.CAddress = string.IsNullOrEmpty(cAddress) ? "" : cAddress;
+                        bean.CArea = string.IsNullOrEmpty(cArea) ? "" : cArea;
+                        bean.CSlaresp = string.IsNullOrEmpty(cSLARESP) ? "" : cSLARESP;
+                        bean.CSlasrv = string.IsNullOrEmpty(cSLASRV) ? "" : cSLASRV;
+                        bean.CNotes = string.IsNullOrEmpty(cNotes) ? "" : cNotes;
+                        bean.CSubContractId = string.IsNullOrEmpty(cSubContractID) ? "" : cSubContractID;
+
+                        bean.ModifiedDate = DateTime.Now;
+                        bean.ModifiedUserName = ViewBag.empEngName;
+                    }
+                }
+                else //新增
+                {
+                    TbOneContractDetailObj beanOBJ = new TbOneContractDetailObj();
+
+                    beanOBJ.CContractId = string.IsNullOrEmpty(cContractID) ? "" : cContractID;
+                    beanOBJ.CHostName = string.IsNullOrEmpty(cHostName) ? "" : cHostName;
+                    beanOBJ.CSerialId = string.IsNullOrEmpty(cSerialID) ? "" : cSerialID;
+                    beanOBJ.CPid = string.IsNullOrEmpty(cPID) ? "" : cPID;
+                    beanOBJ.CBrands = string.IsNullOrEmpty(cBrands) ? "" : cBrands;
+                    beanOBJ.CModel = string.IsNullOrEmpty(cModel) ? "" : cModel;
+                    beanOBJ.CLocation = string.IsNullOrEmpty(cLocation) ? "" : cLocation;
+                    beanOBJ.CAddress = string.IsNullOrEmpty(cAddress) ? "" : cAddress;
+                    beanOBJ.CArea = string.IsNullOrEmpty(cArea) ? "" : cArea;
+                    beanOBJ.CSlaresp = string.IsNullOrEmpty(cSLARESP) ? "" : cSLARESP;
+                    beanOBJ.CSlasrv = string.IsNullOrEmpty(cSLASRV) ? "" : cSLASRV;
+                    beanOBJ.CNotes = string.IsNullOrEmpty(cNotes) ? "" : cNotes;
+                    beanOBJ.CSubContractId = string.IsNullOrEmpty(cSubContractID) ? "" : cSubContractID;
+
+                    beanOBJ.Disabled = 0;
+                    beanOBJ.CreatedDate = DateTime.Now;
+                    beanOBJ.CreatedUserName = ViewBag.empEngName;
+
+                    dbOne.TbOneContractDetailObjs.Add(beanOBJ);
+                }
+
+                int result = dbOne.SaveChanges();
+
+                if (result <= 0)
+                {
+                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
+                    CMF.writeToLog(cContractID, "saveDetailOBJ", pMsg, ViewBag.empEngName);
+                    reValue = pMsg;
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(tLog))
+                    {
+                        CMF.writeToLog(cContractID, "saveDetailOBJ", tLog, ViewBag.empEngName);
+                    }
+                }
+            }
+            else
+            {
+                reValue = "序號【" + cSerialID + "】已存在，請重新再確認！";
+            }
+
+            return Json(reValue);
+        }
+        #endregion        
+
+        #endregion -----↑↑↑↑↑合約標的明細查詢/上傳/維護 ↑↑↑↑↑-----
+
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
         #region 提交表單後開啟該完成表單，並顯示即將關閉後再關閉此頁
@@ -6342,6 +6611,31 @@ namespace OneService.Controllers
             ViewBag.pIsCSManager = pIsCSManager;
             ViewBag.pIsCS = pIsCS;
             #endregion            
+        }
+        #endregion
+
+        #region 取得人員相關資料
+        public void getEmployeeInfo()
+        {
+            CommonFunction.EmployeeBean EmpBean = new CommonFunction.EmployeeBean();
+            EmpBean = CMF.findEmployeeInfo(pLoginAccount);
+
+            ViewBag.cLoginUser_Name = EmpBean.EmployeeCName;
+            ViewBag.cLoginUser_EmployeeNO = EmpBean.EmployeeNO;
+            ViewBag.cLoginUser_ERPID = EmpBean.EmployeeERPID;
+            ViewBag.cLoginUser_WorkPlace = EmpBean.WorkPlace;
+            ViewBag.cLoginUser_DepartmentName = EmpBean.DepartmentName;
+            ViewBag.cLoginUser_DepartmentNO = EmpBean.DepartmentNO;
+            ViewBag.cLoginUser_ProfitCenterID = EmpBean.ProfitCenterID;
+            ViewBag.cLoginUser_CostCenterID = EmpBean.CostCenterID;
+            ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
+            ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
+            ViewBag.pIsManager = EmpBean.IsManager;
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+
+            pLoginName = ViewBag.empEngName;
+            pCompanyCode = EmpBean.BUKRS;
+            pIsManager = EmpBean.IsManager;
         }
         #endregion
 
@@ -8023,4 +8317,96 @@ namespace OneService.Controllers
         public string EV_MSG { get; set; }
     }
     #endregion
+
+    #region 裝機服務案件主檔INPUT資訊
+    /// <summary>裝機服務案件主檔INPUT資訊</summary>
+    public struct SRMain_INSTALLSR_INPUT
+    {
+        /// <summary>建立者員工編號ERPID</summary>
+        public string IV_LOGINEMPNO { get; set; }
+        /// <summary>建立者員工姓名</summary>
+        public string IV_LOGINEMPNAME { get; set; }
+        /// <summary>客戶ID</summary>
+        public string IV_CUSTOMER { get; set; }
+        /// <summary>服務團隊ID</summary>
+        public string IV_SRTEAM { get; set; }
+        /// <summary>銷售訂單號</summary>
+        public string IV_SALESNO { get; set; }
+        /// <summary>出貨單號</summary>
+        public string IV_SHIPMENTNO { get; set; }
+        /// <summary>服務案件說明</summary>
+        public string IV_DESC { get; set; }
+        /// <summary>詳細描述</summary>
+        public string IV_LTXT { get; set; }        
+        /// <summary>主要工程師員工編號</summary>
+        public string IV_EMPNO { get; set; }
+        /// <summary>業務人員員工編號</summary>
+        public string IV_SALESEMPNO { get; set; }
+        /// <summary>業務祕書員工編號</summary>
+        public string IV_SECRETARYEMPNO { get; set; }
+        /// <summary>APIURLName</summary>
+        public string IV_APIURLName { get; set; }
+
+        /// <summary>服務案件客戶聯絡人資訊</summary>
+        public List<CREATECONTACTINFO> CREATECONTACT_LIST { get; set; }
+        /// <summary>服務案件物料訊息資訊</summary>
+        public List<CREATEMATERIAL> CREATEMATERIAL_LIST { get; set; }
+        /// <summary>服務案件序號回報資訊</summary>
+        public List<CREATEFEEDBACK> CREATEFEEDBACK_LIST { get; set; }
+    }
+    #endregion
+
+    #region 裝機服務主檔OUTPUT資訊
+    /// <summary>裝機服務主檔OUTPUT資訊</summary>
+    public struct SRMain_INSTALLSR_OUTPUT
+    {
+        /// <summary>SRID</summary>
+        public string EV_SRID { get; set; }
+        /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+        public string EV_MSGT { get; set; }
+        /// <summary>消息內容</summary>
+        public string EV_MSG { get; set; }
+    }
+    #endregion
+
+    #region 建立客戶聯絡人資訊
+    /// <summary>建立客戶聯絡人資訊</summary>
+    public class CREATECONTACTINFO
+    {
+        /// <summary>聯絡人姓名</summary>
+        public string CONTNAME { get; set; }
+        /// <summary>聯絡人地址</summary>
+        public string CONTADDR { get; set; }
+        /// <summary>聯絡人電話</summary>
+        public string CONTTEL { get; set; }
+        /// <summary>聯絡人手機</summary>
+        public string CONTMOBILE { get; set; }
+        /// <summary>聯絡人信箱</summary>
+        public string CONTEMAIL { get; set; }
+
+    }
+    #endregion
+
+    #region 建立物料訊息資訊
+    /// <summary>建立物料訊息資訊</summary>
+    public class CREATEMATERIAL
+    {
+        /// <summary>物料編號</summary>
+        public string MATERIALID { get; set; }
+        /// <summary>物料說明</summary>
+        public string MATERIALNAME { get; set; }
+        /// <summary>物料數量</summary>
+        public string QTY { get; set; }
+    }
+    #endregion
+
+    #region 建立序號回報資訊
+    /// <summary>建立序號回報資訊</summary>
+    public class CREATEFEEDBACK
+    {
+        /// <summary>序號</summary>
+        public string SERIALID { get; set; }
+    }
+    #endregion
+
 }

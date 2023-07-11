@@ -1,0 +1,271 @@
+﻿@{
+	ViewData["Title"] = "QueryBatchInstall";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>
+		$(document).ready(function () {			
+			initTable();			
+		});
+
+		function initTable() {
+			var buttonCommon = {
+				exportOptions: {
+					format: {
+						body: function (data, row, column, node) {
+							//替換&符號
+							var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+								translate = {
+									'nbsp': String.fromCharCode(160),
+									'amp': '&',
+									'quot': '"',
+									'lt': '<',
+									'gt': '>'
+								},
+								translator = function ($0, $1) {
+									return translate[$1];
+								};
+
+							if (typeof data === 'string')
+								data = data.replace(translate_re, translator);
+
+							if (column === 0) //去除連結的部份
+							{
+								var splitName = data.split(">");
+								var length = splitName.length;
+
+								if (length > 1) {
+									return data.split(">")[1].split("<")[0];
+								}
+								else {
+									return data;
+								}
+							}							
+							else
+								return data;
+						}
+					}
+				}
+			};
+
+			$('#tableAll').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+				buttons: [
+					$.extend(true, {}, buttonCommon, {
+						extend: 'excelHtml5',
+						title: '批次裝機派工上傳結果查詢_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						text: '匯出Excel',
+						sheetName: '批次裝機派工上傳結果查詢',
+						exportOptions: {
+							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] //要顯示的欄位
+						},
+						customize: function (xlsx) {
+							addCustomNumberFormat(xlsx, '0');
+							formatTargetColumn(xlsx, 'A');
+							formatTargetColumn(xlsx, 'B');
+							formatTargetColumn(xlsx, 'C');
+							formatTargetColumn(xlsx, 'D');
+							formatTargetColumn(xlsx, 'E');
+							formatTargetColumn(xlsx, 'F');
+							formatTargetColumn(xlsx, 'G');
+							formatTargetColumn(xlsx, 'H');
+							formatTargetColumn(xlsx, 'I');
+							formatTargetColumn(xlsx, 'J');
+							formatTargetColumn(xlsx, 'K');
+							formatTargetColumn(xlsx, 'L');
+							formatTargetColumn(xlsx, 'M');
+							formatTargetColumn(xlsx, 'N');
+						}
+					}),
+				],
+			});
+
+			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+
+			$(".btnPreventDefault").click(function (e) {
+				e.preventDefault();
+			});
+		}
+
+		function addCustomNumberFormat(xlsx, numberFormat) {
+			// this adds a new custom number format to the Excel "styles" document:
+			var numFmtsElement = xlsx.xl['styles.xml'].getElementsByTagName('numFmts')[0];
+			// assume 6 custom number formats already exist, and next available ID is 176:
+			var numFmtElement = '<numFmt numFmtId="176" formatCode="' + numberFormat + '"/>';
+			$(numFmtsElement).append(numFmtElement);
+			$(numFmtsElement).attr("count", "7"); // increment the count
+
+			// now add a new "cellXfs" cell formatter, which uses our new number format (numFmt 176):
+			var celXfsElement = xlsx.xl['styles.xml'].getElementsByTagName('cellXfs');
+			var cellStyle = '<xf numFmtId="176" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"'
+				+ ' applyFont="1" applyFill="1" applyBorder="1"/>';
+			// this will be the 8th "xf" element - and will therefore have an index of "7", when we use it later:
+			$(celXfsElement).append(cellStyle);
+			$(celXfsElement).attr("count", "66"); //(1.2.3版)官方提供0-64共65種格式，在此自己新增加一種
+		}
+
+		function formatTargetColumn(xlsx, col) {
+			var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+			if (col == "A") {
+				$('row c[r^="' + col + '"]', sheet).attr('s', '65'); //使用自定義格式
+			}
+			else {
+				$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
+			}
+		}
+
+		//檢查上傳Excel檔案路徑是否有填寫
+		function checkEmpty() {
+			var reValue = false;
+			var strFileName = $("#postedFile").val();
+
+			if (strFileName == "") {
+				alert('請先選擇欲上傳的檔案！');
+			}
+			else {
+				reValue = confirm('是否確定上傳?');
+			}
+
+			return reValue;
+		}	
+
+		function DownloadTaskSample(filePath) {
+			var link = document.createElement('a');
+			link.href = filePath;
+			link.download = "批次裝機派工(匯入範本).xlsx";
+			link.target = "_blank";
+			link.click();
+		}
+	</script>
+
+}
+
+@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>批次上傳裝機派工作業</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">服務管理</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>批次上傳裝機派工作業</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+<div class="row">
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>批次上傳裝機派工作業</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content">				
+					<form name="form" asp-controller="ServiceRequest" asp-action="ImportBatchInstallExcel" method="post" enctype="multipart/form-data">
+					<div class="form-group row">
+							<div class="col-lg-12" id="div_excelFile">							
+								<input type="file" id="postedFile" name="postedFile" />
+								<input type="submit" value="匯入Excel" class="btn btn-success btn-lg" onclick="if (!checkEmpty()){event.returnValue=false;return false;}" />
+								<button id="btn_download_task" class="btn btn-primary" type="button" onclick="DownloadTaskSample('@ViewBag.DownloadURL');" style="margin-left: 10px;">
+									<i class="fa fa-download" aria-hidden="true" style="font-size: 16px;"></i>
+									<span style="font-weight: bold; margin: 2px;">批次裝機派工範本下載</span>
+								</button>
+							</div>
+						</div>
+
+					<div class="form-group row">
+						<!--顯示匯入成功或失敗訊息-->
+						<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;" id="lbl_Message">@Html.Raw(ViewBag.Message)</label>
+					</div>
+					<!--登人者公司別(Comp-1、Comp-2...)-->
+					<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+					<!--登人者公司別(T012、T016...)-->
+					<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>
+					批次裝機派工上傳結果					
+				</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+				<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+					<thead>
+						<tr>	
+							<th>SRID</th>
+							<th>項次</th>
+							<th>客戶代號</th>
+							<th>客戶名稱</th>
+							<th>SO訂單號碼</th>
+							<th>DN出貨單號碼</th>
+							<th>服務團隊ID</th>
+							<th>聯絡人姓名</th>
+							<th>聯絡人地址</th>
+							<th>聯絡人電話</th>
+							<th>聯絡人手機</th>
+							<th>聯絡人信箱</th>
+							<th>業務員工ERPID</th>
+							<th>業務祕書ERPID</th>
+							<th>指派主要工程師ERPID</th>
+						</tr>
+					</thead>
+					<tbody>
+						@{
+							if (ViewBag.QueryToListBean != null)
+							{
+								int count = 0;
+								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								{
+									count++;
+									<tr>
+										<td><a href="@QueryInfo[0]" target="_blank">@QueryInfo[0]</a></td>
+										<td>@Html.Raw(QueryInfo[1])</td>										
+										<td>@Html.Raw(QueryInfo[2])</td>
+										<td>@Html.Raw(QueryInfo[3])</td>
+										<td>@Html.Raw(QueryInfo[4])</td>
+										<td>@Html.Raw(QueryInfo[5])</td>
+										<td>@Html.Raw(QueryInfo[6])</td>
+										<td>@Html.Raw(QueryInfo[7])</td>
+										<td>@Html.Raw(QueryInfo[8])</td>
+										<td>@Html.Raw(QueryInfo[9])</td>
+										<td>@Html.Raw(QueryInfo[10])</td>
+										<td>@Html.Raw(QueryInfo[11])</td>
+										<td>@Html.Raw(QueryInfo[12])</td>
+										<td>@Html.Raw(QueryInfo[13])</td>
+										<td>@Html.Raw(QueryInfo[14])</td>
+									</tr>
+								}
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

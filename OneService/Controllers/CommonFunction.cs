@@ -30,6 +30,7 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Routing;
+using NPOI.OpenXmlFormats.Spreadsheet;
 
 namespace OneService.Controllers
 {
@@ -1645,11 +1646,101 @@ namespace OneService.Controllers
 
             return OUTBean;
         }
-        #endregion
+        #endregion        
 
         #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓裝機服務 ↓↓↓↓↓-----
+
+        #region 建立ONE SERVICE報修SR（裝機服務）接口，若成功則回傳SRID
+        /// <summary>
+        /// 建立ONE SERVICE報修SR（裝機服務）接口，若成功則回傳SRID
+        /// </summary>
+        /// <param name="tSubject">主旨</param>
+        /// <param name="tBody">內容</param>
+        /// <param name="tCustomerID">客戶代號</param>        
+        /// <param name="cTeamID">服務團隊ID</param>
+        public string callAPI_INSTALLSR_CREATE(SRMain_INSTALLSR_INPUT beanIN)
+        {
+            string reValue = string.Empty;
+
+            SRMain_INSTALLSR_OUTPUT SROUT = new SRMain_INSTALLSR_OUTPUT();
+
+            string tURL = beanIN.IV_APIURLName + "/API/API_INSTALLSR_CREATE";
+
+            string CONTNAME = string.Empty;
+            string CONTADDR = string.Empty;
+            string CONTTEL = string.Empty;
+            string CONTMOBILE = string.Empty;
+            string CONTEMAIL = string.Empty;
+
+            try
+            {
+                var client = new RestClient(tURL);  //測試用            
+
+                var request = new RestRequest();
+                request.Method = RestSharp.Method.Post;
+
+                List<CREATECONTACTINFO> tListCON = beanIN.CREATECONTACT_LIST;
+                List<CREATEMATERIAL> tListMA = beanIN.CREATEMATERIAL_LIST;
+                List<CREATEFEEDBACK> tListFB = beanIN.CREATEFEEDBACK_LIST;
+
+                Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+                parameters.Add("IV_LOGINEMPNO", beanIN.IV_LOGINEMPNO);
+                parameters.Add("IV_CUSTOMER", beanIN.IV_CUSTOMER);
+                parameters.Add("IV_SALESNO", beanIN.IV_SALESNO);
+                parameters.Add("IV_SHIPMENTNO", beanIN.IV_SHIPMENTNO);
+                parameters.Add("IV_SALESEMPNO", beanIN.IV_SALESEMPNO);
+                parameters.Add("IV_SECRETARYEMPNO", beanIN.IV_SECRETARYEMPNO);
+                parameters.Add("IV_DESC", beanIN.IV_DESC);
+                parameters.Add("IV_LTXT", beanIN.IV_LTXT);
+                parameters.Add("IV_SRTEAM", beanIN.IV_SRTEAM);
+                parameters.Add("IV_EMPNO", beanIN.IV_EMPNO);
+
+                if (tListCON.Count > 0)
+                {
+                    parameters.Add("CREATECONTACT_LIST", tListCON);
+                }
+
+                if (tListMA.Count > 0)
+                {
+                    parameters.Add("CREATEMATERIAL_LIST", tListMA);
+                }
+
+                if (tListFB.Count > 0)
+                {
+                    parameters.Add("CREATEFEEDBACK_LIST", tListFB);
+                }
+
+                request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
+                request.AddParameter("application/json", parameters, ParameterType.RequestBody);
+
+                RestResponse response = client.Execute(request);
+
+                var data = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+                SROUT.EV_SRID = data["EV_SRID"].ToString().Trim();
+                SROUT.EV_MSGT = data["EV_MSGT"].ToString().Trim();
+                SROUT.EV_MSG = data["EV_MSG"].ToString().Trim();
+
+                if (SROUT.EV_MSGT == "Y")
+                {
+                    reValue = SROUT.EV_SRID;
+                }
+                else
+                {
+                    writeToLog(SROUT.EV_SRID, "callINSTALLSR_CREATEByAPI", SROUT.EV_MSG, beanIN.IV_LOGINEMPNAME);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"CreateSR Error: {ex}");
+            }
+
+            return reValue;
+        }
+        #endregion
 
         #region call ONE SERVICE 更新裝機現況資訊接口 
         /// <summary>
@@ -3126,7 +3217,30 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion        
+        #endregion
+
+        #region 取得料號說明
+        /// <summary>
+        /// 取得料號說明
+        /// </summary>        
+        /// <param name="IV_MATERIAL">物料代號</param>
+        /// <returns></returns>
+        public string findMATERIALName(string IV_MATERIAL)
+        {
+            string reValue = string.Empty;
+
+            #region 取得製造商零件號碼
+            var beanM = dbProxy.Materials.FirstOrDefault(x => x.MaraMatnr == IV_MATERIAL.Trim());
+
+            if (beanM != null)
+            {
+                reValue = beanM.MaktTxza1Zf;
+            }
+            #endregion           
+
+            return reValue;
+        }
+        #endregion
 
         #region 取得製造商零件號碼
         /// <summary>
@@ -3278,6 +3392,31 @@ namespace OneService.Controllers
             {
                 reValue = bean.CTeamOldName;
             }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得服務團隊ID_名稱
+        /// <summary>
+        /// 取得服務團隊ID_名稱
+        /// </summary>
+        /// <param name="cTeamID">服務團隊ID(多筆以;號隔開)</param>
+        /// <returns></returns>
+        public string findSRTeamIDandName(string cTeamID)
+        {
+            string reValue = string.Empty;
+
+            string[] AryTeamID = cTeamID.TrimEnd(';').Split(';');
+
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && AryTeamID.Contains(x.CTeamOldId));
+
+            foreach (var bean in beans)
+            {
+                reValue += bean.CTeamOldId + "_" + bean.CTeamOldName + ";";
+            }
+
+            reValue = reValue.TrimEnd(';');
 
             return reValue;
         }
@@ -3711,7 +3850,7 @@ namespace OneService.Controllers
                 DicORG.Add(tERPID, tNAME);
             }
         }
-        #endregion
+        #endregion        
 
         #region 呼叫Ajax儲存出貨資料檔
         /// <summary>
@@ -4278,8 +4417,9 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="postedFile">傳入的Excel</param>
         /// <param name="tSheetName">傳入的頁籤名稱</param>
+        /// <param name="tSheetAt">要取得第幾個頁籤(0為第一個頁籤)</param>
         /// <returns>回傳的result若為空白代表執行成功，若非空白代表執行失敗並回傳錯誤訊息</returns>
-        public Dictionary<string, DataTable> ImportExcelToDataTable(IFormFile postedFile, string tSheetName)
+        public Dictionary<string, DataTable> ImportExcelToDataTable(IFormFile postedFile, string tSheetName, int tSheetAt)
         {
             Dictionary<string, DataTable> Dic = new Dictionary<string, DataTable>();
 
@@ -4303,7 +4443,7 @@ namespace OneService.Controllers
 
                     #region 讀取內容
                     // 0表示：第一個 worksheet工作表
-                    XSSFSheet u_sheet = (XSSFSheet)workbook.GetSheetAt(0);
+                    XSSFSheet u_sheet = (XSSFSheet)workbook.GetSheetAt(tSheetAt);
 
                     //-- Excel 表頭列
                     XSSFRow headerRow = (XSSFRow)u_sheet.GetRow(0);
@@ -4370,6 +4510,30 @@ namespace OneService.Controllers
             #endregion
 
             return Dic;
+        }
+        #endregion
+
+        #region 判斷匯入的欄位是否非Empty，並回傳Array String
+        /// <summary>
+        /// 判斷匯入的欄位是否非Empty，並回傳Array String
+        /// </summary>
+        /// <param name="tValue">欄位值</param>
+        /// <param name="tText">欄位title</param>
+        /// <param name="strItem">Excel第幾列</param>
+        /// <returns></returns>
+        public string[] ValidationImportExcelField(string tValue , string tText, string strItem)
+        {
+            string[] AryValue = new string[2];
+            AryValue[0] = "Y";
+            AryValue[1] = "";
+
+            if (string.IsNullOrEmpty(tValue))
+            {
+                AryValue[0] = "N";
+                AryValue[1] = "項次【" + strItem + "】，未輸入【" + tText + "】</br>";
+            }
+
+            return AryValue;
         }
         #endregion
 

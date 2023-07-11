@@ -22,6 +22,8 @@ namespace OneService.Models
         public virtual DbSet<TbOneContractMain> TbOneContractMains { get; set; } = null!;
         public virtual DbSet<TbOneDocument> TbOneDocuments { get; set; } = null!;
         public virtual DbSet<TbOneLog> TbOneLogs { get; set; } = null!;
+        public virtual DbSet<TbOneSrbatchInstallRecord> TbOneSrbatchInstallRecords { get; set; } = null!;
+        public virtual DbSet<TbOneSrbatchInstallRecordDetail> TbOneSrbatchInstallRecordDetails { get; set; } = null!;
         public virtual DbSet<TbOneSrcustomerEmailMapping> TbOneSrcustomerEmailMappings { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailContact> TbOneSrdetailContacts { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailMaterialInfo> TbOneSrdetailMaterialInfos { get; set; } = null!;
@@ -436,6 +438,121 @@ namespace OneService.Models
                 entity.Property(e => e.CreatedUserName).HasMaxLength(50);
 
                 entity.Property(e => e.EventName).HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<TbOneSrbatchInstallRecord>(entity =>
+            {
+                entity.HasKey(e => new { e.CGuid, e.CSrid });
+
+                entity.ToTable("TB_ONE_SRBatchInstallRecord");
+
+                entity.Property(e => e.CGuid).HasColumnName("cGUID");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
+
+                entity.Property(e => e.CContactAddress)
+                    .HasMaxLength(110)
+                    .HasColumnName("cContactAddress");
+
+                entity.Property(e => e.CContactEmail)
+                    .HasMaxLength(200)
+                    .HasColumnName("cContactEmail");
+
+                entity.Property(e => e.CContactMobile)
+                    .HasMaxLength(50)
+                    .HasColumnName("cContactMobile");
+
+                entity.Property(e => e.CContactName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cContactName");
+
+                entity.Property(e => e.CContactPhone)
+                    .HasMaxLength(50)
+                    .HasColumnName("cContactPhone");
+
+                entity.Property(e => e.CCustomerId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cCustomerID");
+
+                entity.Property(e => e.CCustomerName)
+                    .HasMaxLength(35)
+                    .HasColumnName("cCustomerName");
+
+                entity.Property(e => e.CMainEngineerId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cMainEngineerID");
+
+                entity.Property(e => e.CMainEngineerName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cMainEngineerName");
+
+                entity.Property(e => e.CSalesId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSalesID");
+
+                entity.Property(e => e.CSalesName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSalesName");
+
+                entity.Property(e => e.CSalesNo)
+                    .HasMaxLength(30)
+                    .HasColumnName("cSalesNo");
+
+                entity.Property(e => e.CSecretaryId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSecretaryID");
+
+                entity.Property(e => e.CSecretaryName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSecretaryName");
+
+                entity.Property(e => e.CSerialId)
+                    .HasMaxLength(40)
+                    .HasColumnName("cSerialID");
+
+                entity.Property(e => e.CShipmentNo)
+                    .HasMaxLength(30)
+                    .HasColumnName("cShipmentNo");
+
+                entity.Property(e => e.CTeamId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("cTeamID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneSrbatchInstallRecordDetail>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRBatchInstallRecord_Detail");
+
+                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20230711-132442");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CMaterialId)
+                    .HasMaxLength(40)
+                    .HasColumnName("cMaterialID");
+
+                entity.Property(e => e.CMaterialName)
+                    .HasMaxLength(255)
+                    .HasColumnName("cMaterialName");
+
+                entity.Property(e => e.CQuantity).HasColumnName("cQuantity");
+
+                entity.Property(e => e.CSrid)
+                    .HasMaxLength(20)
+                    .HasColumnName("cSRID");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
             });
 
             modelBuilder.Entity<TbOneSrcustomerEmailMapping>(entity =>
@@ -1006,6 +1123,11 @@ namespace OneService.Models
                     .HasMaxLength(1)
                     .IsUnicode(false)
                     .HasColumnName("cIsAPPClose");
+
+                entity.Property(e => e.CIsInternalWork)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cIsInternalWork");
 
                 entity.Property(e => e.CIsSecondFix)
                     .HasMaxLength(1)

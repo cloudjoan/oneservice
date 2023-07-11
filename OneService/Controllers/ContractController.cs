@@ -1357,7 +1357,7 @@ namespace OneService.Controllers
                 cMainContractID = formCollection["hid_cContractID"].FirstOrDefault();
 
                 #region 取得匯入Excel相關
-                Dic = CMF.ImportExcelToDataTable(postedFile, "合約標的");
+                Dic = CMF.ImportExcelToDataTable(postedFile, "合約標的", 0);
 
                 foreach (KeyValuePair<string, DataTable> item in Dic)
                 {
