@@ -1178,6 +1178,7 @@ namespace OneService.Controllers
                 ViewBag.cSRProcessWay = beanM.CSrprocessWay;
                 ViewBag.cDelayReason = beanM.CDelayReason;
                 ViewBag.cIsSecondFix = beanM.CIsSecondFix;
+                ViewBag.cIsInternalWork = beanM.CIsInternalWork;
                 ViewBag.pStatus = beanM.CStatus;
 
                 ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
@@ -1388,6 +1389,7 @@ namespace OneService.Controllers
                 ViewBag.cSRProcessWay = "";     //請選擇
                 ViewBag.cDelayReason = "";      //空值
                 ViewBag.cIsSecondFix = "";     //請選擇
+                ViewBag.cIsInternalWork = "N"; 
             }
             #endregion
 
@@ -1398,6 +1400,7 @@ namespace OneService.Controllers
             model.ddl_cSRProcessWay = ViewBag.cSRProcessWay;    //設定處理方式
             model.ddl_cIsSecondFix = ViewBag.cIsSecondFix;      //是否為二修
             model.ddl_cCustomerType = ViewBag.cCustomerType;    //客戶類型(P.個人 C.法人)
+            model.ddl_cIsInternalWork = ViewBag.cIsInternalWork; //是否為內部作業
             #endregion
 
             ViewBag.SRTypeOneList = SRTypeOneList;
@@ -7620,6 +7623,11 @@ namespace OneService.Controllers
             #region 處理方式
             public string ddl_cSRProcessWay { get; set; }            
             public List<SelectListItem> ListSRProcessWay = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPROCESS", true);
+            #endregion
+
+            #region 是否為內部作業
+            public string ddl_cIsInternalWork { get; set; }
+            public List<SelectListItem> ListIsInternalWork = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "ISINTERNALWORK", false);
             #endregion
 
             #region 是否為二修
