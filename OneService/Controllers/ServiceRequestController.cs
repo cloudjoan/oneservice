@@ -73,6 +73,16 @@ namespace OneService.Controllers
         bool pIsManager = false;
 
         /// <summary>
+        /// 登入者是否為批次上傳裝機備料服務通知單、合約書文件人員(true.是 false.否)
+        /// </summary>
+        bool pIsBatchUploadSecretary = false;
+
+        /// <summary>
+        /// 登入者是否為批次上傳裝機派工人員(true.是 false.否)
+        /// </summary>
+        bool pIsExePerson = false;
+
+        /// <summary>
         /// 登入者是否可編輯服務案件
         /// </summary>
         bool pIsCanEditSR = false;
@@ -111,6 +121,16 @@ namespace OneService.Controllers
         /// 程式作業編號檔系統ID(定維服務)
         /// </summary>
         static string pOperationID_MaintainSR = "5B80D6AB-9143-4916-9273-ADFAEA9A61ED";
+
+        /// <summary>
+        /// 程式作業編號檔系統ID(批次上傳裝機備料服務通知單、合約書文件)
+        /// </summary>
+        static string pOperationID_BatchUploadStockNo = "BB3DD376-969A-4518-B9C2-8BFF431148BE";
+
+        /// <summary>
+        /// 程式作業編號檔系統ID(批次上傳裝機派工作業)
+        /// </summary>
+        static string pOperationID_QueryBatchInstall = "3BF8ED29-3639-49D2-8D4A-19F9C1FF7934";
 
         /// <summary>
         /// 公司別(T012、T016、C069、T022)
@@ -6506,12 +6526,16 @@ namespace OneService.Controllers
             #region One Service相關帳號
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
             pIsCSManager = CMF.getIsCustomerServiceManager(pLoginAccount, pSysOperationID);
-            pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);            
+            pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
+            pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
+            pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
 
             ViewBag.pIsMIS = pIsMIS;
             ViewBag.pIsCSManager = pIsCSManager;
             ViewBag.pIsCS = pIsCS;
-            #endregion            
+            ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
+            ViewBag.pIsExePerson = pIsExePerson;
+            #endregion
         }
         #endregion
 

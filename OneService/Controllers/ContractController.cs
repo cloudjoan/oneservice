@@ -70,6 +70,17 @@ namespace OneService.Controllers
         bool pIsManager = false;
 
         /// <summary>
+        /// 登入者是否為批次上傳裝機備料服務通知單、合約書文件人員(true.是 false.否)
+        /// </summary>
+        bool pIsBatchUploadSecretary = false;
+
+        /// <summary>
+        /// 登入者是否為批次上傳裝機派工人員(true.是 false.否)
+        /// </summary>
+        bool pIsExePerson = false;
+
+
+        /// <summary>
         /// 登入者是否可編輯合約主數據相關內容
         /// </summary>
         bool pIsCanEdit = false;
@@ -97,7 +108,17 @@ namespace OneService.Controllers
         /// <summary>
         /// 程式作業編號檔系統ID(一般服務)
         /// </summary>
-        static string pOperationID_GenerallySR = "869FC989-1049-4266-ABDE-69A9B07BCD0A";     
+        static string pOperationID_GenerallySR = "869FC989-1049-4266-ABDE-69A9B07BCD0A";
+
+        /// <summary>
+        /// 程式作業編號檔系統ID(批次上傳裝機備料服務通知單、合約書文件)
+        /// </summary>
+        static string pOperationID_BatchUploadStockNo = "BB3DD376-969A-4518-B9C2-8BFF431148BE";
+
+        /// <summary>
+        /// 程式作業編號檔系統ID(批次上傳裝機派工作業)
+        /// </summary>
+        static string pOperationID_QueryBatchInstall = "3BF8ED29-3639-49D2-8D4A-19F9C1FF7934";
 
         /// <summary>
         /// 程式作業編號檔系統ID(合約主數據查詢/維護)
@@ -148,11 +169,15 @@ namespace OneService.Controllers
             pIsCSManager = CMF.getIsCustomerServiceManager(pLoginAccount, pSysOperationID);
             pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
             pIsDCC = CMF.getIsDocumentCenter(pLoginAccount, pSysOperationID);
-           
+            pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
+            pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
+
             ViewBag.pIsMIS = pIsMIS;
             ViewBag.pIsCSManager = pIsCSManager;
             ViewBag.pIsCS = pIsCS;
             ViewBag.pIsDCC = pIsDCC;
+            ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
+            ViewBag.pIsExePerson = pIsExePerson;
 
             ViewBag.hidIsMIS = pIsMIS ? "Y" : "N";
             ViewBag.hidIsCSManager = pIsCSManager ? "Y" : "N";

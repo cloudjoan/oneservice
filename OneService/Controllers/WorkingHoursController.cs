@@ -48,9 +48,29 @@ namespace OneService.Controllers
         bool pIsCS = false;
 
         /// <summary>
+        /// 登入者是否為批次上傳裝機備料服務通知單、合約書文件人員(true.是 false.否)
+        /// </summary>
+        bool pIsBatchUploadSecretary = false;
+
+        /// <summary>
+        /// 登入者是否為批次上傳裝機派工人員(true.是 false.否)
+        /// </summary>
+        bool pIsExePerson = false;
+
+        /// <summary>
         /// 程式作業編號檔系統ID(ALL，固定的GUID)
         /// </summary>
         string pSysOperationID = "F8EFC55F-FA77-4731-BB45-2F2147244A2D";
+
+        /// <summary>
+        /// 程式作業編號檔系統ID(批次上傳裝機備料服務通知單、合約書文件)
+        /// </summary>
+        static string pOperationID_BatchUploadStockNo = "BB3DD376-969A-4518-B9C2-8BFF431148BE";
+
+        /// <summary>
+        /// 程式作業編號檔系統ID(批次上傳裝機派工作業)
+        /// </summary>
+        static string pOperationID_QueryBatchInstall = "3BF8ED29-3639-49D2-8D4A-19F9C1FF7934";
 
         public IActionResult Index()
         {
@@ -669,10 +689,14 @@ namespace OneService.Controllers
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
             pIsCSManager = CMF.getIsCustomerServiceManager(pLoginAccount, pSysOperationID);
             pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
+            pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
+            pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
 
             ViewBag.pIsMIS = pIsMIS;
             ViewBag.pIsCSManager = pIsCSManager;
             ViewBag.pIsCS = pIsCS;
+            ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
+            ViewBag.pIsExePerson = pIsExePerson;
             #endregion            
         }
         #endregion

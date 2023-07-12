@@ -31,6 +31,7 @@ using NPOI.XSSF.UserModel;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Routing;
 using NPOI.OpenXmlFormats.Spreadsheet;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 
 namespace OneService.Controllers
 {
@@ -2800,6 +2801,135 @@ namespace OneService.Controllers
             foreach (var bean in beans)
             {
                 if (bean.CValue.ToLower() == LoginAccount.ToLower())
+                {
+                    reValue = true;
+                    break;
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入者是否為批次上傳裝機備料服務通知單、合約書文件人員
+        /// <summary>
+        /// 判斷登入者是否為批次上傳裝機備料服務通知單、合約書文件人員
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+        /// <returns></returns>
+        public bool getIsBatchUploadSecretary(string LoginAccount, string tSysOperationID)
+        {
+            bool reValue = getJobAuthority(LoginAccount, tSysOperationID, "T012", "SECRETARY", "Y", "", "", "");      
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入者是否為批次上傳裝機派工人員
+        /// <summary>
+        /// 判斷登入者是否為批次上傳裝機派工人員
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+        /// <returns></returns>
+        public bool getIsExePerson(string LoginAccount, string tSysOperationID)
+        {
+            bool reValue = getJobAuthority(LoginAccount, tSysOperationID, "T012", "EXEPERSON", "Y", "", "", "");
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入者是否對該作業有權限(true.有 false.無)
+        /// <summary>
+        /// 判斷登入者是否對該作業有權限(true.有 false.無)
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+        /// <param name="cCompanyID">公司別(ALL、T012、T016、C069、T022)</param>
+        /// <param name="cNo">參數</param>
+        /// <param name="cExeQuery">可讀取(Y或空白)</param>
+        /// <param name="cExeInsert">可新增(Y或空白)</param>
+        /// <param name="cExeEdit">可編輯(Y或空白)</param>
+        /// <param name="cExeDel">可刪除(Y或空白)</param>
+        /// <returns></returns>
+        public bool getJobAuthority(string LoginAccount, string tSysOperationID, string cCompanyID, string cNo, string cExeQuery, string cExeInsert, string cExeEdit, string cExeDel)
+        {
+            bool reValue = false;
+
+            Guid tcID = new Guid(tSysOperationID); //全模組
+
+            #region 先判斷人員
+            var beansP = psipDb.TbOneRoleParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "PERSON" && x.CCompanyId == cCompanyID && x.CNo == cNo &&
+                                                            (string.IsNullOrEmpty(cExeQuery) ? true: x.CExeQuery == cExeQuery) &&
+                                                            (string.IsNullOrEmpty(cExeInsert) ? true : x.CExeInsert == cExeInsert) &&
+                                                            (string.IsNullOrEmpty(cExeEdit) ? true : x.CExeEdit == cExeEdit) &&
+                                                            (string.IsNullOrEmpty(cExeDel) ? true : x.CExeDel == cExeDel));
+
+            foreach (var bean in beansP)
+            {
+                if (bean.CValue.ToLower() == LoginAccount.ToLower())
+                {
+                    reValue = true;
+                    break;
+                }
+            }
+            #endregion
+
+            #region 再判斷部門
+            if (!reValue)
+            {
+                var beansD = psipDb.TbOneRoleParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "DEPT" && x.CCompanyId == cCompanyID && x.CNo == cNo &&
+                                                                (string.IsNullOrEmpty(cExeQuery) ? true : x.CExeQuery == cExeQuery) &&
+                                                                (string.IsNullOrEmpty(cExeInsert) ? true : x.CExeInsert == cExeInsert) &&
+                                                                (string.IsNullOrEmpty(cExeEdit) ? true : x.CExeEdit == cExeEdit) &&
+                                                                (string.IsNullOrEmpty(cExeDel) ? true : x.CExeDel == cExeDel));
+
+                foreach (var bean in beansD)
+                {
+                    reValue = checkPersonIsExitsDept(LoginAccount, bean.CValue.Trim(), bean.CIncludeSubDept);
+
+                    if (reValue)
+                    {
+                        break;
+                    }
+                }
+            }
+            #endregion
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入的人員是否有存在該部門
+        /// <summary>
+        /// 判斷登入的人員是否有存在該部門
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="cDeptID">部門ID</param>
+        /// <param name="cIncludeSubDept">是否含子部門(Y/N)</param>
+        /// <returns></returns>
+        public bool checkPersonIsExitsDept(string LoginAccount, string cDeptID, string cIncludeSubDept)
+        {
+            bool reValue = false;
+
+            List<string> tListDept = new List<string>();
+
+            if (cIncludeSubDept == "Y")
+            {
+                tListDept = GetALLSubDeptID(cDeptID);
+            }
+            else
+            {
+                tListDept.Add(cDeptID);
+            }
+
+            foreach (string tDept in tListDept)
+            {
+                var beanP = dbEIP.People.FirstOrDefault(x => x.Account.ToLower() == LoginAccount.ToLower() && x.DeptId == tDept && (x.LeaveDate == null && x.LeaveReason == null));
+
+                if (beanP != null)
                 {
                     reValue = true;
                     break;
