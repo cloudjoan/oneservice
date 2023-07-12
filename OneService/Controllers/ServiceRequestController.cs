@@ -1450,6 +1450,7 @@ namespace OneService.Controllers
             string OldCSrprocessWay = string.Empty;
             string OldCDelayReason = string.Empty;
             string OldCIsSecondFix = string.Empty;
+            string OldCIsInternalWork = string.Empty;
             string OldCRepairName = string.Empty;
             string OldCRepairAddress = string.Empty;
             string OldCRepairPhone = string.Empty;
@@ -1506,6 +1507,7 @@ namespace OneService.Controllers
             string CSrprocessWay = formCollection["ddl_cSRProcessWay"].FirstOrDefault();
             string CRepairEmail = formCollection["tbx_cRepairEmail"].FirstOrDefault();
             string CIsSecondFix = formCollection["ddl_cIsSecondFix"].FirstOrDefault();
+            string CIsInternalWork = formCollection["ddl_cIsInternalWork"].FirstOrDefault();
             string CRepairName = formCollection["tbx_cRepairName"].FirstOrDefault();
             string CRepairAddress = formCollection["tbx_cRepairAddress"].FirstOrDefault();
             string CRepairPhone = formCollection["tbx_cRepairPhone"].FirstOrDefault();
@@ -1579,6 +1581,7 @@ namespace OneService.Controllers
                     beanM.CSrprocessWay = CSrprocessWay;
                     beanM.CDelayReason = CDelayReason;
                     beanM.CIsSecondFix = CIsSecondFix;
+                    beanM.CIsInternalWork = CIsInternalWork;
                     beanM.CRepairName = CRepairName;
                     beanM.CRepairAddress = CRepairAddress;
                     beanM.CRepairPhone = CRepairPhone;
@@ -1799,6 +1802,9 @@ namespace OneService.Controllers
                     OldCIsSecondFix = beanNowM.CIsSecondFix;
                     tLog += CMF.getNewAndOldLog("是否為二修", OldCIsSecondFix, CIsSecondFix);
 
+                    OldCIsInternalWork = beanNowM.CIsInternalWork;
+                    tLog += CMF.getNewAndOldLog("是否為內部作業", OldCIsInternalWork, CIsInternalWork);
+
                     OldCRepairName = beanNowM.CRepairName;
                     tLog += CMF.getNewAndOldLog("姓名(報修人)", OldCRepairName, CRepairName);
 
@@ -1912,6 +1918,7 @@ namespace OneService.Controllers
                     beanNowM.CSrprocessWay = CSrprocessWay;
                     beanNowM.CDelayReason = CDelayReason;
                     beanNowM.CIsSecondFix = CIsSecondFix;
+                    beanNowM.CIsInternalWork = CIsInternalWork;
                     beanNowM.CRepairName = CRepairName;
                     beanNowM.CRepairAddress = CRepairAddress;
                     beanNowM.CRepairPhone = CRepairPhone;

@@ -2708,20 +2708,7 @@ namespace OneService.Controllers
         /// <returns></returns>
         public bool getIsMIS(string LoginAccount, string tSysOperationID)
         {
-            bool reValue = false;
-
-            Guid tcID = new Guid(tSysOperationID); //全模組
-
-            var beans = psipDb.TbOneSysParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "MIS");
-
-            foreach (var bean in beans)
-            {
-                if (bean.CValue.ToLower() == LoginAccount.ToLower())
-                {
-                    reValue = true;
-                    break;
-                }
-            }
+            bool reValue = getParaAuthority(LoginAccount, tSysOperationID, "ALL", "MIS");
 
             return reValue;
         }
@@ -2736,20 +2723,7 @@ namespace OneService.Controllers
         /// <returns></returns>
         public bool getIsCustomerService(string LoginAccount, string tSysOperationID)
         {
-            bool reValue = false;
-
-            Guid tcID = new Guid(tSysOperationID); //全模組
-
-            var beans = psipDb.TbOneSysParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "CUSTOMERSERVICE");
-
-            foreach (var bean in beans)
-            {
-                if (bean.CValue.ToLower() == LoginAccount.ToLower())
-                {
-                    reValue = true;
-                    break;
-                }
-            }
+            bool reValue = getParaAuthority(LoginAccount, tSysOperationID, "ALL", "CUSTOMERSERVICE");
 
             return reValue;
         }
@@ -2764,20 +2738,7 @@ namespace OneService.Controllers
         /// <returns></returns>
         public bool getIsCustomerServiceManager(string LoginAccount, string tSysOperationID)
         {
-            bool reValue = false;
-
-            Guid tcID = new Guid(tSysOperationID); //全模組
-
-            var beans = psipDb.TbOneSysParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "CUSTOMERSERVICEManager");
-
-            foreach(var bean in beans)
-            {
-                if (bean.CValue.ToLower() == LoginAccount.ToLower())
-                {
-                    reValue = true;
-                    break;
-                }
-            }
+            bool reValue = getParaAuthority(LoginAccount, tSysOperationID, "ALL", "CUSTOMERSERVICEManager");
 
             return reValue;
         }
@@ -2792,20 +2753,7 @@ namespace OneService.Controllers
         /// <returns></returns>
         public bool getIsDocumentCenter(string LoginAccount, string tSysOperationID)
         {
-            bool reValue = false;
-
-            Guid tcID = new Guid(tSysOperationID); //全模組
-
-            var beans = psipDb.TbOneSysParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == "ALL" && x.CNo == "DOCUMENTCENTER");
-
-            foreach (var bean in beans)
-            {
-                if (bean.CValue.ToLower() == LoginAccount.ToLower())
-                {
-                    reValue = true;
-                    break;
-                }
-            }
+            bool reValue = getParaAuthority(LoginAccount, tSysOperationID, "ALL", "DOCUMENTCENTER");           
 
             return reValue;
         }
@@ -2841,12 +2789,42 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region 判斷登入者是否對該作業有權限(true.有 false.無)
+        #region 判斷登入者是否有權限(true.有 false.無)，抓系統參數權限
         /// <summary>
-        /// 判斷登入者是否對該作業有權限(true.有 false.無)
+        /// 判斷登入者是否為文管人員
         /// </summary>
         /// <param name="LoginAccount">登入者帳號</param>
-        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cCompanyID">公司別(ALL、T012、T016、C069、T022)</param>
+        /// <param name="cNo">參數</param>
+        /// <returns></returns>
+        public bool getParaAuthority(string LoginAccount, string tSysOperationID, string cCompanyID, string cNo)
+        {
+            bool reValue = false;
+
+            Guid tcID = new Guid(tSysOperationID);
+
+            var beans = psipDb.TbOneSysParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == cCompanyID && x.CNo == cNo);
+
+            foreach (var bean in beans)
+            {
+                if (bean.CValue.ToLower() == LoginAccount.ToLower())
+                {
+                    reValue = true;
+                    break;
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入者是否對該作業有權限(true.有 false.無)，抓系統角色權限
+        /// <summary>
+        /// 判斷登入者是否對該作業有權限(true.有 false.無)，抓系統角色權限
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID</param>
         /// <param name="cCompanyID">公司別(ALL、T012、T016、C069、T022)</param>
         /// <param name="cNo">參數</param>
         /// <param name="cExeQuery">可讀取(Y或空白)</param>
@@ -2858,7 +2836,7 @@ namespace OneService.Controllers
         {
             bool reValue = false;
 
-            Guid tcID = new Guid(tSysOperationID); //全模組
+            Guid tcID = new Guid(tSysOperationID);
 
             #region 先判斷人員
             var beansP = psipDb.TbOneRoleParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "PERSON" && x.CCompanyId == cCompanyID && x.CNo == cNo &&
