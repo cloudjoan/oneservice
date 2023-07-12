@@ -15,7 +15,7 @@ namespace OneService.Controllers
 
 		public IActionResult Accessable()
 		{
-			ViewBag.beans = appDB.TbAccessables;
+			ViewBag.beans = appDB.TbAccessables.OrderByDescending(x => x.InsertTime);
 			return View();
 		}
 
@@ -37,7 +37,7 @@ namespace OneService.Controllers
 
 		public IActionResult ShowAccessHistory()
 		{
-			ViewBag.beans = appDB.TbAccessHistories.OrderByDescending(x => x.Id).ToList();
+			ViewBag.beans = appDB.TbAccessHistories.OrderByDescending(x => x.InsertTime);
 			return View();
 		}
 

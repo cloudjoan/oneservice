@@ -72,7 +72,7 @@
 							<th>姓名</th>
 							<th>地點</th>
 							<th>結果</th>
-							<th width="130">時間</th>
+							<th width="300">時間</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -81,7 +81,9 @@
 							<tr>
 								<td>@bean.UserName</td>
 								<td>@bean.AccessLocation</td>
-								<td>@bean.AccessResulst</td>
+								<td style="@if (bean.AccessResulst == "無授權"){@Html.Raw("color:#ea6e6e")}">
+									<font >@bean.AccessResulst</font>
+	</td>
 								<td>@bean.InsertTime</td>
 							</tr>
 						}
