@@ -3494,7 +3494,7 @@ namespace OneService.Controllers
         {
             string reValue = string.Empty;
 
-            var bean = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.CTeamOldId == cTeamOldId);
+            var bean = dbOne.TbOneSrteamMappings.FirstOrDefault(x => x.Disabled == 0 && x.CTeamOldId == cTeamOldId);
 
             if (bean != null)
             {

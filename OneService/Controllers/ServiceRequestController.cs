@@ -6167,7 +6167,7 @@ namespace OneService.Controllers
                                     tIsOK = false;
                                 }
 
-                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "SO訂單號碼", strItem);
+                                AryValue = CMF.ValidationImportExcelField(cSalesNo, "SO訂單號碼", strItem);
 
                                 if (AryValue[0] == "N")
                                 {
@@ -6175,7 +6175,7 @@ namespace OneService.Controllers
                                     tIsOK = false;
                                 }
 
-                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "DN出貨單號碼", strItem);
+                                AryValue = CMF.ValidationImportExcelField(cShipmentNo, "DN出貨單號碼", strItem);
 
                                 if (AryValue[0] == "N")
                                 {
@@ -6183,7 +6183,27 @@ namespace OneService.Controllers
                                     tIsOK = false;
                                 }
 
-                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "服務團隊ID", strItem);
+                                AryValue = CMF.ValidationImportExcelField(cTeamID, "服務團隊ID", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+                                else
+                                {
+                                    #region 檢查服務團隊ID是否存在
+                                    string tTeamName = CMF.findTeamName(cTeamID);
+
+                                    if (tTeamName == "")
+                                    {
+                                        tErrorMsg += "項次【" + strItem + "】服務團隊ID不存在 </br>";
+                                        tIsOK = false;
+                                    }
+                                    #endregion
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cContactName, "聯絡人姓名", strItem);
 
                                 if (AryValue[0] == "N")
                                 {
@@ -6191,15 +6211,7 @@ namespace OneService.Controllers
                                     tIsOK = false;
                                 }
 
-                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "聯絡人姓名", strItem);
-
-                                if (AryValue[0] == "N")
-                                {
-                                    tErrorMsg += AryValue[1];
-                                    tIsOK = false;
-                                }
-
-                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "聯絡人地址", strItem);
+                                AryValue = CMF.ValidationImportExcelField(cContactAddress, "聯絡人地址", strItem);
 
                                 if (AryValue[0] == "N")
                                 {
@@ -6215,7 +6227,7 @@ namespace OneService.Controllers
                                     tIsOK = false;
                                 }
 
-                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "業務員工ERPID", strItem);
+                                AryValue = CMF.ValidationImportExcelField(cSalesID, "業務員工ERPID", strItem);
 
                                 if (AryValue[0] == "N")
                                 {
@@ -6223,7 +6235,7 @@ namespace OneService.Controllers
                                     tIsOK = false;
                                 }
 
-                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "業務祕書ERPID", strItem);
+                                AryValue = CMF.ValidationImportExcelField(cSecretaryID, "業務祕書ERPID", strItem);
 
                                 if (AryValue[0] == "N")
                                 {
@@ -6231,7 +6243,7 @@ namespace OneService.Controllers
                                     tIsOK = false;
                                 }
 
-                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "指派主要工程師ERPID", strItem);
+                                AryValue = CMF.ValidationImportExcelField(cMainEngineerID, "指派主要工程師ERPID", strItem);
 
                                 if (AryValue[0] == "N")
                                 {
