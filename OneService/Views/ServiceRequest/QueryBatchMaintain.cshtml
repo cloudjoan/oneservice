@@ -1,0 +1,719 @@
+﻿@{
+	ViewData["Title"] = "QueryBatchMaintain";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>
+		$(document).ready(function () {
+			initTable();
+			CustSearch();
+			PeopleSearch();
+		});
+
+		function initTable() {
+			var buttonCommon = {
+				exportOptions: {
+					format: {
+						body: function (data, row, column, node) {
+							//替換&符號
+							var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+								translate = {
+									'nbsp': String.fromCharCode(160),
+									'amp': '&',
+									'quot': '"',
+									'lt': '<',
+									'gt': '>'
+								},
+								translator = function ($0, $1) {
+									return translate[$1];
+								};
+
+							if (typeof data === 'string')
+								data = data.replace(translate_re, translator);
+
+							if (column === 0) //去除連結的部份
+							{
+								var splitName = data.split(">");
+								var length = splitName.length;
+
+								if (length > 1) {
+									return data.split(">")[1].split("<")[0];
+								}
+								else {
+									return data;
+								}
+							}						
+							else
+								return data;
+						}
+					}
+				}
+			};
+
+			$('#tableAll').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+				buttons: [
+					$.extend(true, {}, buttonCommon, {
+						extend: 'excelHtml5',
+						title: '批次定維派工明細查詢_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						text: '匯出Excel',
+						sheetName: '批次定維派工明細查詢',
+						exportOptions: {
+							columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] //要顯示的欄位
+						},
+						customize: function (xlsx) {
+							addCustomNumberFormat(xlsx, '0');
+							formatTargetColumn(xlsx, 'A');
+							formatTargetColumn(xlsx, 'B');
+							formatTargetColumn(xlsx, 'C');
+							formatTargetColumn(xlsx, 'D');
+							formatTargetColumn(xlsx, 'E');
+							formatTargetColumn(xlsx, 'F');
+							formatTargetColumn(xlsx, 'G');
+							formatTargetColumn(xlsx, 'H');
+							formatTargetColumn(xlsx, 'I');
+							formatTargetColumn(xlsx, 'J');
+							formatTargetColumn(xlsx, 'K');
+							formatTargetColumn(xlsx, 'L');							
+						}
+					}),
+				],
+			});
+
+			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+
+			$(".btnPreventDefault").click(function (e) {
+				e.preventDefault();
+			});
+		}
+
+		function addCustomNumberFormat(xlsx, numberFormat) {
+			// this adds a new custom number format to the Excel "styles" document:
+			var numFmtsElement = xlsx.xl['styles.xml'].getElementsByTagName('numFmts')[0];
+			// assume 6 custom number formats already exist, and next available ID is 176:
+			var numFmtElement = '<numFmt numFmtId="176" formatCode="' + numberFormat + '"/>';
+			$(numFmtsElement).append(numFmtElement);
+			$(numFmtsElement).attr("count", "7"); // increment the count
+
+			// now add a new "cellXfs" cell formatter, which uses our new number format (numFmt 176):
+			var celXfsElement = xlsx.xl['styles.xml'].getElementsByTagName('cellXfs');
+			var cellStyle = '<xf numFmtId="176" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"'
+				+ ' applyFont="1" applyFill="1" applyBorder="1"/>';
+			// this will be the 8th "xf" element - and will therefore have an index of "7", when we use it later:
+			$(celXfsElement).append(cellStyle);
+			$(celXfsElement).attr("count", "66"); //(1.2.3版)官方提供0-64共65種格式，在此自己新增加一種
+		}
+
+		function formatTargetColumn(xlsx, col) {
+			var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+			if (col == "A") {
+				$('row c[r^="' + col + '"]', sheet).attr('s', '65'); //使用自定義格式
+			}
+			else {
+				$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
+			}
+		}		
+
+		//popup各欄位reset
+		function resetPopup(popupId) {
+			$(popupId).find("input").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find("select").each(function (index, value) {
+				$(this).val("-1");
+			});
+			$(popupId).find("textarea").each(function (index, value) {
+				$(this).val("");
+			});
+		}
+
+		//檢查上傳Excel檔案路徑是否有填寫
+		function checkEmpty() {
+			var reValue = false;
+			var strFileName = $("#postedFile").val();
+
+			if (strFileName == "") {
+				alert('請先選擇欲上傳的檔案！');
+			}
+			else {
+				reValue = confirm('上傳的檔案會覆蓋原本該文件編號裡【聯絡人、門市名稱】相同的資料，是否確定繼續上傳?');
+			}
+
+			return reValue;
+		}
+
+		//SAP客戶代號/客戶名稱查詢
+		//compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
+		function CustSearch() {
+			var compcde = $("#hid_cLoginUser_CompCode").val();
+
+			$(".CustName").unbind();
+
+			$(".CustName").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+							$.ajax({
+								url: '@Url.Action("findCustByKeywordAndComp", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: { functionName: 'findCustByKeywordAndComp', keyword: keyword, compcde: compcde },
+								success: function (result) {
+									Customers = [];
+									$.each(result, function (i, idata) {
+										Customers[i] = {
+											label: idata.Kna1Kunnr + "\\" + idata.Kna1Name1, //顯示在清單的東西
+											idx: i,
+											Name: idata.Kna1Name1,
+											value: idata.Kna1Kunnr //這個是要填入textbox的值
+										};
+									});
+
+									//綁定foucs事件
+									obj.autocomplete({
+										source: Customers,
+										select: function (event, ui) {
+											$("#lbl_cCustomerName").html(ui.item.Name);
+										}
+									}).bind('focus', function () { $(this).autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();
+								}
+							})
+						}
+					}
+
+				}
+			})
+		}
+
+		//Ajax用中文或英文姓名查詢人員帳號
+		function PeopleSearch() {
+			$(".Peoploe").unbind();
+
+			$(".Peoploe").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+							var ojbID = $(this).attr("id");
+
+							$.ajax({
+								url: '@Url.Action("AjaxfindEmployeeByKeyword", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: {
+									functionName: 'AjaxfindEmployeeByKeyword', keyword: keyword
+								},
+								success: function (result) {
+									objects = [];
+									$.each(result, function (i, idata) {
+										objects[i] = {
+											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
+											idx: i,
+											Name: idata.CEmployeeCName + "\\" + idata.CEmployeeEname,
+											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉
+										};
+									});
+
+									//綁定foucs事件
+									obj.autocomplete({
+										source: objects,
+										select: function (event, ui) {
+											if (ojbID.indexOf('txt_QuerycMainEngineerID') >= 0) {
+												$('#lbl_QuerycMainEngineerID').html(ui.item.Name);
+											}
+											else if (ojbID.indexOf('tbx_cMainEngineerID') >= 0) {
+												$('#txt_cMainEngineerName').val(ui.item.Name);
+											}
+										}
+									}).bind('focus', function () { $(this).autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();
+								}
+							})
+
+						}
+					}
+				}
+			})
+		}
+
+		//新增批次定維派工的明細內容
+		function addDetailMaintain() {
+			resetPopup("#dialog_DetailMaintain"); //新增/編輯批次定維派工明細的popup各欄位reset
+
+			//設定各欄位資料
+			$("#hid_taskcID").val("");						//系統ID
+			$("#txt_cContractID").removeAttr("disabled");		//文件編號
+			$("#dll_cBUKRS").removeAttr("disabled");			//公司別
+			$("#txt_cCustomerID").removeAttr("disabled");		//客戶代號
+			$("#txt_cContactStoreName").removeAttr("disabled");	//門市名稱
+
+			$("#dialog_DetailMaintain").modal('show');
+		}
+
+		//編輯批次定維派工的明細內容
+		function editDetailMaintain(obj) {
+			resetPopup("#dialog_DetailMaintain"); //新增/編輯批次定維派工明細的popup各欄位reset
+
+			//設定各欄位資料
+			$("#hid_taskcID").val($(obj).parent().parent().find('.taskcID').val());						//系統ID
+			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').val());				//文件編號
+			$("#dll_cBUKRS").val($(obj).parent().parent().find('.taskBUKRS').text());						//公司別
+			$("#txt_cCustomerID").val($(obj).parent().parent().find('.taskCustomerID').text());				//客戶代號
+			$("#txt_cCustomerName").val($(obj).parent().parent().find('.taskCustomerName').text());			//客戶名稱
+			$("#txt_cContactStoreName").val($(obj).parent().parent().find('.taskContactStoreName').text());	//門市名稱
+			$("#txt_cContactName").val($(obj).parent().parent().find('.taskContactName').text());			//聯絡人姓名
+			$("#txt_cContactAddress").val($(obj).parent().parent().find('.taskContactAddress').text());		//聯絡人地址
+			$("#txt_cContactPhone").val($(obj).parent().parent().find('.taskContactPhone').text());			//聯絡人電話
+			$("#txt_cContactMobile").val($(obj).parent().parent().find('.taskContactMobile').text());		//聯絡人手機
+			$("#txt_cContactEmail").val($(obj).parent().parent().find('.taskContactEmail').text());			//聯絡人信箱
+			$("#txt_cMainEngineerID").val($(obj).parent().parent().find('.taskMainEngineerID').text());		//指派工程師ERPID
+			$("#txt_cMainEngineerName").val($(obj).parent().parent().find('.taskMainEngineerName').text());	//指派工程師姓名
+			
+			$("#dialog_DetailMaintain").modal('show');
+		}
+
+		//刪除批次定維派工的明細內容
+		function deleteDetailMaintain(obj, rowId) {
+			var cID = parseInt($(obj).closest("tr").find(".taskcID").val());
+
+			if (confirm("確認刪除此筆批次定維派工的明細內容？")) {
+				$.ajax({
+					url: '@Url.Action("DeleteDetailMaintain", "Contract")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: cID,
+					},
+					success: function (result) {
+						if (result > 0) {
+							alert("刪除成功");
+							Query();
+						}
+						else {
+							alert("刪除失敗");
+						}
+					},
+				});
+			}
+		}
+
+		//儲存批次定維派工的明細內容
+		function saveDetailMaintain(cID) {
+
+			var strMsg = "";
+			var txt_cContractID = $("#txt_cContractID");		//文件編號
+			var txt_cHostName = $("#txt_cHostName");			//HostName
+			var txt_cSerialID = $("#txt_cSerialID");			//序號
+			var txt_cPID = $("#txt_cPID");						//ProductID
+			var txt_cBrands = $("#txt_cBrands");				//廠牌
+			var txt_cModel = $("#txt_cModel");					//ProductModel
+			var txt_cLocation = $("#txt_cLocation");			//Location
+			var txt_cAddress = $("#txt_cAddress");				//地址
+			var txt_cArea = $("#txt_cArea");					//區域
+			var ddl_cSLARESP = $("#ddl_cSLARESP");				//回應條件
+			var ddl_cSLASRV = $("#ddl_cSLASRV");				//服務條件
+			var tbx_cNotes = $("#tbx_cNotes");					//備註
+			var txt_cSubContractID = $("#txt_cSubContractID");	//下包文件編號
+
+			if (txt_cSerialID.val() == "") strMsg += "【序號】不得為空！\n";
+			if (txt_cPID.val() == "") strMsg += "【ProductID】不得為空！\n";
+			if (txt_cBrands.val() == "") strMsg += "【廠牌】不得為空！\n";
+			if (txt_cModel.val() == "") strMsg += "【ProductModel】不得為空！\n";
+			if (txt_cLocation.val() == "") strMsg += "【Location】不得為空！\n";
+			if (txt_cAddress.val() == "") strMsg += "【地址】不得為空！\n";
+			if (ddl_cSLARESP.val() == "") strMsg += "請選擇【回應條件】！\n";
+			if (ddl_cSLASRV.val() == "") strMsg += "請選擇【服務條件】！\n";
+
+			if (strMsg != "") {
+				alert(strMsg);
+			}
+			else {
+				$("#btn_saveDetailMaintain").hide();
+				$("#img_waiting_saveDetailMaintain").show();
+				$.ajax({
+					url: '@Url.Action("saveDetailMaintain", "Contract")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: cID,
+						cContractID: txt_cContractID.val(),
+						cHostName: txt_cHostName.val(),
+						cSerialID: txt_cSerialID.val(),
+						cPID: txt_cPID.val(),
+						cBrands: txt_cBrands.val(),
+						cModel: txt_cModel.val(),
+						cLocation: txt_cLocation.val(),
+						cAddress: txt_cAddress.val(),
+						cArea: txt_cArea.val(),
+						cSLARESP: ddl_cSLARESP.val(),
+						cSLASRV: ddl_cSLASRV.val(),
+						cNotes: tbx_cNotes.val(),
+						cSubContractID: txt_cSubContractID.val()
+					},
+					success: function (result) {
+						if (result == "SUCCESS") {
+							alert("儲存成功！");
+							Query();
+							$("#dialog_DetailMaintain").modal('hide');
+						}
+						else {
+							alert("儲存失敗！原因：" + result);
+						}
+					},
+				});
+				$("#btn_saveDetailMaintain").show();
+				$("#img_waiting_saveDetailMaintain").hide();
+			}
+		}
+
+		//查詢
+		function Query() {
+			$("#waitingImg").show();
+
+			var tMsg = "";
+			var tbx_QuerycContractID = $('#tbx_QuerycContractID');	//文件編號
+			var tbx_QuerycHostName = $('#tbx_QuerycHostName');		//HostName
+			var tbx_QuerycSerialID = $('#tbx_QuerycSerialID');		//序號
+			var tbx_QuerycModel = $('#tbx_QuerycModel');			//ProductModel
+			var txt_QuerycArea = $("#txt_QuerycArea");				//區域
+			var tbx_QuerycStartDate = $('#tbx_QuerycStartDate');		//合約期間(起)
+			var tbx_QuerycEndDate = $('#tbx_QuerycEndDate');			//合約期間(迄)
+
+			if (tbx_QuerycContractID.val() == "" && tbx_QuerycHostName.val() == "" && tbx_QuerycSerialID.val() == "" &&
+				tbx_QuerycModel.val() == "" && txt_QuerycArea.val() == "" && tbx_QuerycStartDate.val() == "" && tbx_QuerycEndDate.val() == "") {
+				tMsg += "請至少輸入一項查詢條件！\n";
+			}
+
+			if (tbx_QuerycStartDate.val() != "" && tbx_QuerycEndDate.val() != "") {
+
+				if (tbx_QuerycStartDate.val() > tbx_QuerycEndDate.val()) {
+					tMsg += '合約期間(起)不能大於合約期間(迄)！\n';
+					tbx_QuerycEndDate.val(""); //清空
+				}
+			}
+
+			if (tMsg != "") {
+				alert(tMsg);
+				$("#waitingImg").hide();
+				return false;
+			}
+			else {
+				$('#lbl_Message').html("");
+				searchQuery(tbx_QuerycContractID.val(), tbx_QuerycHostName.val(), tbx_QuerycSerialID.val(), tbx_QuerycModel.val(),
+					txt_QuerycArea.val(), tbx_QuerycStartDate.val(), tbx_QuerycEndDate.val());
+			}
+
+			return true;
+		}
+
+		//查詢結果
+		function searchQuery(cContractID, cHostName, cSerialID, cModel, cArea, cStartDate, cEndDate) {
+			$("#dataDiv").html('');
+
+			$.ajax({
+				url: '@Url.Action("QueryContractDetailMaintainResult", "Contract")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cContractID: cContractID,
+					cHostName: cHostName,
+					cSerialID: cSerialID,
+					cModel: cModel,
+					cArea: cArea,
+					cStartDate: cStartDate,
+					cEndDate: cEndDate
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#dataDiv").html(result.responseText);
+					$("#waitingImg").hide();
+				}
+			});
+		}
+
+		//清除
+		function clearQuery() {
+			if ($('#hid_cContractID').val() == "") //若不是透過主約進來的才可以清掉
+			{
+				$('#tbx_QuerycContractID').val("");
+			}
+
+			$('#lbl_Message').html("");
+			$('#tbx_QuerycHostName').val("");
+			$('#tbx_QuerycSerialID').val("");
+			$('#tbx_QuerycModel').val("");
+			$("#txt_QuerycArea").val("");
+			$("#tbx_QuerycStartDate").val("");
+			$("#tbx_QuerycEndDate").val("");
+			$("#chk_QuerycIsNoUpload").iCheck('uncheck'); //拿掉勾勾			
+		}
+
+		//返回合約主數據主檔
+		function backToContractMain() {
+			window.location.href = "@Url.Action("ContractMain", "Contract", new { ContractID = ViewBag.cContractID })";
+		}
+
+		function DownloadTaskSample(filePath) {
+			var link = document.createElement('a');
+			link.href = filePath;
+			link.download = "批次定維派工(匯入範本).xlsx";
+			link.target = "_blank";
+			link.click();
+		}
+	</script>
+
+}
+
+@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>批次上傳定維派工作業</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">合約管理</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>批次上傳定維派工作業</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+<div class="row">
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+					<h5>批次定維派工明細查詢/上傳/維護作業</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content">				
+					<form name="form" asp-controller="ServiceRequest" asp-action="ImportBatchMaintainExcel" method="post" enctype="multipart/form-data">
+					<div class="form-group row">
+						<div class="col-lg-12" id="div_excelFile">							
+							<input type="file" id="postedFile" name="postedFile" />
+							<input type="submit" value="匯入Excel" class="btn btn-success btn-lg" onclick="if (!checkEmpty()){event.returnValue=false;return false;}" />
+							<button id="btn_download_task" class="btn btn-primary" type="button" onclick="DownloadTaskSample('@ViewBag.DownloadURL');" style="margin-left: 10px;">
+								<i class="fa fa-download" aria-hidden="true" style="font-size: 16px;"></i>
+								<span style="font-weight: bold; margin: 2px;">批次定維派工範本下載</span>
+							</button>
+						</div>
+					</div>
+					<div class="form-group row">
+						<!--顯示匯入成功或失敗訊息-->
+						<label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;" id="lbl_Message">@Html.Raw(ViewBag.Message)</label>
+					</div>
+					<!--登人者公司別(Comp-1、Comp-2...)-->
+					<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+					<!--登人者公司別(T012、T016...)-->
+					<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+					<!--主約文件編號隱藏欄位(從主約過來才會有值)-->
+					<input type="hidden" id="hid_cContractID" name="hid_cContractID" value="@ViewBag.cContractID">					
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">文件編號</label>
+						<div class="col-lg-4">
+							<input type="text" name="tbx_QuerycContractID" id="tbx_QuerycContractID" class="form-control" placeholder="文件編號">
+						</div>						
+					</div>
+					<div class="form-group row">						
+						<label class="col-lg-2 col-form-label">客戶代號</label>
+						<div class="col-lg-4">
+							<input type="text" name="tbx_QuerycCustomerID" id="tbx_QuerycCustomerID" class="form-control CustName" placeholder="請輸入客戶名稱或統編的關鍵字">
+							<label id="lbl_cCustomerName" class="col-form-label" style="color:blue;"></label>
+						</div>
+						<label class="col-lg-2 col-form-label">門市名稱</label>
+						<div class="col-lg-4">
+							<input type="text" name="txt_QuerycContactStoreName" id="txt_QuerycContactStoreName" class="form-control" placeholder="門市名稱">
+						</div>
+					</div>							
+					<div class="form-group row">						
+						<label class="col-lg-2 col-form-label">聯絡人姓名</label>
+						<div class="col-lg-4">
+							<input type="text" name="txt_QuerycContactName" id="txt_QuerycContactName" class="form-control" placeholder="聯絡人姓名">
+						</div>						
+						<label class="col-lg-2 col-form-label">指派工程師ERPID</label>
+						<div class="col-lg-4">
+							<input type="text" name="txt_QuerycMainEngineerID" id="txt_QuerycMainEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+								<label id="lbl_QuerycMainEngineerID" class="col-form-label" style="color:blue;"></label>
+						</div>
+					</div>
+					<div class="hr-line-dashed"></div>
+					<div class="form-group row">
+						<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+						&nbsp;&nbsp;&nbsp;&nbsp;
+						<button class="btn btn-default btn-lg" type="button" onclick="clearQuery();"><i class="fa fa-trash"></i> 清 除 </button>
+						&nbsp;&nbsp;&nbsp;&nbsp;						
+						<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>
+					批次定維派工明細查詢/上傳/維護結果
+					<button type="button" class="btn btn-success" onclick="addDetailMaintain();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+				</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+				<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+					<thead>
+						<tr>
+							<th>編輯/刪除</th>
+							<th>文件編號</th>
+							<th>公司別</th>
+							<th>客戶代號</th>
+							<th>客戶名稱</th>
+							<th>門市名稱</th>
+							<th>聯絡人姓名</th>
+							<th>聯絡人地址</th>
+							<th>聯絡人電話</th>
+							<th>聯絡人手機</th>
+							<th>聯絡人信箱</th>
+							<th>指派工程師ERPID</th>
+							<th>指派工程師姓名</th>
+						</tr>
+					</thead>
+					<tbody>
+						@{
+							if (ViewBag.QueryToListBean != null)
+							{
+								int count = 0;
+								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								{
+									count++;
+									<tr id='tr@(QueryInfo[1])'>
+										@if (@QueryInfo[0] == "Y")
+										{
+											<td>
+												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+												<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
+												<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailMaintain(this);" style="margin: 2px;">
+													<i class="glyphicon glyphicon-pencil"></i>
+												</button>
+												<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailMaintain(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
+													<i class="fa fa-trash"></i>
+												</button>
+											</td>
+										}
+										else
+										{
+											<td>
+												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
+												<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
+											</td>
+										}
+
+										<td><a href="@QueryInfo[3]" target="_blank">@QueryInfo[2]</a></td>
+										<td class="taskBUKRS">@Html.Raw(QueryInfo[4])</td>
+										<td class="taskCustomerID">@Html.Raw(QueryInfo[5])</td>
+										<td class="taskCustomerName">@Html.Raw(QueryInfo[6])</td>
+										<td class="taskContactStoreName">@Html.Raw(QueryInfo[7])</td>
+										<td class="taskContactName">@Html.Raw(QueryInfo[8])</td>
+										<td class="taskContactAddress">@Html.Raw(QueryInfo[9])</td>
+										<td class="taskContactPhone">@Html.Raw(QueryInfo[10])</td>
+										<td class="taskContactMobile">@Html.Raw(QueryInfo[11])</td>
+										<td class="taskContactEmail">@Html.Raw(QueryInfo[12])</td>
+										<td class="taskMainEngineerID">@Html.Raw(QueryInfo[13])</td>
+										<td class="taskMainEngineerName">@Html.Raw(QueryInfo[14])</td>
+									</tr>
+								}
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--新增/編輯批次定維的明細彈出視窗-->
+<div class="modal fade" id="dialog_DetailMaintain" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-check-square-o" aria-hidden="true"></i> 新增/編輯批次定維的明細</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<input type="hidden" id="hid_taskcID" />				
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">文件編號*</label>
+					<input type="text" id="txt_cContractID" class="form-control col-lg-4" placeholder="文件編號" disabled/>
+					<label class="col-lg-2 col-form-label">公司別*</label>
+					@Html.DropDownList("ddl_cBUKRS", (IEnumerable<SelectListItem>)ViewBag.ddl_cBUKRS, new { @class = "form-control col-lg-4" })
+				</div>
+				<div class="form-group row">					
+					<label class="col-lg-2 col-form-label">客戶代號*</label>
+					<input type="text" id="txt_cCustomerID" class="form-control col-lg-4" placeholder="客戶代號" disabled />
+					<label class="col-lg-2 col-form-label">客戶名稱*</label>
+					<input type="text" id="txt_cCustomerName" class="form-control col-lg-4" placeholder="客戶名稱" disabled />
+				</div>
+				<div class="form-group row">					
+					<label class="col-lg-2 col-form-label">門市名稱*</label>
+					<input type="text" id="txt_cContactStoreName" class="form-control col-lg-4" placeholder="門市名稱" disabled />
+					<label class="col-lg-2 col-form-label">聯絡人姓名*</label>
+					<input type="text" id="txt_cContactName" class="form-control col-lg-4" placeholder="聯絡人姓名" />
+				</div>
+				<div class="form-group row">					
+					<label class="col-lg-2 col-form-label">聯絡人地址*</label>
+					<input type="text" id="txt_cContactAddress" class="form-control col-lg-4" placeholder="聯絡人地址" />
+					<label class="col-lg-2 col-form-label">聯絡人信箱</label>
+					<input type="text" id="txt_cContactEmail" class="form-control col-lg-4" placeholder="聯絡人信箱" />
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">聯絡人電話(電話或手機二擇一)</label>
+					<input type="text" id="txt_cContactPhone" class="form-control col-lg-4" placeholder="聯絡人電話" />
+					<label class="col-lg-2 col-form-label">聯絡人手機(電話或手機二擇一)</label>
+					<input type="text" id="txt_cContactMobile" class="form-control col-lg-4" placeholder="聯絡人手機" />
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">指派工程師ERPID*</label>
+					<input type="text" id="txt_cMainEngineerID" class="form-control col-lg-4 Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" />
+					<label class="col-lg-2 col-form-label">指派工程師姓名*</label>
+					<input type="text" id="txt_cMainEngineerName" class="form-control col-lg-4" placeholder="指派工程師姓名" disabled />
+				</div>	
+			</div>
+			<div class="modal-footer">
+				<div class="col-lg-5"></div>
+				<button id="btn_saveDetailMaintain" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveDetailMaintain($('#hid_taskcID').val());"> <i class="fa fa-save"></i> 儲 存</button>
+				<img id="img_waiting_saveDetailMaintain" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<div class="col-lg-5"></div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -24,6 +24,7 @@ namespace OneService.Models
         public virtual DbSet<TbOneLog> TbOneLogs { get; set; } = null!;
         public virtual DbSet<TbOneSrbatchInstallRecord> TbOneSrbatchInstallRecords { get; set; } = null!;
         public virtual DbSet<TbOneSrbatchInstallRecordDetail> TbOneSrbatchInstallRecordDetails { get; set; } = null!;
+        public virtual DbSet<TbOneSrbatchMaintainRecord> TbOneSrbatchMaintainRecords { get; set; } = null!;
         public virtual DbSet<TbOneSrcustomerEmailMapping> TbOneSrcustomerEmailMappings { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailContact> TbOneSrdetailContacts { get; set; } = null!;
         public virtual DbSet<TbOneSrdetailMaterialInfo> TbOneSrdetailMaterialInfos { get; set; } = null!;
@@ -553,6 +554,77 @@ namespace OneService.Models
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneSrbatchMaintainRecord>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SRBatchMaintainRecord");
+
+                entity.HasIndex(e => e.CContractId, "NonClusteredIndex-20230713-173227");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CBukrs)
+                    .HasMaxLength(4)
+                    .HasColumnName("cBUKRS");
+
+                entity.Property(e => e.CContactAddress)
+                    .HasMaxLength(110)
+                    .HasColumnName("cContactAddress");
+
+                entity.Property(e => e.CContactEmail)
+                    .HasMaxLength(200)
+                    .HasColumnName("cContactEmail");
+
+                entity.Property(e => e.CContactMobile)
+                    .HasMaxLength(50)
+                    .HasColumnName("cContactMobile");
+
+                entity.Property(e => e.CContactName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cContactName");
+
+                entity.Property(e => e.CContactPhone)
+                    .HasMaxLength(50)
+                    .HasColumnName("cContactPhone");
+
+                entity.Property(e => e.CContactStoreName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cContactStoreName");
+
+                entity.Property(e => e.CContractId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cContractID");
+
+                entity.Property(e => e.CCustomerId)
+                    .HasMaxLength(10)
+                    .HasColumnName("cCustomerID");
+
+                entity.Property(e => e.CCustomerName)
+                    .HasMaxLength(35)
+                    .HasColumnName("cCustomerName");
+
+                entity.Property(e => e.CMacycle)
+                    .HasMaxLength(512)
+                    .HasColumnName("cMACycle");
+
+                entity.Property(e => e.CMainEngineerId)
+                    .HasMaxLength(20)
+                    .HasColumnName("cMainEngineerID");
+
+                entity.Property(e => e.CMainEngineerName)
+                    .HasMaxLength(40)
+                    .HasColumnName("cMainEngineerName");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
             });
 
             modelBuilder.Entity<TbOneSrcustomerEmailMapping>(entity =>

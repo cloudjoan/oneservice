@@ -133,6 +133,11 @@ namespace OneService.Controllers
         static string pOperationID_QueryBatchInstall = "3BF8ED29-3639-49D2-8D4A-19F9C1FF7934";
 
         /// <summary>
+        /// 程式作業編號檔系統ID(批次上傳定維派工作業)
+        /// </summary>
+        static string pOperationID_QueryBatchMaintain = "7F07161D-D086-4004-AB25-B292469C979C";
+
+        /// <summary>
         /// 公司別(T012、T016、C069、T022)
         /// </summary>
         static string pCompanyCode = string.Empty;
@@ -6419,10 +6424,9 @@ namespace OneService.Controllers
         #region 批次上傳裝機派工清單查詢
         /// <summary>
         /// 批次上傳裝機派工清單查詢
-        /// </summary>
-        /// <param name="cID">Log檔的系統ID</param>
+        /// </summary>        
         /// <returns></returns>
-        public IActionResult QueryBatchInstall(string cID)
+        public IActionResult QueryBatchInstall()
         {
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -6509,7 +6513,349 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #endregion -----↑↑↑↑↑合約標的明細查詢/上傳/維護 ↑↑↑↑↑-----
+        #endregion -----↑↑↑↑↑批次上傳裝機派工作業 ↑↑↑↑↑-----
+
+        #region -----↓↓↓↓↓批次上傳定維派工作業 ↓↓↓↓↓----- 
+
+        #region 匯入批次上傳定維派工清單Excel
+        [HttpPost]
+        public IActionResult ImportBatchMaintainExcel(IFormCollection formCollection, IFormFile postedFile)
+        {
+            string[] AryValue = new string[2];
+
+            bool tIsOK = true;           
+            bool tIsFormal = false;
+
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+            string tUrl = string.Empty;
+
+            string cID = string.Empty;
+            string tLog = string.Empty;
+            string tErrorMsg = string.Empty;
+            string strItem = string.Empty;  //記錄Excel第幾列
+            string cContractID = string.Empty;
+            string cBUKRS = string.Empty;
+            string cCustomerID = string.Empty;
+            string cCustomerName = string.Empty;
+            string cContactStoreName = string.Empty;            
+            string cContactName = string.Empty;
+            string cContactAddress = string.Empty;
+            string cContactPhone = string.Empty;
+            string cContactMobile = string.Empty;
+            string cContactEmail = string.Empty;            
+            string cMainEngineerID = string.Empty;
+            string cMainEngineerName = string.Empty;
+            string cMACycle = string.Empty;
+
+            int ImportCount = 0;    //記錄匯入有幾筆
+            int EmptyCount = 0;     //記錄自訂週期Empty有幾筆
+
+            Dictionary<string, DataTable> DicM = new Dictionary<string, DataTable>();          
+            DataTable dtM = new DataTable();
+           
+            getLoginAccount();
+            getEmployeeInfo();            
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+            #endregion
+
+            try
+            {
+
+                #region 取得匯入Excel主檔相關(批次定維派工)
+                DicM = CMF.ImportExcelToDataTable(postedFile, "批次定維", 0);
+
+                foreach (KeyValuePair<string, DataTable> item in DicM)
+                {
+                    #region 回傳結果訊息
+                    tErrorMsg = item.Key;
+                    #endregion
+
+                    #region 回傳的DataTable
+                    dtM = item.Value.Clone();
+
+                    foreach (DataRow dr in item.Value.Rows)
+                    {
+                        dtM.Rows.Add(dr.ItemArray);
+                    }
+                    #endregion
+
+                    break;
+                }
+                #endregion                
+
+                if (tErrorMsg == "")
+                {
+                    #region 檢查匯入的資料
+                    if (dtM.Rows.Count > 0)
+                    {
+                        foreach (DataRow dr in dtM.Rows)
+                        {
+                            try
+                            {
+                                ImportCount++;
+
+                                tIsOK = true;
+                                strItem = dr[0].ToString().Trim();
+                                cContractID = dr[1].ToString().Trim();
+                                cBUKRS = dr[2].ToString().Trim();
+                                cCustomerID = dr[3].ToString().Trim();
+                                cCustomerName = dr[4].ToString().Trim();
+                                cContactStoreName = dr[5].ToString().Trim();
+                                cContactName = dr[6].ToString().Trim();
+                                cContactAddress = dr[7].ToString().Trim();
+                                cContactPhone = dr[8].ToString().Trim();
+                                cContactMobile = dr[9].ToString().Trim();
+                                cContactEmail = dr[10].ToString().Trim();                                
+                                cMainEngineerID = dr[11].ToString().Trim();
+                                cMainEngineerName = dr[12].ToString().Trim();
+                                cMACycle = dr[13].ToString().Trim();
+
+                                #region Empty欄位檢查
+                                AryValue = CMF.ValidationImportExcelField(cContractID, "文件編號", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cBUKRS, "公司別", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerID, "客戶代號", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cCustomerName, "客戶名稱", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cContactStoreName, "門市名稱", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cContactName, "聯絡人姓名", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cContactAddress, "聯絡人地址", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cContactPhone + cContactMobile, "聯絡人電話或聯絡人手機", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }                               
+
+                                AryValue = CMF.ValidationImportExcelField(cMainEngineerID, "指派工程師ERPID", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                AryValue = CMF.ValidationImportExcelField(cMainEngineerName, "指派工程師姓名", strItem);
+
+                                if (AryValue[0] == "N")
+                                {
+                                    tErrorMsg += AryValue[1];
+                                    tIsOK = false;
+                                }
+
+                                if (cMACycle == "")
+                                {
+                                    EmptyCount++;
+                                }
+                                #endregion                               
+                            }
+                            catch (Exception e)
+                            {
+                                tErrorMsg += "項次【" + strItem + "】，產生定維服務失敗！原因：" + e.Message + "</br>";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        tErrorMsg += "您未輸入任何批次上傳定維派工清單！</br>";
+                    }
+                    #endregion
+
+                    if (tErrorMsg == "")
+                    {
+                        if (EmptyCount != 0 && ImportCount != EmptyCount)
+                        {
+                            tErrorMsg += "自訂維護週期不一致，必須皆為【全空白或全輸入】！</br>";
+                        }                       
+                    }
+
+                    #region 寫入DataTable到主檔資料庫  
+                    if (dtM.Rows.Count > 0 && tErrorMsg == "")
+                    {
+                        foreach (DataRow dr in dtM.Rows)
+                        {
+                            try
+                            {                               
+                                strItem = dr[0].ToString().Trim();
+                                cContractID = dr[1].ToString().Trim();
+                                cBUKRS = dr[2].ToString().Trim();
+                                cCustomerID = dr[3].ToString().Trim();
+                                cCustomerName = dr[4].ToString().Trim();
+                                cContactStoreName = dr[5].ToString().Trim();
+                                cContactName = dr[6].ToString().Trim();
+                                cContactAddress = dr[7].ToString().Trim();
+                                cContactPhone = dr[8].ToString().Trim();
+                                cContactMobile = dr[9].ToString().Trim();
+                                cContactEmail = dr[10].ToString().Trim();
+                                cMainEngineerID = dr[11].ToString().Trim();
+                                cMainEngineerName = dr[12].ToString().Trim();
+                                cMACycle = dr[13].ToString().Trim();
+
+                                #region 寫入到批次上傳定維派工紀錄主檔
+
+                                #endregion
+                            }
+                            catch (Exception e)
+                            {
+                                tErrorMsg += "項次【" + strItem + "】，產生定維服務失敗！原因：" + e.Message + "</br>";
+                            }
+                        }
+                    }                    
+                    #endregion
+                }
+
+                if (tErrorMsg == "")
+                {
+                    ViewBag.Message = "匯入成功！";
+                }
+                else
+                {
+                    ViewBag.Message = "匯入失敗！</br>" + tErrorMsg;
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Message = "匯入失敗！原因：" + ex.Message;
+            }
+
+            return RedirectToAction("QueryBatchMaintain", new { cContractID = cContractID, tMessage = ViewBag.Message });
+        }
+        #endregion
+
+        #region 批次上傳定維派工清單查詢
+        /// <summary>
+        /// 批次上傳定維派工清單查詢
+        /// </summary>        
+        /// <returns></returns>
+        public IActionResult QueryBatchMaintain()
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            bool tIsFormal = false;
+
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+
+            ViewBag.DownloadURL = "http://" + tAttachURLName + "/CSreport/批次定維派工.XLSX";
+            #endregion
+
+            #region Request參數
+            if (HttpContext.Request.Query["tMessage"].FirstOrDefault() != null)
+            {
+                //記錄匯入Excel成功或失敗訊息！
+                ViewBag.Message = HttpContext.Request.Query["tMessage"].FirstOrDefault();
+            }
+            #endregion
+
+            #region 公司別            
+            var BUKRSList = findSysParameterList(pSysOperationID, "OTHER", "ALL", "BUKRS", false);
+            ViewBag.ddl_cBUKRS = BUKRSList;
+            #endregion
+
+            return View();
+        }
+        #endregion
+
+        #region 批次上傳定維派工明細查詢結果
+        /// <summary>
+        /// 批次上傳定維派工明細查詢結果
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cHostName">HostName</param>
+        /// <param name="cSerialID">序號</param>
+        /// <param name="cModel">Product Model</param>        
+        /// <param name="cArea">區域</param>
+        /// <param name="cStartDate">合約期間(起)</param>
+        /// <param name="cEndDate">合約期間(迄)</param>
+        /// <returns></returns>
+        public IActionResult QueryBatchMaintainResult(string cContractID, string cHostName, string cSerialID, string cModel, string cArea, string cStartDate, string cEndDate)
+        {
+            getLoginAccount();
+            getEmployeeInfo();            
+
+            return View();
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑批次上傳定維派工作業 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 
