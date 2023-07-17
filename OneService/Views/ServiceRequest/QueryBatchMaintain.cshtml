@@ -68,7 +68,7 @@
 						text: '匯出Excel',
 						sheetName: '批次定維派工明細查詢',
 						exportOptions: {
-							columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] //要顯示的欄位
+							columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							addCustomNumberFormat(xlsx, '0');
@@ -83,7 +83,8 @@
 							formatTargetColumn(xlsx, 'I');
 							formatTargetColumn(xlsx, 'J');
 							formatTargetColumn(xlsx, 'K');
-							formatTargetColumn(xlsx, 'L');							
+							formatTargetColumn(xlsx, 'L');
+							formatTargetColumn(xlsx, 'M');
 						}
 					}),
 				],
@@ -166,6 +167,8 @@
 						var keyword = $(this).val();
 						if (keyword.length > 1) {
 							var obj = $(this);
+							var ojbID = $(this).attr("id");
+
 							$.ajax({
 								url: '@Url.Action("findCustByKeywordAndComp", "ServiceRequest")',
 								type: 'post',
@@ -186,12 +189,19 @@
 									obj.autocomplete({
 										source: Customers,
 										select: function (event, ui) {
-											$("#lbl_cCustomerName").html(ui.item.Name);
+											if (ojbID.indexOf('tbx_QuerycCustomerID') >= 0) {
+												$("#lbl_QuerycCustomerName").html(ui.item.Name);
+											}
+											else if (ojbID.indexOf('txt_cCustomerID') >= 0) {
+												$('#txt_cCustomerName').val(ui.item.Name);
+											}
+											
 										}
 									}).bind('focus', function () { $(this).autocomplete("search"); });
 
 									//開啟autocomplete選單
 									obj.focus();
+									$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
 								}
 							})
 						}
@@ -228,6 +238,7 @@
 											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
 											idx: i,
 											Name: idata.CEmployeeCName + "\\" + idata.CEmployeeEname,
+											Name2: idata.CEmployeeCName,
 											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉
 										};
 									});
@@ -239,14 +250,15 @@
 											if (ojbID.indexOf('txt_QuerycMainEngineerID') >= 0) {
 												$('#lbl_QuerycMainEngineerID').html(ui.item.Name);
 											}
-											else if (ojbID.indexOf('tbx_cMainEngineerID') >= 0) {
-												$('#txt_cMainEngineerName').val(ui.item.Name);
+											else if (ojbID.indexOf('txt_cMainEngineerID') >= 0) {
+												$('#txt_cMainEngineerName').val(ui.item.Name2);
 											}
 										}
 									}).bind('focus', function () { $(this).autocomplete("search"); });
 
 									//開啟autocomplete選單
 									obj.focus();
+									$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
 								}
 							})
 
@@ -288,6 +300,7 @@
 			$("#txt_cContactEmail").val($(obj).parent().parent().find('.taskContactEmail').text());			//聯絡人信箱
 			$("#txt_cMainEngineerID").val($(obj).parent().parent().find('.taskMainEngineerID').text());		//指派工程師ERPID
 			$("#txt_cMainEngineerName").val($(obj).parent().parent().find('.taskMainEngineerName').text());	//指派工程師姓名
+			$("#tbx_cMACycle").val($(obj).parent().parent().find('.taskMACycle').text());					//自訂維護週期
 			
 			$("#dialog_DetailMaintain").modal('show');
 		}
@@ -543,7 +556,7 @@
 						<label class="col-lg-2 col-form-label">客戶代號</label>
 						<div class="col-lg-4">
 							<input type="text" name="tbx_QuerycCustomerID" id="tbx_QuerycCustomerID" class="form-control CustName" placeholder="請輸入客戶名稱或統編的關鍵字">
-							<label id="lbl_cCustomerName" class="col-form-label" style="color:blue;"></label>
+								<label id="lbl_QuerycCustomerName" class="col-form-label" style="color:blue;"></label>
 						</div>
 						<label class="col-lg-2 col-form-label">門市名稱</label>
 						<div class="col-lg-4">
@@ -604,6 +617,7 @@
 							<th>聯絡人信箱</th>
 							<th>指派工程師ERPID</th>
 							<th>指派工程師姓名</th>
+							<th>自訂維護週期</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -648,6 +662,7 @@
 										<td class="taskContactEmail">@Html.Raw(QueryInfo[12])</td>
 										<td class="taskMainEngineerID">@Html.Raw(QueryInfo[13])</td>
 										<td class="taskMainEngineerName">@Html.Raw(QueryInfo[14])</td>
+										<td class="taskMACycle">@Html.Raw(QueryInfo[15])</td>
 									</tr>
 								}
 							}
@@ -661,7 +676,7 @@
 
 <!--新增/編輯批次定維的明細彈出視窗-->
 <div class="modal fade" id="dialog_DetailMaintain" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg" role="document">
+	<div class="modal-dialog modal-lg" role="document" style="max-width:50%">
 		<div class="modal-content">
 			<div class="modal-header">
 				<label class="col-form-label"><i class="fa fa-check-square-o" aria-hidden="true"></i> 新增/編輯批次定維的明細</label>
@@ -679,7 +694,7 @@
 				</div>
 				<div class="form-group row">					
 					<label class="col-lg-2 col-form-label">客戶代號*</label>
-					<input type="text" id="txt_cCustomerID" class="form-control col-lg-4" placeholder="客戶代號" disabled />
+					<input type="text" id="txt_cCustomerID" class="form-control col-lg-4 CustName" placeholder="客戶代號" disabled />
 					<label class="col-lg-2 col-form-label">客戶名稱*</label>
 					<input type="text" id="txt_cCustomerName" class="form-control col-lg-4" placeholder="客戶名稱" disabled />
 				</div>
@@ -691,14 +706,16 @@
 				</div>
 				<div class="form-group row">					
 					<label class="col-lg-2 col-form-label">聯絡人地址*</label>
-					<input type="text" id="txt_cContactAddress" class="form-control col-lg-4" placeholder="聯絡人地址" />
+					<input type="text" id="txt_cContactAddress" class="form-control col-lg-10" placeholder="聯絡人地址" />					
+				</div>
+				<div class="form-group row">					
 					<label class="col-lg-2 col-form-label">聯絡人信箱</label>
-					<input type="text" id="txt_cContactEmail" class="form-control col-lg-4" placeholder="聯絡人信箱" />
+					<input type="text" id="txt_cContactEmail" class="form-control col-lg-10" placeholder="聯絡人信箱" />
 				</div>
 				<div class="form-group row">
-					<label class="col-lg-2 col-form-label">聯絡人電話(電話或手機二擇一)</label>
+					<label class="col-lg-2 col-form-label">聯絡人電話(電話/手機二擇一)</label>
 					<input type="text" id="txt_cContactPhone" class="form-control col-lg-4" placeholder="聯絡人電話" />
-					<label class="col-lg-2 col-form-label">聯絡人手機(電話或手機二擇一)</label>
+					<label class="col-lg-2 col-form-label">聯絡人手機(電話/手機二擇一)</label>
 					<input type="text" id="txt_cContactMobile" class="form-control col-lg-4" placeholder="聯絡人手機" />
 				</div>
 				<div class="form-group row">
@@ -706,7 +723,11 @@
 					<input type="text" id="txt_cMainEngineerID" class="form-control col-lg-4 Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" />
 					<label class="col-lg-2 col-form-label">指派工程師姓名*</label>
 					<input type="text" id="txt_cMainEngineerName" class="form-control col-lg-4" placeholder="指派工程師姓名" disabled />
-				</div>	
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">自訂維護週期</label>
+					<textarea rows="3" class="form-control col-lg-10" placeholder="自訂維護週期" id="tbx_cMACycle"></textarea>
+				</div>
 			</div>
 			<div class="modal-footer">
 				<div class="col-lg-5"></div>

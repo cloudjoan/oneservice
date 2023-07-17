@@ -64,7 +64,7 @@
 					text: '匯出Excel',
 					sheetName: '批次定維派工明細查詢',
 					exportOptions: {
-						columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] //要顯示的欄位
+						columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						addCustomNumberFormat(xlsx, '0');
@@ -79,7 +79,8 @@
 						formatTargetColumn(xlsx, 'I');
 						formatTargetColumn(xlsx, 'J');
 						formatTargetColumn(xlsx, 'K');
-						formatTargetColumn(xlsx, 'L');						
+						formatTargetColumn(xlsx, 'L');
+						formatTargetColumn(xlsx, 'M');
 					}
 				}),
 			],
@@ -132,7 +133,8 @@
 			<th>聯絡人手機</th>
 			<th>聯絡人信箱</th>
 			<th>指派工程師ERPID</th>
-			<th>指派工程師姓名</th>			
+			<th>指派工程師姓名</th>
+			<th>自訂維護週期</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -176,7 +178,8 @@
 						<td class="taskContactMobile">@Html.Raw(QueryInfo[11])</td>
 						<td class="taskContactEmail">@Html.Raw(QueryInfo[12])</td>
 						<td class="taskMainEngineerID">@Html.Raw(QueryInfo[13])</td>
-						<td class="taskMainEngineerName">@Html.Raw(QueryInfo[14])</td>						
+						<td class="taskMainEngineerName">@Html.Raw(QueryInfo[14])</td>
+						<td class="taskMACycle">@Html.Raw(QueryInfo[15])</td>
 					</tr>
 				}
 			}
