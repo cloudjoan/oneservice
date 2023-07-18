@@ -20,7 +20,6 @@ function showApproveHistory(cFormNo) {
             success: function (result) {
             },
             complete: function (result) {
-                $("#dialogContent").html(result.responseText);
             }
         });
     } else {
@@ -48,7 +47,7 @@ function showComponentsChangeDialog(cFormNo, cID, cItem, cSRID, cWERKS) {
             success: function (result) {
             },
             complete: function (result) {
-                $("#ShowComponentsChangedialogContent").html(result.responseText);
+               
             }
         });
     } else {
