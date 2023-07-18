@@ -140,46 +140,33 @@
 	<tbody>
 		@{
 			if (ViewBag.QueryToListBean != null)
-			{
-				int count = 0;
+			{				
 				foreach (string[] QueryInfo in ViewBag.QueryToListBean)
-				{
-					count++;
-					<tr id='tr@(QueryInfo[1])'>
-						@if (@QueryInfo[0] == "Y")
-						{
-							<td>
-								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-								<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
-								<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailMaintain(this);" style="margin: 2px;">
-									<i class="glyphicon glyphicon-pencil"></i>
-								</button>
-								<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailMaintain(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
-									<i class="fa fa-trash"></i>
-								</button>
-							</td>
-						}
-						else
-						{
-							<td>
-								<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-								<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
-							</td>
-						}
-
-						<td><a href="@QueryInfo[3]" target="_blank">@QueryInfo[2]</a></td>
-						<td class="taskBUKRS">@Html.Raw(QueryInfo[4])</td>
-						<td class="taskCustomerID">@Html.Raw(QueryInfo[5])</td>
-						<td class="taskCustomerName">@Html.Raw(QueryInfo[6])</td>
-						<td class="taskContactStoreName">@Html.Raw(QueryInfo[7])</td>
-						<td class="taskContactName">@Html.Raw(QueryInfo[8])</td>
-						<td class="taskContactAddress">@Html.Raw(QueryInfo[9])</td>
-						<td class="taskContactPhone">@Html.Raw(QueryInfo[10])</td>
-						<td class="taskContactMobile">@Html.Raw(QueryInfo[11])</td>
-						<td class="taskContactEmail">@Html.Raw(QueryInfo[12])</td>
-						<td class="taskMainEngineerID">@Html.Raw(QueryInfo[13])</td>
-						<td class="taskMainEngineerName">@Html.Raw(QueryInfo[14])</td>
-						<td class="taskMACycle">@Html.Raw(QueryInfo[15])</td>
+				{			
+					<tr id='tr@(QueryInfo[0])'>
+						<td>
+							<input type="hidden" value="@QueryInfo[0]" class="taskcID" />
+							<input type="hidden" value="@QueryInfo[1]" class="taskContractID" />
+							<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editBatchMaintain(this);" style="margin: 2px;">
+								<i class="glyphicon glyphicon-pencil"></i>
+							</button>
+							<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteBatchMaintain(this, 'tr@(QueryInfo[0])');" style="margin: 2px;">
+								<i class="fa fa-trash"></i>
+							</button>
+						</td>
+						<td><a href="@QueryInfo[2]" target="_blank">@QueryInfo[1]</a></td>
+						<td class="taskBUKRS">@Html.Raw(QueryInfo[3])</td>
+						<td class="taskCustomerID">@Html.Raw(QueryInfo[4])</td>
+						<td class="taskCustomerName">@Html.Raw(QueryInfo[5])</td>
+						<td class="taskContactStoreName">@Html.Raw(QueryInfo[6])</td>
+						<td class="taskContactName">@Html.Raw(QueryInfo[7])</td>
+						<td class="taskContactAddress">@Html.Raw(QueryInfo[8])</td>
+						<td class="taskContactPhone">@Html.Raw(QueryInfo[9])</td>
+						<td class="taskContactMobile">@Html.Raw(QueryInfo[10])</td>
+						<td class="taskContactEmail">@Html.Raw(QueryInfo[11])</td>
+						<td class="taskMainEngineerID">@Html.Raw(QueryInfo[12])</td>
+						<td class="taskMainEngineerName">@Html.Raw(QueryInfo[13])</td>
+						<td class="taskMACycle">@Html.Raw(QueryInfo[14])</td>
 					</tr>
 				}
 			}

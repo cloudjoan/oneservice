@@ -29,6 +29,11 @@ using NPOI.SS.Formula.Functions;
 using NPOI.XSSF.Streaming.Values;
 using MathNet.Numerics;
 using NPOI.OpenXmlFormats.Wordprocessing;
+using MathNet.Numerics.Optimization;
+using Org.BouncyCastle.Crypto.Prng;
+using NPOI.OpenXmlFormats.Spreadsheet;
+using NPOI.SS.Formula.PTG;
+using Org.BouncyCastle.Utilities.Net;
 
 namespace OneService.Controllers
 {
@@ -3215,6 +3220,9 @@ namespace OneService.Controllers
                 if (bean != null)
                 {
                     bean.Disabled = 1;
+                    bean.MainModifiedDate = DateTime.Now;
+                    bean.MainModifiedUserName = ViewBag.empEngName;
+
                     dbProxy.SaveChanges();
                 }
                 #endregion
@@ -5930,7 +5938,7 @@ namespace OneService.Controllers
                                     beanSRM.CAttachementStockNo = bean.ID + ",";
 
                                     beanSRM.ModifiedDate = DateTime.Now;
-                                    beanSRM.ModifiedUserName = pLoginName;
+                                    beanSRM.ModifiedUserName = ViewBag.empEngName;
 
                                     int result = dbOne.SaveChanges();
 
@@ -5983,7 +5991,7 @@ namespace OneService.Controllers
                                     beanCOM.CContractReport = bean.ID + ",";
 
                                     beanCOM.ModifiedDate = DateTime.Now;
-                                    beanCOM.ModifiedUserName = pLoginName;
+                                    beanCOM.ModifiedUserName = ViewBag.empEngName;
 
                                     int result = dbOne.SaveChanges();
 
@@ -6264,7 +6272,7 @@ namespace OneService.Controllers
 
                                     #region 設定主檔                                    
                                     beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                                    beanIN.IV_LOGINEMPNAME = pLoginName;
+                                    beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
                                     beanIN.IV_CUSTOMER = cCustomerID;
                                     beanIN.IV_SALESNO = cSalesNo;
                                     beanIN.IV_SHIPMENTNO = cShipmentNo;
@@ -6354,7 +6362,7 @@ namespace OneService.Controllers
                                         BInsM.CSerialId = cSerialID;
 
                                         BInsM.CreatedDate = DateTime.Now;
-                                        BInsM.CreatedUserName = pLoginName;
+                                        BInsM.CreatedUserName = ViewBag.empEngName;
 
                                         dbOne.TbOneSrbatchInstallRecords.Add(BInsM);
                                         #endregion
@@ -6372,7 +6380,7 @@ namespace OneService.Controllers
                                                 BInsD.CQuantity = int.Parse(MA.QTY);
 
                                                 BInsD.CreatedDate = DateTime.Now;
-                                                BInsD.CreatedUserName = pLoginName;
+                                                BInsD.CreatedUserName = ViewBag.empEngName;
 
                                                 dbOne.TbOneSrbatchInstallRecordDetails.Add(BInsD);
                                             }
@@ -6383,8 +6391,8 @@ namespace OneService.Controllers
 
                                         if (result <= 0)
                                         {
-                                            pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "回寫批次上傳裝機派工紀錄檔失敗" + Environment.NewLine;
-                                            CMF.writeToLog(cSRID, "ImportBatchInstallExcel", pMsg, pLoginName);
+                                            pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "回寫批次上傳裝機派工紀錄檔失敗" + Environment.NewLine;
+                                            CMF.writeToLog(cSRID, "ImportBatchInstallExcel", pMsg, ViewBag.empEngName);
                                         }                                        
                                     }
                                 }
@@ -6545,10 +6553,12 @@ namespace OneService.Controllers
             string cContactAddress = string.Empty;
             string cContactPhone = string.Empty;
             string cContactMobile = string.Empty;
-            string cContactEmail = string.Empty;            
+            string cContactEmail = string.Empty;
+            string cContactCity = string.Empty;
             string cMainEngineerID = string.Empty;
             string cMainEngineerName = string.Empty;
             string cMACycle = string.Empty;
+            string checkMACycle = string.Empty;
 
             int ImportCount = 0;    //記錄匯入有幾筆
             int EmptyCount = 0;     //記錄自訂週期Empty有幾筆
@@ -6707,6 +6717,15 @@ namespace OneService.Controllers
                                 {
                                     EmptyCount++;
                                 }
+                                else
+                                {
+                                    checkMACycle = CMF.checkCycle(cMACycle).Replace("\n", "</br>");
+
+                                    if (checkMACycle != "")
+                                    {
+                                        tErrorMsg += "項次【" + strItem + "】" + checkMACycle;
+                                    }
+                                }
                                 #endregion                               
                             }
                             catch (Exception e)
@@ -6751,13 +6770,54 @@ namespace OneService.Controllers
                                 cMainEngineerName = dr[12].ToString().Trim();
                                 cMACycle = dr[13].ToString().Trim();
 
-                                #region 寫入到批次上傳定維派工紀錄主檔
+                                #region 新增/更新批次上傳定維派工紀錄主檔
+                                int result = CMF.ChangeTB_ONE_SRBatchMaintainRecord(cContractID, cBUKRS, cCustomerID, cCustomerName, cContactStoreName,
+                                                                                   cContactName, cContactAddress, cContactPhone, cContactMobile, cContactEmail,
+                                                                                   cMainEngineerID, cMainEngineerName, cMACycle, ViewBag.empEngName);
+                                if (result <= 0)
+                                {
+                                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "回寫批次上傳定維派工紀錄檔失敗" + Environment.NewLine;
+                                    CMF.writeToLog(cContractID, "ImportBatchMaintainExcel", pMsg, ViewBag.empEngName);
+                                }
+                                #endregion
 
+                                #region 更新回客戶聯絡人主檔(沒有重覆才要新增)
+                                bool tIsExits = CMF.CheckContactsIsDouble("", cBUKRS, cCustomerID, cContactName, "");
+
+                                if (!tIsExits)
+                                {
+                                    try
+                                    {                                        
+                                        cContactCity = cContactAddress.Substring(0, 3);
+                                        cContactAddress = cContactAddress.Substring(3, cContactAddress.Length - 3);
+
+                                        CONTACTCREATE_INPUT beanIN = new CONTACTCREATE_INPUT();
+                                        beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
+                                        beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
+                                        beanIN.IV_CONTRACTID = cContractID;
+                                        beanIN.IV_CUSTOMEID = cCustomerID;
+                                        beanIN.IV_CONTACTNAME = cContactName;
+                                        beanIN.IV_CONTACTCITY = cContactCity;
+                                        beanIN.IV_CONTACTADDRESS = cContactAddress;
+                                        beanIN.IV_CONTACTTEL = cContactPhone;
+                                        beanIN.IV_CONTACTMOBILE = cContactMobile;
+                                        beanIN.IV_CONTACTEMAIL = cContactEmail;
+                                        beanIN.IV_ISDELETE = "N";
+                                        beanIN.IV_APIURLName = tAPIURLName;
+
+                                        CMF.GetAPI_CONTACT_UPDATE(beanIN);
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        //若有錯誤就不要塞
+                                    }
+                                }
                                 #endregion
                             }
                             catch (Exception e)
                             {
-                                tErrorMsg += "項次【" + strItem + "】，產生定維服務失敗！原因：" + e.Message + "</br>";
+                                tErrorMsg += "項次【" + strItem + "】，產生定維服務失敗！原因：" + e.Message + "</br>";                                
+                                continue;
                             }
                         }
                     }                    
@@ -6787,7 +6847,7 @@ namespace OneService.Controllers
         /// 批次上傳定維派工清單查詢
         /// </summary>        
         /// <returns></returns>
-        public IActionResult QueryBatchMaintain()
+        public IActionResult QueryBatchMaintain(string cContractID)
         {
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -6826,9 +6886,14 @@ namespace OneService.Controllers
             #endregion
 
             #region 公司別            
-            var BUKRSList = findSysParameterList(pSysOperationID, "OTHER", "ALL", "BUKRS", false);
+            var BUKRSList = findSysParameterList(pSysOperationID, "OTHER", "ALL", "BUKRS", true);
             ViewBag.ddl_cBUKRS = BUKRSList;
             #endregion
+
+            if (!string.IsNullOrEmpty(cContractID))
+            {
+                callQueryBatchMaintain(cContractID, "", "", "", "");
+            }
 
             return View();
         }
@@ -6839,19 +6904,249 @@ namespace OneService.Controllers
         /// 批次上傳定維派工明細查詢結果
         /// </summary>
         /// <param name="cContractID">文件編號</param>
-        /// <param name="cHostName">HostName</param>
-        /// <param name="cSerialID">序號</param>
-        /// <param name="cModel">Product Model</param>        
-        /// <param name="cArea">區域</param>
-        /// <param name="cStartDate">合約期間(起)</param>
-        /// <param name="cEndDate">合約期間(迄)</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cContactStoreName">門市名稱</param>
+        /// <param name="cContactName">聯絡人姓名</param>        
+        /// <param name="cMainEngineerID">指派工程師ERPID</param>        
         /// <returns></returns>
-        public IActionResult QueryBatchMaintainResult(string cContractID, string cHostName, string cSerialID, string cModel, string cArea, string cStartDate, string cEndDate)
+        public IActionResult QueryBatchMaintainResult(string cContractID, string cCustomerID, string cContactStoreName, string cContactName, string cMainEngineerID)
         {
             getLoginAccount();
-            getEmployeeInfo();            
+            getEmployeeInfo();
+            callQueryBatchMaintain(cContractID, cCustomerID, cContactStoreName, cContactName, cMainEngineerID);
 
             return View();
+        }
+        #endregion
+
+        #region 批次上傳定維派工明細查詢共用方法
+        /// <summary>
+        /// 批次上傳定維派工明細查詢共用方法
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cContactStoreName">門市名稱</param>
+        /// <param name="cContactName">聯絡人姓名</param>        
+        /// <param name="cMainEngineerID">指派工程師ERPID</param> 
+        public void callQueryBatchMaintain(string cContractID, string cCustomerID, string cContactStoreName, string cContactName, string cMainEngineerID)
+        { 
+            string tUrl = string.Empty;
+
+            List<string[]> QueryToList = new List<string[]>();  //查詢出來的清單          
+
+            var beans = dbOne.TbOneSrbatchMaintainRecords.Where(x => x.CDisabled == 0 &&
+                                                                (string.IsNullOrEmpty(cContractID) ? true : x.CContractId.Contains(cContractID)) &&
+                                                                (string.IsNullOrEmpty(cCustomerID) ? true : x.CCustomerId == cCustomerID) &&
+                                                                (string.IsNullOrEmpty(cContactStoreName) ? true : x.CContactStoreName.Contains(cContactStoreName)) &&
+                                                                (string.IsNullOrEmpty(cContactName) ? true : x.CContactName.Contains(cContactName)) &&
+                                                                (string.IsNullOrEmpty(cMainEngineerID) ? true : x.CMainEngineerId == cMainEngineerID));
+
+            #region 組待查詢清單
+            foreach (var bean in beans)
+            {
+                tUrl = "../Contract/ContractMain?ContractID=" + bean.CContractId;
+
+                string[] QueryInfo = new string[15];
+              
+                QueryInfo[0] = bean.CId.ToString();           //系統ID
+                QueryInfo[1] = bean.CContractId;              //文件編號
+                QueryInfo[2] = tUrl;                         //URL
+                QueryInfo[3] = bean.CBukrs;                   //公司別
+                QueryInfo[4] = bean.CCustomerId;              //客戶代號
+                QueryInfo[5] = bean.CCustomerName;            //客戶名稱
+                QueryInfo[6] = bean.CContactStoreName;         //門市名稱
+                QueryInfo[7] = bean.CContactName;             //聯絡人姓名
+                QueryInfo[8] = bean.CContactAddress;          //聯絡人地址                
+                QueryInfo[9] = bean.CContactPhone;            //聯絡人電話
+                QueryInfo[10] = bean.CContactMobile;           //聯絡人手機                
+                QueryInfo[11] = bean.CContactEmail;            //聯絡人信箱                
+                QueryInfo[12] = bean.CMainEngineerId;         //指派工程師ERPID                
+                QueryInfo[13] = bean.CMainEngineerName;       //指派工程師姓名                
+                QueryInfo[14] = bean.CMacycle;               //自訂維護週期
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+        }
+        #endregion
+
+        #region 儲存批次定維派工的明細內容
+        /// <summary>
+        /// 儲存批次定維派工的明細內容
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cCustomerName">客戶名稱</param>
+        /// <param name="cContactStoreName">門市名稱</param>
+        /// <param name="cContactName">聯絡人姓名</param>
+        /// <param name="cContactAddress">聯絡人地址</param>
+        /// <param name="cContactPhone">聯絡人電話</param>
+        /// <param name="cContactMobile">聯絡人手機</param>
+        /// <param name="cContactEmail">聯絡人信箱</param>
+        /// <param name="cMainEngineerID">指派工程師ERPID</param>
+        /// <param name="cMainEngineerName">指派工程師姓名</param>
+        /// <param name="cMACycle">自訂維護週期</param>
+        /// <returns></returns>
+        public IActionResult saveBatchMaintain(string cID, string cContractID, string cBUKRS, string cCustomerID, string cCustomerName, 
+                                             string cContactStoreName, string cContactName, string cContactAddress, string cContactPhone,
+                                             string cContactMobile, string cContactEmail, string cMainEngineerID, string cMainEngineerName, string cMACycle)
+
+        {
+            int result = 0;                
+
+            bool tIsDouble = false; //判斷是否有重覆
+            bool tIsFormal = false;
+
+            string reValue = "SUCCESS";
+            string tLog = string.Empty;
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+            string cContactCity = string.Empty;
+            string OldcMainEngineerID = string.Empty;
+            string OldcMainEngineerName = string.Empty;
+            string OldcMACycle = string.Empty;
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;            
+            #endregion
+
+            if (!string.IsNullOrEmpty(cID))
+            {
+                #region 修改
+                var bean = dbOne.TbOneSrbatchMaintainRecords.FirstOrDefault(x => x.CId == int.Parse(cID));
+
+                if (bean != null)
+                {
+                    #region 紀錄新舊值                       
+                    OldcMainEngineerID = bean.CMainEngineerId;
+                    tLog += CMF.getNewAndOldLog("指派工程師ERPID", OldcMainEngineerID, cMainEngineerID);
+
+                    OldcMainEngineerName = bean.CMainEngineerName;
+                    tLog += CMF.getNewAndOldLog("指派工程師姓名", OldcMainEngineerName, cMainEngineerName);
+
+                    OldcMACycle = bean.CMacycle;
+                    tLog += CMF.getNewAndOldLog("自訂維護週期", OldcMACycle, cMACycle);
+                    #endregion
+
+                    bean.CMainEngineerId = string.IsNullOrEmpty(cMainEngineerID) ? "" : cMainEngineerID.Trim();
+                    bean.CMainEngineerName = string.IsNullOrEmpty(cMainEngineerName) ? "" : cMainEngineerName.Trim();
+                    bean.CMacycle = string.IsNullOrEmpty(cMACycle) ? "" : cMACycle.Trim();
+
+                    bean.ModifiedDate = DateTime.Now;
+                    bean.ModifiedUserName = ViewBag.empEngName;
+
+                    result = dbOne.SaveChanges();
+                }
+                #endregion
+            }
+            else //新增
+            {
+                //判斷批次上傳定維派工紀錄主檔是否已存在(true.已存在 false.未存在)
+                tIsDouble = CMF.CheckBatchMaintainIsDouble(cContractID, cBUKRS, cCustomerID, cContactStoreName, cContactName);
+
+                if (!tIsDouble)
+                {
+                    result = CMF.ChangeTB_ONE_SRBatchMaintainRecord(cContractID, cBUKRS, cCustomerID, cCustomerName, cContactStoreName,
+                                                                  cContactName, cContactAddress, cContactPhone, cContactMobile, cContactEmail,
+                                                                  cMainEngineerID, cMainEngineerName, cMACycle, ViewBag.empEngName);
+
+                    #region 更新回客戶聯絡人主檔(沒有重覆才要新增)
+                    bool tIsExits = CMF.CheckContactsIsDouble("", cBUKRS, cCustomerID, cContactName, "");
+
+                    if (!tIsExits)
+                    {
+                        try
+                        {
+                            cContactCity = cContactAddress.Substring(0, 3);
+                            cContactAddress = cContactAddress.Substring(3, cContactAddress.Length - 3);
+
+                            CONTACTCREATE_INPUT beanIN = new CONTACTCREATE_INPUT();
+                            beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
+                            beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
+                            beanIN.IV_CONTRACTID = cContractID;
+                            beanIN.IV_CUSTOMEID = cCustomerID;
+                            beanIN.IV_CONTACTNAME = cContactName;
+                            beanIN.IV_CONTACTCITY = cContactCity;
+                            beanIN.IV_CONTACTADDRESS = cContactAddress;
+                            beanIN.IV_CONTACTTEL = cContactPhone;
+                            beanIN.IV_CONTACTMOBILE = cContactMobile;
+                            beanIN.IV_CONTACTEMAIL = cContactEmail;
+                            beanIN.IV_ISDELETE = "N";
+                            beanIN.IV_APIURLName = tAPIURLName;
+
+                            CMF.GetAPI_CONTACT_UPDATE(beanIN);
+                        }
+                        catch (Exception ex)
+                        {
+                            //若有錯誤就不要塞
+                        }
+                    }
+                    #endregion
+                }
+                else
+                {
+                    result = 1;
+                    reValue = "【文件編號 + 客戶代號 + 門市名稱 + 聯絡人姓名】已存在，請重新再確認！";
+                }
+            }
+
+            if (result <= 0)
+            {
+                pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
+                CMF.writeToLog(cContractID, "saveBatchMaintain", pMsg, ViewBag.empEngName);
+                reValue = pMsg;
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(tLog))
+                {
+                    CMF.writeToLog(cContractID, "saveBatchMaintain", tLog, ViewBag.empEngName);
+                }
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 刪除批次定維派工的明細內容
+        /// <summary>
+        /// 刪除批次定維派工的明細內容
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public ActionResult DeleteBatchMaintain(int cID)
+        {
+            int result = 0;
+
+            getLoginAccount();
+            getEmployeeInfo();
+
+            var bean = dbOne.TbOneSrbatchMaintainRecords.FirstOrDefault(x => x.CId == cID);
+            if (bean != null)
+            {
+                bean.CDisabled = 1;
+                bean.ModifiedDate = DateTime.Now;
+                bean.ModifiedUserName = ViewBag.empEngName;
+
+                result = dbOne.SaveChanges();
+            }
+
+            return Json(result);
         }
         #endregion
 
@@ -6925,8 +7220,7 @@ namespace OneService.Controllers
             ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
             ViewBag.pIsManager = EmpBean.IsManager;
             ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
-
-            pLoginName = ViewBag.empEngName;
+            
             pCompanyCode = EmpBean.BUKRS;
             pIsManager = EmpBean.IsManager;
         }
@@ -7204,6 +7498,9 @@ namespace OneService.Controllers
             string OldContactEmail = string.Empty;
             string OldContactStore = string.Empty;
 
+            getLoginAccount();
+            getEmployeeInfo();
+
             cEditContactCity = string.IsNullOrEmpty(cEditContactCity) ? "" : cEditContactCity.Trim();
             cEditContactAddress = string.IsNullOrEmpty(cEditContactAddress) ? "" : cEditContactAddress.Trim();
             cEditContactPhone = string.IsNullOrEmpty(cEditContactPhone) ? "" : cEditContactPhone.Trim();
@@ -7327,7 +7624,7 @@ namespace OneService.Controllers
                         bean.ContactMobile = cEditContactMobile;
                         bean.ContactEmail = cEditContactEmail;
 
-                        bean.ModifiedUserName = ModifiedUserName;
+                        bean.ModifiedUserName = ViewBag.empEngName;
                         bean.ModifiedDate = DateTime.Now;
                     }
                 }
@@ -7368,7 +7665,7 @@ namespace OneService.Controllers
                             bean.ContactStore = Guid.Parse(cEditContactStore);
                         }                        
 
-                        bean.ModifiedUserName = ModifiedUserName;
+                        bean.ModifiedUserName = ViewBag.empEngName;
                         bean.ModifiedDate = DateTime.Now;
                     }
                 }
@@ -7419,7 +7716,10 @@ namespace OneService.Controllers
             string tBpmNo = "GenerallySR";
             string reValue = "SUCCESS";
             string tLog = string.Empty;
-            
+
+            getLoginAccount();
+            getEmployeeInfo();
+
             cAddContactName = string.IsNullOrEmpty(cAddContactName) ? "" : cAddContactName.Trim();
             cAddContactCity = string.IsNullOrEmpty(cAddContactCity) ? "" : cAddContactCity.Trim();
             cAddContactAddress = string.IsNullOrEmpty(cAddContactAddress) ? "" : cAddContactAddress.Trim();
@@ -7455,7 +7755,7 @@ namespace OneService.Controllers
                         bean1.ContactEmail = cAddContactEmail;
                         bean1.Disabled = 0;
 
-                        bean1.CreatedUserName = pLoginName;
+                        bean1.CreatedUserName = ViewBag.empEngName;
                         bean1.CreatedDate = DateTime.Now;
 
                         dbProxy.PersonalContacts.Add(bean1);
@@ -7486,7 +7786,7 @@ namespace OneService.Controllers
                         bean1.BpmNo = tBpmNo;
                         bean1.Disabled = 0;
 
-                        bean1.ModifiedUserName = ModifiedUserName;
+                        bean1.ModifiedUserName = ViewBag.empEngName;
                         bean1.ModifiedDate = DateTime.Now;
 
                         dbProxy.CustomerContacts.Add(bean1);
@@ -8704,6 +9004,48 @@ namespace OneService.Controllers
     {
         /// <summary>序號</summary>
         public string SERIALID { get; set; }
+    }
+    #endregion
+
+    #region 法人客戶聯絡人資料新增INPUT資訊
+    /// <summary>法人客戶聯絡人資料新增資料INPUT資訊</summary>
+    public struct CONTACTCREATE_INPUT
+    {
+        /// <summary>建立者員工編號ERPID</summary>
+        public string IV_LOGINEMPNO { get; set; }
+        /// <summary>建立者員工姓名</summary>
+        public string IV_LOGINEMPNAME { get; set; }
+        /// <summary>文件編號</summary>
+        public string IV_CONTRACTID { get; set; }
+        /// <summary>法人客戶代號</summary>
+        public string IV_CUSTOMEID { get; set; }        
+        /// <summary>聯絡人姓名</summary>
+        public string IV_CONTACTNAME { get; set; }
+        /// <summary>聯絡人城市</summary>
+        public string IV_CONTACTCITY { get; set; }
+        /// <summary>聯絡人地址</summary>
+        public string IV_CONTACTADDRESS { get; set; }
+        /// <summary>聯絡人電話</summary>
+        public string IV_CONTACTTEL { get; set; }
+        /// <summary>聯絡人手機</summary>
+        public string IV_CONTACTMOBILE { get; set; }
+        /// <summary>聯絡人Email</summary>
+        public string IV_CONTACTEMAIL { get; set; }        
+        /// <summary>是否要刪除</summary>
+        public string IV_ISDELETE { get; set; }
+        /// <summary>APIURLName</summary>
+        public string IV_APIURLName { get; set; }
+    }
+    #endregion
+
+    #region 法人客戶聯絡人資料新增OUTPUT資訊
+    /// <summary>法人客戶聯絡人資料新增OUTPUT資訊</summary>
+    public struct CONTACTCREATE_OUTPUT
+    {
+        /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+        public string EV_MSGT { get; set; }
+        /// <summary>消息內容</summary>
+        public string EV_MSG { get; set; }
     }
     #endregion
 

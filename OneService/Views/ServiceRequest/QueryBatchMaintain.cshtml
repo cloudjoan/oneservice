@@ -131,7 +131,7 @@
 				$(this).val("");
 			});
 			$(popupId).find("select").each(function (index, value) {
-				$(this).val("-1");
+				$(this).val("");
 			});
 			$(popupId).find("textarea").each(function (index, value) {
 				$(this).val("");
@@ -147,7 +147,7 @@
 				alert('請先選擇欲上傳的檔案！');
 			}
 			else {
-				reValue = confirm('上傳的檔案會覆蓋原本該文件編號裡【聯絡人、門市名稱】相同的資料，是否確定繼續上傳?');
+				reValue = confirm('上傳的檔案會覆蓋原本該文件編號裡【客戶代號 + 門市名稱 + 聯絡人姓名】相同的資料，是否確定繼續上傳?');
 			}
 
 			return reValue;
@@ -269,27 +269,32 @@
 		}
 
 		//新增批次定維派工的明細內容
-		function addDetailMaintain() {
-			resetPopup("#dialog_DetailMaintain"); //新增/編輯批次定維派工明細的popup各欄位reset
+		function addBatchMaintain() {
+			resetPopup("#dialog_BatchMaintain"); //新增/編輯批次定維派工明細的popup各欄位reset
 
 			//設定各欄位資料
-			$("#hid_taskcID").val("");						//系統ID
-			$("#txt_cContractID").removeAttr("disabled");		//文件編號
-			$("#dll_cBUKRS").removeAttr("disabled");			//公司別
-			$("#txt_cCustomerID").removeAttr("disabled");		//客戶代號
-			$("#txt_cContactStoreName").removeAttr("disabled");	//門市名稱
+			$("#hid_taskcID").val("");							//系統ID
+			$("#txt_cContractID").removeAttr("disabled");			//文件編號
+			$("#ddl_cBUKRS").removeAttr("disabled");				//公司別			
+			$("#txt_cCustomerID").removeAttr("disabled");			//客戶代號
+			$("#txt_cContactStoreName").removeAttr("disabled");		//門市名稱
+			$("#txt_cContactName").removeAttr("disabled");			//聯絡人姓名
+			$("#txt_cContactAddress").removeAttr("disabled");		//聯絡人地址
+			$("#txt_cContactPhone").removeAttr("disabled");			//聯絡人電話
+			$("#txt_cContactMobile").removeAttr("disabled");		//聯絡人手機
+			$("#txt_cContactEmail").removeAttr("disabled");			//聯絡人信箱
 
-			$("#dialog_DetailMaintain").modal('show');
+			$("#dialog_BatchMaintain").modal('show');
 		}
 
 		//編輯批次定維派工的明細內容
-		function editDetailMaintain(obj) {
-			resetPopup("#dialog_DetailMaintain"); //新增/編輯批次定維派工明細的popup各欄位reset
+		function editBatchMaintain(obj) {
+			resetPopup("#dialog_BatchMaintain"); //新增/編輯批次定維派工明細的popup各欄位reset
 
 			//設定各欄位資料
 			$("#hid_taskcID").val($(obj).parent().parent().find('.taskcID').val());						//系統ID
 			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').val());				//文件編號
-			$("#dll_cBUKRS").val($(obj).parent().parent().find('.taskBUKRS').text());						//公司別
+			$("#ddl_cBUKRS").val($(obj).parent().parent().find('.taskBUKRS').text());						//公司別
 			$("#txt_cCustomerID").val($(obj).parent().parent().find('.taskCustomerID').text());				//客戶代號
 			$("#txt_cCustomerName").val($(obj).parent().parent().find('.taskCustomerName').text());			//客戶名稱
 			$("#txt_cContactStoreName").val($(obj).parent().parent().find('.taskContactStoreName').text());	//門市名稱
@@ -302,16 +307,16 @@
 			$("#txt_cMainEngineerName").val($(obj).parent().parent().find('.taskMainEngineerName').text());	//指派工程師姓名
 			$("#tbx_cMACycle").val($(obj).parent().parent().find('.taskMACycle').text());					//自訂維護週期
 			
-			$("#dialog_DetailMaintain").modal('show');
+			$("#dialog_BatchMaintain").modal('show');
 		}
 
 		//刪除批次定維派工的明細內容
-		function deleteDetailMaintain(obj, rowId) {
+		function deleteBatchMaintain(obj, rowId) {
 			var cID = parseInt($(obj).closest("tr").find(".taskcID").val());
 
 			if (confirm("確認刪除此筆批次定維派工的明細內容？")) {
 				$.ajax({
-					url: '@Url.Action("DeleteDetailMaintain", "Contract")',
+					url: '@Url.Action("DeleteBatchMaintain", "ServiceRequest")',
 					type: 'post',
 					dataType: 'json',
 					data: {
@@ -331,71 +336,73 @@
 		}
 
 		//儲存批次定維派工的明細內容
-		function saveDetailMaintain(cID) {
+		function saveBatchMaintain(cID) {
 
 			var strMsg = "";
-			var txt_cContractID = $("#txt_cContractID");		//文件編號
-			var txt_cHostName = $("#txt_cHostName");			//HostName
-			var txt_cSerialID = $("#txt_cSerialID");			//序號
-			var txt_cPID = $("#txt_cPID");						//ProductID
-			var txt_cBrands = $("#txt_cBrands");				//廠牌
-			var txt_cModel = $("#txt_cModel");					//ProductModel
-			var txt_cLocation = $("#txt_cLocation");			//Location
-			var txt_cAddress = $("#txt_cAddress");				//地址
-			var txt_cArea = $("#txt_cArea");					//區域
-			var ddl_cSLARESP = $("#ddl_cSLARESP");				//回應條件
-			var ddl_cSLASRV = $("#ddl_cSLASRV");				//服務條件
-			var tbx_cNotes = $("#tbx_cNotes");					//備註
-			var txt_cSubContractID = $("#txt_cSubContractID");	//下包文件編號
+			var txt_cContractID = $("#txt_cContractID");			//文件編號
+			var ddl_cBUKRS = $("#ddl_cBUKRS");						//公司別
+			var txt_cCustomerID = $("#txt_cCustomerID");			//客戶代號
+			var txt_cCustomerName = $("#txt_cCustomerName");			//客戶名稱
+			var txt_cContactStoreName = $("#txt_cContactStoreName");	//門市名稱
+			var txt_cContactName = $("#txt_cContactName");			//聯絡人姓名
+			var txt_cContactAddress = $("#txt_cContactAddress");		//聯絡人地址
+			var txt_cContactPhone = $("#txt_cContactPhone");			//聯絡人電話
+			var txt_cContactMobile = $("#txt_cContactMobile");		//聯絡人手機
+			var txt_cContactEmail = $("#txt_cContactEmail");			//聯絡人信箱
+			var txt_cMainEngineerID = $("#txt_cMainEngineerID");		//指派工程師ERPID
+			var txt_cMainEngineerName = $("#txt_cMainEngineerName");	//指派工程師姓名
+			var tbx_cMACycle = $("#tbx_cMACycle");					//自訂維護週期
 
-			if (txt_cSerialID.val() == "") strMsg += "【序號】不得為空！\n";
-			if (txt_cPID.val() == "") strMsg += "【ProductID】不得為空！\n";
-			if (txt_cBrands.val() == "") strMsg += "【廠牌】不得為空！\n";
-			if (txt_cModel.val() == "") strMsg += "【ProductModel】不得為空！\n";
-			if (txt_cLocation.val() == "") strMsg += "【Location】不得為空！\n";
-			if (txt_cAddress.val() == "") strMsg += "【地址】不得為空！\n";
-			if (ddl_cSLARESP.val() == "") strMsg += "請選擇【回應條件】！\n";
-			if (ddl_cSLASRV.val() == "") strMsg += "請選擇【服務條件】！\n";
+			if (txt_cContractID.val() == "") strMsg += "【文件編號】不得為空！\n";
+			if (ddl_cBUKRS.val() == "") strMsg += "請選擇【公司別】！\n";
+			if (txt_cCustomerID.val() == "") strMsg += "【客戶代號】不得為空！\n";
+			if (txt_cCustomerName.val() == "") strMsg += "【客戶名稱】不得為空！\n";
+			if (txt_cContactStoreName.val() == "") strMsg += "【門市名稱】不得為空！\n";
+			if (txt_cContactName.val() == "") strMsg += "【聯絡人姓名】不得為空！\n";
+			if (txt_cContactAddress.val() == "") strMsg += "【聯絡人地址】不得為空！\n";
+			if (txt_cContactPhone.val() == "" && txt_cContactMobile.val() == "") strMsg += "聯絡人【電話】【手機】請至少擇一輸入！\n";
+			if (txt_cMainEngineerID.val() == "") strMsg += "【指派工程師ERPID】不得為空！\n";
+			if (txt_cMainEngineerName.val() == "") strMsg += "【指派工程師姓名】不得為空！\n";
 
 			if (strMsg != "") {
 				alert(strMsg);
 			}
 			else {
-				$("#btn_saveDetailMaintain").hide();
-				$("#img_waiting_saveDetailMaintain").show();
+				$("#btn_saveBatchMaintain").hide();
+				$("#img_waiting_saveBatchMaintain").show();
 				$.ajax({
-					url: '@Url.Action("saveDetailMaintain", "Contract")',
+					url: '@Url.Action("saveBatchMaintain", "ServiceRequest")',
 					type: 'post',
 					dataType: 'json',
 					data: {
 						cID: cID,
 						cContractID: txt_cContractID.val(),
-						cHostName: txt_cHostName.val(),
-						cSerialID: txt_cSerialID.val(),
-						cPID: txt_cPID.val(),
-						cBrands: txt_cBrands.val(),
-						cModel: txt_cModel.val(),
-						cLocation: txt_cLocation.val(),
-						cAddress: txt_cAddress.val(),
-						cArea: txt_cArea.val(),
-						cSLARESP: ddl_cSLARESP.val(),
-						cSLASRV: ddl_cSLASRV.val(),
-						cNotes: tbx_cNotes.val(),
-						cSubContractID: txt_cSubContractID.val()
+						cBUKRS: ddl_cBUKRS.val(),
+						cCustomerID: txt_cCustomerID.val(),
+						cCustomerName: txt_cCustomerName.val(),
+						cContactStoreName: txt_cContactStoreName.val(),
+						cContactName: txt_cContactName.val(),
+						cContactAddress: txt_cContactAddress.val(),
+						cContactPhone: txt_cContactPhone.val(),
+						cContactMobile: txt_cContactMobile.val(),
+						cContactEmail:txt_cContactEmail.val(),
+						cMainEngineerID: txt_cMainEngineerID.val(),
+						cMainEngineerName: txt_cMainEngineerName.val(),
+						cMACycle: tbx_cMACycle.val()						
 					},
 					success: function (result) {
 						if (result == "SUCCESS") {
 							alert("儲存成功！");
 							Query();
-							$("#dialog_DetailMaintain").modal('hide');
+							$("#dialog_BatchMaintain").modal('hide');
 						}
 						else {
 							alert("儲存失敗！原因：" + result);
 						}
 					},
 				});
-				$("#btn_saveDetailMaintain").show();
-				$("#img_waiting_saveDetailMaintain").hide();
+				$("#btn_saveBatchMaintain").show();
+				$("#img_waiting_saveBatchMaintain").hide();
 			}
 		}
 
@@ -404,27 +411,17 @@
 			$("#waitingImg").show();
 
 			var tMsg = "";
-			var tbx_QuerycContractID = $('#tbx_QuerycContractID');	//文件編號
-			var tbx_QuerycHostName = $('#tbx_QuerycHostName');		//HostName
-			var tbx_QuerycSerialID = $('#tbx_QuerycSerialID');		//序號
-			var tbx_QuerycModel = $('#tbx_QuerycModel');			//ProductModel
-			var txt_QuerycArea = $("#txt_QuerycArea");				//區域
-			var tbx_QuerycStartDate = $('#tbx_QuerycStartDate');		//合約期間(起)
-			var tbx_QuerycEndDate = $('#tbx_QuerycEndDate');			//合約期間(迄)
+			var tbx_QuerycContractID = $("#tbx_QuerycContractID");			//文件編號			
+			var tbx_QuerycCustomerID = $("#tbx_QuerycCustomerID");			//客戶代號			
+			var txt_QuerycContactStoreName = $("#txt_QuerycContactStoreName");	//門市名稱
+			var txt_QuerycContactName = $("#txt_QuerycContactName");			//聯絡人姓名			
+			var txt_QuerycMainEngineerID = $("#txt_QuerycMainEngineerID");	//指派工程師ERPID			
 
-			if (tbx_QuerycContractID.val() == "" && tbx_QuerycHostName.val() == "" && tbx_QuerycSerialID.val() == "" &&
-				tbx_QuerycModel.val() == "" && txt_QuerycArea.val() == "" && tbx_QuerycStartDate.val() == "" && tbx_QuerycEndDate.val() == "") {
+			if (tbx_QuerycContractID.val() == "" && tbx_QuerycCustomerID.val() == "" && txt_QuerycContactStoreName.val() == "" &&
+				txt_QuerycContactName.val() == "" && txt_QuerycMainEngineerID.val() == "") {
 				tMsg += "請至少輸入一項查詢條件！\n";
 			}
-
-			if (tbx_QuerycStartDate.val() != "" && tbx_QuerycEndDate.val() != "") {
-
-				if (tbx_QuerycStartDate.val() > tbx_QuerycEndDate.val()) {
-					tMsg += '合約期間(起)不能大於合約期間(迄)！\n';
-					tbx_QuerycEndDate.val(""); //清空
-				}
-			}
-
+			
 			if (tMsg != "") {
 				alert(tMsg);
 				$("#waitingImg").hide();
@@ -432,29 +429,26 @@
 			}
 			else {
 				$('#lbl_Message').html("");
-				searchQuery(tbx_QuerycContractID.val(), tbx_QuerycHostName.val(), tbx_QuerycSerialID.val(), tbx_QuerycModel.val(),
-					txt_QuerycArea.val(), tbx_QuerycStartDate.val(), tbx_QuerycEndDate.val());
+				searchQuery(tbx_QuerycContractID.val(), tbx_QuerycCustomerID.val(), txt_QuerycContactStoreName.val(), txt_QuerycContactName.val(), txt_QuerycMainEngineerID.val());
 			}
 
 			return true;
 		}
 
 		//查詢結果
-		function searchQuery(cContractID, cHostName, cSerialID, cModel, cArea, cStartDate, cEndDate) {
+		function searchQuery(cContractID, cCustomerID, cContactStoreName, cContactName, cMainEngineerID) {
 			$("#dataDiv").html('');
 
 			$.ajax({
-				url: '@Url.Action("QueryContractDetailMaintainResult", "Contract")',
+				url: '@Url.Action("QueryBatchMaintainResult", "ServiceRequest")',
 				type: 'post',
 				dataType: 'json',
 				data: {
 					cContractID: cContractID,
-					cHostName: cHostName,
-					cSerialID: cSerialID,
-					cModel: cModel,
-					cArea: cArea,
-					cStartDate: cStartDate,
-					cEndDate: cEndDate
+					cCustomerID: cCustomerID,
+					cContactStoreName: cContactStoreName,
+					cContactName: cContactName,
+					cMainEngineerID: cMainEngineerID					
 				},
 				success: function (result) {
 				},
@@ -466,26 +460,17 @@
 		}
 
 		//清除
-		function clearQuery() {
-			if ($('#hid_cContractID').val() == "") //若不是透過主約進來的才可以清掉
-			{
-				$('#tbx_QuerycContractID').val("");
-			}
+		function clearQuery() {			
+			$('#tbx_QuerycContractID').val("");			
+			$('#tbx_QuerycCustomerID').val("");			
+			$('#txt_QuerycContactStoreName').val("");
+			$('#txt_QuerycContactName').val("");
+			$("#txt_QuerycMainEngineerID").val("");
 
 			$('#lbl_Message').html("");
-			$('#tbx_QuerycHostName').val("");
-			$('#tbx_QuerycSerialID').val("");
-			$('#tbx_QuerycModel').val("");
-			$("#txt_QuerycArea").val("");
-			$("#tbx_QuerycStartDate").val("");
-			$("#tbx_QuerycEndDate").val("");
-			$("#chk_QuerycIsNoUpload").iCheck('uncheck'); //拿掉勾勾			
-		}
-
-		//返回合約主數據主檔
-		function backToContractMain() {
-			window.location.href = "@Url.Action("ContractMain", "Contract", new { ContractID = ViewBag.cContractID })";
-		}
+			$('#lbl_QuerycCustomerName').html("");
+			$('#lbl_QuerycMainEngineerID').html("");
+		}	
 
 		function DownloadTaskSample(filePath) {
 			var link = document.createElement('a');
@@ -592,7 +577,7 @@
 			<div class="ibox-title">
 				<h5>
 					批次定維派工明細查詢/上傳/維護結果
-					<button type="button" class="btn btn-success" onclick="addDetailMaintain();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+					<button type="button" class="btn btn-success" onclick="addBatchMaintain();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
 				</h5>
 				<div class="ibox-tools">
 					<a class="collapse-link">
@@ -623,47 +608,34 @@
 					<tbody>
 						@{
 							if (ViewBag.QueryToListBean != null)
-							{
-								int count = 0;
+							{								
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
-								{
-									count++;
-									<tr id='tr@(QueryInfo[1])'>
-										@if (@QueryInfo[0] == "Y")
-										{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-												<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
-												<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editDetailMaintain(this);" style="margin: 2px;">
-													<i class="glyphicon glyphicon-pencil"></i>
-												</button>
-												<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteDetailMaintain(this, 'tr@(QueryInfo[1])');" style="margin: 2px;">
-													<i class="fa fa-trash"></i>
-												</button>
-											</td>
-										}
-										else
-										{
-											<td>
-												<input type="hidden" value="@QueryInfo[1]" class="taskcID" />
-												<input type="hidden" value="@QueryInfo[2]" class="taskContractID" />
-											</td>
-										}
-
-										<td><a href="@QueryInfo[3]" target="_blank">@QueryInfo[2]</a></td>
-										<td class="taskBUKRS">@Html.Raw(QueryInfo[4])</td>
-										<td class="taskCustomerID">@Html.Raw(QueryInfo[5])</td>
-										<td class="taskCustomerName">@Html.Raw(QueryInfo[6])</td>
-										<td class="taskContactStoreName">@Html.Raw(QueryInfo[7])</td>
-										<td class="taskContactName">@Html.Raw(QueryInfo[8])</td>
-										<td class="taskContactAddress">@Html.Raw(QueryInfo[9])</td>
-										<td class="taskContactPhone">@Html.Raw(QueryInfo[10])</td>
-										<td class="taskContactMobile">@Html.Raw(QueryInfo[11])</td>
-										<td class="taskContactEmail">@Html.Raw(QueryInfo[12])</td>
-										<td class="taskMainEngineerID">@Html.Raw(QueryInfo[13])</td>
-										<td class="taskMainEngineerName">@Html.Raw(QueryInfo[14])</td>
-										<td class="taskMACycle">@Html.Raw(QueryInfo[15])</td>
-									</tr>
+								{							
+												<tr id='tr@(QueryInfo[0])'>
+													<td>
+														<input type="hidden" value="@QueryInfo[0]" class="taskcID" />
+														<input type="hidden" value="@QueryInfo[1]" class="taskContractID" />
+														<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editBatchMaintain(this);" style="margin: 2px;">
+															<i class="glyphicon glyphicon-pencil"></i>
+														</button>
+														<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteBatchMaintain(this, 'tr@(QueryInfo[0])');" style="margin: 2px;">
+															<i class="fa fa-trash"></i>
+														</button>
+													</td>
+													<td><a href="@QueryInfo[2]" target="_blank">@QueryInfo[1]</a></td>
+													<td class="taskBUKRS">@Html.Raw(QueryInfo[3])</td>
+													<td class="taskCustomerID">@Html.Raw(QueryInfo[4])</td>
+													<td class="taskCustomerName">@Html.Raw(QueryInfo[5])</td>
+													<td class="taskContactStoreName">@Html.Raw(QueryInfo[6])</td>
+													<td class="taskContactName">@Html.Raw(QueryInfo[7])</td>
+													<td class="taskContactAddress">@Html.Raw(QueryInfo[8])</td>
+													<td class="taskContactPhone">@Html.Raw(QueryInfo[9])</td>
+													<td class="taskContactMobile">@Html.Raw(QueryInfo[10])</td>
+													<td class="taskContactEmail">@Html.Raw(QueryInfo[11])</td>
+													<td class="taskMainEngineerID">@Html.Raw(QueryInfo[12])</td>
+													<td class="taskMainEngineerName">@Html.Raw(QueryInfo[13])</td>
+													<td class="taskMACycle">@Html.Raw(QueryInfo[14])</td>
+												</tr>
 								}
 							}
 						}
@@ -675,7 +647,7 @@
 </div>
 
 <!--新增/編輯批次定維的明細彈出視窗-->
-<div class="modal fade" id="dialog_DetailMaintain" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="dialog_BatchMaintain" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-lg" role="document" style="max-width:50%">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -690,7 +662,7 @@
 					<label class="col-lg-2 col-form-label">文件編號*</label>
 					<input type="text" id="txt_cContractID" class="form-control col-lg-4" placeholder="文件編號" disabled/>
 					<label class="col-lg-2 col-form-label">公司別*</label>
-					@Html.DropDownList("ddl_cBUKRS", (IEnumerable<SelectListItem>)ViewBag.ddl_cBUKRS, new { @class = "form-control col-lg-4" })
+					@Html.DropDownList("ddl_cBUKRS", (IEnumerable<SelectListItem>)ViewBag.ddl_cBUKRS, new { @class = "form-control col-lg-4", @disabled = "disabled" })
 				</div>
 				<div class="form-group row">					
 					<label class="col-lg-2 col-form-label">客戶代號*</label>
@@ -702,21 +674,21 @@
 					<label class="col-lg-2 col-form-label">門市名稱*</label>
 					<input type="text" id="txt_cContactStoreName" class="form-control col-lg-4" placeholder="門市名稱" disabled />
 					<label class="col-lg-2 col-form-label">聯絡人姓名*</label>
-					<input type="text" id="txt_cContactName" class="form-control col-lg-4" placeholder="聯絡人姓名" />
+					<input type="text" id="txt_cContactName" class="form-control col-lg-4" placeholder="聯絡人姓名" disabled />
 				</div>
 				<div class="form-group row">					
 					<label class="col-lg-2 col-form-label">聯絡人地址*</label>
-					<input type="text" id="txt_cContactAddress" class="form-control col-lg-10" placeholder="聯絡人地址" />					
+					<input type="text" id="txt_cContactAddress" class="form-control col-lg-10" placeholder="聯絡人地址" disabled/>					
 				</div>
 				<div class="form-group row">					
 					<label class="col-lg-2 col-form-label">聯絡人信箱</label>
-					<input type="text" id="txt_cContactEmail" class="form-control col-lg-10" placeholder="聯絡人信箱" />
+					<input type="text" id="txt_cContactEmail" class="form-control col-lg-10" placeholder="聯絡人信箱" disabled/>
 				</div>
 				<div class="form-group row">
 					<label class="col-lg-2 col-form-label">聯絡人電話(電話/手機二擇一)</label>
-					<input type="text" id="txt_cContactPhone" class="form-control col-lg-4" placeholder="聯絡人電話" />
+					<input type="text" id="txt_cContactPhone" class="form-control col-lg-4" placeholder="聯絡人電話" disabled/>
 					<label class="col-lg-2 col-form-label">聯絡人手機(電話/手機二擇一)</label>
-					<input type="text" id="txt_cContactMobile" class="form-control col-lg-4" placeholder="聯絡人手機" />
+					<input type="text" id="txt_cContactMobile" class="form-control col-lg-4" placeholder="聯絡人手機" disabled />
 				</div>
 				<div class="form-group row">
 					<label class="col-lg-2 col-form-label">指派工程師ERPID*</label>
@@ -731,8 +703,8 @@
 			</div>
 			<div class="modal-footer">
 				<div class="col-lg-5"></div>
-				<button id="btn_saveDetailMaintain" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveDetailMaintain($('#hid_taskcID').val());"> <i class="fa fa-save"></i> 儲 存</button>
-				<img id="img_waiting_saveDetailMaintain" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<button id="btn_saveBatchMaintain" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveBatchMaintain($('#hid_taskcID').val());"> <i class="fa fa-save"></i> 儲 存</button>
+				<img id="img_waiting_saveBatchMaintain" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
 				<div class="col-lg-5"></div>
 			</div>
 		</div>

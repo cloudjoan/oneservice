@@ -2294,7 +2294,230 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 判斷維護週期格式是否正確
+        /// <summary>
+        ///判斷維護週期格式是否正確
+        /// </summary>
+        /// <param name="cMACycle">維護週期</param>
+        /// <returns></returns>
+        public string checkCycle(string cMACycle)
+        {
+            string reValue = string.Empty;
+            string tTempCycle = string.Empty;
+
+            if (cMACycle.Trim().ToUpper() != "NA")
+            {
+                string[] AryCycle = cMACycle.Trim().Split('_');
+
+                foreach (string tCycle in AryCycle)
+                {
+                    try
+                    {
+                        if (tCycle.Length == 6)
+                        {
+                            tTempCycle = tCycle.Substring(0, 4) + "-" + tCycle.Substring(4, 2);
+                            DateTime dt = Convert.ToDateTime(tTempCycle);
+                        }
+                        else
+                        {
+                            reValue += "【" + tCycle + "】維護週期格式不正確！\n";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        reValue += "【" + tCycle + "】維護週期格式不正確！\n";
+                    }
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑合約管理 ↑↑↑↑↑-----
+
+        #region -----↓↓↓↓↓批次上傳定維派工作業 ↓↓↓↓↓-----
+
+        #region 新增/更新批次上傳定維派工紀錄主檔
+        /// <summary>
+        /// 新增/更新批次上傳定維派工紀錄主檔
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cCustomerName">客戶名稱</param>
+        /// <param name="cContactStoreName">門市名稱</param>
+        /// <param name="cContactName">聯絡人姓名</param>
+        /// <param name="cContactAddress">聯絡人地址</param>
+        /// <param name="cContactPhone">聯絡人電話</param>
+        /// <param name="cContactMobile">聯絡人手機</param>
+        /// <param name="cContactEmail">聯絡人信箱</param>
+        /// <param name="cMainEngineerID">指派工程師ERPID</param>
+        /// <param name="cMainEngineerName">指派工程師姓名</param>
+        /// <param name="cMACycle">自訂維護週期</param>
+        /// <param name="pLoginName">異動人員姓名(中文+英文)</param>
+        /// <returns></returns>
+        public int ChangeTB_ONE_SRBatchMaintainRecord(string cContractID, string cBUKRS, string cCustomerID, string cCustomerName, string cContactStoreName, 
+                                                     string cContactName, string cContactAddress, string cContactPhone, string cContactMobile, string cContactEmail, 
+                                                     string cMainEngineerID, string cMainEngineerName, string cMACycle, string pLoginName)
+        {
+            int result = 0;
+
+            try
+            {
+                if (cContractID != "")
+                {
+                    var beanM = dbOne.TbOneSrbatchMaintainRecords.FirstOrDefault(x => x.CDisabled == 0 && x.CContractId == cContractID &&
+                                                                                x.CBukrs == cBUKRS && x.CCustomerId == cCustomerID &&
+                                                                                x.CContactStoreName == cContactStoreName && x.CContactName == cContactName);
+
+                    if (beanM != null)
+                    {
+                        #region 更新
+                        beanM.CContactAddress = cContactAddress;
+                        beanM.CContactPhone = cContactPhone;
+                        beanM.CContactMobile = cContactMobile;
+                        beanM.CContactEmail = cContactEmail;
+                        beanM.CMainEngineerId = cMainEngineerID;
+                        beanM.CMainEngineerName = cMainEngineerName;
+                        beanM.CMacycle = cMACycle;
+
+                        beanM.ModifiedDate = DateTime.Now;
+                        beanM.ModifiedUserName = pLoginName;
+                        #endregion
+                    }
+                    else
+                    {
+                        #region 新增
+                        TbOneSrbatchMaintainRecord BMain = new TbOneSrbatchMaintainRecord();
+
+                        BMain.CContractId = cContractID;
+                        BMain.CBukrs = cBUKRS;
+                        BMain.CCustomerId = cCustomerID;
+                        BMain.CCustomerName = cCustomerName;
+                        BMain.CContactStoreName = cContactStoreName;
+                        BMain.CContactName = cContactName;
+                        BMain.CContactAddress = cContactAddress;
+                        BMain.CContactPhone = cContactPhone;
+                        BMain.CContactMobile = cContactMobile;
+                        BMain.CContactEmail = cContactEmail;
+                        BMain.CMainEngineerId = cMainEngineerID;
+                        BMain.CMainEngineerName = cMainEngineerName;
+                        BMain.CMacycle = cMACycle;
+
+                        BMain.CDisabled = 0;
+                        BMain.CreatedDate = DateTime.Now;
+                        BMain.CreatedUserName = pLoginName;
+
+                        dbOne.TbOneSrbatchMaintainRecords.Add(BMain);
+                        #endregion
+                    }
+
+                    result = dbOne.SaveChanges();
+                }
+            }
+            catch(Exception ex)
+            {
+                string returnMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "【ChangeTB_ONE_SRBatchMaintainRecord】異動失敗！原因：" + ex.Message;
+                writeToLog(cContractID, "ChangeTB_ONE_SRBatchMaintainRecord", returnMsg, pLoginName);
+            }
+
+            return result;            
+        }
+        #endregion       
+
+        #region 判斷批次上傳定維派工紀錄主檔是否已存在(true.已存在 false.未存在)
+        /// <summary>
+        /// 判斷批次上傳定維派工紀錄主檔是否已存在(true.已存在 false.未存在)
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cCustomerID">客戶代號</param>        
+        /// <param name="cContactStoreName">門市名稱</param>
+        /// <param name="cContactName">聯絡人姓名</param>        
+        /// <returns></returns>
+        public bool CheckBatchMaintainIsDouble(string cContractID, string cBUKRS, string cCustomerID,  string cContactStoreName, string cContactName)
+        {
+            bool reValue = false;
+
+            var beanM = dbOne.TbOneSrbatchMaintainRecords.FirstOrDefault(x => x.CDisabled == 0 && x.CContractId == cContractID &&
+                                                                            x.CBukrs == cBUKRS && x.CCustomerId == cCustomerID &&
+                                                                            x.CContactStoreName == cContactStoreName && x.CContactName == cContactName);
+
+            if (beanM != null)
+            {
+                reValue = true;
+            }
+
+            return reValue;
+        }
+        #endregion       
+
+        #region call ONE SERVICE 法人客戶報修人/聯絡人資料更新接口
+        /// <summary>
+        /// call ONE SERVICE 法人客戶報修人/聯絡人資料更新接口
+        /// </summary>
+        /// <param name="beanIN"></param>
+        public CONTACTCREATE_OUTPUT GetAPI_CONTACT_UPDATE(CONTACTCREATE_INPUT beanIN)
+        {
+            CONTACTCREATE_OUTPUT OUTBean = new CONTACTCREATE_OUTPUT();
+
+            string pMsg = string.Empty;
+
+            try
+            {
+                string tURL = beanIN.IV_APIURLName + "/API/API_CONTACT_UPDATE";
+
+                var client = new RestClient(tURL);
+
+                var request = new RestRequest();
+                request.Method = RestSharp.Method.Post;
+
+                Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
+                parameters.Add("IV_LOGINEMPNO", beanIN.IV_LOGINEMPNO);
+                parameters.Add("IV_CUSTOMEID", beanIN.IV_CUSTOMEID);
+                parameters.Add("IV_CONTACTNAME", beanIN.IV_CONTACTNAME);
+                parameters.Add("IV_CONTACTCITY", beanIN.IV_CONTACTCITY);
+                parameters.Add("IV_CONTACTADDRESS", beanIN.IV_CONTACTADDRESS);
+                parameters.Add("IV_CONTACTTEL", beanIN.IV_CONTACTTEL);
+                parameters.Add("IV_CONTACTMOBILE", beanIN.IV_CONTACTMOBILE);
+                parameters.Add("IV_ISDELETE", beanIN.IV_ISDELETE);
+
+                request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
+                request.AddParameter("application/json", parameters, ParameterType.RequestBody);
+
+                RestResponse response = client.Execute(request);
+
+                #region 取得回傳訊息(成功或失敗)
+                var data = (JObject)JsonConvert.DeserializeObject(response.Content);
+
+                OUTBean.EV_MSGT = data["EV_MSGT"].ToString().Trim();
+                OUTBean.EV_MSG = data["EV_MSG"].ToString().Trim();
+                #endregion
+
+                if (OUTBean.EV_MSGT == "Y")
+                {
+                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 法人客戶報修人/聯絡人資料更新接口成功";
+                }
+                else
+                {
+                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 法人客戶報修人/聯絡人資料更新接口失敗，原因:" + OUTBean.EV_MSG;
+                }
+            }
+            catch (Exception ex)
+            {
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "呼叫ONE SERVICE 法人客戶報修人/聯絡人資料更新接口失敗，原因:" + ex.Message + Environment.NewLine;
+                pMsg += " 失敗行數：" + ex.ToString();
+            }
+
+            writeToLog(beanIN.IV_CONTRACTID, "GetAPI_CONTACT_UPDATE", pMsg, beanIN.IV_LOGINEMPNAME);
+
+            return OUTBean;
+        }
+        #endregion        
+
+        #endregion -----↑↑↑↑↑批次上傳定維派工作業 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
 

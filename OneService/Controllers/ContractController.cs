@@ -1951,7 +1951,7 @@ namespace OneService.Controllers
 
                 if (result <= 0)
                 {
-                    pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
+                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "儲存失敗" + Environment.NewLine;
                     CMF.writeToLog(cContractID, "saveDetailOBJ", pMsg, ViewBag.empEngName);
                     reValue = pMsg;
                 }
@@ -2120,33 +2120,7 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult AjaxcheckCycle(string cMACycle)
         {
-            string reValue = string.Empty;
-            string tTempCycle = string.Empty;
-
-            if (cMACycle.Trim().ToUpper() != "NA")
-            {
-                string[] AryCycle = cMACycle.Trim().Split('_');
-
-                foreach (string tCycle in AryCycle)
-                {
-                    try
-                    {
-                        if (tCycle.Length == 6)
-                        {
-                            tTempCycle = tCycle.Substring(0, 4) + "-" + tCycle.Substring(4, 2);
-                            DateTime dt = Convert.ToDateTime(tTempCycle);
-                        }
-                        else
-                        {
-                            reValue += "【" + tCycle + "】維護週期格式不正確！\n";
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        reValue += "【" + tCycle + "】維護週期格式不正確！\n";
-                    }
-                }               
-            }
+            string reValue = CMF.checkCycle(cMACycle);            
 
             return Json(reValue);
         }

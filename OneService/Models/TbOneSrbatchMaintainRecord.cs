@@ -19,6 +19,7 @@ namespace OneService.Models
         public string? CMainEngineerId { get; set; }
         public string? CMainEngineerName { get; set; }
         public string? CMacycle { get; set; }
+        public int? CDisabled { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }
         public DateTime? ModifiedDate { get; set; }

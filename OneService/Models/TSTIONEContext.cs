@@ -606,6 +606,8 @@ namespace OneService.Models
                     .HasMaxLength(35)
                     .HasColumnName("cCustomerName");
 
+                entity.Property(e => e.CDisabled).HasColumnName("cDisabled");
+
                 entity.Property(e => e.CMacycle)
                     .HasMaxLength(512)
                     .HasColumnName("cMACycle");
