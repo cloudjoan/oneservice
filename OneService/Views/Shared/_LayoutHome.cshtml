@@ -145,7 +145,7 @@
 							<li><a href="@Url.Action("QuerySRProgress", "ServiceRequest")"> <i class="fa fa-hourglass-half"></i> 服務進度查詢</a></li>							
 							<li><a href="@Url.Action("SRReport", "ServiceRequest")"> <i class="fa fa-list-ul"></i> 服務總表</a></li>
 							<li @(ViewBag.pIsMIS == true || ViewBag.pIsExePerson == true ? "" : "style=display:none;")><a href="@Url.Action("QueryBatchInstall", "ServiceRequest")"> <i class="fa fa-columns"></i> 批次上傳裝機派工作業</a></li>
-							<li @(ViewBag.pIsMIS == true || ViewBag.pIsExePerson == true ? "" : "style=display:none;")><a href="@Url.Action("QueryBatchMaintain", "ServiceRequest")"> <i class="fa fa-tty"></i> 批次上傳定維派工作業</a></li>
+							<li @(ViewBag.pIsMIS == true || ViewBag.pIsExeMaintainPerson == true ? "" : "style=display:none;")><a href="@Url.Action("QueryBatchMaintain", "ServiceRequest")"> <i class="fa fa-tty"></i> 批次上傳定維派工作業</a></li>
 							<li @(ViewBag.pIsMIS == true || ViewBag.pIsBatchUploadSecretary == true ? "" : "style=display:none;")><a href="@Url.Action("BatchUploadStockNo", "ServiceRequest", new { BatchUploadType = "INSTALL" })"> <i class="fa fa-upload"></i> 批次上傳裝機備料服務通知單</a></li>
 							<li @(ViewBag.pIsMIS == true ? "" : "style=display:none;")><a href="@Url.Action("SRPersonCustomer", "ServiceRequest")"> <i class="fa fa-cog"></i> 個人客戶設定作業</a></li>
 							<li @(ViewBag.pIsMIS == true ? "" : "style=display:none;")><a href="@Url.Action("SRTeamMapping", "ServiceRequest")"> <i class="fa fa-cog"></i> 服務團隊對照組織設定作業</a></li>

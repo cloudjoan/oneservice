@@ -79,6 +79,10 @@ namespace OneService.Controllers
         /// </summary>
         bool pIsExePerson = false;
 
+        /// <summary>
+        /// 登入者是否為批次上傳定維派工人員(true.是 false.否)
+        /// </summary>
+        bool pIsExeMaintainPerson = false;
 
         /// <summary>
         /// 登入者是否可編輯合約主數據相關內容
@@ -119,6 +123,11 @@ namespace OneService.Controllers
         /// 程式作業編號檔系統ID(批次上傳裝機派工作業)
         /// </summary>
         static string pOperationID_QueryBatchInstall = "3BF8ED29-3639-49D2-8D4A-19F9C1FF7934";
+
+        /// <summary>
+        /// 程式作業編號檔系統ID(批次上傳定維派工作業)
+        /// </summary>
+        static string pOperationID_QueryBatchMaintain = "7F07161D-D086-4004-AB25-B292469C979C";
 
         /// <summary>
         /// 程式作業編號檔系統ID(合約主數據查詢/維護)
@@ -171,6 +180,7 @@ namespace OneService.Controllers
             pIsDCC = CMF.getIsDocumentCenter(pLoginAccount, pSysOperationID);
             pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
             pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
+            pIsExeMaintainPerson = CMF.getIsExeMaintainPerson(pLoginAccount, pOperationID_QueryBatchMaintain);
 
             ViewBag.pIsMIS = pIsMIS;
             ViewBag.pIsCSManager = pIsCSManager;
@@ -178,6 +188,7 @@ namespace OneService.Controllers
             ViewBag.pIsDCC = pIsDCC;
             ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
             ViewBag.pIsExePerson = pIsExePerson;
+            ViewBag.pIsExeMaintainPerson = pIsExeMaintainPerson;
 
             ViewBag.hidIsMIS = pIsMIS ? "Y" : "N";
             ViewBag.hidIsCSManager = pIsCSManager ? "Y" : "N";

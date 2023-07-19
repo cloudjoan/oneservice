@@ -67,7 +67,7 @@
 						columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] //要顯示的欄位
 					},
 					customize: function (xlsx) {
-						addCustomNumberFormat(xlsx, '0');
+						addCustomNumberFormat(xlsx, '@@');
 						formatTargetColumn(xlsx, 'A');
 						formatTargetColumn(xlsx, 'B');
 						formatTargetColumn(xlsx, 'C');
@@ -109,7 +109,7 @@
 	function formatTargetColumn(xlsx, col) {
 		var sheet = xlsx.xl.worksheets['sheet1.xml'];
 
-		if (col == "A") {
+		if (col == "A" || col == "H" || col == "I") {
 			$('row c[r^="' + col + '"]', sheet).attr('s', '65'); //使用自定義格式
 		}
 		else {

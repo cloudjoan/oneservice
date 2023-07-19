@@ -3012,6 +3012,21 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 判斷登入者是否為批次上傳定維派工人員
+        /// <summary>
+        /// 判斷登入者是否為批次上傳定維派工人員
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+        /// <returns></returns>
+        public bool getIsExeMaintainPerson(string LoginAccount, string tSysOperationID)
+        {
+            bool reValue = getJobAuthority(LoginAccount, tSysOperationID, "T012", "EXEMAINTAINPERSON", "Y", "", "", "");
+
+            return reValue;
+        }
+        #endregion
+
         #region 判斷登入者是否有權限(true.有 false.無)，抓系統參數權限
         /// <summary>
         /// 判斷登入者是否為文管人員

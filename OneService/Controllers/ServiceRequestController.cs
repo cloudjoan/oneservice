@@ -88,6 +88,11 @@ namespace OneService.Controllers
         bool pIsExePerson = false;
 
         /// <summary>
+        /// 登入者是否為批次上傳定維派工人員(true.是 false.否)
+        /// </summary>
+        bool pIsExeMaintainPerson = false;
+
+        /// <summary>
         /// 登入者是否可編輯服務案件
         /// </summary>
         bool pIsCanEditSR = false;
@@ -6759,7 +6764,7 @@ namespace OneService.Controllers
                                 cContractID = dr[1].ToString().Trim();
                                 cBUKRS = dr[2].ToString().Trim();
                                 cCustomerID = dr[3].ToString().Trim();
-                                cCustomerName = dr[4].ToString().Trim();
+                                cCustomerName = CMF.findCustomerName(cCustomerID);
                                 cContactStoreName = dr[5].ToString().Trim();
                                 cContactName = dr[6].ToString().Trim();
                                 cContactAddress = dr[7].ToString().Trim();
@@ -6768,7 +6773,7 @@ namespace OneService.Controllers
                                 cContactEmail = dr[10].ToString().Trim();
                                 cMainEngineerID = dr[11].ToString().Trim();
                                 cMainEngineerName = dr[12].ToString().Trim();
-                                cMACycle = dr[13].ToString().Trim();
+                                cMACycle = dr[13].ToString().Trim().TrimEnd('_');
 
                                 #region 新增/更新批次上傳定維派工紀錄主檔
                                 int result = CMF.ChangeTB_ONE_SRBatchMaintainRecord(cContractID, cBUKRS, cCustomerID, cCustomerName, cContactStoreName,
@@ -7192,12 +7197,14 @@ namespace OneService.Controllers
             pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
             pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
             pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
+            pIsExeMaintainPerson = CMF.getIsExeMaintainPerson(pLoginAccount, pOperationID_QueryBatchMaintain);
 
             ViewBag.pIsMIS = pIsMIS;
             ViewBag.pIsCSManager = pIsCSManager;
             ViewBag.pIsCS = pIsCS;
             ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
             ViewBag.pIsExePerson = pIsExePerson;
+            ViewBag.pIsExeMaintainPerson = pIsExeMaintainPerson;
             #endregion
         }
         #endregion
