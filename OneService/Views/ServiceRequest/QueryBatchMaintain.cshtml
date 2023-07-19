@@ -335,6 +335,31 @@
 			}
 		}
 
+		//檢查自訂維護週期格式是否正確
+		function checkMACycle()
+		{
+			var reValue = true;
+			var tbx_cMACycle = $("#tbx_cMACycle");	//自訂維護週期
+
+			$.ajax({
+				url: '@Url.Action("checkMACycle", "ServiceRequest")',
+				type: 'post',
+				async: false,
+				dataType: 'json',				
+				data: {
+					cMACycle: tbx_cMACycle.val(),
+				},
+				success: function (result) {
+					if (result != "") {
+						alert(result);
+						reValue = false;
+					}					
+				},
+			});
+
+			return reValue;
+		}
+
 		//儲存批次定維派工的明細內容
 		function saveBatchMaintain(cID) {
 
@@ -611,31 +636,31 @@
 							{								
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{							
-												<tr id='tr@(QueryInfo[0])'>
-													<td>
-														<input type="hidden" value="@QueryInfo[0]" class="taskcID" />
-														<input type="hidden" value="@QueryInfo[1]" class="taskContractID" />
-														<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editBatchMaintain(this);" style="margin: 2px;">
-															<i class="glyphicon glyphicon-pencil"></i>
-														</button>
-														<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteBatchMaintain(this, 'tr@(QueryInfo[0])');" style="margin: 2px;">
-															<i class="fa fa-trash"></i>
-														</button>
-													</td>
-													<td><a href="@QueryInfo[2]" target="_blank">@QueryInfo[1]</a></td>
-													<td class="taskBUKRS">@Html.Raw(QueryInfo[3])</td>
-													<td class="taskCustomerID">@Html.Raw(QueryInfo[4])</td>
-													<td class="taskCustomerName">@Html.Raw(QueryInfo[5])</td>
-													<td class="taskContactStoreName">@Html.Raw(QueryInfo[6])</td>
-													<td class="taskContactName">@Html.Raw(QueryInfo[7])</td>
-													<td class="taskContactAddress">@Html.Raw(QueryInfo[8])</td>
-													<td class="taskContactPhone">@Html.Raw(QueryInfo[9])</td>
-													<td class="taskContactMobile">@Html.Raw(QueryInfo[10])</td>
-													<td class="taskContactEmail">@Html.Raw(QueryInfo[11])</td>
-													<td class="taskMainEngineerID">@Html.Raw(QueryInfo[12])</td>
-													<td class="taskMainEngineerName">@Html.Raw(QueryInfo[13])</td>
-													<td class="taskMACycle">@Html.Raw(QueryInfo[14])</td>
-												</tr>
+																				<tr id='tr@(QueryInfo[0])'>
+																					<td>
+																						<input type="hidden" value="@QueryInfo[0]" class="taskcID" />
+																						<input type="hidden" value="@QueryInfo[1]" class="taskContractID" />
+																						<button class="btn btn-info btn-sm btnTaskEdit btnPreventDefault" type="button" onclick="editBatchMaintain(this);" style="margin: 2px;">
+																							<i class="glyphicon glyphicon-pencil"></i>
+																						</button>
+																						<button class="btn btn-danger btn-sm btnTaskDelete btnPreventDefault" type="button" onclick="deleteBatchMaintain(this, 'tr@(QueryInfo[0])');" style="margin: 2px;">
+																							<i class="fa fa-trash"></i>
+																						</button>
+																					</td>
+																					<td><a href="@QueryInfo[2]" target="_blank">@QueryInfo[1]</a></td>
+																					<td class="taskBUKRS">@Html.Raw(QueryInfo[3])</td>
+																					<td class="taskCustomerID">@Html.Raw(QueryInfo[4])</td>
+																					<td class="taskCustomerName">@Html.Raw(QueryInfo[5])</td>
+																					<td class="taskContactStoreName">@Html.Raw(QueryInfo[6])</td>
+																					<td class="taskContactName">@Html.Raw(QueryInfo[7])</td>
+																					<td class="taskContactAddress">@Html.Raw(QueryInfo[8])</td>
+																					<td class="taskContactPhone">@Html.Raw(QueryInfo[9])</td>
+																					<td class="taskContactMobile">@Html.Raw(QueryInfo[10])</td>
+																					<td class="taskContactEmail">@Html.Raw(QueryInfo[11])</td>
+																					<td class="taskMainEngineerID">@Html.Raw(QueryInfo[12])</td>
+																					<td class="taskMainEngineerName">@Html.Raw(QueryInfo[13])</td>
+																					<td class="taskMACycle">@Html.Raw(QueryInfo[14])</td>
+																				</tr>
 								}
 							}
 						}
@@ -703,7 +728,7 @@
 			</div>
 			<div class="modal-footer">
 				<div class="col-lg-5"></div>
-				<button id="btn_saveBatchMaintain" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveBatchMaintain($('#hid_taskcID').val());"> <i class="fa fa-save"></i> 儲 存</button>
+				<button id="btn_saveBatchMaintain" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="if (checkMACycle()){saveBatchMaintain($('#hid_taskcID').val());}"> <i class="fa fa-save"></i> 儲 存</button>
 				<img id="img_waiting_saveBatchMaintain" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
 				<div class="col-lg-5"></div>
 			</div>

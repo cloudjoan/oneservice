@@ -7155,6 +7155,25 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 檢查維護週期格式是否正確
+        /// <summary>
+        /// 檢查維護週期格式是否正確
+        /// </summary>
+        /// <param name="cMACycle">維護週期</param>
+        /// <returns></returns>
+        public IActionResult checkMACycle(string cMACycle)
+        {
+            string reValue = string.Empty;
+
+            if (!string.IsNullOrEmpty(cMACycle))
+            {
+                reValue = CMF.checkCycle(cMACycle);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑批次上傳定維派工作業 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓共用方法 ↓↓↓↓↓-----
