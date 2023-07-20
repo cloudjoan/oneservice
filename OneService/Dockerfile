@@ -10,7 +10,10 @@ RUN apt-get update \
 # mount如果遇到 Unable to apply new capability set. 錯誤時，就要在docker run的時候，加上 --privileged=true
 #RUN mount -t cifs -o user=bpmadmin,password=Bpm@dmin '//172.31.7.188/checkout_doc' /app/wwwroot/files
 RUN mkdir -p /app/wwwroot/files
+#測試
 #RUN mount -t cifs  -o user=prjadmin,password=Prj\@dmin '//172.31.7.60/csreport_test' /app/wwwroot/files
+#正式
+#RUN mount -t cifs  -o user=prjadmin,password=Prj\@dmin '//172.31.7.60/csreport' /app/wwwroot/files
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
