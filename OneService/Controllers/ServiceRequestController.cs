@@ -7016,6 +7016,13 @@ namespace OneService.Controllers
             string OldcMainEngineerName = string.Empty;
             string OldcMACycle = string.Empty;
 
+            cContactPhone = string.IsNullOrEmpty(cContactPhone) ? "" : cContactPhone.Trim();
+            cContactMobile = string.IsNullOrEmpty(cContactMobile) ? "" : cContactMobile.Trim();
+            cContactEmail = string.IsNullOrEmpty(cContactEmail) ? "" : cContactEmail.Trim();
+            cMainEngineerID = string.IsNullOrEmpty(cMainEngineerID) ? "" : cMainEngineerID.Trim();
+            cMainEngineerName = string.IsNullOrEmpty(cMainEngineerName) ? "" : cMainEngineerName.Trim();
+            cMACycle = string.IsNullOrEmpty(cMACycle) ? "" : cMACycle.Trim();
+
             getLoginAccount();
             getEmployeeInfo();
 
@@ -7048,9 +7055,9 @@ namespace OneService.Controllers
                     tLog += CMF.getNewAndOldLog("自訂維護週期", OldcMACycle, cMACycle);
                     #endregion
 
-                    bean.CMainEngineerId = string.IsNullOrEmpty(cMainEngineerID) ? "" : cMainEngineerID.Trim();
-                    bean.CMainEngineerName = string.IsNullOrEmpty(cMainEngineerName) ? "" : cMainEngineerName.Trim();
-                    bean.CMacycle = string.IsNullOrEmpty(cMACycle) ? "" : cMACycle.Trim();
+                    bean.CMainEngineerId = cMainEngineerID;
+                    bean.CMainEngineerName = cMainEngineerName;
+                    bean.CMacycle = cMACycle;
 
                     bean.ModifiedDate = DateTime.Now;
                     bean.ModifiedUserName = ViewBag.empEngName;
