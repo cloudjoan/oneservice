@@ -4,5 +4,11 @@ docker tag oneservice:latest cloudjoan/oneservice:latest
 docker push cloudjoan/oneservice:latest
 
 //放到本local image 先登入 docker login tsti-oneservice-harbor.etatung.com
+
+//測試
 docker tag oneservice:latest tsti-oneservice-harbor.etatung.com/oneservice/oneservice:v1.0.7
 docker push tsti-oneservice-harbor.etatung.com/oneservice/oneservice:v1.0.7
+
+//正式
+docker tag oneservice:latest tsti-oneservice-harbor.etatung.com/oneservice/oneservice:v1.5.1
+docker push tsti-oneservice-harbor.etatung.com/oneservice/oneservice:v1.5.1
