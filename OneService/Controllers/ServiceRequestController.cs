@@ -6448,6 +6448,7 @@ namespace OneService.Controllers
 
             bool tIsFormal = false;
 
+            string tONEURLName = string.Empty;
             string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
@@ -6464,12 +6465,20 @@ namespace OneService.Controllers
 
             tIsFormal = ParaBean.IsFormal;
 
+            tONEURLName = ParaBean.ONEURLName;
             tBPMURLName = ParaBean.BPMURLName;
             tPSIPURLName = ParaBean.PSIPURLName;
             tAPIURLName = ParaBean.APIURLName;
             tAttachURLName = ParaBean.AttachURLName;
 
-            ViewBag.DownloadURL = "http://" + tAttachURLName + "/CSreport/批次裝機派工.XLSX";
+            if (tIsFormal)
+            {
+                ViewBag.DownloadURL = tONEURLName + "/files/批次裝機派工.XLSX";
+            }
+            else
+            {
+                ViewBag.DownloadURL = "http://" + tAttachURLName + "/CSreport/批次裝機派工.XLSX";
+            }
             #endregion
 
             #region Request參數            
@@ -6861,6 +6870,7 @@ namespace OneService.Controllers
 
             bool tIsFormal = false;
 
+            string tONEURLName = string.Empty;
             string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
@@ -6874,12 +6884,20 @@ namespace OneService.Controllers
 
             tIsFormal = ParaBean.IsFormal;
 
+            tONEURLName = ParaBean.ONEURLName;
             tBPMURLName = ParaBean.BPMURLName;
             tPSIPURLName = ParaBean.PSIPURLName;
             tAPIURLName = ParaBean.APIURLName;
-            tAttachURLName = ParaBean.AttachURLName;
+            tAttachURLName = ParaBean.AttachURLName;           
 
-            ViewBag.DownloadURL = "http://" + tAttachURLName + "/CSreport/批次定維派工.XLSX";
+            if (tIsFormal)
+            {
+                ViewBag.DownloadURL = tONEURLName + "/files/批次定維派工.XLSX";
+            }
+            else
+            {
+                ViewBag.DownloadURL = "http://" + tAttachURLName + "/CSreport/批次定維派工.XLSX";
+            }
             #endregion
 
             #region Request參數

@@ -1588,6 +1588,7 @@ namespace OneService.Controllers
 
             bool tIsFormal = false;
 
+            string tONEURLName = string.Empty;
             string tBPMURLName = string.Empty;
             string tAPIURLName = string.Empty;
             string tPSIPURLName = string.Empty;
@@ -1607,12 +1608,20 @@ namespace OneService.Controllers
 
             tIsFormal = ParaBean.IsFormal;
 
+            tONEURLName = ParaBean.ONEURLName;
             tBPMURLName = ParaBean.BPMURLName;
             tPSIPURLName = ParaBean.PSIPURLName;
             tAPIURLName = ParaBean.APIURLName;
             tAttachURLName = ParaBean.AttachURLName;
-            
-            ViewBag.DownloadURL = "http://" + tAttachURLName + "/CSreport/ZCONTRACT_OBJ.XLSX";
+
+            if (tIsFormal)
+            {
+                ViewBag.DownloadURL = tONEURLName + "/files/ZCONTRACT_OBJ.XLSX";
+            }
+            else
+            {
+                ViewBag.DownloadURL = "http://" + tAttachURLName + "/CSreport/ZCONTRACT_OBJ.XLSX";
+            }
             #endregion
 
             #region Request參數            
