@@ -111,9 +111,13 @@ function delFile(fileId, fileZoneObjId) {
 //jquery3要用dropzone加這一行才行
 Dropzone.autoDiscover = false;
 
+//正式區
 var prdReportUrl = "http://tsticrmmbgw.etatung.com:8081/CSreport/";
-var qasReportUrl = "http://tsticrmmbgw.etatung.com:8082/CSreport/";
-var fileUrl = qasReportUrl;
+var fileUrl = prdReportUrl;
+
+//測試區
+//var qasReportUrl = "http://tsticrmmbgw.etatung.com:8082/CSreport/";
+//var fileUrl = qasReportUrl;
 
 //初始化dropzone
 function dropzoneInit(uploadUrl) {
