@@ -749,9 +749,9 @@ namespace OneService.Controllers
         /// <param name="cSRTypeOne">報修類別-大類</param>
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
-        /// <param name="cSerialID">產品序號</param>
-        /// <param name="cMaterialName">產品機器型號</param>
-        /// <param name="cProductNumber">Product Number</param>
+        /// <param name="cSerialID">報修產品序號</param>
+        /// <param name="cMaterialName">報修產品機器型號</param>
+        /// <param name="cProductNumber">報修Product Number</param>
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
                                                  string cCustomerID, string cCustomerName, string cSRID, string CreatedUserName, string cRepairName, string cSRPathWay, string cMainEngineerID, 
@@ -774,7 +774,7 @@ namespace OneService.Controllers
             string tSRPathWayNote = string.Empty;       //報修管道
             string tSTATUSDESC = string.Empty;          //狀態
             string tSRType = string.Empty;              //報修類別
-            string tSRProductSerial = string.Empty;     //產品序號資訊
+            string tSRProductSerial = string.Empty;     //報修產品序號資訊
             string tSRTeam = string.Empty;              //服務團隊
             string tMainEngineerID = string.Empty;      //主要工程師ERPID
             string tMainEngineerName = string.Empty;    //主要工程師姓名
@@ -981,28 +981,28 @@ namespace OneService.Controllers
             }
             #endregion
 
-            #region 產品序號
+            #region 報修產品序號
             if (!string.IsNullOrEmpty(cSerialID))
             {
                 ttWhere += "AND (P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' or P.cNewSerialID LIKE N'%" + cSerialID.Trim() + "%') " + Environment.NewLine;
             }
             #endregion
 
-            #region 產品機器型號
+            #region 報修產品機器型號
             if (!string.IsNullOrEmpty(cMaterialName))
             {
                 ttWhere += "AND P.cMaterialName LIKE N'%" + cMaterialName.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
-            #region Product Number
+            #region 報修Product Number
             if (!string.IsNullOrEmpty(cProductNumber))
             {
                 ttWhere += "AND P.cProductNumber LIKE N'%" + cProductNumber.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
-            #region 若【產品序號】、【產品機器型號】、【Product Number】其中有一個，就要執行Join語法
+            #region 若【報修產品序號】、【報修產品機器型號】、【報修Product Number】其中有一個，就要執行Join語法
             if (!string.IsNullOrEmpty(cSerialID) || !string.IsNullOrEmpty(cMaterialName) || !string.IsNullOrEmpty(cProductNumber))
             {
                 ttJoin = " left join TB_ONE_SRDetail_Product P on M.cSRID = P.cSRID";
@@ -1070,7 +1070,7 @@ namespace OneService.Controllers
                 QueryInfo[4] = tSRContactName;                 //客戶聯絡人
                 QueryInfo[5] = dr["cDesc"].ToString();          //說明
                 QueryInfo[6] = dr["cDelayReason"].ToString();    //延遲結案原因
-                QueryInfo[7] = tSRProductSerial;               //產品序號資訊
+                QueryInfo[7] = tSRProductSerial;               //報修產品序號資訊
                 QueryInfo[8] = tSRTeam;                        //服務團隊
                 QueryInfo[9] = tSRPathWayNote;                 //報修管道
                 QueryInfo[10] = tSRType;                       //報修類別                
