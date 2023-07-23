@@ -318,6 +318,11 @@
 						$(".dropzone").show();
 						$(".btn-del").show();
 					}
+
+					if (pIsMIS == "Y" || pIsDCC == "Y") {
+						$("#tbx_cStartDate").prop('disabled', IsDisabled);
+						$("#tbx_cEndDate").prop('disabled', IsDisabled);
+					}
 				}
 			}, 500);
 		}
@@ -533,7 +538,9 @@
 			var tbx_cMANotes = $("#tbx_cMANotes");				//維護備註
 			var tbx_cMAAddress = $("#tbx_cMAAddress");			//維護地址
 			var tbx_cContractNotes = $("#tbx_cContractNotes");	//合約備註
-			var tbx_cBillNotes = $("#tbx_cBillNotes");			//請款備註			
+			var tbx_cBillNotes = $("#tbx_cBillNotes");			//請款備註	
+			var tbx_cStartDate = $("#tbx_cStartDate");			//維護日期(起)
+			var tbx_cEndDate = $("#tbx_cEndDate");				//維護日期(迄)
 
 			if (hid_cTeamID.val() == "") {
 				Msg += "【服務團隊】不得為空！\n";
@@ -557,6 +564,22 @@
 
 			if (tbx_cBillNotes.val() == "") {
 				Msg += "【請款備註】不得為空！\n";
+			}
+
+			if (tbx_cStartDate.val() == "") {
+				Msg += "【維護日期(起)】不得為空！\n";
+			}
+
+			if (tbx_cEndDate.val() == "") {
+				Msg += "【維護日期(迄)】不得為空！\n";
+			}
+
+			if (tbx_cStartDate.val() != "" && tbx_cEndDate.val() != "") {
+
+				if (tbx_cStartDate.val() > tbx_cEndDate.val()) {
+					tMsg += '維護日期(起)不能大於維護日期(迄)！\n';
+					tbx_cEndDate.val(""); //清空
+				}
 			}
 
 			if (Msg != "") {

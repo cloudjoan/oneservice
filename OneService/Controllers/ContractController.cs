@@ -699,6 +699,8 @@ namespace OneService.Controllers
             string OldCContractReport = string.Empty;
             string OldCContactName = string.Empty;
             string OldCContactEmail = string.Empty;
+            string OldCStartDate = string.Empty;
+            string OldCEndDate = string.Empty;
 
             pContractID = formCollection["hid_cContractID"].FirstOrDefault();            
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
@@ -710,6 +712,8 @@ namespace OneService.Controllers
             string CContractReport = formCollection["hid_filezone_1"].FirstOrDefault();
             string CContactName = formCollection["tbx_cContactName"].FirstOrDefault();
             string CContactEmail = formCollection["tbx_cContactEmail"].FirstOrDefault();
+            string CStartDate = formCollection["tbx_cStartDate"].FirstOrDefault();
+            string CEndDate = formCollection["tbx_cEndDate"].FirstOrDefault();
 
             CONTRACTCHANGE_INPUT beanIN = new CONTRACTCHANGE_INPUT();
 
@@ -759,7 +763,19 @@ namespace OneService.Controllers
                     {
                         OldCContractReport = beanM.CContractReport;
                         tLog += CMF.getNewAndOldLog("合約書", OldCContractReport, CContractReport);
-                    }                    
+                    }
+
+                    if (!string.IsNullOrEmpty(CStartDate))
+                    {
+                        OldCStartDate = Convert.ToDateTime(beanM.CStartDate).ToString("yyyy-MM-dd");
+                        tLog += CMF.getNewAndOldLog("維護日期(起)", OldCStartDate, CStartDate);
+                    }
+
+                    if (!string.IsNullOrEmpty(CEndDate))
+                    {
+                        OldCEndDate = Convert.ToDateTime(beanM.CStartDate).ToString("yyyy-MM-dd");
+                        tLog += CMF.getNewAndOldLog("維護日期(迄)", OldCEndDate, CEndDate);
+                    }
                     #endregion
 
                     #region 主資料表                    
@@ -775,7 +791,17 @@ namespace OneService.Controllers
                     if (!string.IsNullOrEmpty(CContractReport))
                     {
                         beanM.CContractReport = CContractReport;
-                    }                   
+                    }
+
+                    if (!string.IsNullOrEmpty(CStartDate))
+                    {
+                        beanM.CStartDate = Convert.ToDateTime(CStartDate);
+                    }
+
+                    if (!string.IsNullOrEmpty(CEndDate))
+                    {
+                        beanM.CEndDate = Convert.ToDateTime(CEndDate);
+                    }
 
                     beanM.ModifiedDate = DateTime.Now;
                     beanM.ModifiedUserName = ViewBag.empEngName;
