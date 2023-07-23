@@ -1666,7 +1666,7 @@ namespace OneService.Controllers
             string reValue = string.Empty;
 
             SRMain_INSTALLSR_OUTPUT SROUT = new SRMain_INSTALLSR_OUTPUT();
-
+                
             string tURL = beanIN.IV_APIURLName + "/API/API_INSTALLSR_CREATE";
 
             string CONTNAME = string.Empty;
@@ -3707,10 +3707,10 @@ namespace OneService.Controllers
             switch(cBUKRS)
             {
                 case "T012":
-                    cMARD_WERKS = "12G9";
+                    cMARD_WERKS = "12G1";
                     break;
                 case "T016":
-                    cMARD_WERKS = "16G9";
+                    cMARD_WERKS = "16G1";
                     break;
             }
 
