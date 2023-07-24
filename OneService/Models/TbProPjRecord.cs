@@ -34,5 +34,7 @@ namespace OneService.Models
         public int? Disabled { get; set; }
         public string? InsertTime { get; set; }
         public string? UpdateTime { get; set; }
+        public string ImplementersOut { get; set; } = null!;
+        public int ImplementersCountOut { get; set; }
     }
 }

@@ -68,7 +68,8 @@ namespace OneService.Models
 
                 entity.Property(e => e.BulletinRemind)
                     .HasMaxLength(100)
-                    .HasColumnName("bulletinRemind");
+                    .HasColumnName("bulletinRemind")
+                    .HasComment("預設提醒");
 
                 entity.Property(e => e.BulletinSubject)
                     .HasMaxLength(100)
@@ -353,6 +354,10 @@ namespace OneService.Models
                 entity.Property(e => e.ImplementedBy).HasMaxLength(500);
 
                 entity.Property(e => e.Implementers).HasMaxLength(1000);
+
+                entity.Property(e => e.ImplementersOut)
+                    .HasMaxLength(1000)
+                    .HasDefaultValueSql("('')");
 
                 entity.Property(e => e.InsertTime).HasMaxLength(22);
 

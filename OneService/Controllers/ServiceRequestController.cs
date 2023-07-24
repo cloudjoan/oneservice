@@ -1124,7 +1124,7 @@ namespace OneService.Controllers
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
 
-                CMF.writeToLog(pSRID, "ToDoList", pMsg, ViewBag.cLoginUser_Name);
+                CMF.writeToLog(pSRID, "ToDoList", pMsg, ViewBag.empEngName);
             }
 
             return View();
@@ -1537,7 +1537,7 @@ namespace OneService.Controllers
             string CMainEngineerId = formCollection["hid_cMainEngineerID"].FirstOrDefault();
             string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();
             string CTechManagerId = formCollection["hid_cTechManagerID"].FirstOrDefault();
-            string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
+            //string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
 
             string CFaultGroup = formCollection["hid_cFaultGroup"].FirstOrDefault();            
             string CFaultState = formCollection["hid_cFaultState"].FirstOrDefault();            
@@ -1615,7 +1615,7 @@ namespace OneService.Controllers
                     beanM.CIsAppclose = "";                    
 
                     beanM.CreatedDate = DateTime.Now;
-                    beanM.CreatedUserName = LoginUser_Name;
+                    beanM.CreatedUserName = ViewBag.empEngName;
 
                     dbOne.TbOneSrmains.Add(beanM);
                     #endregion
@@ -1645,7 +1645,7 @@ namespace OneService.Controllers
                             beanD.Disabled = 0;
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailContacts.Add(beanD);
                         }
@@ -1679,7 +1679,7 @@ namespace OneService.Controllers
                             beanD.Disabled = 0;
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailProducts.Add(beanD);
                         }
@@ -1730,7 +1730,7 @@ namespace OneService.Controllers
                         beanD.CUsed = WACheckUsed[i];
 
                         beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                        beanD.CreatedUserName = ViewBag.empEngName;
 
                         dbOne.TbOneSrdetailWarranties.Add(beanD);
                     }
@@ -1741,7 +1741,7 @@ namespace OneService.Controllers
                     if (result <= 0)
                     {
                         pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(新建)" + Environment.NewLine;
-                        CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, LoginUser_Name);
+                        CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, ViewBag.empEngName);
                     }
                     else
                     {
@@ -1751,7 +1751,7 @@ namespace OneService.Controllers
                             CSrid = pSRID,
                             EventName = "SaveGenerallySR",
                             Log = "新增成功！",
-                            CreatedUserName = LoginUser_Name,
+                            CreatedUserName = ViewBag.empEngName,
                             CreatedDate = DateTime.Now
                         };
 
@@ -1761,7 +1761,7 @@ namespace OneService.Controllers
 
                         #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                        beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = "E0005|ADD"; //新建但狀態是L3處理中
                         beanIN.IV_APIURLName = tAPIURLName;
@@ -1979,7 +1979,7 @@ namespace OneService.Controllers
                     }
 
                     beanNowM.ModifiedDate = DateTime.Now;
-                    beanNowM.ModifiedUserName = LoginUser_Name;
+                    beanNowM.ModifiedUserName = ViewBag.empEngName;
                     #endregion
 
                     #region -----↓↓↓↓↓客戶聯絡窗口資訊↓↓↓↓↓-----
@@ -1993,7 +1993,7 @@ namespace OneService.Controllers
                     {
                         beanDCon.Disabled = 1;
                         beanDCon.ModifiedDate = DateTime.Now;
-                        beanDCon.ModifiedUserName = LoginUser_Name;
+                        beanDCon.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -2022,7 +2022,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(COcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailContacts.Add(beanD);
                         }
@@ -2042,7 +2042,7 @@ namespace OneService.Controllers
                     {
                         beanDPro.Disabled = 1;
                         beanDPro.ModifiedDate = DateTime.Now;
-                        beanDPro.ModifiedUserName = LoginUser_Name;
+                        beanDPro.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -2073,7 +2073,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(PRcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailProducts.Add(beanD);
                         }
@@ -2132,7 +2132,7 @@ namespace OneService.Controllers
                         beanD.CUsed = WACheckUsed[i];
 
                         beanD.CreatedDate = DateTime.Now;
-                        beanD.CreatedUserName = LoginUser_Name;
+                        beanD.CreatedUserName = ViewBag.empEngName;
 
                         dbOne.TbOneSrdetailWarranties.Add(beanD);
                     }
@@ -2151,7 +2151,7 @@ namespace OneService.Controllers
                     {
                         beanDRec.Disabled = 1;
                         beanDRec.ModifiedDate = DateTime.Now;
-                        beanDRec.ModifiedUserName = LoginUser_Name;
+                        beanDRec.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -2205,7 +2205,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(REcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailRecords.Add(beanD);
                         }
@@ -2225,7 +2225,7 @@ namespace OneService.Controllers
                     {
                         beanDPar.Disabled = 1;
                         beanDPar.ModifiedDate = DateTime.Now;
-                        beanDPar.ModifiedUserName = LoginUser_Name;
+                        beanDPar.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -2279,7 +2279,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(PAcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailPartsReplaces.Add(beanD);
                         }
@@ -2293,7 +2293,7 @@ namespace OneService.Controllers
                     if (result <= 0)
                     {
                         pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(編輯)" + Environment.NewLine;
-                        CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, LoginUser_Name);
+                        CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, ViewBag.empEngName);
                     }
                     else
                     {
@@ -2305,7 +2305,7 @@ namespace OneService.Controllers
                                 CSrid = pSRID,
                                 EventName = "SaveGenerallySR",
                                 Log = tLog,
-                                CreatedUserName = LoginUser_Name,
+                                CreatedUserName = ViewBag.empEngName,
                                 CreatedDate = DateTime.Now
                             };
 
@@ -2328,7 +2328,7 @@ namespace OneService.Controllers
                         }
 
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                        beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = TempStatus;
                         beanIN.IV_APIURLName = tAPIURLName;
@@ -2343,7 +2343,7 @@ namespace OneService.Controllers
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
                 
-                CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, LoginUser_Name);
+                CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, ViewBag.empEngName);
             }
 
             return RedirectToAction("finishForm");
@@ -3478,7 +3478,7 @@ namespace OneService.Controllers
             string CSalesId = formCollection["hid_cSalesID"].FirstOrDefault();
             string CSecretaryName = formCollection["tbx_cSecretaryName"].FirstOrDefault();
             string CSecretaryId = formCollection["hid_cSecretaryID"].FirstOrDefault();
-            string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
+            //string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
 
             SRCondition srCon = new SRCondition();
             SRMain_SRSTATUS_INPUT beanIN = new SRMain_SRSTATUS_INPUT();
@@ -3535,7 +3535,7 @@ namespace OneService.Controllers
                     beanM.CSystemGuid = Guid.NewGuid();
                     beanM.CIsAppclose = "";
                     beanM.CreatedDate = DateTime.Now;
-                    beanM.CreatedUserName = LoginUser_Name;
+                    beanM.CreatedUserName = ViewBag.empEngName;
 
                     #region 未用到的欄位
                     beanM.CRepairName = "";
@@ -3582,7 +3582,7 @@ namespace OneService.Controllers
                             beanD.Disabled = 0;
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailContacts.Add(beanD);
                         }
@@ -3620,7 +3620,7 @@ namespace OneService.Controllers
                             beanD.Disabled = 0;
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailMaterialInfos.Add(beanD);
                         }
@@ -3650,7 +3650,7 @@ namespace OneService.Controllers
                             beanD.Disabled = 0;
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailSerialFeedbacks.Add(beanD);
                         }
@@ -3662,7 +3662,7 @@ namespace OneService.Controllers
                     if (result <= 0)
                     {
                         pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(新建)" + Environment.NewLine;
-                        CMF.writeToLog(pSRID, "SaveInstallSR", pMsg, LoginUser_Name);
+                        CMF.writeToLog(pSRID, "SaveInstallSR", pMsg, ViewBag.empEngName);
                     }
                     else
                     {
@@ -3672,7 +3672,7 @@ namespace OneService.Controllers
                             CSrid = pSRID,
                             EventName = "SaveInstallSR",
                             Log = "新增成功！",
-                            CreatedUserName = LoginUser_Name,
+                            CreatedUserName = ViewBag.empEngName,
                             CreatedDate = DateTime.Now
                         };
 
@@ -3682,7 +3682,7 @@ namespace OneService.Controllers
 
                         #region call ONE SERVICE更新裝機現況資訊接口   
                         beanInstall.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                        beanInstall.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanInstall.IV_LOGINEMPNAME = ViewBag.empEngName;
                         beanInstall.IV_SRID = pSRID;
                         beanInstall.IV_InstallDate = "";
                         beanInstall.IV_ExpectedDate = "";
@@ -3696,7 +3696,7 @@ namespace OneService.Controllers
 
                         #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                        beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
                         beanIN.IV_SRID = pSRID;
 
                         if (CMainEngineerId != "")
@@ -3815,7 +3815,7 @@ namespace OneService.Controllers
                     }
 
                     beanNowM.ModifiedDate = DateTime.Now;
-                    beanNowM.ModifiedUserName = LoginUser_Name;
+                    beanNowM.ModifiedUserName = ViewBag.empEngName;
                     #endregion
 
                     #region -----↓↓↓↓↓客戶聯絡窗口資訊↓↓↓↓↓-----
@@ -3827,7 +3827,7 @@ namespace OneService.Controllers
                     {
                         beanDCon.Disabled = 1;
                         beanDCon.ModifiedDate = DateTime.Now;
-                        beanDCon.ModifiedUserName = LoginUser_Name;
+                        beanDCon.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -3856,7 +3856,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(COcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailContacts.Add(beanD);
                         }
@@ -3874,7 +3874,7 @@ namespace OneService.Controllers
                     {
                         beanDMI.Disabled = 1;
                         beanDMI.ModifiedDate = DateTime.Now;
-                        beanDMI.ModifiedUserName = LoginUser_Name;
+                        beanDMI.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -3909,7 +3909,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(MIcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailMaterialInfos.Add(beanD);
                         }
@@ -3927,7 +3927,7 @@ namespace OneService.Controllers
                     {
                         beanDSF.Disabled = 1;
                         beanDSF.ModifiedDate = DateTime.Now;
-                        beanDSF.ModifiedUserName = LoginUser_Name;
+                        beanDSF.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -3954,7 +3954,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(SFcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailSerialFeedbacks.Add(beanD);
                         }
@@ -3972,7 +3972,7 @@ namespace OneService.Controllers
                     {
                         beanDRec.Disabled = 1;
                         beanDRec.ModifiedDate = DateTime.Now;
-                        beanDRec.ModifiedUserName = LoginUser_Name;
+                        beanDRec.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -4026,7 +4026,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(REcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailRecords.Add(beanD);
                         }
@@ -4040,7 +4040,7 @@ namespace OneService.Controllers
                     if (result <= 0)
                     {
                         pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(編輯)" + Environment.NewLine;
-                        CMF.writeToLog(pSRID, "SaveInstallSR", pMsg, LoginUser_Name);
+                        CMF.writeToLog(pSRID, "SaveInstallSR", pMsg, ViewBag.empEngName);
                     }
                     else
                     {
@@ -4052,7 +4052,7 @@ namespace OneService.Controllers
                                 CSrid = pSRID,
                                 EventName = "SaveInstallSR",
                                 Log = tLog,
-                                CreatedUserName = LoginUser_Name,
+                                CreatedUserName = ViewBag.empEngName,
                                 CreatedDate = DateTime.Now
                             };
 
@@ -4063,7 +4063,7 @@ namespace OneService.Controllers
 
                         #region call ONE SERVICE更新裝機現況資訊接口   
                         beanInstall.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                        beanInstall.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanInstall.IV_LOGINEMPNAME = ViewBag.empEngName;
                         beanInstall.IV_SRID = pSRID;
                         beanInstall.IV_InstallDate = "";
                         beanInstall.IV_ExpectedDate = "";
@@ -4089,7 +4089,7 @@ namespace OneService.Controllers
                         }
 
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                        beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = TempStatus;
                         beanIN.IV_APIURLName = tAPIURLName;
@@ -4104,7 +4104,7 @@ namespace OneService.Controllers
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
 
-                CMF.writeToLog(pSRID, "SaveInstallSR", pMsg, LoginUser_Name);
+                CMF.writeToLog(pSRID, "SaveInstallSR", pMsg, ViewBag.empEngName);
             }
 
             return RedirectToAction("finishForm");
@@ -4314,7 +4314,7 @@ namespace OneService.Controllers
             string CSalesId = formCollection["hid_cSalesID"].FirstOrDefault();
             string CSecretaryName = formCollection["tbx_cSecretaryName"].FirstOrDefault();
             string CSecretaryId = formCollection["hid_cSecretaryID"].FirstOrDefault();
-            string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
+            //string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
 
             SRCondition srCon = new SRCondition();
             SRMain_SRSTATUS_INPUT beanIN = new SRMain_SRSTATUS_INPUT();
@@ -4369,7 +4369,7 @@ namespace OneService.Controllers
                     beanM.CSystemGuid = Guid.NewGuid();
                     beanM.CIsAppclose = "";
                     beanM.CreatedDate = DateTime.Now;
-                    beanM.CreatedUserName = LoginUser_Name;
+                    beanM.CreatedUserName = ViewBag.empEngName;
 
                     #region 未用到的欄位
                     beanM.CRepairName = "";
@@ -4417,7 +4417,7 @@ namespace OneService.Controllers
                             beanD.Disabled = 0;
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailContacts.Add(beanD);
                         }
@@ -4429,7 +4429,7 @@ namespace OneService.Controllers
                     if (result <= 0)
                     {
                         pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(新建)" + Environment.NewLine;
-                        CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, LoginUser_Name);
+                        CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, ViewBag.empEngName);
                     }
                     else
                     {
@@ -4439,7 +4439,7 @@ namespace OneService.Controllers
                             CSrid = pSRID,
                             EventName = "SaveMaintainSR",
                             Log = "新增成功！",
-                            CreatedUserName = LoginUser_Name,
+                            CreatedUserName = ViewBag.empEngName,
                             CreatedDate = DateTime.Now
                         };
 
@@ -4449,7 +4449,7 @@ namespace OneService.Controllers
 
                         #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口來寄送Mail
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                        beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
                         beanIN.IV_SRID = pSRID;
 
                         if (CMainEngineerId != "")
@@ -4559,7 +4559,7 @@ namespace OneService.Controllers
                     }
 
                     beanNowM.ModifiedDate = DateTime.Now;
-                    beanNowM.ModifiedUserName = LoginUser_Name;
+                    beanNowM.ModifiedUserName = ViewBag.empEngName;
                     #endregion
 
                     #region -----↓↓↓↓↓客戶聯絡窗口資訊↓↓↓↓↓-----
@@ -4571,7 +4571,7 @@ namespace OneService.Controllers
                     {
                         beanDCon.Disabled = 1;
                         beanDCon.ModifiedDate = DateTime.Now;
-                        beanDCon.ModifiedUserName = LoginUser_Name;
+                        beanDCon.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -4600,7 +4600,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(COcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailContacts.Add(beanD);
                         }
@@ -4618,7 +4618,7 @@ namespace OneService.Controllers
                     {
                         beanDRec.Disabled = 1;
                         beanDRec.ModifiedDate = DateTime.Now;
-                        beanDRec.ModifiedUserName = LoginUser_Name;
+                        beanDRec.ModifiedUserName = ViewBag.empEngName;
                     }
                     #endregion
 
@@ -4672,7 +4672,7 @@ namespace OneService.Controllers
                             beanD.Disabled = int.Parse(REcDisabled[i]);
 
                             beanD.CreatedDate = DateTime.Now;
-                            beanD.CreatedUserName = LoginUser_Name;
+                            beanD.CreatedUserName = ViewBag.empEngName;
 
                             dbOne.TbOneSrdetailRecords.Add(beanD);
                         }
@@ -4686,7 +4686,7 @@ namespace OneService.Controllers
                     if (result <= 0)
                     {
                         pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "提交失敗(編輯)" + Environment.NewLine;
-                        CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, LoginUser_Name);
+                        CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, ViewBag.empEngName);
                     }
                     else
                     {
@@ -4698,7 +4698,7 @@ namespace OneService.Controllers
                                 CSrid = pSRID,
                                 EventName = "SaveMaintainSR",
                                 Log = tLog,
-                                CreatedUserName = LoginUser_Name,
+                                CreatedUserName = ViewBag.empEngName,
                                 CreatedDate = DateTime.Now
                             };
 
@@ -4721,7 +4721,7 @@ namespace OneService.Controllers
                         }
 
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                        beanIN.IV_LOGINEMPNAME = LoginUser_Name;
+                        beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
                         beanIN.IV_SRID = pSRID;
                         beanIN.IV_STATUS = TempStatus;
                         beanIN.IV_APIURLName = tAPIURLName;
@@ -4736,7 +4736,7 @@ namespace OneService.Controllers
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
 
-                CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, LoginUser_Name);
+                CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, ViewBag.empEngName);
             }
 
             return RedirectToAction("finishForm");
@@ -7270,7 +7270,7 @@ namespace OneService.Controllers
             ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
             ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
             ViewBag.pIsManager = EmpBean.IsManager;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName;
             
             pCompanyCode = EmpBean.BUKRS;
             pIsManager = EmpBean.IsManager;

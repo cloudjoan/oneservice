@@ -879,7 +879,7 @@ namespace OneService.Controllers
             ViewBag.cLoginUser_CompCode = EmpBean.CompanyCode;
             ViewBag.cLoginUser_BUKRS = EmpBean.BUKRS;
             ViewBag.pIsManager = EmpBean.IsManager;
-            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName.Replace(".", " ");
+            ViewBag.empEngName = EmpBean.EmployeeCName + " " + EmpBean.EmployeeEName;
 
             pCompanyCode = EmpBean.BUKRS;
             pIsManager = EmpBean.IsManager;
