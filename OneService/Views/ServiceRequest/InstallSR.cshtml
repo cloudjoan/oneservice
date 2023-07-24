@@ -817,10 +817,10 @@
 							tIsError = true;
 						}
 
-						if (objContactPhone.val() == "" && objContactMoblie.val() == "") {
-							Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【電話、手機(聯絡人)】請至少擇一輸入！\n";
-							tIsError = true;
-						}
+						//if (objContactPhone.val() == "" && objContactMoblie.val() == "") {
+						//	Msg += "明細【聯絡人窗口資訊】「項次：" + objRowNumber.html() + "」的【電話、手機(聯絡人)】請至少擇一輸入！\n";
+						//	tIsError = true;
+						//}
 
 						if (!tIsError)
 						{
@@ -1730,9 +1730,9 @@
 				strMsg += "客戶聯絡人【詳細地址】不得為空！\n";
 			}			
 
-			if (tbx_cEditContactPhone.val() == "" && tbx_cEditContactMobile.val() == "") {
-				strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
-			}			
+			//if (tbx_cEditContactPhone.val() == "" && tbx_cEditContactMobile.val() == "") {
+			//	strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
+			//}			
 
 			//if (tbx_cEditContactEmail.val() == "") {
 			//	strMsg += "客戶聯絡人【Email】不得為空！\n";
@@ -1809,9 +1809,9 @@
 				strMsg += "客戶聯絡人【門牌號碼/樓層】不得為空！\n";
 			}
 
-			if (tbx_cAddContactPhone.val() == "" && tbx_cAddContactMobile.val() == "") {
-				strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
-			}
+			//if (tbx_cAddContactPhone.val() == "" && tbx_cAddContactMobile.val() == "") {
+			//	strMsg += "客戶聯絡人【電話】【手機】請至少擇一輸入！\n";
+			//}
 
 			//if (tbx_cAddContactEmail.val() == "") {
 			//	strMsg += "客戶聯絡人【Email】不得為空！\n";

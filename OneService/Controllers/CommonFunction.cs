@@ -2138,6 +2138,33 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 判斷登入人員是否有在傳入的服務團隊裡(true.有 false.否)，抓新組織
+        /// <summary>
+        /// 判斷登入人員是否有在傳入的服務團隊裡(true.有 false.否)，抓新組織
+        /// </summary>
+        /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
+        /// <param name="tDeptID">登入人員部門ID</param>
+        /// <param name="tTeamOldID">服務團隊ID</param>
+        /// <returns></returns>
+        public bool checkEmpIsExistSRTeamMapping(string tCostCenterID, string tDeptID, string tTeamOldID)
+        {
+            bool reValue = false;
+
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID));
+
+            foreach (var beansItem in beans)
+            {
+                if (tTeamOldID.Contains(beansItem.CTeamOldId))
+                {
+                    reValue = true;
+                    break;
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #region 判斷登入人員是否為該服務團隊主管
         /// <summary>
         /// 判斷登入人員是否為該服務團隊主管
@@ -2686,8 +2713,7 @@ namespace OneService.Controllers
             List<PCustomerContact> liPCContact = new List<PCustomerContact>();
 
             string tTempValue = string.Empty;
-            string ContactMobile = string.Empty;
-            string ContactStore = string.Empty;
+            string ContactMobile = string.Empty;            
 
             if (CustomerID.Substring(0, 1) == "P")
             {
@@ -2720,24 +2746,30 @@ namespace OneService.Controllers
             }
             else
             {
+                #region 註解
+                //var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
+                //                                   Where(x => (x.Disabled == null || x.Disabled != 1) && 
+                //                                              x.ContactName != "" && x.ContactCity != "" && 
+                //                                              x.ContactAddress != "" && (x.ContactPhone != "" || (x.ContactMobile != "" && x.ContactMobile != null)) &&                                                              
+                //                                              x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID).ToList();
+                #endregion
+
                 var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
-                                                   Where(x => (x.Disabled == null || x.Disabled != 1) && 
-                                                              x.ContactName != "" && x.ContactCity != "" && 
-                                                              x.ContactAddress != "" && (x.ContactPhone != "" || (x.ContactMobile != "" && x.ContactMobile != null)) &&                                                              
+                                                   Where(x => (x.Disabled == null || x.Disabled != 1) &&
+                                                              x.ContactName != "" && x.ContactCity != "" && x.ContactAddress != "" && 
                                                               x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID).ToList();
 
                 if (qPjRec != null && qPjRec.Count() > 0)
                 {
                     foreach (var prBean in qPjRec)
                     {
-                        tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "") + "|" + prBean.ContactStore.ToString();
+                        tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "");
 
                         if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人姓名、聯絡門市不重覆才要顯示
                         {
                             tTempList.Add(tTempValue);
 
-                            ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");
-                            ContactStore = string.IsNullOrEmpty(prBean.ContactStore.ToString()) ? "" : prBean.ContactStore.ToString();
+                            ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");                            
 
                             PCustomerContact prDocBean = new PCustomerContact();
 
@@ -2751,7 +2783,7 @@ namespace OneService.Controllers
                             prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
                             prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
                             prDocBean.Mobile = ContactMobile;
-                            prDocBean.Store = ContactStore;
+                            prDocBean.Store = "";
                             prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");
 
                             liPCContact.Add(prDocBean);
@@ -2772,30 +2804,34 @@ namespace OneService.Controllers
         /// <returns></returns>
         public List<PCustomerContact> findContactInfoByKeywordAndComp(string cBUKRS, string CustomerID, string ContactName)
         {
+            #region 註解
+            //var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
+            //                                   Where(x => (x.Disabled == null || x.Disabled != 1) && x.ContactName != "" && x.ContactCity != "" &&
+            //                                              x.ContactAddress != "" && (x.ContactPhone != "" || (x.ContactMobile != "" && x.ContactMobile != null)) &&
+            //                                              x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID && x.ContactName.Contains(ContactName)).ToList();
+            #endregion
+
             var qPjRec = dbProxy.CustomerContacts.OrderByDescending(x => x.ModifiedDate).
-                                               Where(x => (x.Disabled == null || x.Disabled != 1) && x.ContactName != "" && x.ContactCity != "" &&
-                                                          x.ContactAddress != "" && (x.ContactPhone != "" || (x.ContactMobile != "" && x.ContactMobile != null)) &&
+                                               Where(x => (x.Disabled == null || x.Disabled != 1) && x.ContactName != "" && x.ContactCity != "" && x.ContactAddress != "" && 
                                                           x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == CustomerID && x.ContactName.Contains(ContactName)).ToList();
 
             List<string> tTempList = new List<string>();
 
             string tTempValue = string.Empty;
-            string ContactMobile = string.Empty;
-            string ContactStore = string.Empty;
+            string ContactMobile = string.Empty;            
 
             List<PCustomerContact> liPCContact = new List<PCustomerContact>();
             if (qPjRec != null && qPjRec.Count() > 0)
             {
                 foreach (var prBean in qPjRec)
                 {
-                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "") + "|" + prBean.ContactStore.ToString();
+                    tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "");
 
                     if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人姓名、聯絡人門市不重覆才要顯示
                     {
                         tTempList.Add(tTempValue);
 
-                        ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");
-                        ContactStore = string.IsNullOrEmpty(prBean.ContactStore.ToString()) ? "" : prBean.ContactStore.ToString();
+                        ContactMobile = string.IsNullOrEmpty(prBean.ContactMobile) ? "" : prBean.ContactMobile.Trim().Replace(" ", "");                        
 
                         PCustomerContact prDocBean = new PCustomerContact();
 
@@ -2809,7 +2845,7 @@ namespace OneService.Controllers
                         prDocBean.Email = prBean.ContactEmail.Trim().Replace(" ", "");
                         prDocBean.Phone = prBean.ContactPhone.Trim().Replace(" ", "");
                         prDocBean.Mobile = ContactMobile;
-                        prDocBean.Store = ContactStore;
+                        prDocBean.Store = "";
                         prDocBean.BPMNo = prBean.BpmNo.Trim().Replace(" ", "");                        
 
                         liPCContact.Add(prDocBean);
@@ -3162,10 +3198,12 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="tSRID">SRID</param>
         /// <param name="tLoginERPID">登入者ERPID</param>
+        /// <param name="tCostCenterID">登入者成本中心ID</param>
+        /// <param name="tDeptID">部門ID</param>
         /// <param name="tIsMIS">登入者是否為MIS</param>
         /// <param name="tIsCS">登入者是否為客服人員</param>
         /// <returns></returns>
-        public bool checkIsCanEditSR(string tSRID, string tLoginERPID, bool tIsMIS, bool tIsCS)
+        public bool checkIsCanEditSR(string tSRID, string tLoginERPID, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCS)
         {
             bool reValue = false;
 
@@ -3202,24 +3240,10 @@ namespace OneService.Controllers
                     }
                     #endregion
 
-                    #region 服務團隊主管可編輯
+                    #region 服務團隊可編輯
                     if (!reValue)
                     {
-                        string tMGRERPID = string.Empty;
-                        string cTeamOldID = beanM.CTeamId;
-
-                        var beansT = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && cTeamOldID.Contains(x.CTeamOldId));
-
-                        foreach(var beanT in beansT)
-                        {
-                            tMGRERPID = findDeptMGRERPID(beanT.CTeamNewId);
-
-                            if (tLoginERPID == tMGRERPID)
-                            {
-                                reValue = true;
-                                break;
-                            }
-                        }
+                        reValue = checkEmpIsExistSRTeamMapping(tCostCenterID, tDeptID, beanM.CTeamId);
                     }
                     #endregion
 

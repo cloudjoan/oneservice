@@ -1178,8 +1178,8 @@ namespace OneService.Controllers
                 //記錄目前GUID，用來判斷更新的先後順序
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
                 
-                //判斷登入者是否可以編輯服務案件
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, pIsMIS, pIsCS);
+                //判斷登入者是否可以編輯服務案件                
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS);
 
                 #region 報修資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -3304,8 +3304,8 @@ namespace OneService.Controllers
                 //記錄目前GUID，用來判斷更新的先後順序
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
-                //判斷登入者是否可以編輯服務案件
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, pIsMIS, pIsCS);
+                //判斷登入者是否可以編輯服務案件                
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS);
 
                 #region 裝機資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -4161,7 +4161,7 @@ namespace OneService.Controllers
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                 //判斷登入者是否可以編輯服務案件
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, pIsMIS, pIsCS);
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS);
 
                 #region 裝機資訊
                 ViewBag.cSRID = beanM.CSrid;
