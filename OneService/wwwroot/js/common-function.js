@@ -148,7 +148,6 @@ function dropzoneInit(uploadUrl) {
                 }
             },
             acceptedFiles: ".jpg,.png,.jpge,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx,.zip,.rar,.7z,.csv,.mht",
-            maxFilesize: 20,
             createImageThumbnails: false,
             init: function () {
                 this.on("success", function (result) {
