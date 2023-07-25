@@ -41,7 +41,8 @@ namespace OneService.Controllers
         TSTIONEContext dbOne = new TSTIONEContext();
         TAIFContext bpmDB = new TAIFContext();
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
-        MCSWorkflowContext dbEIP = new MCSWorkflowContext();       
+        MCSWorkflowContext dbEIP = new MCSWorkflowContext();
+        WarrantyAndSpareContext dbWS = new WarrantyAndSpareContext();
 
         /// <summary>
         /// 呼叫SAPERP正式區或測試區(true.正式區 false.測試區)
@@ -2332,7 +2333,7 @@ namespace OneService.Controllers
             string reValue = string.Empty;
             string tTempCycle = string.Empty;
 
-            if (cMACycle.Trim().ToUpper() != "NA")
+            if (cMACycle.Trim().ToUpper() != "NA" && cMACycle.Trim().ToUpper() != "N/A")
             {
                 string[] AryCycle = cMACycle.Trim().Split('_');
 
@@ -2665,9 +2666,9 @@ namespace OneService.Controllers
 
         #endregion
 
-        #region 取得員工姓名
+        #region 取得員工姓名(中文)
         /// <summary>
-        /// 取得員工姓名
+        /// 取得員工姓名(中文)
         /// </summary>
         /// <param name="tERPID">員工ERPID</param>
         /// <returns></returns>
@@ -2684,7 +2685,28 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion       
+        #endregion
+
+        #region 取得員工姓名(中文+英文)
+        /// <summary>
+        /// 取得員工姓名(中文+英文)
+        /// </summary>
+        /// <param name="tERPID">員工ERPID</param>
+        /// <returns></returns>
+        public string findEmployeeCNameAndEName(string tERPID)
+        {
+            string reValue = string.Empty;
+
+            var bean = dbEIP.People.FirstOrDefault(x => x.ErpId == tERPID);
+
+            if (bean != null)
+            {
+                reValue = bean.Name2 + " " + bean.Name;
+            }
+
+            return reValue;
+        }
+        #endregion
 
         #region 查詢客戶資料By公司別(含法人和個人客戶)
         /// <summary>
@@ -3018,6 +3040,52 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 判斷是否為管理員、檢測員角色
+        /// <summary>
+        /// 判斷是否為管理員、檢測員角色
+        /// </summary>                
+        /// <param name="tAccount">人員帳號</param>        
+        /// <returns></returns>
+        public bool getIsSpareManager(string tAccount)
+        {
+            bool reValue = false;
+
+            List<SystemFormFlowParameter> tList = new List<SystemFormFlowParameter>();
+
+            string tCodeA = "A";   //A.檢測員
+            string tCodeB = "B";   //B.管理員
+
+            string[] strArray = new string[] { "SPARE", "SPARE_N", "SPARE_C", "SPARE_CHCI" };
+
+            #region 塞入檢測員和管理員
+            var beansA = dbWS.SystemFormFlowParameters.Where(x => strArray.Contains(x.CFunctionNo) && x.CNo.Substring(3, 1) == tCodeA && x.CType == "ACCOUNT").ToList();
+            var beansB = dbWS.SystemFormFlowParameters.Where(x => strArray.Contains(x.CFunctionNo) && x.CNo.Substring(3, 1) == tCodeB && x.CType == "ACCOUNT").ToList();
+
+            tList.AddRange(beansA);
+            tList.AddRange(beansB);
+            #endregion
+
+            foreach (var bean in tList)
+            {
+                foreach (string tValue in bean.CValue.ToLower().Split(';'))
+                {
+                    if (tAccount.ToLower() == tValue)
+                    {
+                        reValue = true;
+                        break;
+                    }                  
+                }
+
+                if (reValue)
+                {
+                    break;
+                }
+            }          
+
+            return reValue;
+        }
+        #endregion        
+
         #region 判斷登入者是否為批次上傳裝機備料服務通知單、合約書文件人員
         /// <summary>
         /// 判斷登入者是否為批次上傳裝機備料服務通知單、合約書文件人員
@@ -3202,8 +3270,9 @@ namespace OneService.Controllers
         /// <param name="tDeptID">部門ID</param>
         /// <param name="tIsMIS">登入者是否為MIS</param>
         /// <param name="tIsCS">登入者是否為客服人員</param>
+        /// <param name="tIsSpareManager">登入者是否為備品管理員或檢測員</param>
         /// <returns></returns>
-        public bool checkIsCanEditSR(string tSRID, string tLoginERPID, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCS)
+        public bool checkIsCanEditSR(string tSRID, string tLoginERPID, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCS, bool tIsSpareManager)
         {
             bool reValue = false;
 
@@ -3214,7 +3283,7 @@ namespace OneService.Controllers
             {
                 if (beanM.CStatus == "E0006" || beanM.CStatus == "E0015") //完修或取消不可編輯
                 {
-                    if (tIsMIS || tIsCS) //MIS or 客服人員都可編輯
+                    if (tIsMIS || tIsCS || tIsSpareManager) //MIS or 客服人員 or 備品管理員 or 檢測員都可編輯
                     {
                         return true;
                     }

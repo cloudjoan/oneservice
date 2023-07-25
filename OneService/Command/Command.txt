@@ -25,3 +25,6 @@ dotnet ef dbcontext scaffold "Server=172.31.7.26;Database=MCSWorkflow;User=eip;P
 #BI TSTI-DW
 dotnet ef dbcontext scaffold "Server=172.31.7.94;Database=BI;User=biread;Password=!QAZ2wsx" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MART_AnalyseServiceRequestLabor -f
 
+#WarrantyAndSpare
+dotnet ef dbcontext scaffold "Server=172.31.7.66;Database=WarrantyAndSpare;User=psip;Password=einck!@!NNd" Microsoft.EntityFrameworkCore.SqlServer -o Models  -t SystemFormFlowParameter -f
+

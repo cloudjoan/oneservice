@@ -73,6 +73,11 @@ namespace OneService.Controllers
         bool pIsCS = false;
 
         /// <summary>
+        /// 登入者是否為備品管理員或檢測員(true.是 false.否)
+        /// </summary>
+        bool pIsSpareManager = false;
+
+        /// <summary>
         /// 登入者是否為管理者(true.是 false.否)
         /// </summary>
         bool pIsManager = false;
@@ -1179,7 +1184,7 @@ namespace OneService.Controllers
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
                 
                 //判斷登入者是否可以編輯服務案件                
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS);
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
 
                 #region 報修資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -1195,6 +1200,7 @@ namespace OneService.Controllers
                 ViewBag.cIsSecondFix = beanM.CIsSecondFix;
                 ViewBag.cIsInternalWork = beanM.CIsInternalWork;
                 ViewBag.pStatus = beanM.CStatus;
+                ViewBag.CreatedUserName = beanM.CreatedUserName;
 
                 ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                 #endregion
@@ -1404,7 +1410,8 @@ namespace OneService.Controllers
                 ViewBag.cSRProcessWay = "";     //請選擇
                 ViewBag.cDelayReason = "";      //空值
                 ViewBag.cIsSecondFix = "";     //請選擇
-                ViewBag.cIsInternalWork = "N"; 
+                ViewBag.cIsInternalWork = "N";
+                ViewBag.CreatedUserName = "";
             }
             #endregion
 
@@ -3305,7 +3312,7 @@ namespace OneService.Controllers
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                 //判斷登入者是否可以編輯服務案件                
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS);
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
 
                 #region 裝機資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -3319,6 +3326,7 @@ namespace OneService.Controllers
                 ViewBag.cSalesNo = beanM.CSalesNo;
                 ViewBag.cShipmentNo = beanM.CShipmentNo;
                 ViewBag.pStatus = beanM.CStatus;
+                ViewBag.CreatedUserName = beanM.CreatedUserName;
 
                 ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                 #endregion                
@@ -3390,6 +3398,7 @@ namespace OneService.Controllers
                 ViewBag.cDelayReason = "";      //空值
                 ViewBag.cSalesNo = "";          //空值
                 ViewBag.cShipmentNo = "";       //空值
+                ViewBag.CreatedUserName = "";
             }
             #endregion
 
@@ -4161,7 +4170,7 @@ namespace OneService.Controllers
                 ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                 //判斷登入者是否可以編輯服務案件
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS);
+                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
 
                 #region 裝機資訊
                 ViewBag.cSRID = beanM.CSrid;
@@ -4174,6 +4183,7 @@ namespace OneService.Controllers
                 ViewBag.cDelayReason = beanM.CDelayReason;
                 ViewBag.cContractID = beanM.CContractId;
                 ViewBag.pStatus = beanM.CStatus;
+                ViewBag.CreatedUserName = beanM.CreatedUserName;
 
                 ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                 #endregion                
@@ -4229,7 +4239,8 @@ namespace OneService.Controllers
                 ViewBag.cSRID = "";
                 ViewBag.pStatus = "E0001";      //新建
                 ViewBag.cDelayReason = "";      //空值
-                ViewBag.cContractID = "";       //空值                
+                ViewBag.cContractID = "";       //空值
+                ViewBag.CreatedUserName = "";
             }
             #endregion
 
@@ -7239,6 +7250,7 @@ namespace OneService.Controllers
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
             pIsCSManager = CMF.getIsCustomerServiceManager(pLoginAccount, pSysOperationID);
             pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
+            pIsSpareManager = CMF.getIsSpareManager(pLoginAccount);
             pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
             pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
             pIsExeMaintainPerson = CMF.getIsExeMaintainPerson(pLoginAccount, pOperationID_QueryBatchMaintain);
@@ -7246,6 +7258,7 @@ namespace OneService.Controllers
             ViewBag.pIsMIS = pIsMIS;
             ViewBag.pIsCSManager = pIsCSManager;
             ViewBag.pIsCS = pIsCS;
+            ViewBag.pIsSpareManager = pIsSpareManager;
             ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
             ViewBag.pIsExePerson = pIsExePerson;
             ViewBag.pIsExeMaintainPerson = pIsExeMaintainPerson;
@@ -8292,6 +8305,48 @@ namespace OneService.Controllers
             #endregion
 
             return Json(beanOne);
+        }
+        #endregion
+
+        #region 檢查【姓名和ERPID】是否不一致
+        /// <summary>
+        /// 檢查【姓名和ERPID】是否不一致
+        /// </summary>
+        /// <param name="cERPID">ERPID</param>
+        /// <param name="cEName">中英文姓名</param>
+        /// <param name="tType">M.主要工程師 S.業務人員 ASS.祕書人員</param>
+        /// <returns></returns>
+        public IActionResult checkPersonIsMatch(string cERPID, string cEName, string tType)
+        {
+            string reValue = string.Empty;
+            string title = string.Empty;
+
+            switch(tType)
+            {
+                case "M":
+                    title = "主要工程師";
+                    break;
+                case "S":
+                    title = "業務";
+                    break;
+                case "ASS":
+                    title = "祕書";
+                    break;
+            }
+
+            cERPID = string.IsNullOrEmpty(cERPID) ? "" : cERPID;
+
+            if (cERPID != "")
+            {
+                string tName = CMF.findEmployeeCNameAndEName(cERPID);
+
+                if (tName.ToLower() != cEName.Trim().ToLower())
+                {
+                    reValue = title + "【" + cERPID + "】和姓名【" + cEName + "】不一致，請輸入關鍵字後再重新選取！\n";
+                }
+            }
+
+            return Json(reValue);
         }
         #endregion
 

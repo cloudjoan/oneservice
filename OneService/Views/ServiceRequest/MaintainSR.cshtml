@@ -670,6 +670,15 @@
 				Msg += "您未下拉選取【業務祕書】，請輸入關鍵字後再重新選取！\n";
 			}
 
+			//提交前【主要工程師姓名和ERPID】是否不一致
+			Msg += checkPersonIsMatch("M");
+
+			//提交前【業務人員姓名和ERPID】是否不一致
+			Msg += checkPersonIsMatch("S");
+
+			//提交前【業務祕書姓名和ERPID】是否不一致
+			Msg += checkPersonIsMatch("ASS");
+
 			//【聯絡人窗口資訊】明細檢查
 			Msg += checkDetail_CO();			
 
@@ -688,6 +697,60 @@
 			}
 
 			return true;
+		}
+
+		//提交前【姓名和ERPID】是否不一致
+		//tType：M.主要工程師 S.業務人員 ASS.祕書人員
+		function checkPersonIsMatch(tType)
+		{
+			var Msg = "";
+			var cERPID = "";
+			var cEName = "";
+
+			var tbx_cMainEngineerName = $("#tbx_cMainEngineerName");	//主要工程師
+			var hid_cMainEngineerID = $("#hid_cMainEngineerID");		//主要工程師ERPID		
+			var tbx_cSalesName = $("#tbx_cSalesName");				//業務人員
+			var hid_cSalesID = $("#hid_cSalesID");					//業務人員ERPID
+			var tbx_cSecretaryName = $("#tbx_cSecretaryName");		//業務祕書
+			var hid_cSecretaryID = $("#hid_cSecretaryID");			//業務祕書ERPID
+
+			if (tType == "M") //主要工程師
+			{
+				cERPID = hid_cMainEngineerID.val();
+				cEName = tbx_cMainEngineerName.val();
+			}
+			else if (tType == "S") //業務人員
+			{
+				cERPID = hid_cSalesID.val();
+				cEName = tbx_cSalesName.val();
+			}
+			else if (tType == "ASS") //業務祕書
+			{
+				cERPID = hid_cSecretaryID.val();
+				cEName = tbx_cSecretaryName.val();
+			}
+
+			if (cEName != "")
+			{
+				$.ajax({
+					url: '@Url.Action("checkPersonIsMatch", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					async: false,
+					data: { 
+						cERPID: cERPID, 
+						cEName: cEName,
+						tType: tType
+					},
+					success: function (result) {
+						if (result != "") {
+							Msg = result;
+						}
+					}
+				})
+			}
+
+			return Msg;			 
 		}
 
 		//提交前【聯絡人窗口資訊】明細檢查
@@ -2538,7 +2601,13 @@
 							<div class="col-lg-4">
 							<input type="text" id="tbx_CreatedDate" name="tbx_CreatedDate" class="form-control" placeholder="建立日期" value="@ViewBag.CreatedDate" readonly>
 							</div>
-						</div>						
+						</div>		
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">派單人員</label>
+							<div class="col-lg-4">
+								<label class="col-form-label">@ViewBag.CreatedUserName</label>
+							</div>
+						</div>
 
 						<!--客戶聯絡窗口資訊-->
 						<div class="col-lg-12">

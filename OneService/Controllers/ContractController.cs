@@ -1124,6 +1124,11 @@ namespace OneService.Controllers
                                                          (string.IsNullOrEmpty(cIsMainEngineer) ? true : x.CIsMainEngineer == cIsMainEngineer));
 
             #region 取得查詢所有出來的文件編號之合約主檔
+            if (cContractID != "")
+            {
+                tContractIDList.Add(cContractID);
+            }
+
             foreach (var bean in beans)
             {
                 if (!tContractIDList.Contains(bean.CContractId))
