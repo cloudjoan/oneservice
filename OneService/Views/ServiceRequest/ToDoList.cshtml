@@ -249,7 +249,10 @@
 											{
 												if (CheckInfo[10].IndexOf(tERPID) >= 0) //【為技術主管但非E0007(技術支援升級)】才跳過
 												{
-													continue;
+													if (CheckInfo[7] != tERPID) //非【主要工程師】才跳過
+													{
+														continue;
+													}
 												}
 											}											
 										}

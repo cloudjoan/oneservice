@@ -1956,7 +1956,7 @@ namespace OneService.Controllers
 
             if (beanM != null)
             {
-                reValue = beanM.CContractReport.Trim();
+                reValue = string.IsNullOrEmpty(beanM.CContractReport) ? "" : beanM.CContractReport.Trim();
             }
 
             return reValue;

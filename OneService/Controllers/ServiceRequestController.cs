@@ -699,6 +699,9 @@ namespace OneService.Controllers
 
             #region 狀態
             List<SelectListItem> ListStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode);
+
+            ListStatus.Add(new SelectListItem("UNDONE_未完成", "UNDONE"));
+            ListStatus.Add(new SelectListItem("ALLDONE_已完成", "ALLDONE"));
             ViewBag.ddl_cStatus = ListStatus;
             #endregion
 
@@ -842,7 +845,20 @@ namespace OneService.Controllers
 
                 if (ttStrItem != "")
                 {
-                    ttWhere += "AND M.cStatus IN (" + ttStrItem + ") " + Environment.NewLine;
+                    if (ttStrItem.IndexOf("UNDONE") != -1) //未完成
+                    {
+                        ttWhere += "AND M.cStatus NOT IN ('E0006','E0010','E0017','E0015') " + Environment.NewLine;
+                    }
+
+                    if (ttStrItem.IndexOf("ALLDONE") != -1) //已完成
+                    {
+                        ttWhere += "AND M.cStatus IN ('E0006','E0010','E0017') " + Environment.NewLine;
+                    }
+
+                    if (ttStrItem.IndexOf("UNDONE") == -1 && ttStrItem.IndexOf("ALLDONE") == -1)
+                    {
+                        ttWhere += "AND M.cStatus IN (" + ttStrItem + ") " + Environment.NewLine;
+                    }
                 }
             }
             #endregion
