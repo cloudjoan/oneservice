@@ -1976,12 +1976,13 @@ namespace OneService.Controllers
         /// <param name="tIsMIS">登入者是否為MIS</param>
         /// <param name="tIsCSManager">登入者是否為客服主管</param>
         /// <param name="tIsDCC">登入者是否為文管中心人員</param>
+        /// <param name="tIsContractManager">登入者是否為合約主管</param>
         /// <param name="cContractID">文件編號</param>
         /// <param name="tType">MAIN.主數據(含下包) ENG.工程師明細 OBJ.合約標的</param>
         /// <returns></returns>
-        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, bool tIsDCC, string cContractID, string tType)
+        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, bool tIsDCC, bool tIsContractManager, string cContractID, string tType)
         {
-            bool reValue = checkIsCanEditContracInfo(pOperationID_Contract, tLoginERPID, tLoginAccout, tBUKRS, tCostCenterID, tDeptID, tIsMIS, tIsCSManager, tIsDCC, cContractID, tType, null);
+            bool reValue = checkIsCanEditContracInfo(pOperationID_Contract, tLoginERPID, tLoginAccout, tBUKRS, tCostCenterID, tDeptID, tIsMIS, tIsCSManager, tIsDCC, tIsContractManager, cContractID, tType, null);
 
             return reValue;
         }
@@ -2000,18 +2001,19 @@ namespace OneService.Controllers
         /// <param name="tIsMIS">登入者是否為MIS</param>
         /// <param name="tIsCSManager">登入者是否為客服主管</param>
         /// <param name="tIsDCC">登入者是否為文管中心人員</param>
+        /// <param name="tIsContractManager">登入者是否為合約主管</param>
         /// <param name="cContractID">文件編號</param>
         /// <param name="tType">MAIN.主數據(含下包) ENG.工程師明細 OBJ.合約標的</param>
         /// <param name="tMainList">合約主檔清單</param>
         /// <returns></returns>
-        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, bool tIsDCC, string cContractID, string tType, List<TbOneContractMain> tMainList)
+        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, bool tIsDCC, bool tIsContractManager, string cContractID, string tType, List<TbOneContractMain> tMainList)
         {
             bool reValue = false;
             bool tIsOldContractID = checkIsOldContractID(pOperationID_Contract, cContractID.Trim()); //判斷是否為舊文件編號(true.舊組織 false.新組織)
 
             TbOneContractMain beanM = new TbOneContractMain();
 
-            if (tIsMIS || tIsCSManager || tIsDCC)
+            if (tIsMIS || tIsCSManager || tIsDCC || tIsContractManager)
             {
                 reValue = true;
             }
@@ -3035,6 +3037,22 @@ namespace OneService.Controllers
         public bool getIsDocumentCenter(string LoginAccount, string tSysOperationID)
         {
             bool reValue = getParaAuthority(LoginAccount, tSysOperationID, "ALL", "DOCUMENTCENTER");           
+
+            return reValue;
+        }
+        #endregion
+
+        #region 登入者是否為合約主管(true.是 false.否)
+        /// <summary>
+        /// 登入者是否為合約主管(true.是 false.否)
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+        /// <param name="tBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <returns></returns>
+        public bool getContractManager(string LoginAccount, string tSysOperationID, string tBUKRS)
+        {
+            bool reValue = getParaAuthority(LoginAccount, tSysOperationID, tBUKRS, "CONTRACTManager");
 
             return reValue;
         }
