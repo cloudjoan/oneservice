@@ -2668,6 +2668,30 @@ namespace OneService.Controllers
 
         #endregion
 
+        #region 取得ERPID(傳入英文姓名)
+        /// <summary>
+        /// 取得ERPID(傳入英文姓名)
+        /// </summary>
+        /// <param name="keyword">英文姓名</param>        
+        /// <returns></returns>
+        public string findEmployeeERPIDByEName(string keyword)
+        {
+            string reValue = string.Empty;
+
+            if (keyword != "")
+            {
+                var bean = dbEIP.People.FirstOrDefault(x => (x.LeaveDate == null && x.LeaveReason == null) && x.Name == keyword.Trim());
+
+                if (bean != null)
+                {
+                    reValue = bean.ErpId.Trim();
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #region 取得員工姓名(中文)
         /// <summary>
         /// 取得員工姓名(中文)
@@ -3317,6 +3341,24 @@ namespace OneService.Controllers
                 }
                 else
                 {
+                    #region 派單人員可編輯
+                    if (beanM.CreatedUserName != null)
+                    {
+                        string[] AryUser = beanM.CreatedUserName.Split(' ');
+                        string cCreateUserERPID = string.Empty;
+
+                        if (AryUser.Length == 2)
+                        {
+                            cCreateUserERPID = findEmployeeERPIDByEName(AryUser[1]);                           
+                        }
+
+                        if (cCreateUserERPID == tLoginERPID)
+                        {
+                            reValue = true;
+                        }
+                    }
+                    #endregion
+
                     #region 主要工程師可編輯
                     if (beanM.CMainEngineerId != null)
                     {
