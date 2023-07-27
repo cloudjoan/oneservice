@@ -320,7 +320,7 @@
 		//要略過的清單(button)
 		function checkButtonSkipList(tID)
 		{
-			var ArrayList = ["btn_ShowHistoryLog", "btn_showRepairInfo", "btn_clearRepairInfo", "btn_addRepairInfo", "btn_addContactInfo", "btn_editRepairInfo", "btn_editContactInfo", "btn_pjTeam", "btn_pjAssEngineer", "btn_pjTechManager"];
+			var ArrayList = ["btn_ShowHistoryLog", "btn_showRepairInfo", "btn_clearRepairInfo", "btn_addRepairInfo", "btn_addContactInfo", "btn_editRepairInfo", "btn_editContactInfo", "btn_CopyContactInfo", "btn_pjTeam", "btn_pjAssEngineer", "btn_pjTechManager"];
 			return SkiptList(tID, ArrayList);
 		}		
 
@@ -3017,6 +3017,82 @@
 		}
 		//-----↑↑↑↑↑報修類別 ↑↑↑↑↑-----
 
+		//-----↓↓↓↓↓同報修人窗口資訊 ↓↓↓↓↓-----
+		function CopyRepairInfo(tableName)
+		{
+			var tCount = getCountDetail_CO(tableName);
+
+			if (tCount == 0) //若沒有存在就新增
+			{
+				AddDetailItem_Contact(tableName)
+			}
+
+			CopyToDetail_CO(tableName);
+		}
+
+		//判斷【聯絡人窗口資訊】明細目前有效的有幾筆
+		function getCountDetail_CO(tableName) {			
+			var tCount = 0; //記錄目前有效的明細			
+			var trs = $("#" + tableName + " tr");			
+
+			$.each(trs, function (i, itr) {
+				var tds = $(itr).find('td');
+				var objContactName = tds.eq(1).children().eq(0);	//姓名(聯絡人)
+				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
+				
+				if (objContactName.val() != undefined) {                    
+					if (objDisabled.val() == "0"){
+						tCount++;
+					}
+                }				
+			})	
+			
+			return tCount;			
+		}
+
+		//新增或更新【聯絡人窗口資訊】同報修人(只更新第一筆)
+		function CopyToDetail_CO(tableName) {
+			var tbx_cRepairName = $("#tbx_cRepairName");					//姓名(報修人)
+			var tbx_cRepairAddress = $("#tbx_cRepairAddress");				//地址(報修人)
+			var tbx_cRepairPhone = $("#tbx_cRepairPhone");					//電話(報修人)
+			var tbx_cRepairMobile = $("#tbx_cRepairMobile");					//手機(報修人)
+			var tbx_cRepairEmail	= $("#tbx_cRepairEmail");					//Email(報修人)
+			var tCount = 0; //記錄目前有效的明細
+			
+			var trs = $("#" + tableName + " tr");			
+
+			$.each(trs, function (i, itr) {
+				var tds = $(itr).find('td');
+				var tIsError = false;								//記錄是否有錯誤
+				var objRowNumber = tds.eq(0).children();			//項次
+				var objContactName = tds.eq(1).children().eq(0);	//姓名(聯絡人)
+				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)				
+				var objContactAddress = tds.eq(2).children();		//地址(聯絡人)
+				var objContactPhone = tds.eq(3).children();		//電話(聯絡人)
+				var objContactMoblie = tds.eq(4).children();		//手機(聯絡人)
+				var objContactEmail = tds.eq(5).children();		//E-Mail(聯絡人)
+
+				if (objContactName.val() != undefined) {                    
+					if (objDisabled.val() == "0"){
+						objContactName.val(tbx_cRepairName.val());
+						objContactAddress.val(tbx_cRepairAddress.val());
+						objContactPhone.val(tbx_cRepairPhone.val());
+						objContactMoblie.val(tbx_cRepairMobile.val());
+						objContactEmail.val(tbx_cRepairEmail.val());
+
+						tCount++;	
+						return false;
+					}
+                }				
+			})	
+			
+			if (tCount == 0)
+			{
+				
+			}			
+		}
+		//-----↑↑↑↑↑同報修人窗口資訊 ↑↑↑↑↑-----
+
 		//-----↓↓↓↓↓客戶聯絡窗口資訊 ↓↓↓↓↓-----
 		//新增明細
 		function AddDetailItem_Contact(tableName) {
@@ -3052,32 +3128,34 @@
 		
 		//組姓名(聯絡人)
 		function SetContactName() {
-			var reValue = "<td><input type='text' name='tbx_COcContactName' id='tbx_COcContactName" + trContactNoCount + "' onclick=showContactInfo('tbx_COcContactName" + trContactNoCount + "'); class='form-control ContactName' style='width:200px;' placeholder='請點擊我查詢姓名(聯絡人)' readonly>";					
-			reValue += "<input type='hidden' name='hid_COcDisabled' id='hid_COcDisabled" + trContactNoCount + "' value='0'></td>";
+			var reValue = "<td><input type='text' name='tbx_COcContactName' id='tbx_COcContactName" + trContactNoCount + "'  class='form-control ContactName' style='width:200px;'>";					
+			reValue += "<input type='hidden' name='hid_COcDisabled' id='hid_COcDisabled" + trContactNoCount + "' value='0'>";
+			reValue += "<button type='button' name='btn_COcContactName' id='btn_COcContactName" + trContactNoCount + "' class='btn btn-primary' onclick=showContactInfo('tbx_COcContactName" + trContactNoCount + "'); title='請點擊我查詢姓名(聯絡人)'><i class='fa fa-search'></i></button></td>";
+			
 			return reValue;
 		}			
 
 		//組地址(聯絡人)
 		function SetContactAddress() {			
-			var reValue = "<td><textarea rows='3' class='form-control ContactAddress' style='width:200px;' placeholder='地址(聯絡人)' name='tbx_COcContactAddress' id='tbx_COcContactAddress" + trContactNoCount + "' disabled></textarea></td>";
+			var reValue = "<td><textarea rows='3' class='form-control ContactAddress' style='width:200px;' placeholder='地址(聯絡人)' name='tbx_COcContactAddress' id='tbx_COcContactAddress" + trContactNoCount + "'></textarea></td>";
 			return reValue;
 		}
 
 		//組電話(聯絡人)
 		function SetContactPhone() {
-			var reValue = "<td><input type='text' name='tbx_COcContactPhone' id='tbx_COcContactPhone" + trContactNoCount + "' class='form-control ContactPhone' style='width:200px;' placeholder='電話(聯絡人)' disabled></td>";
+			var reValue = "<td><input type='text' name='tbx_COcContactPhone' id='tbx_COcContactPhone" + trContactNoCount + "' class='form-control ContactPhone' style='width:200px;' placeholder='電話(聯絡人)'></td>";
 			return reValue;
 		}
 
 		//組手機(聯絡人)
 		function SetContactMobile() {
-			var reValue = "<td><input type='text' name='tbx_COcContactMobile' id='tbx_COcContactMobile" + trContactNoCount + "' class='form-control ContactMobile' style='width:200px;' placeholder='手機(聯絡人)' disabled></td>";
+			var reValue = "<td><input type='text' name='tbx_COcContactMobile' id='tbx_COcContactMobile" + trContactNoCount + "' class='form-control ContactMobile' style='width:200px;' placeholder='手機(聯絡人)'></td>";
 			return reValue;
 		}
 
 		//組E-Mail(聯絡人)
 		function SetContactEmail() {
-			var reValue = "<td><input type='text' name='tbx_COcContactEmail' id='tbx_COcContactEmail" + trContactNoCount + "' class='form-control ContactEmail' style='width:350px;' placeholder='E-Mail(聯絡人)' disabled></td>";
+			var reValue = "<td><input type='text' name='tbx_COcContactEmail' id='tbx_COcContactEmail" + trContactNoCount + "' class='form-control ContactEmail' style='width:350px;' placeholder='E-Mail(聯絡人)'></td>";
 			return reValue;
 		}
 
@@ -4457,7 +4535,7 @@
 									<div class="form-group row">
 										<label class="col-lg-2 col-form-label">*姓名(報修人)</label>
 										<div class="col-lg-4">
-											<input type="text" id="tbx_cRepairName" name="tbx_cRepairName" class="form-control RepairName" onclick="showContactInfo('tbx_cRepairName');" placeholder="請點擊我查詢姓名(報修人)" value="@ViewBag.cRepairName" title="@ViewBag.cRepairName" readonly disabled>
+											<input type="text" id="tbx_cRepairName" name="tbx_cRepairName" class="form-control RepairName" onclick="showContactInfo('tbx_cRepairName');" placeholder="請點擊我查詢姓名(報修人)" value="@ViewBag.cRepairName" title="@ViewBag.cRepairName" disabled readonly>
 										</div>
 										<label class="col-lg-2 col-form-label">*地址(報修人)</label>
 										<div class="col-lg-4">
@@ -4489,8 +4567,8 @@
 							<div class="ibox ">
 								<div class="ibox-title">
 									<h5>
-										*客戶聯絡窗口資訊
-										<button type="button" class="btn btn-success" onclick="AddDetailItem_Contact('tableCO');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>										
+										*客戶聯絡窗口資訊										
+										<button type="button" class="btn btn-success" onclick="AddDetailItem_Contact('tableCO');"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
 										<button id="btn_addContactInfo" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_AddContactInfo_onclick();">
 											<i class="fa fa-user-plus" style="margin-right: 5px;"></i>
 											<span style="font-weight: bold; margin: 5px;">新增窗口</span>
@@ -4498,6 +4576,10 @@
 										<button id="btn_editContactInfo" class="btn btn-primary" type="button" style="margin-left: 10px;">
 											<i class="fa fa-pencil" style="margin-right: 5px;"></i>
 											<span style="font-weight: bold; margin: 5px;">編輯窗口</span>
+										</button>
+										<button id="btn_CopyContactInfo" class="btn btn-info" type="button" style="margin-left: 10px;" onclick="CopyRepairInfo('tableCO');">
+											<i class="fa fa-clipboard" style="margin-right: 5px;"></i>
+											<span style="font-weight: bold; margin: 5px;">同報修人</span>
 										</button>
 									</h5>
 									<div class="ibox-tools">
@@ -4536,20 +4618,21 @@
 																						<label name='lbl_CORowNumber' style='font-size:14pt'>@(count)</label>
 																					</td>	
 																					<td>
-																						<input type='text' name='tbx_COcContactName' @("id=tbx_COcContactName" + count)  onclick="showContactInfo('tbx_COcContactName' + @(count));" class='form-control ContactName' style='width:200px;' value="@bean.CContactName" title="@bean.CContactName" disabled readonly>
+																						<input type='text' name='tbx_COcContactName' @("id=tbx_COcContactName" + count) class='form-control ContactName' style='width:200px;' value="@bean.CContactName" title="@bean.CContactName">
 																						<input type='hidden' name='hid_COcDisabled' @("id=hid_COcDisabled" + count) value=@bean.Disabled>
+																						<button type='button' name='btn_COcContactName' @("id=btn_COcContactName" + count) class='btn btn-primary' onclick="showContactInfo('tbx_COcContactName' + @(count));" title='請點擊我查詢姓名(聯絡人)'><i class='fa fa-search'></i></button>
 																					</td>															
 																					<td>
-																						<textarea rows='3' name='tbx_COcContactAddress' @("id=tbx_COcContactAddress" + count) class='form-control ContactAddress' style='width:200px;' title="@bean.CContactAddress" disabled readonly>@bean.CContactAddress</textarea>
+																						<textarea rows='3' name='tbx_COcContactAddress' @("id=tbx_COcContactAddress" + count) class='form-control ContactAddress' style='width:200px;' title="@bean.CContactAddress">@bean.CContactAddress</textarea>
 																					</td>
 																					<td>
-																						<input type='text' name='tbx_COcContactPhone' @("id=tbx_COcContactPhone" + count) class='form-control ContactPhone' style='width:200px;' value="@bean.CContactPhone" title="@bean.CContactPhone" disabled readonly>
+																						<input type='text' name='tbx_COcContactPhone' @("id=tbx_COcContactPhone" + count) class='form-control ContactPhone' style='width:200px;' value="@bean.CContactPhone" title="@bean.CContactPhone">
 																					</td>
 																					<td>
-																						<input type='text' name='tbx_COcContactMobile' @("id=tbx_COcContactMobile" + count) class='form-control ContactMobile' style='width:200px;' value="@bean.CContactMobile" title="@bean.CContactMobile" disabled readonly>
+																						<input type='text' name='tbx_COcContactMobile' @("id=tbx_COcContactMobile" + count) class='form-control ContactMobile' style='width:200px;' value="@bean.CContactMobile" title="@bean.CContactMobile">
 																					</td>
 																					<td>
-																						<input type='text' name='tbx_COcContactEmail' @("id=tbx_COcContactEmail" + count) class='form-control ContactEmail' style='width:350px;' value="@bean.CContactEmail" title="@bean.CContactEmail" disabled readonly>
+																						<input type='text' name='tbx_COcContactEmail' @("id=tbx_COcContactEmail" + count) class='form-control ContactEmail' style='width:350px;' value="@bean.CContactEmail" title="@bean.CContactEmail">
 																					</td>
 																					<td>
 																						<button name="btn_ContactDel" class='btn btn-danger' type='button' onclick="DelDetailItem_Contact('trContactNo@(count)', '@(count)')" ;><i class='fa fa-trash'></i></button>																		
@@ -4591,20 +4674,21 @@
 																						<label name='lbl_CORowNumber' style='font-size:14pt'>@(count)</label>
 																					</td>	
 																					<td>
-																						<input type='text' name='tbx_COcContactName' @("id=tbx_COcContactName" + count)  onclick="showContactInfo('tbx_COcContactName' + @(count));" class='form-control ContactName' style='width:200px;' value="@bean.CContactName" title="@bean.CContactName" disabled readonly>
+																						<input type='text' name='tbx_COcContactName' @("id=tbx_COcContactName" + count) class='form-control ContactName' style='width:200px;' value="@bean.CContactName" title="@bean.CContactName">
 																						<input type='hidden' name='hid_COcDisabled' @("id=hid_COcDisabled" + count) value=@bean.Disabled>
+																						<button type='button' name='btn_COcContactName' @("id=btn_COcContactName" + count) class='btn btn-primary' onclick="showContactInfo('tbx_COcContactName' + @(count));" title='請點擊我查詢姓名(聯絡人)'><i class='fa fa-search'></i></button>
 																					</td>															
 																					<td>
-																						<textarea rows='3' name='tbx_COcContactAddress' @("id=tbx_COcContactAddress" + count) class='form-control ContactAddress' style='width:200px;' title="@bean.CContactAddress" disabled readonly>@bean.CContactAddress</textarea>
+																						<textarea rows='3' name='tbx_COcContactAddress' @("id=tbx_COcContactAddress" + count) class='form-control ContactAddress' style='width:200px;' title="@bean.CContactAddress">@bean.CContactAddress</textarea>
 																					</td>
 																					<td>
-																						<input type='text' name='tbx_COcContactPhone' @("id=tbx_COcContactPhone" + count) class='form-control ContactPhone' style='width:200px;' value="@bean.CContactPhone" title="@bean.CContactPhone" disabled readonly>
+																						<input type='text' name='tbx_COcContactPhone' @("id=tbx_COcContactPhone" + count) class='form-control ContactPhone' style='width:200px;' value="@bean.CContactPhone" title="@bean.CContactPhone">
 																					</td>
 																					<td>
-																						<input type='text' name='tbx_COcContactMobile' @("id=tbx_COcContactMobile" + count) class='form-control ContactMobile' style='width:200px;' value="@bean.CContactMobile" title="@bean.CContactMobile" disabled readonly>
+																						<input type='text' name='tbx_COcContactMobile' @("id=tbx_COcContactMobile" + count) class='form-control ContactMobile' style='width:200px;' value="@bean.CContactMobile" title="@bean.CContactMobile">
 																					</td>
 																					<td>
-																						<input type='text' name='tbx_COcContactEmail' @("id=tbx_COcContactEmail" + count) class='form-control ContactEmail' style='width:350px;' value="@bean.CContactEmail" title="@bean.CContactEmail" disabled readonly>
+																						<input type='text' name='tbx_COcContactEmail' @("id=tbx_COcContactEmail" + count) class='form-control ContactEmail' style='width:350px;' value="@bean.CContactEmail" title="@bean.CContactEmail">
 																					</td>
 																					<td>
 																						<button name="btn_ContactDel" class='btn btn-danger' type='button' onclick="DelDetailItem_Contact('trContactNo@(count)', '@(count)')" ;><i class='fa fa-trash'></i></button>																		
@@ -5250,10 +5334,7 @@
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="modal-body">
-					<div  class="form-group row">
-						<label class="col-lg-12 col-form-label" style="color:blue; font-size:large;">提醒：聯絡人是透過One Service系統建立才可以編輯/刪除</label>
-					</div>
+				<div class="modal-body">					
 					<div class="form-group row">						
 						<label class="col-lg-2 col-form-label">聯絡人姓名</label>
 						<div class="input-group col-sm-10 col-lg-6" style="height: 36px;">							

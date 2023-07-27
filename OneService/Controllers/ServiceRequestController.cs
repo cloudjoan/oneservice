@@ -8092,9 +8092,7 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult AjaxfindContactByKeyword(string cBUKRS, string cCustomerID,  string keyword)
         {
-            object contentObj = null;
-
-            string tBpmNo = "GenerallySR";
+            object contentObj = null;          
 
             if (cCustomerID.Substring(0, 1) == "P") //個人客戶
             {
@@ -8103,7 +8101,7 @@ namespace OneService.Controllers
             else //法人客戶
             {
                 contentObj = dbProxy.CustomerContacts.Where(x => (x.Disabled == null || x.Disabled != 1) &&
-                                                               x.BpmNo == tBpmNo && x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName.Contains(keyword));
+                                                              x.Knb1Bukrs == cBUKRS && x.Kna1Kunnr == cCustomerID && x.ContactName.Contains(keyword));
             }
 
             return Json(contentObj);

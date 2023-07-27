@@ -666,7 +666,8 @@
 
 			var Msg = "";
 			var cSRID = $("input[name='hid_cSRID']").val();			//SRID
-			var ddl_cStatus = $("#ddl_cStatus");					//狀態
+			var cNowStatus = $("#hid_cNowStatus").val();			//目前狀態
+			var ddl_cStatus = $("#ddl_cStatus");					//下拉後的狀態
 			var tbx_cCustomerName = $("#tbx_cCustomerName");			//客戶名稱	
 			var hid_cCustomerID = $("#hid_cCustomerID");			//客戶ID							
 			var tbx_cDesc = $("#tbx_cDesc");						//說明
@@ -692,8 +693,11 @@
 			{
 				if (cSRID != "")
 				{
-					if (ddl_cStatus.val() == "E0001") {
-						Msg += "【狀態】不得為新建，請重新選擇！\n";
+					if (cNowStatus != "E0001")
+					{
+						if (ddl_cStatus.val() == "E0001") {						
+							Msg += "【狀態】不得為新建，請重新選擇！\n";
+						}
 					}
 				}
 			}
@@ -2874,6 +2878,8 @@
 							<input type="hidden" id="hid_cLoginUser_IsManager" name="hid_cLoginUser_IsManager" value="@ViewBag.pIsManager">
 							<!--程式作業編號檔系統ID(裝機服務)-->
 							<input type="hidden" id="hid_OperationID" name="hid_OperationID" value="@ViewBag.pOperationID">
+							<!--目前狀態-->
+							<input type="hidden" id="hid_cNowStatus" name="hid_cNowStatus" value="@ViewBag.pStatus">
 							<label class="col-lg-2 col-form-label">*狀態</label>
 							<div class="col-lg-4">
 								<select asp-for="ddl_cStatus" asp-items="Model.ListStatus" class="form-control Status" disabled="@(ViewBag.cSRID == "" ? false : true)" ></select>
