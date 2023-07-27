@@ -959,7 +959,7 @@ namespace OneService.Models
                     .HasColumnName("cSRID");
 
                 entity.Property(e => e.CSubContractId)
-                    .HasMaxLength(50)
+                    .HasMaxLength(255)
                     .HasColumnName("cSubContractID");
 
                 entity.Property(e => e.CUsed)

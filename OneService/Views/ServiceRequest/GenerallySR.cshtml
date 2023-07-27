@@ -139,6 +139,7 @@
 				ddl_cStatus.prop('disabled', true);
 
 				$("#btn_submit").show();
+				$("#btn_submitUP").show();
 				$("#btn_Edit").hide();
 				$("#btn_ShowHistoryLog").hide();				
 			}
@@ -150,6 +151,7 @@
 				$("#btn_ShowHistoryLog").prop('disabled', false);				
 
 				$("#btn_submit").hide();
+				$("#btn_submitUP").hide();
 
 				if (pIsCanEditSR == "True")
 				{
@@ -752,6 +754,7 @@
 						if (result == "CHANGE") {
 							alert("【資料已被其他人異動】，請關閉頁面後再重新登入此表單！！");
 							$("#waitingImg").hide();
+							$("#waitingImgUP").hide();
 							event.returnValue = false;
 						}
 						else {
@@ -762,6 +765,7 @@
 					else {
 						alert("產生SRID失敗！");
 						$("#waitingImg").hide();
+						$("#waitingImgUP").hide();
 						event.returnValue = false;
 					}
 				}
@@ -772,7 +776,8 @@
 		function EditSRID()
 		{
 			$("#btn_Edit").hide();
-			$("#btn_submit").show();			
+			$("#btn_submit").show();
+			$("#btn_submitUP").show();
 
 			disabledPopup("#form1", false);
 			getFaultInfo(true);
@@ -784,7 +789,9 @@
 		function checkBeforeSend() {
 
 			$("#btn_submit").hide();
+			$("#btn_submitUP").hide();
 			$("#waitingImg").show();
+			$("#waitingImgUP").show();
 
 			var Msg = "";
 			var cSRID = $("input[name='hid_cSRID']").val();			//SRID
@@ -934,7 +941,9 @@
 				alert(Msg);
 				
 				$("#btn_submit").show();
+				$("#btn_submitUP").show();
 				$("#waitingImg").hide();
+				$("#waitingImgUP").hide();
 				return false;
 			}
 			else {
@@ -4122,16 +4131,21 @@
 						@{
 							if (ViewBag.cSRID != "")
 							{
-											<div class="form-group row">
-												<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
-													<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
-												</button>
-												<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
-												&nbsp;&nbsp;&nbsp;&nbsp;
-												<button id="btn_ShowHistoryLog" class="btn btn-success btn-lg" type="button">
-													<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
-												</button>
-											</div>
+								<div class="form-group row">
+									<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
+										<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
+									</button>
+									<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="btn_submitUP" class="btn btn-primary btn-lg" type="button" onclick="ShowSRConfirmDialogMsg('確認', '您是否確認提交？');">
+										<i class="fa fa-arrow-circle-up" style="font-size:large"> 提 交</i>
+									</button>
+									<img id="waitingImgUP" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="btn_ShowHistoryLog" class="btn btn-success btn-lg" type="button">
+										<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
+									</button>
+								</div>
 							}
 						}
 

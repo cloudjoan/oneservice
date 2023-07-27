@@ -8025,11 +8025,21 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult AjaxfindEmployeeInCludeLeaveByKeyword(string keyword)
         {
-            object contentObj = null;
+            List<TblEmployee> tList = new List<TblEmployee>();
 
-            contentObj = bpmDB.TblEmployees.Where(x => (x.CEmployeeAccount.Contains(keyword) || x.CEmployeeCName.Contains(keyword))).Take(5);
+            var beans = bpmDB.TblEmployees.Where(x => (x.CEmployeeAccount.Contains(keyword) || x.CEmployeeCName.Contains(keyword))).Take(5).ToList();
 
-            string json = JsonConvert.SerializeObject(contentObj);
+            foreach(var bean in beans)
+            {
+                if (bean.CEmployeeLeaveDay != null || bean.CEmployeeLeaveReason != null)
+                {
+                    bean.CEmployeeEname += "(離職)";
+                }
+            }
+
+            tList = beans.ToList();
+
+            string json = JsonConvert.SerializeObject(tList);
             return Content(json, "application/json");
         }
         #endregion
