@@ -297,6 +297,7 @@
 			var tbx_cCustomerID = $('#tbx_cCustomerID');				//客戶代號
 			var tbx_cCustomerName = $('#tbx_cCustomerName');				//客戶名稱
 			var tbx_cSRID = $('#tbx_cSRID');							//SRID
+			var ddl_cIsSecondFix = $('#ddl_cIsSecondFix');				//是否為二修
 			var tbx_CreatedUserName = $('#tbx_CreatedUserName');			//派單人員
 			var tbx_cRepairName = $('#tbx_cRepairName');				//報修人姓名			
 			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道
@@ -314,7 +315,7 @@
 			var tbx_cProductNumber = $('#tbx_cProductNumber');			//報修Product Number
 
 			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
-				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && SRPathWay == "" &&
+				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && SRPathWay == "" &&
 				tbx_cMainEngineerID.val() == "" && tbx_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" &&
 				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
@@ -338,7 +339,7 @@
 			}
 			else {
 				searchQuerySRProgress(SRCaseType, Status, tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
-									  tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
+									  tbx_cCustomerName.val(), tbx_cSRID.val(), ddl_cIsSecondFix.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
 									  tbx_cMainEngineerID.val(), tbx_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID,
 									  ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
 									  tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
@@ -348,7 +349,7 @@
 		}
 
 		//查詢結果
-		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID,cCustomerName, cSRID, CreatedUserName, cRepairName, cSRPathWay,
+		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID,cCustomerName, cSRID, cIsSecondFix, CreatedUserName, cRepairName, cSRPathWay,
 									  cMainEngineerID, cAssEngineerID, cTechManagerID, cTeamID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
 			
 			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
@@ -367,6 +368,7 @@
 					cCustomerID: cCustomerID,
 					cCustomerName: cCustomerName,
 					cSRID: cSRID,
+					cIsSecondFix: cIsSecondFix,
 					CreatedUserName: CreatedUserName,
 					cRepairName: cRepairName,
 					cSRPathWay: cSRPathWay,
@@ -398,6 +400,7 @@
 			$("#lbl_cCustomerName").html("");
 			$('#tbx_cCustomerName').val("");
 			$('#tbx_cSRID').val("");
+			$('#ddl_cIsSecondFix').val("");
 			$('#tbx_CreatedUserName').val("");
 			$('#tbx_cRepairName').val("");			
 			$('#tbx_cMainEngineerID').val("");
@@ -490,7 +493,11 @@
 							<label class="col-lg-2 col-form-label">SRID</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSRID" id="tbx_cSRID" class="form-control" placeholder="SRID">
-							</div>						
+							</div>
+							<label class="col-lg-2 col-form-label">是否為二修</label>
+							<div class="col-lg-4">
+								<select asp-for="ddl_cIsSecondFix" asp-items="Model.ListIsSecondFix" class="form-control"></select>
+							</div>
 						</div>
 						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">派單人員</label>

@@ -178,7 +178,9 @@ namespace OneService.Controllers
             }
 
             getLoginAccount();
-            getEmployeeInfo();         
+            getEmployeeInfo();
+
+            var model = new ViewModelSRReport();
 
             #region 服務案件類型
             var SRTypeList = new List<SelectListItem>()
@@ -228,7 +230,7 @@ namespace OneService.Controllers
             ViewBag.cEndCreatedDate = DateTime.Now.ToString("yyyy-MM-dd");
             #endregion
 
-            return View();
+            return View(model);
         }
 
         #region 服務總表查詢結果
@@ -261,11 +263,12 @@ namespace OneService.Controllers
         /// <param name="cSRTypeOne">報修類別-大類</param>
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
+        /// <param name="cIsSecondFix">是否二修</param>
         /// <returns></returns>
         public IActionResult SRReportResult(string StartCreatedDate, string EndCreatedDate, string StartFinishTime, string EndFinishTime, string SRID, 
                                           string CustomerID, string RepairName, string RepairAddress, string SerialID, string PID, string TeamID, string TeamOldID,
                                           string Status, string SRType, string EngineerID, string ContractID, string SO, string XCHP, string HPCT, 
-                                          string MaterialID, string MaterialName, string OLDCT, string NEWCT, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr)
+                                          string MaterialID, string MaterialName, string OLDCT, string NEWCT, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr, string cIsSecondFix)
         {
             StringBuilder tSQL = new StringBuilder();
 
@@ -559,6 +562,20 @@ namespace OneService.Controllers
             }
             #endregion
 
+            #region 是否為二修
+            if (!string.IsNullOrEmpty(cIsSecondFix))
+            {
+                if (cIsSecondFix == "N")
+                {
+                    ttWhere += "AND (cIsSecondFix = '" + cIsSecondFix.Trim() + "' or cIsSecondFix = '') " + Environment.NewLine;
+                }
+                else
+                {
+                    ttWhere += "AND cIsSecondFix = '" + cIsSecondFix.Trim() + "' " + Environment.NewLine;
+                }
+            }
+            #endregion
+
             #region 組待查詢清單
 
             #region SQL語法
@@ -747,6 +764,7 @@ namespace OneService.Controllers
         /// <param name="cCustomerID">客戶代號</param>
         /// <param name="cCustomerName">客戶名稱</param>
         /// <param name="cSRID">SRID</param>
+        /// <param name="cIsSecondFix">是否為二修</param>
         /// <param name="CreatedUserName">派單人員</param>
         /// <param name="cRepairName">報修人姓名</param>
         /// <param name="cSRPathWay">報修管道</param>
@@ -762,7 +780,7 @@ namespace OneService.Controllers
         /// <param name="cProductNumber">報修Product Number</param>
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
-                                                 string cCustomerID, string cCustomerName, string cSRID, string CreatedUserName, string cRepairName, string cSRPathWay, string cMainEngineerID, 
+                                                 string cCustomerID, string cCustomerName, string cSRID, string cIsSecondFix, string CreatedUserName, string cRepairName, string cSRPathWay, string cMainEngineerID, 
                                                  string cAssEngineerID, string cTechManagerID, string cTeamID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
                                                  string cSerialID, string cMaterialName, string cProductNumber)
         {            
@@ -893,6 +911,20 @@ namespace OneService.Controllers
             if (!string.IsNullOrEmpty(cSRID))
             {
                 ttWhere += "AND M.cSRID LIKE N'%" + cSRID.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 是否為二修
+            if (!string.IsNullOrEmpty(cIsSecondFix))
+            {
+                if (cIsSecondFix == "N")
+                {
+                    ttWhere += "AND (M.cIsSecondFix = '" + cIsSecondFix.Trim() + "' or  M.cIsSecondFix = '') " + Environment.NewLine;
+                }
+                else
+                {
+                    ttWhere += "AND M.cIsSecondFix = '" + cIsSecondFix.Trim() + "' " + Environment.NewLine;
+                }
             }
             #endregion
 
@@ -8546,9 +8578,9 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #region DropDownList選項Class(服務案件種類)
+        #region DropDownList選項Class(服務進度查詢)
         /// <summary>
-        /// DropDownList選項Class(服務案件種類)
+        /// DropDownList選項Class(服務進度查詢)
         /// </summary>
         public class ViewModelQuerySRProgress
         {
@@ -8565,6 +8597,24 @@ namespace OneService.Controllers
             #region 報修管道
             public string ddl_cSRPathWay { get; set; }
             public List<SelectListItem> ListSRPathWay = findSysParameterList_WithEmpty(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPATH", false);
+            #endregion
+
+            #region 是否為二修
+            public string ddl_cIsSecondFix { get; set; }
+            public List<SelectListItem> ListIsSecondFix = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "ISSECONDFIX", true);
+            #endregion
+        }
+        #endregion
+
+        #region DropDownList選項Class(服務總表)
+        /// <summary>
+        /// DropDownList選項Class(服務總表)
+        /// </summary>
+        public class ViewModelSRReport
+        {
+            #region 是否為二修
+            public string ddl_cIsSecondFix { get; set; }
+            public List<SelectListItem> ListIsSecondFix = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "ISSECONDFIX", true);
             #endregion
         }
         #endregion

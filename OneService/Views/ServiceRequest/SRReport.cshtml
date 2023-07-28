@@ -331,12 +331,13 @@
 			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');					//報修類別-大類
 			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');					//報修類別-中類
 			var ddl_cSRTypeThr = $('#ddl_cSRTypeThr');					//報修類別-小類
+			var ddl_cIsSecondFix = $("#ddl_cIsSecondFix");				//是否二修
 
 			if (tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" && tbx_cStartFinishTime.val() == "" && tbx_cEndFinishTime.val() == "" && 
 			    tbx_QuerySRID.val() == "" && tbx_QueryCustomerID.val() == "" && tbx_QueryRepairName.val() == "" && tbx_QueryRepairAddress.val() == "" &&
 				tbx_QuerySerialID.val() == "" && tbx_QueryPID.val() == ""  && TeamID == "" && TeamOldID == "" && Status == "" && SRType == "" && tbx_QueryEngineerID.val() == "" &&
 				tbx_QueryContractID.val() == "" && tbx_QuerySO.val() == "" && tbx_QueryXCHP.val() == "" && tbx_QueryHPCT.val() == "" &&
-				tbx_QueryMaterialID.val() == "" && tbx_QueryMaterialName.val() == "" && tbx_QueryOLDCT.val() == "" && tbx_QueryNEWCT.val() == "" && ddl_cSRTypeOne.val() == "" &&
+				tbx_QueryMaterialID.val() == "" && tbx_QueryMaterialName.val() == "" && tbx_QueryOLDCT.val() == "" && tbx_QueryNEWCT.val() == "" && ddl_cSRTypeOne.val() == "" && ddl_cIsSecondFix.val() == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
 				tMsg += "請至少輸入一項查詢條件！\n";
@@ -368,7 +369,7 @@
 					tbx_QuerySRID.val(), tbx_QueryCustomerID.val(), tbx_QueryRepairName.val(), tbx_QueryRepairAddress.val(),
 					tbx_QuerySerialID.val(), tbx_QueryPID.val(), TeamID, TeamOldID, Status, SRType, tbx_QueryEngineerID.val(), tbx_QueryContractID.val(), tbx_QuerySO.val(),
 					tbx_QueryXCHP.val(), tbx_QueryHPCT.val(), tbx_QueryMaterialID.val(), tbx_QueryMaterialName.val(), tbx_QueryOLDCT.val(), tbx_QueryNEWCT.val(),
-					ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val());
+					ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(), ddl_cIsSecondFix.val());
 			}
 
 			return true;
@@ -376,7 +377,7 @@
 
 		//查詢結果
 		function searchSRReport(StartCreatedDate, EndCreatedDate, StartFinishTime, EndFinishTime, SRID, CustomerID, RepairName, RepairAddress,
-			SerialID, PID, TeamID, TeamOldID, Status, SRType, EngineerID, ContractID, SO, XCHP, HPCT, MaterialID, MaterialName, OLDCT, NEWCT, cSRTypeOne, cSRTypeSec, cSRTypeThr) {
+			SerialID, PID, TeamID, TeamOldID, Status, SRType, EngineerID, ContractID, SO, XCHP, HPCT, MaterialID, MaterialName, OLDCT, NEWCT, cSRTypeOne, cSRTypeSec, cSRTypeThr, cIsSecondFix) {
 			$("#dataDiv").html('');
 			$.ajax({
 				url: '@Url.Action("SRReportResult", "ServiceRequest")',
@@ -408,7 +409,8 @@
 					NEWCT: NEWCT,
 					cSRTypeOne: cSRTypeOne,
 					cSRTypeSec: cSRTypeSec,
-					cSRTypeThr: cSRTypeThr
+					cSRTypeThr: cSRTypeThr,
+					cIsSecondFix: cIsSecondFix
 				},
 				success: function (result) {
 				},
@@ -483,6 +485,7 @@
 					</div>
 				</div>
 				<div class="ibox-content">
+					@model OneService.Controllers.ServiceRequestController.ViewModelSRReport //載入StatusViewModel
 					<form id="form1" name="form" action='#' method="post">
 						<!--登人者公司別-->
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
@@ -611,7 +614,13 @@
 							<div class="col-lg-4">
 								@Html.DropDownList("ddl_Status", (IEnumerable<SelectListItem>)ViewBag.ddl_Status, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇狀態" })
 							</div>
-						</div>				
+						</div>		
+						<div class="form-group row">						
+							<label class="col-lg-2 col-form-label">是否為二修</label>
+							<div class="col-lg-4">
+								<select asp-for="ddl_cIsSecondFix" asp-items="Model.ListIsSecondFix" class="form-control"></select>
+							</div>
+						</div>
 						<div class="form-group row">
 							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
 							<button class="btn btn-default btn-lg" type="button" onclick="clearSRReport();"><i class="fa fa-trash"></i> 清 除 </button>
