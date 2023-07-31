@@ -1977,12 +1977,13 @@ namespace OneService.Controllers
         /// <param name="tIsCSManager">登入者是否為客服主管</param>
         /// <param name="tIsDCC">登入者是否為文管中心人員</param>
         /// <param name="tIsContractManager">登入者是否為合約主管</param>
+        /// <param name="tContractCenterID">中心單位ID(若為中心單位合約管理員就會有值，ex.12G3)</param>
         /// <param name="cContractID">文件編號</param>
         /// <param name="tType">MAIN.主數據(含下包) ENG.工程師明細 OBJ.合約標的</param>
         /// <returns></returns>
-        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, bool tIsDCC, bool tIsContractManager, string cContractID, string tType)
+        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, bool tIsDCC, bool tIsContractManager, List<string> tContractCenterID, string cContractID, string tType)
         {
-            bool reValue = checkIsCanEditContracInfo(pOperationID_Contract, tLoginERPID, tLoginAccout, tBUKRS, tCostCenterID, tDeptID, tIsMIS, tIsCSManager, tIsDCC, tIsContractManager, cContractID, tType, null);
+            bool reValue = checkIsCanEditContracInfo(pOperationID_Contract, tLoginERPID, tLoginAccout, tBUKRS, tCostCenterID, tDeptID, tIsMIS, tIsCSManager, tIsDCC, tIsContractManager, tContractCenterID, cContractID, tType, null);
 
             return reValue;
         }
@@ -2002,11 +2003,12 @@ namespace OneService.Controllers
         /// <param name="tIsCSManager">登入者是否為客服主管</param>
         /// <param name="tIsDCC">登入者是否為文管中心人員</param>
         /// <param name="tIsContractManager">登入者是否為合約主管</param>
+        /// <param name="tContractCenterID">中心單位ID(若為中心單位合約管理員就會有值，ex.12G3)</param>
         /// <param name="cContractID">文件編號</param>
         /// <param name="tType">MAIN.主數據(含下包) ENG.工程師明細 OBJ.合約標的</param>
         /// <param name="tMainList">合約主檔清單</param>
         /// <returns></returns>
-        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, bool tIsDCC, bool tIsContractManager, string cContractID, string tType, List<TbOneContractMain> tMainList)
+        public bool checkIsCanEditContracInfo(string pOperationID_Contract, string tLoginERPID, string tLoginAccout, string tBUKRS, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCSManager, bool tIsDCC, bool tIsContractManager, List<string> tContractCenterID, string cContractID, string tType, List<TbOneContractMain> tMainList)
         {
             bool reValue = false;
             bool tIsOldContractID = checkIsOldContractID(pOperationID_Contract, cContractID.Trim()); //判斷是否為舊文件編號(true.舊組織 false.新組織)
@@ -2047,19 +2049,25 @@ namespace OneService.Controllers
 
                             if (!reValue)
                             {
-                                //先判斷是否為服務團隊主管
-                                if (tIsOldContractID)
+                                //1.判斷是否為中心單位管理者
+                                reValue = checkIsSRTeamMappingCenterManager(beanM.CTeamId, tContractCenterID);
+
+                                //2.判斷是否為服務團隊主管
+                                if (!reValue)
                                 {
-                                    reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
-                                }
-                                else
-                                {
-                                    reValue = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //新組織
+                                    if (tIsOldContractID)
+                                    {
+                                        reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
+                                    }
+                                    else
+                                    {
+                                        reValue = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //新組織
+                                    }
                                 }
 
                                 if (!reValue)
                                 {
-                                    //再判斷是否為主要工程師
+                                    //3.判斷是否為主要工程師
                                     reValue = checkIsContractEngineer(tLoginERPID, cContractID, "Y");
                                 }
                             }
@@ -2069,19 +2077,25 @@ namespace OneService.Controllers
 
                         case "ENG":
                             #region 工程師明細
-                            //先判斷是否為服務團隊主管
-                            if (tIsOldContractID)
+                            //1.判斷是否為中心單位管理者
+                            reValue = checkIsSRTeamMappingCenterManager(beanM.CTeamId, tContractCenterID);
+
+                            if (!reValue)
                             {
-                                reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
-                            }
-                            else
-                            {
-                                reValue = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //新組織
+                                //2.判斷是否為服務團隊主管
+                                if (tIsOldContractID)
+                                {
+                                    reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
+                                }
+                                else
+                                {
+                                    reValue = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //新組織
+                                }
                             }
 
                             if (!reValue)
                             {
-                                //再判斷是否為主要工程師
+                                //3.判斷是否為主要工程師
                                 reValue = checkIsContractEngineer(tLoginERPID, cContractID, "Y");
                             }
                             #endregion
@@ -2090,19 +2104,25 @@ namespace OneService.Controllers
 
                         case "OBJ":
                             #region 合約標的
-                            //先判斷是否為服務團隊主管
-                            if (tIsOldContractID)
+                            //1.判斷是否為中心單位管理者
+                            reValue = checkIsSRTeamMappingCenterManager(beanM.CTeamId, tContractCenterID);
+
+                            if (!reValue)
                             {
-                                reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
-                            }
-                            else
-                            {
-                                reValue = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //新組織
+                                //2.判斷是否為服務團隊主管
+                                if (tIsOldContractID)
+                                {
+                                    reValue = checkEmpIsExistSRTeamMapping_OLD(pOperationID_Contract, tBUKRS, tLoginAccout); //舊組織
+                                }
+                                else
+                                {
+                                    reValue = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //新組織
+                                }
                             }
 
                             if (!reValue)
                             {
-                                //再判斷是否為主要工程師或協助工程師
+                                //3.判斷是否為主要工程師或協助工程師
                                 reValue = checkIsContractEngineer(tLoginERPID, cContractID, "");
                             }
                             #endregion
@@ -2161,6 +2181,45 @@ namespace OneService.Controllers
                 {
                     reValue = true;
                     break;
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 判斷登入人員是否為該服務團隊中心單位管理者
+        /// <summary>
+        /// 判斷登入人員是否為該服務團隊中心單位管理者
+        /// </summary>        
+        /// <param name="tTeamOldID">服務團隊ID</param>
+        /// <param name="tContractCenterID">中心單位ID(若為中心單位合約管理員就會有值，ex.12G3)</param>
+        /// <returns></returns>      
+        public bool checkIsSRTeamMappingCenterManager(string tTeamOldID, List<string> tContractCenterID)
+        {
+            bool reValue = false;            
+
+            if (tContractCenterID.Count > 0)
+            {
+                List<string> tList = findALLDeptIDListbyTeamID(tTeamOldID);
+
+                string tMGRERPID = string.Empty;
+
+                foreach (var tValue in tList)
+                {
+                    foreach (var tDeptID in tContractCenterID)
+                    {
+                        if (tValue.Substring(0, 4) == tDeptID)
+                        {
+                            reValue = true;
+                            break;
+                        }
+                    }
+
+                    if (reValue)
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -3082,6 +3141,22 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 登入者是否為合約中心單位管理者(true.是 false.否)
+        /// <summary>
+        /// 登入者是否為合約中心單位管理者(true.是 false.否)
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+        /// <param name="tBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <returns></returns>
+        public List<string> getContractCenterID(string LoginAccount, string tSysOperationID, string tBUKRS)
+        {
+            List<string> tList = getContractCenterID(LoginAccount, tSysOperationID, tBUKRS, "CONTRACTCenterManager_");
+
+            return tList;
+        }
+        #endregion
+
         #region 判斷是否為管理員、檢測員角色
         /// <summary>
         /// 判斷是否為管理員、檢測員角色
@@ -3175,7 +3250,7 @@ namespace OneService.Controllers
 
         #region 判斷登入者是否有權限(true.有 false.無)，抓系統參數權限
         /// <summary>
-        /// 判斷登入者是否為文管人員
+        /// 判斷登入者是否有權限(true.有 false.無)，抓系統參數權限
         /// </summary>
         /// <param name="LoginAccount">登入者帳號</param>
         /// <param name="tSysOperationID">程式作業編號檔系統ID</param>
@@ -3200,6 +3275,41 @@ namespace OneService.Controllers
             }
 
             return reValue;
+        }
+        #endregion
+
+        #region 取得登入者中心單位ID
+        /// <summary>
+        /// 取得登入者中心單位ID
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cCompanyID">公司別(ALL、T012、T016、C069、T022)</param>
+        /// <param name="cNo">參數</param>
+        /// <returns></returns>
+        public List<string> getContractCenterID(string LoginAccount, string tSysOperationID, string cCompanyID, string cNo)
+        {
+            List<string> tList = new List<string>();
+            string cCenterID = string.Empty;
+
+            Guid tcID = new Guid(tSysOperationID);
+
+            var beans = psipDb.TbOneSysParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == cCompanyID && x.CNo.Contains(cNo));
+
+            foreach (var bean in beans)
+            {
+                if (bean.CValue.ToLower() == LoginAccount.ToLower())
+                {
+                    cCenterID = bean.CNo.Replace(cNo, "");
+
+                    if (!tList.Contains(cCenterID))
+                    {
+                        tList.Add(cCenterID);
+                    }
+                }
+            }
+
+            return tList;
         }
         #endregion
 

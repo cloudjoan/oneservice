@@ -67,7 +67,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 登入者是否為大世科合約主管(true.是 false.否)
         /// </summary>
-        bool pIsContractManager_T012 = false;
+        bool pIsContractManager_T012 = false;       
 
         /// <summary>
         /// 登入者是否為管理者(true.是 false.否)
@@ -108,6 +108,11 @@ namespace OneService.Controllers
         /// 下包文件編號
         /// </summary>
         string pSubContractID = string.Empty;
+
+        /// <summary>
+        /// 取得登入者若為中心單位合約管理員，該中心單位ID(true.是 false.否)
+        /// </summary>
+        List<string> pContractCenterID = new List<string>();
 
         /// <summary>
         /// 程式作業編號檔系統ID(ALL，固定的GUID)
@@ -174,6 +179,7 @@ namespace OneService.Controllers
             //pLoginAccount = @"etatung\Steve.Guo";       //郭翔元         
             //pLoginAccount = @"etatung\Wenjui.Chan";     //詹文瑞        
             //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
+            //pLoginAccount = @"etatung\Annie.Chuang";    //莊薈鈺
             #endregion
 
             pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
@@ -187,6 +193,7 @@ namespace OneService.Controllers
             pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
             pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
             pIsExeMaintainPerson = CMF.getIsExeMaintainPerson(pLoginAccount, pOperationID_QueryBatchMaintain);
+            pContractCenterID = CMF.getContractCenterID(pLoginAccount, pSysOperationID, "T012");
 
             ViewBag.pIsMIS = pIsMIS;
             ViewBag.pIsCSManager = pIsCSManager;
@@ -196,6 +203,7 @@ namespace OneService.Controllers
             ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
             ViewBag.pIsExePerson = pIsExePerson;
             ViewBag.pIsExeMaintainPerson = pIsExeMaintainPerson;
+            ViewBag.pContractCenterID = pContractCenterID;
 
             ViewBag.hidIsMIS = pIsMIS ? "Y" : "N";
             ViewBag.hidIsCSManager = pIsCSManager ? "Y" : "N";
@@ -566,7 +574,7 @@ namespace OneService.Controllers
                 #endregion
 
                 #region 是否可編輯合約主數據相關內容                
-                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, beanM.CContractId, "MAIN");
+                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, beanM.CContractId, "MAIN");
 
                 if (pIsCanEdit)
                 {
@@ -939,7 +947,7 @@ namespace OneService.Controllers
                     #endregion
 
                     #region 是否可編輯合約主數據相關內容
-                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, pSubContractID, "MAIN");
+                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, pSubContractID, "MAIN");
 
                     if (pIsCanEdit)
                     {
@@ -1204,7 +1212,7 @@ namespace OneService.Controllers
                 cMainIsOldContractID = AryInfo[2];
 
                 #region 是否可編輯合約主數據相關內容
-                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, pContractID, "ENG", tMainList);
+                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, pContractID, "ENG", tMainList);
                 
                 if (pIsCanEdit)
                 {
@@ -1221,7 +1229,7 @@ namespace OneService.Controllers
             {
                 if (pContractID == "") //非從主約過來                
                 {
-                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, bean.CContractId, "ENG", tMainList);                                      
+                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, bean.CContractId, "ENG", tMainList);                                      
 
                     string[] AryInfo = findExtraContractMainInfo(tMainList, bean.CContractId);
 
@@ -1878,7 +1886,7 @@ namespace OneService.Controllers
             if (pContractID != "") //若有文件編號只要查一次(從主約過來)
             {
                 #region 是否可編輯合約主數據相關內容
-                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, pContractID, "OBJ", tMainList);
+                pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, pContractID, "OBJ", tMainList);
 
                 if (pIsCanEdit)
                 {
@@ -1896,7 +1904,7 @@ namespace OneService.Controllers
             {
                 if (pContractID == "") //非從主約過來                
                 {
-                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, dr["cContractID"].ToString(), "OBJ", tMainList);                   
+                    pIsCanEdit = CMF.checkIsCanEditContracInfo(pOperationID_Contract, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_EmployeeNO, ViewBag.cLoginUser_BUKRS, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, dr["cContractID"].ToString(), "OBJ", tMainList);                   
                 }
 
                 IsCanEdit = pIsCanEdit ? "Y" : "N";
