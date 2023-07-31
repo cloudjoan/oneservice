@@ -23,5 +23,5 @@ dotnet ef dbcontext scaffold "Server=172.31.7.119;Database=ERP_PROXY_DB;User=sa;
 dotnet ef dbcontext scaffold "Server=172.31.7.26;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -t VIEW_EMP_INFO -t VIEW_EMP_INFO_WITHOUT_LEAVE -t VIEW_DEPT_MGR -f
 
 #BI TSTI-DW
-dotnet ef dbcontext scaffold "Server=172.31.7.94;Database=BI;User=biread;Password=!QAZ2wsx" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MART_AnalyseServiceRequestLabor -f
+dotnet ef dbcontext scaffold "Server=172.31.7.94;Database=BI;User=biread;Password=!QAZ2wsx" Microsoft.EntityFrameworkCore.SqlServer -o Models -t MART_AnalyseServiceRequestLabor -t MART_AnalyseFunnelBacklogRevenue -t MART_AnalyseSO -t SV_SR -t SD_CostAnalysisHeader -t SD_OPPHead -f
 

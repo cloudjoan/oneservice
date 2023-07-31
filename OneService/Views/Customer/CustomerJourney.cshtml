@@ -1,0 +1,428 @@
+﻿
+@{
+    ViewData["Title"] = "CustomerJourney";
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+@section js_section{
+	<script>
+		$(document).ready(function () {
+			CustSearch();	// 取得客戶資料
+
+			// 預設隱藏
+			$('#Div_Crm_Opp').hide();
+			$('#Div_SO').hide();
+			$('#Div_SV_SR').hide();
+			$('#Div_Crm_Opp_Detail').hide();
+		});
+
+		// SAP客戶代號/客戶名稱查詢
+		// compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
+		function CustSearch() {
+			var compcde = $("#hid_cLoginUser_CompCode").val();
+
+			$(".CustName").unbind();
+
+			$(".CustName").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						$("#lbl_CustomerID").html('');
+						$('#hid_CustomerID').val('');
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+							$.ajax({
+								url: '@Url.Action("findCustByKeywordAndComp", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: { functionName: 'findCustByKeywordAndComp', keyword: keyword, compcde: compcde },
+								success: function (result) {
+									Customers = [];
+									$.each(result, function (i, idata) {
+										Customers[i] = {
+											label: idata.Kna1Kunnr + "\\" + idata.Kna1Name1, // 顯示在清單的東西
+											idx: i,
+											id: idata.Kna1Kunnr,
+											value: idata.Kna1Name1 // 這個是要填入textbox的值
+										};
+									});
+
+									// 綁定foucs事件
+									obj.autocomplete({
+										source: Customers,
+										select: function (event, ui) {
+											$("#lbl_CustomerID").html(ui.item.id);
+											$('#hid_CustomerID').val(ui.item.id);
+										}
+									}).bind('focus', function () { $(this).autocomplete("search"); });
+
+									// 開啟autocomplete選單
+									obj.focus();
+								}
+							})
+						}
+					}
+
+				}
+			})
+		}
+
+		function GetCusInfo() 
+		{
+			if ($('#hid_CustomerID').val() == "")
+			{alert('請確認客戶名稱正確');}
+			else { location.href = '@Url.Action("CustomerJourney", "Customer")' + '?CusId=' + $('#hid_CustomerID').val(); }
+		}
+
+		function QueryDetail(ID)
+		{
+			// 預設底色
+			$('#TR_Crm_Opp').css("background-color", "#FFFFFF");
+			$('#TR_SO').css("background-color", "#FFFFFF");
+			$('#TR_SV_SR').css("background-color", "#FFFFFF");
+
+			// 預設隱藏
+			$('#Div_Crm_Opp').hide();
+			$('#Div_SO').hide();
+			$('#Div_SV_SR').hide();
+			$('#Div_Crm_Opp_Detail').hide();
+
+			// 選取的TR變色
+			$('#TR_' + ID).css("background-color", "#98D1E1");
+			$('#Div_' + ID).show();
+		}
+
+		function QueryOppDetail(OppNo)
+		{
+			$('.TrOpp').css("background-color", "#FFFFFF");
+
+			// 選取的TR變色
+			$('#TR_' + OppNo).css("background-color", "#98D1E1");
+
+			searchQueryOppDetail(OppNo);
+		}
+
+		// 查詢結果
+		function searchQueryOppDetail(OppNo) 
+		{
+			$("#Div_Opp_Detail").html('');
+
+			$.ajax({
+				url: '@Url.Action("QueryCostRevenueByOpp", "Customer")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					Opp_No: OppNo
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#Div_Opp_Detail").html(result.responseText);
+
+					$('#Div_Crm_Opp_Detail').show();
+
+					$('#lblOppDetailTitle').html('商機' + OppNo + '相關呈報/請款');
+				}
+			});
+		}
+
+	</script>
+}
+
+@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>客戶旅程</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">客戶</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>客戶旅程</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+<div class="row">
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>
+					客戶旅程查詢
+				</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content">
+				<form id="form1" name="form" action='#' method="post">
+					<!--登人者公司別-->
+					<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label">客戶名稱</label>
+						<div class="col-lg-4">
+							<input type="text" id="txtCustName" name="txtCustName" class="form-control CustName" placeholder="請輸入客戶關鍵字" value="@ViewBag.CusName">
+						</div>
+						<div class="col-lg-2">
+							<label class="col-lg-2 col-form-label" id="lbl_CustomerID" name="lbl_CustomerID">@ViewBag.CusId</label>
+							<input type="hidden" id="hid_CustomerID" name="hid_CustomerID" value="@ViewBag.CusId" />
+						</div>
+						<div class="col-lg-2">
+							<button class="btn btn-success btn-lg" type="button" onclick="GetCusInfo();"><i class="fa fa-search"></i> 查 詢 </button>
+						</div>
+					</div>
+					@*<div class="form-group row">
+						<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+						<button class="btn btn-default btn-lg" type="button" onclick="clearSRRepairType();"><i class="fa fa-trash"></i> 清 除 </button>
+						<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+					</div>*@
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-12">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>客戶總覽</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+				<table id="TB_CustAll" class="table table-striple table-bordered table-hover dataTables-example">
+					<thead>
+						<tr>
+							<th rowspan="2" align="center">類型</th>
+							<th colspan="2" align="center">全部</th>
+							<th colspan="2" align="center">成交/結案</th>
+							<th rowspan="2" align="center">成交率=(B/A)%</th>
+						</tr>
+						<tr>
+							<th align="center">A筆數</th>
+							<th align="center">總金額</th>
+							<th align="center">B筆數</th>
+							<th align="center">金額</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr id='TR_Crm_Opp' onclick="QueryDetail('Crm_Opp');">
+							<td style="width:100px;">商機</td>
+							<td>@string.Format("{0:#,0}", ViewBag.OppCount)</td>
+							<td>@string.Format("{0:#,0}", ViewBag.OppAmount)</td>
+							<td>@string.Format("{0:#,0}", ViewBag.OppDealCount)</td>
+							<td>@string.Format("{0:#,0}", ViewBag.OppDealAmount)</td>
+							<td>@ViewBag.OppDealPercent</td>
+						</tr>
+						<tr id='TR_SO' onclick="QueryDetail('SO');">
+							<td style="width:100px;">訂單</td>
+							<td>@string.Format("{0:#,0}", ViewBag.SOCount)</td>
+							<td>@string.Format("{0:#,0}", ViewBag.SOAmount)</td>
+							<td>@string.Format("{0:#,0}", ViewBag.SODealCount)</td>
+							<td>@string.Format("{0:#,0}", ViewBag.SODealAmount)</td>
+							<td>@ViewBag.SODealPercent</td>
+						</tr>
+						<tr id='TR_SV_SR' onclick="QueryDetail('SV_SR');">
+							<td style="width:100px;">報修</td>
+							<td>@string.Format("{0:#,0}", ViewBag.SVSRCount)</td>
+							<td align="center">-</td>
+							<td>@string.Format("{0:#,0}", ViewBag.SVSRDealCount)</td>
+							<td align="center">-</td>
+							<td>@ViewBag.SVSRDealPercent</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-12" id="Div_Crm_Opp">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>商機清單</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+				<table id="TB_Crm_Opp" class="table table-striple table-bordered table-hover dataTables-example tableQeryStyle">
+					<thead>
+						<tr>
+							<th></th>
+							<th>商機</th>
+							<th>商機名稱</th>
+							<th>商機%</th>
+							<th>業務</th>
+							<th>金額</th>
+							<th>毛利</th>
+							<th>預計訂單日</th>
+						</tr>
+					</thead>
+					<tbody>
+						@{
+							if (ViewBag.OppsInfo != null)
+							{
+								int count = 0;
+								foreach (var OppInfo in ViewBag.OppsInfo)
+								{
+									count++;
+									<tr id='TR_@(OppInfo.OppNo)' class="TrOpp" onclick="QueryOppDetail('@OppInfo.OppNo');">
+										<td style="width:100px;">@count</td>
+										<td>@OppInfo.OppNo</td>
+										<td>@OppInfo.OppDesc</td>
+										<td>@OppInfo.OppPhasePercent</td>
+										<td>@OppInfo.EmployeeId</td>
+										<td>@string.Format("{0:#,0}", OppInfo.OppRevenue)</td>
+										<td>@string.Format("{0:#,0}", OppInfo.OppProfit)</td>
+										<td>@string.Format("{0:yyyy/MM/dd}", OppInfo.OppEstimateDate)</td>
+									</tr>
+								}
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-12" id="Div_SO">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>SO清單</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+				<table id="TB_SO" class="table table-striple table-bordered table-hover dataTables-example tableQeryStyle">
+					<thead>
+						<tr>
+							<th></th>
+							<th>SONo</th>
+							<th>專案名稱</th>
+							<th>業務</th>
+							<th>狀態</th>
+							<th>金額</th>
+							<th>毛利</th>
+						</tr>
+					</thead>
+					<tbody>
+						@{
+							if (ViewBag.SOsInfo != null)
+							{
+								int count = 0;
+								foreach (var SOInfo in ViewBag.SOsInfo)
+								{
+									count++;
+									<tr id='tr@(count)'>
+										<td style="width:100px;">@count</td>
+										<td>@SOInfo.Sono</td>
+										<td>@SOInfo.Project</td>
+										<td>@SOInfo.Employee</td>
+										<td>@SOInfo.PhaseBl</td>
+										<td>@string.Format("{0:#,0}", SOInfo.Soamount)</td>
+										<td>@string.Format("{0:#,0}", SOInfo.Soprofit)</td>
+									</tr>
+								}
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-12" id="Div_SV_SR">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5>報修清單</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+				<table id="TB_SV_SR" class="table table-striple table-bordered table-hover dataTables-example tableQeryStyle">
+					<thead>
+						<tr>
+							<th></th>
+							<th>SRID</th>
+							<th>報修描述</th>
+							<th>工程師</th>
+							<th>報修狀態</th>
+						</tr>
+					</thead>
+					<tbody>
+						@{
+							if (ViewBag.SVSRsInfo != null)
+							{
+								int count = 0;
+								foreach (var SVSRInfo in ViewBag.SVSRsInfo)
+								{
+									count++;
+									<tr id='tr@(count)'>
+										<td style="width:100px;">@count</td>
+										<td>@SVSRInfo.Srid</td>
+										<td>@SVSRInfo.Description</td>
+										<td>@SVSRInfo.Engineer</td>
+										<td>@SVSRInfo.StatusText</td>
+									</tr>
+								}
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-12" id="Div_Crm_Opp_Detail">
+		<div class="ibox ">
+			<div class="ibox-title">
+				<h5><label id="lblOppDetailTitle">商機XXX相關呈報/請款</label></h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="Div_Opp_Detail" style="overflow: scroll">
+				<table id="TB_Crm_Opp_Detail" class="table table-striple table-bordered table-hover dataTables-example tableQeryStyle">
+					<thead>
+						<tr>
+							<th></th>
+							<th>類型</th>
+							<th>單號</th>
+							<th>業務</th>
+							<th>總額(不含稅)</th>
+							<th>預估毛利</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr id='TR_0'>
+							<td>0</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td>0</td>
+							<td>0</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+</div>
+

@@ -1,0 +1,56 @@
+﻿
+@{
+    Layout = null;
+}
+
+<script>
+	$(document).ready(function () {
+		$('#TB_Crm_Opp_Detail').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				//order:[[ 0, "desc" ]],
+				dom: '<"html5buttons"B>lTfgitp',
+				buttons: [
+					{ extend: 'excel', title: 'ExampleFile', text: '匯出Excel' }
+				]
+		});
+	});
+</script>
+
+<table id="TB_Crm_Opp_Detail" class="table table-striple table-bordered table-hover dataTables-example tableQeryStyle">
+	<thead>
+		<tr>
+			<th></th>
+			<th>類型</th>
+			<th>單號</th>
+			<th>業務</th>
+			<th>總額(不含稅)</th>
+			<th>預估毛利</th>
+		</tr>
+	</thead>
+	<tbody>
+		@{
+			if (ViewBag.OppDeatils != null)
+			{
+				int count = 0;
+				foreach (var OppDeatil in ViewBag.OppDeatils)
+				{
+					count++;
+					<tr id='tr@(count)'>
+						<td style="width:100px;">@count</td>
+						<td>呈報</td>
+						<td>@OppDeatil.FormNo</td>
+						<td>@OppDeatil.Employee</td>
+						<td>@string.Format("{0:#,0}", OppDeatil.TotalPriceAll)</td>
+						<td>@string.Format("{0:#,0}", OppDeatil.EstimateProfit)</td>
+					</tr>
+				}
+			}
+		}
+	</tbody>
+</table>
