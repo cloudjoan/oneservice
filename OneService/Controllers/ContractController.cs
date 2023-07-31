@@ -173,10 +173,10 @@ namespace OneService.Controllers
             //pLoginAccount = @"etatung\Julia.Hsu";       //徐瑄辰(祕書)
             //pLoginAccount = @"etatung\Steve.Guo";       //郭翔元         
             //pLoginAccount = @"etatung\Wenjui.Chan";     //詹文瑞        
-            //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
+            pLoginAccount = @"etatung\BinHan.wu";    //張景堯
             #endregion
 
-            pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
+            //pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
 
             #region One Service相關帳號
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
@@ -1859,6 +1859,11 @@ namespace OneService.Controllers
             dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
 
             #region 取得查詢所有出來的文件編號之合約主檔
+            if (cContractID != "")
+            {
+                tContractIDList.Add(cContractID);
+            }
+
             foreach (DataRow dr in dt.Rows)
             {
                 if (!tContractIDList.Contains(dr["cContractID"].ToString()))
