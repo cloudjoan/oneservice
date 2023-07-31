@@ -173,10 +173,10 @@ namespace OneService.Controllers
             //pLoginAccount = @"etatung\Julia.Hsu";       //徐瑄辰(祕書)
             //pLoginAccount = @"etatung\Steve.Guo";       //郭翔元         
             //pLoginAccount = @"etatung\Wenjui.Chan";     //詹文瑞        
-            pLoginAccount = @"etatung\BinHan.wu";    //張景堯
+            //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
             #endregion
 
-            //pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
+            pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
 
             #region One Service相關帳號
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
