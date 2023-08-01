@@ -611,15 +611,17 @@ namespace OneService.Models
 
                 entity.Property(e => e.CrmOppName).HasMaxLength(200);
 
-                entity.Property(e => e.FinishTime).HasMaxLength(22);
+                entity.Property(e => e.FinishTime).HasColumnType("datetime");
 
                 entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.Labor).HasColumnType("numeric(10, 0)");
 
                 entity.Property(e => e.SourceFrom)
                     .HasMaxLength(11)
                     .IsUnicode(false);
 
-                entity.Property(e => e.SrId).HasMaxLength(10);
+                entity.Property(e => e.SrId).HasMaxLength(20);
 
                 entity.Property(e => e.UserErpId).HasMaxLength(30);
 
