@@ -4207,9 +4207,10 @@
 						<input type="hidden" name="hid_trPartsNo" value="@ViewBag.trPartsNo">
 						
 						@{
-							if (ViewBag.cSRID != "")
-							{
-								<div class="form-group row">
+						if (ViewBag.cSRID != "")
+						{
+							var srid = ViewBag.cSRID; 
+							<div class="form-group row">
 									<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
 										<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
 									</button>
@@ -4223,6 +4224,8 @@
 									<button id="btn_ShowHistoryLog" class="btn btn-success btn-lg" type="button">
 										<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
 									</button>
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<a class="btn btn-danger btn-lg" href="@Url.Action("DownloadDeliveryInfo", "ServiceRequest", new { cSRID = srid })"><i class="fa fa-file-excel-o" style="font-size:large"> 產生快遞單 </i></a>
 								</div>
 							}
 						}

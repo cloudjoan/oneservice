@@ -34,15 +34,23 @@ using Org.BouncyCastle.Crypto.Prng;
 using NPOI.OpenXmlFormats.Spreadsheet;
 using NPOI.SS.Formula.PTG;
 using Org.BouncyCastle.Utilities.Net;
+using NPOI.HPSF;
+using Microsoft.Extensions.Hosting;
+using NPOI.XSSF.UserModel;
+using NPOI.OpenXmlFormats.Dml.Diagram;
+using NPOI.SS.UserModel;
+using NPOI.HSSF.UserModel;
 
 namespace OneService.Controllers
 {
     public class ServiceRequestController : Controller
     {
-        /// <summary>
-        /// 登入者帳號
-        /// </summary>
-        string pLoginAccount = string.Empty;
+		private readonly IWebHostEnvironment _HostEnvironment;
+
+		/// <summary>
+		/// 登入者帳號
+		/// </summary>
+		string pLoginAccount = string.Empty;
 
         /// <summary>全域變數</summary>
         string pMsg = "";
@@ -165,12 +173,17 @@ namespace OneService.Controllers
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
 
-        #region -----↓↓↓↓↓服務總表 ↓↓↓↓↓-----
-        /// <summary>
-        /// 個人客戶設定作業
-        /// </summary>
-        /// <returns></returns>
-        public IActionResult SRReport()
+		public ServiceRequestController(IWebHostEnvironment hostingEnvironment)
+		{
+			_HostEnvironment = hostingEnvironment;
+		}
+
+		#region -----↓↓↓↓↓服務總表 ↓↓↓↓↓-----
+		/// <summary>
+		/// 個人客戶設定作業
+		/// </summary>
+		/// <returns></returns>
+		public IActionResult SRReport()
         {
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -3310,12 +3323,58 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----   
+        #region 產生快遞單
+        /// <summary>
+        /// 產生快遞單
+        /// </summary>        
+        /// <param name="cSRID">cSRID</param>
+        /// <returns></returns>
+        public IActionResult DownloadDeliveryInfo(string cSRID)
+        {
+            var bean        = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == cSRID);
+            var Productbean = dbOne.TbOneSrdetailProducts.FirstOrDefault(x => x.CSrid == cSRID);
 
-        #region -----↓↓↓↓↓裝機服務 ↓↓↓↓↓-----
+            if (bean != null)
+            {
+                string webRootPath  = _HostEnvironment.WebRootPath + "/seed";
+                string FilePath     = Path.Combine(webRootPath, "DeliveryForm.xlsx");
+                string SerialId     = Productbean != null ? Productbean.CSerialId : "";
 
-        #region 裝機服務index
-        public IActionResult InstallSR()
+                XSSFWorkbook WorkBook;
+                using (FileStream FS = new FileStream(FilePath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    WorkBook = new XSSFWorkbook(FS);
+                }
+
+                XSSFSheet Sheet = (XSSFSheet)WorkBook.GetSheetAt(0);
+
+                Sheet.GetRow(4).GetCell(1).SetCellValue("JobID: " + cSRID);     // JobID
+                Sheet.GetRow(5).GetCell(2).SetCellValue(bean.CCustomerName);    // 收件人公司名稱
+                Sheet.GetRow(6).GetCell(2).SetCellValue(bean.CRepairAddress);   // 收件人公司地址
+                Sheet.GetRow(7).GetCell(2).SetCellValue(bean.CRepairName);      // 收件人姓名
+                Sheet.GetRow(7).GetCell(4).SetCellValue(bean.CRepairPhone);     // 收件人電話
+                Sheet.GetRow(9).GetCell(4).SetCellValue(SerialId);              // 序號					
+
+                // 將工作簿寫入 MemoryStream
+                MemoryStream stream = new MemoryStream();
+                WorkBook.Write(stream, true);
+                stream.Flush();
+                stream.Position = 0;
+
+                // 回傳 Excel 檔案
+                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "JobID_" + cSRID + "_快遞單.xlsx");
+            }
+            else
+            { return Json("Fail"); }
+        }
+		#endregion
+
+		#endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----   
+
+		#region -----↓↓↓↓↓裝機服務 ↓↓↓↓↓-----
+
+		#region 裝機服務index
+		public IActionResult InstallSR()
         {
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
