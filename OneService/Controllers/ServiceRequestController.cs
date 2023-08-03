@@ -34,17 +34,23 @@ using Org.BouncyCastle.Crypto.Prng;
 using NPOI.OpenXmlFormats.Spreadsheet;
 using NPOI.SS.Formula.PTG;
 using Org.BouncyCastle.Utilities.Net;
+using NPOI.HPSF;
 using Microsoft.Extensions.Hosting;
-using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
+using NPOI.XSSF.UserModel;
+using NPOI.OpenXmlFormats.Dml.Diagram;
+using NPOI.SS.UserModel;
+using NPOI.HSSF.UserModel;
 
 namespace OneService.Controllers
 {
     public class ServiceRequestController : Controller
     {
-        /// <summary>
-        /// 登入者帳號
-        /// </summary>
-        string pLoginAccount = string.Empty;
+		private readonly IWebHostEnvironment _HostEnvironment;
+
+		/// <summary>
+		/// 登入者帳號
+		/// </summary>
+		string pLoginAccount = string.Empty;
 
         /// <summary>全域變數</summary>
         string pMsg = "";
@@ -159,8 +165,6 @@ namespace OneService.Controllers
         /// </summary>
         static string pCompanyCode = string.Empty;
 
-        private readonly IHostingEnvironment _hostingEnvironment;
-
         CommonFunction CMF = new CommonFunction();
 
         PSIPContext psipDb = new PSIPContext();
@@ -169,18 +173,17 @@ namespace OneService.Controllers
         ERP_PROXY_DBContext dbProxy = new ERP_PROXY_DBContext();
         MCSWorkflowContext dbEIP = new MCSWorkflowContext();
 
+		public ServiceRequestController(IWebHostEnvironment hostingEnvironment)
+		{
+			_HostEnvironment = hostingEnvironment;
+		}
 
-        public ServiceRequestController(IHostingEnvironment hostingEnvironment)
-        {
-            _hostingEnvironment = hostingEnvironment;
-        }
-
-        #region -----↓↓↓↓↓服務總表 ↓↓↓↓↓-----
-        /// <summary>
-        /// 個人客戶設定作業
-        /// </summary>
-        /// <returns></returns>
-        public IActionResult SRReport()
+		#region -----↓↓↓↓↓服務總表 ↓↓↓↓↓-----
+		/// <summary>
+		/// 個人客戶設定作業
+		/// </summary>
+		/// <returns></returns>
+		public IActionResult SRReport()
         {
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -623,18 +626,13 @@ namespace OneService.Controllers
                     cIsShowLink = "N";
                 }
 
-                string UrlFront = tONEURLName + "/files/";
-
                 cNotes = dr["cNotes"].ToString().Replace("\r\n", "<br/>");
                 cReceiveTime = Convert.ToDateTime(dr["cReceiveTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cReceiveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cStartTime = Convert.ToDateTime(dr["cStartTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cStartTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cArriveTime = Convert.ToDateTime(dr["cArriveTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cArriveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cFinishTime = Convert.ToDateTime(dr["cFinishTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cFinishTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cWorkHours = dr["cWorkHours"].ToString() == "0" ? "" : dr["cWorkHours"].ToString();
-                
                 cSRReportURL = CMF.findAttachUrl(dr["cSRReport"].ToString(), tAttachURLName);
-                cSRReportURL = cSRReportURL.Replace("http://tsticrmmbgw.etatung.com:8081/CSreport/", UrlFront).Replace("http://tsticrmmbgw.etatung.com:8082/CSreport/", UrlFront);
-
                 cUsed = (dr["cWTYID"].ToString() != "" || dr["cWTYName"].ToString() != "") ? "Y" : "N";
                 cWTYSDATE = Convert.ToDateTime(dr["cWTYSDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYSDATE"].ToString()).ToString("yyyy-MM-dd");
                 cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");                
@@ -3325,12 +3323,58 @@ namespace OneService.Controllers
         }
         #endregion
 
-        #endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----   
+        #region 產生快遞單
+        /// <summary>
+        /// 產生快遞單
+        /// </summary>        
+        /// <param name="cSRID">cSRID</param>
+        /// <returns></returns>
+        public IActionResult DownloadDeliveryInfo(string cSRID)
+        {
+            var bean        = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == cSRID);
+            var Productbean = dbOne.TbOneSrdetailProducts.FirstOrDefault(x => x.CSrid == cSRID);
 
-        #region -----↓↓↓↓↓裝機服務 ↓↓↓↓↓-----
+            if (bean != null)
+            {
+                string webRootPath  = _HostEnvironment.WebRootPath + "/seed";
+                string FilePath     = Path.Combine(webRootPath, "DeliveryForm.xlsx");
+                string SerialId     = Productbean != null ? Productbean.CSerialId : "";
 
-        #region 裝機服務index
-        public IActionResult InstallSR()
+                XSSFWorkbook WorkBook;
+                using (FileStream FS = new FileStream(FilePath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    WorkBook = new XSSFWorkbook(FS);
+                }
+
+                XSSFSheet Sheet = (XSSFSheet)WorkBook.GetSheetAt(0);
+
+                Sheet.GetRow(4).GetCell(1).SetCellValue("JobID: " + cSRID);     // JobID
+                Sheet.GetRow(5).GetCell(2).SetCellValue(bean.CCustomerName);    // 收件人公司名稱
+                Sheet.GetRow(6).GetCell(2).SetCellValue(bean.CRepairAddress);   // 收件人公司地址
+                Sheet.GetRow(7).GetCell(2).SetCellValue(bean.CRepairName);      // 收件人姓名
+                Sheet.GetRow(7).GetCell(4).SetCellValue(bean.CRepairPhone);     // 收件人電話
+                Sheet.GetRow(9).GetCell(4).SetCellValue(SerialId);              // 序號					
+
+                // 將工作簿寫入 MemoryStream
+                MemoryStream stream = new MemoryStream();
+                WorkBook.Write(stream, true);
+                stream.Flush();
+                stream.Position = 0;
+
+                // 回傳 Excel 檔案
+                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "JobID_" + cSRID + "_快遞單.xlsx");
+            }
+            else
+            { return Json("Fail"); }
+        }
+		#endregion
+
+		#endregion -----↑↑↑↑↑一般服務 ↑↑↑↑↑-----   
+
+		#region -----↓↓↓↓↓裝機服務 ↓↓↓↓↓-----
+
+		#region 裝機服務index
+		public IActionResult InstallSR()
         {
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -8420,68 +8464,6 @@ namespace OneService.Controllers
             return Json(reValue);
         }
         #endregion
-
-        #region 傳入下載的檔案名稱並轉換成原檔檔名
-        /// <summary>
-        /// 傳入下載的檔案名稱並轉換成原檔檔名
-        /// </summary>
-        /// <param name="fileName">檔案名稱</param>
-        /// <returns></returns>
-        public string getSRReportName(string fileName)
-        {            
-            string reValue = string.Empty;
-            string GuidKey = string.Empty;
-
-            if (!string.IsNullOrEmpty(fileName))
-            {
-                #region 取得系統位址參數相關資訊
-                SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);                
-                string tAttachURLName = ParaBean.AttachURLName;
-                #endregion                
-
-                string[] AryName = fileName.Split('.');
-                GuidKey = AryName[0];
-
-                if (!string.IsNullOrEmpty(GuidKey))
-                {
-                    var beanSR = CMF.findSingleSRATTACHINFO(GuidKey, tAttachURLName);
-
-                    if (!string.IsNullOrEmpty(beanSR.FILE_ORG_NAME))
-                    {
-                        reValue = beanSR.FILE_ORG_NAME;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(reValue)) //若沒有抓到檔名，代表是舊的檔案，就取原檔名
-                {
-                    reValue = fileName;
-                }
-            }
-
-            return reValue;
-        }
-        #endregion
-
-        [HttpGet]
-        public async Task<IActionResult> findSRReportName(string filePath)
-        {
-            var memory = new MemoryStream();
-            string webRootPath = _hostingEnvironment.WebRootPath;
-
-            string TempfilePath = filePath.Replace("https://oneservice.etatung.com", "").Replace("http://172.31.7.56:32200", "");
-            string fileName = filePath.Replace("https://oneservice.etatung.com/files/", "").Replace("http://172.31.7.56:32200/files/", "");            
-
-            var uploads = Path.Combine(webRootPath + TempfilePath);
-            using (var stream = new FileStream(uploads, FileMode.Open))
-            {
-                await stream.CopyToAsync(memory);
-            }
-            memory.Position = 0;
-
-            string tReportName = getSRReportName(fileName);
-
-            return File(memory, "application/octet-stream", tReportName);
-        }
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----    
 
