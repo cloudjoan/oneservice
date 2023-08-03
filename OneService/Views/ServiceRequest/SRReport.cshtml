@@ -452,34 +452,7 @@
 			$('#ddl_cSRTypeOne').val("");
 			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
 			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
-		}
-
-		//傳入下載的檔案路徑並轉換成原檔檔名
-		function DownloadSRReport(filePath) {
-			var downloadName = "";
-
-			if (filePath != "")
-			{
-				$.ajax({
-					url: '@Url.Action("findSRReportName", "ServiceRequest")',
-					type: 'post',
-					dataType: 'json',
-					async: false,
-					data: { 
-						filePath: filePath
-					},
-					success: function (result) {
-						downloadName = result;
-					}
-				})
-
-				var link = document.createElement('a');
-				link.href = filePath;
-				link.download = downloadName;
-				link.target = "_blank";
-				link.click();
-			}
-		}
+		}		
 	</script>
 }
 

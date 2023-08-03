@@ -307,6 +307,7 @@ namespace OneService.Controllers
             string cWTYSDATE = string.Empty;
             string cWTYEDATE = string.Empty;
             string cIsShowLink = string.Empty;
+            string UrlFront = string.Empty;
 
             getLoginAccount();
             getEmployeeInfo();
@@ -322,6 +323,8 @@ namespace OneService.Controllers
             tAPIURLName = ParaBean.APIURLName;
             tAttachURLName = ParaBean.AttachURLName;
             #endregion
+
+            UrlFront = tONEURLName + "/files/";
 
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
@@ -632,7 +635,10 @@ namespace OneService.Controllers
                 cArriveTime = Convert.ToDateTime(dr["cArriveTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cArriveTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cFinishTime = Convert.ToDateTime(dr["cFinishTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cFinishTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cWorkHours = dr["cWorkHours"].ToString() == "0" ? "" : dr["cWorkHours"].ToString();
+                
                 cSRReportURL = CMF.findAttachUrl(dr["cSRReport"].ToString(), tAttachURLName);
+                cSRReportURL = cSRReportURL.Replace("http://tsticrmmbgw.etatung.com:8081/CSreport/", UrlFront).Replace("http://tsticrmmbgw.etatung.com:8082/CSreport/", UrlFront);
+
                 cUsed = (dr["cWTYID"].ToString() != "" || dr["cWTYName"].ToString() != "") ? "Y" : "N";
                 cWTYSDATE = Convert.ToDateTime(dr["cWTYSDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYSDATE"].ToString()).ToString("yyyy-MM-dd");
                 cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");                
@@ -705,7 +711,69 @@ namespace OneService.Controllers
 
             return View();
         }
-        #endregion       
+        #endregion
+
+        #region 傳入下載的檔案名稱並轉換成原檔檔名
+        /// <summary>
+        /// 傳入下載的檔案名稱並轉換成原檔檔名
+        /// </summary>
+        /// <param name="fileName">檔案名稱</param>
+        /// <returns></returns>
+        public string getSRReportName(string fileName)
+        {
+            string reValue = string.Empty;
+            string GuidKey = string.Empty;
+
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                #region 取得系統位址參數相關資訊
+                SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+                string tAttachURLName = ParaBean.AttachURLName;
+                #endregion                
+
+                string[] AryName = fileName.Split('.');
+                GuidKey = AryName[0];
+
+                if (!string.IsNullOrEmpty(GuidKey))
+                {
+                    var beanSR = CMF.findSingleSRATTACHINFO(GuidKey, tAttachURLName);
+
+                    if (!string.IsNullOrEmpty(beanSR.FILE_ORG_NAME))
+                    {
+                        reValue = beanSR.FILE_ORG_NAME;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(reValue)) //若沒有抓到檔名，代表是舊的檔案，就取原檔名
+                {
+                    reValue = fileName;
+                }
+            }
+
+            return reValue;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> findSRReportName(string filePath)
+        {
+            var memory = new MemoryStream();
+            string webRootPath = _HostEnvironment.WebRootPath;
+
+            string TempfilePath = filePath.Replace("https://oneservice.etatung.com", "").Replace("http://172.31.7.56:32200", "");
+            string fileName = filePath.Replace("https://oneservice.etatung.com/files/", "").Replace("http://172.31.7.56:32200/files/", "");
+
+            var uploads = Path.Combine(webRootPath + TempfilePath);
+            using (var stream = new FileStream(uploads, FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+            memory.Position = 0;
+
+            string tReportName = getSRReportName(fileName);
+
+            return File(memory, "application/octet-stream", tReportName);
+        }
+        #endregion
 
         #endregion -----↑↑↑↑↑服務總表 ↑↑↑↑↑-----   
 
