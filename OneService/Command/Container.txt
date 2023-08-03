@@ -8,7 +8,11 @@ docker push cloudjoan/oneservice:latest
 //測試
 docker tag oneservice:latest tsti-oneservice-harbor.etatung.com/oneservice/oneservice:v1.0.7
 docker push tsti-oneservice-harbor.etatung.com/oneservice/oneservice:v1.0.7
+//container共用資料夾
+mount -t cifs  -o user=prjadmin,password=Prj\@dmin '//172.31.7.60/csreport_test' /app/wwwroot/files
 
 //正式
 docker tag oneservice:latest tsti-oneservice-harbor.etatung.com/oneservice/oneservice:v1.5.1
 docker push tsti-oneservice-harbor.etatung.com/oneservice/oneservice:v1.5.1
+//container共用資料夾
+mount -t cifs  -o user=prjadmin,password=Prj\@dmin '//172.31.7.60/csreport' /app/wwwroot/files
