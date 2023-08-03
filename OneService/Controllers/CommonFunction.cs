@@ -892,9 +892,54 @@ namespace OneService.Controllers
 
                     tList.Add(beanSR);
                 }
+                else
+                {
+                    #region 取不到代表是舊的服務報告書
+                    string tFileName = tKey.Replace("http://tsticrmmbgw.etatung.com:8081/CSreport/", "").Replace("http://tsticrmmbgw.etatung.com:8082/CSreport/", "");
+                    SRATTACHINFO beanSR = new SRATTACHINFO();                   
+
+                    beanSR.ID = Guid.NewGuid().ToString();
+                    beanSR.FILE_ORG_NAME = tFileName;
+                    beanSR.FILE_NAME = tFileName;
+                    beanSR.FILE_EXT = "PDF";
+                    beanSR.FILE_URL = tAttach;
+                    beanSR.INSERT_TIME = DateTime.Now.ToString("yyyy-MM-dd");
+
+                    tList.Add(beanSR);
+                    #endregion
+                }
             }
 
             return tList;
+        }
+        #endregion
+
+        #region 取得單一附件相關資訊
+        /// <summary>
+        /// 取得單一附件相關資訊
+        /// </summary>
+        /// <param name="GuidKey">GuidKey</param>
+        /// <param name="tAttachURLName">附件URL站台名稱</param>
+        /// <returns></returns>
+        public SRATTACHINFO findSingleSRATTACHINFO(string GuidKey, string tAttachURLName)
+        {
+            SRATTACHINFO beanSR = new SRATTACHINFO();
+
+            var bean = dbOne.TbOneDocuments.FirstOrDefault(x => x.Id.ToString() == GuidKey);           
+
+            if (bean != null)
+            {
+                string tURL = "http://" + tAttachURLName + "/CSreport/" + bean.FileName;
+
+                beanSR.ID = GuidKey;
+                beanSR.FILE_ORG_NAME = bean.FileOrgName;
+                beanSR.FILE_NAME = bean.FileName;
+                beanSR.FILE_EXT = bean.FileExt;
+                beanSR.FILE_URL = tURL;
+                beanSR.INSERT_TIME = bean.InsertTime;              
+            }
+
+            return beanSR;
         }
         #endregion
 
@@ -1878,7 +1923,7 @@ namespace OneService.Controllers
             }
 
             writeToLog(beanIN.IV_CONTRACTID, "GetAPI_VIEWCONTRACTSMEMBERSINFO_GET", pMsg, beanIN.IV_LOGINEMPNAME);
-
+             
             return OUTBean;
         }
         #endregion

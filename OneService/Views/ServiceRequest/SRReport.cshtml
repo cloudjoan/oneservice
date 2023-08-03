@@ -453,6 +453,33 @@
 			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
 			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
 		}
+
+		//傳入下載的檔案路徑並轉換成原檔檔名
+		function DownloadSRReport(filePath) {
+			var downloadName = "";
+
+			if (filePath != "")
+			{
+				$.ajax({
+					url: '@Url.Action("findSRReportName", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					async: false,
+					data: { 
+						filePath: filePath
+					},
+					success: function (result) {
+						downloadName = result;
+					}
+				})
+
+				var link = document.createElement('a');
+				link.href = filePath;
+				link.download = downloadName;
+				link.target = "_blank";
+				link.click();
+			}
+		}
 	</script>
 }
 
@@ -712,74 +739,74 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-											<tr id='tr@(count)'>
-												<td>
-													@if (QueryInfo[58] == "Y")
+									<tr id='tr@(count)'>
+										<td>
+											@if (QueryInfo[58] == "Y")
 											{
-														<a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a>
+												<a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a>
 											}
 											else
 											{
-														@Html.Raw(QueryInfo[0])
+												@Html.Raw(QueryInfo[0])
 											}
-												</td>
-												<td>@Html.Raw(QueryInfo[2])</td>
-												<td>@Html.Raw(QueryInfo[3])</td>
-												<td>@Html.Raw(QueryInfo[4])</td>
-												<td>@Html.Raw(QueryInfo[5])</td>
-												<td>@Html.Raw(QueryInfo[6])</td>
-												<td>@Html.Raw(QueryInfo[7])</td>
-												<td>@Html.Raw(QueryInfo[8])</td>
-												<td>@Html.Raw(QueryInfo[9])</td>
-												<td>@Html.Raw(QueryInfo[10])</td>
-												<td>@Html.Raw(QueryInfo[11])</td>
-												<td>@Html.Raw(QueryInfo[12])</td>
-												<td>@Html.Raw(QueryInfo[13])</td>
-												<td>@Html.Raw(QueryInfo[14])</td>
-												<td>@Html.Raw(QueryInfo[15])</td>
-												<td>@Html.Raw(QueryInfo[16])</td>
-												<td>@Html.Raw(QueryInfo[17])</td>
-												<td>@Html.Raw(QueryInfo[18])</td>
-												<td>@Html.Raw(QueryInfo[19])</td>
-												<td>@Html.Raw(QueryInfo[20])</td>
-												<td>@Html.Raw(QueryInfo[21])</td>
-												<td>@Html.Raw(QueryInfo[22])</td>
-												<td>@Html.Raw(QueryInfo[23])</td>
-												<td>@Html.Raw(QueryInfo[24])</td>
-												<td>@Html.Raw(QueryInfo[25])</td>
-												<td>@Html.Raw(QueryInfo[26])</td>
-												<td>@Html.Raw(QueryInfo[27])</td>
-												<td>@Html.Raw(QueryInfo[28])</td>
-												<td>@Html.Raw(QueryInfo[29])</td>
-												<td>@Html.Raw(QueryInfo[30])</td>
-												<td>@Html.Raw(QueryInfo[31])</td>
-												<td>@Html.Raw(QueryInfo[32])</td>
-												<td>@Html.Raw(QueryInfo[33])</td>
-												<td>@Html.Raw(QueryInfo[34])</td>
-												<td>@Html.Raw(QueryInfo[35])</td>
-												<td>@Html.Raw(QueryInfo[36])</td>
-												<td><a href="@QueryInfo[37]" target="_blank">@QueryInfo[37]</a></td>										
-												<td>@Html.Raw(QueryInfo[38])</td>
-												<td>@Html.Raw(QueryInfo[39])</td>
-												<td>@Html.Raw(QueryInfo[40])</td>
-												<td>@Html.Raw(QueryInfo[41])</td>
-												<td>@Html.Raw(QueryInfo[42])</td>
-												<td>@Html.Raw(QueryInfo[43])</td>
-												<td>@Html.Raw(QueryInfo[44])</td>
-												<td>@Html.Raw(QueryInfo[45])</td>
-												<td>@Html.Raw(QueryInfo[46])</td>
-												<td>@Html.Raw(QueryInfo[47])</td>
-												<td>@Html.Raw(QueryInfo[48])</td>
-												<td>@Html.Raw(QueryInfo[49])</td>
-												<td>@Html.Raw(QueryInfo[50])</td>
-												<td>@Html.Raw(QueryInfo[51])</td>
-												<td>@Html.Raw(QueryInfo[52])</td>
-												<td>@Html.Raw(QueryInfo[53])</td>
-												<td>@Html.Raw(QueryInfo[54])</td>
-												<td>@Html.Raw(QueryInfo[55])</td>
-												<td>@Html.Raw(QueryInfo[56])</td>
-												<td>@Html.Raw(QueryInfo[57])</td>
-											</tr>
+										</td>
+										<td>@Html.Raw(QueryInfo[2])</td>
+										<td>@Html.Raw(QueryInfo[3])</td>
+										<td>@Html.Raw(QueryInfo[4])</td>
+										<td>@Html.Raw(QueryInfo[5])</td>
+										<td>@Html.Raw(QueryInfo[6])</td>
+										<td>@Html.Raw(QueryInfo[7])</td>
+										<td>@Html.Raw(QueryInfo[8])</td>
+										<td>@Html.Raw(QueryInfo[9])</td>
+										<td>@Html.Raw(QueryInfo[10])</td>
+										<td>@Html.Raw(QueryInfo[11])</td>
+										<td>@Html.Raw(QueryInfo[12])</td>
+										<td>@Html.Raw(QueryInfo[13])</td>
+										<td>@Html.Raw(QueryInfo[14])</td>
+										<td>@Html.Raw(QueryInfo[15])</td>
+										<td>@Html.Raw(QueryInfo[16])</td>
+										<td>@Html.Raw(QueryInfo[17])</td>
+										<td>@Html.Raw(QueryInfo[18])</td>
+										<td>@Html.Raw(QueryInfo[19])</td>
+										<td>@Html.Raw(QueryInfo[20])</td>
+										<td>@Html.Raw(QueryInfo[21])</td>
+										<td>@Html.Raw(QueryInfo[22])</td>
+										<td>@Html.Raw(QueryInfo[23])</td>
+										<td>@Html.Raw(QueryInfo[24])</td>
+										<td>@Html.Raw(QueryInfo[25])</td>
+										<td>@Html.Raw(QueryInfo[26])</td>
+										<td>@Html.Raw(QueryInfo[27])</td>
+										<td>@Html.Raw(QueryInfo[28])</td>
+										<td>@Html.Raw(QueryInfo[29])</td>
+										<td>@Html.Raw(QueryInfo[30])</td>
+										<td>@Html.Raw(QueryInfo[31])</td>
+										<td>@Html.Raw(QueryInfo[32])</td>
+										<td>@Html.Raw(QueryInfo[33])</td>
+										<td>@Html.Raw(QueryInfo[34])</td>
+										<td>@Html.Raw(QueryInfo[35])</td>
+										<td>@Html.Raw(QueryInfo[36])</td>
+										<td><a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(QueryInfo[37]) })" target="_blank">@Html.Raw(QueryInfo[37])</a></td>
+										<td>@Html.Raw(QueryInfo[38])</td>
+										<td>@Html.Raw(QueryInfo[39])</td>
+										<td>@Html.Raw(QueryInfo[40])</td>
+										<td>@Html.Raw(QueryInfo[41])</td>
+										<td>@Html.Raw(QueryInfo[42])</td>
+										<td>@Html.Raw(QueryInfo[43])</td>
+										<td>@Html.Raw(QueryInfo[44])</td>
+										<td>@Html.Raw(QueryInfo[45])</td>
+										<td>@Html.Raw(QueryInfo[46])</td>
+										<td>@Html.Raw(QueryInfo[47])</td>
+										<td>@Html.Raw(QueryInfo[48])</td>
+										<td>@Html.Raw(QueryInfo[49])</td>
+										<td>@Html.Raw(QueryInfo[50])</td>
+										<td>@Html.Raw(QueryInfo[51])</td>
+										<td>@Html.Raw(QueryInfo[52])</td>
+										<td>@Html.Raw(QueryInfo[53])</td>
+										<td>@Html.Raw(QueryInfo[54])</td>
+										<td>@Html.Raw(QueryInfo[55])</td>
+										<td>@Html.Raw(QueryInfo[56])</td>
+										<td>@Html.Raw(QueryInfo[57])</td>
+									</tr>
 								}
 							}
 						}

@@ -260,7 +260,7 @@
 						<td>@Html.Raw(QueryInfo[34])</td>
 						<td>@Html.Raw(QueryInfo[35])</td>
 						<td>@Html.Raw(QueryInfo[36])</td>
-						<td><a href="@QueryInfo[37]" target="_blank">@QueryInfo[37]</a></td>
+						<td><a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(QueryInfo[37]) })" target="_blank">@Html.Raw(QueryInfo[37])</a></td>
 						<td>@Html.Raw(QueryInfo[38])</td>
 						<td>@Html.Raw(QueryInfo[39])</td>
 						<td>@Html.Raw(QueryInfo[40])</td>
