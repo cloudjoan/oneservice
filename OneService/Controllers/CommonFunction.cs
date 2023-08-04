@@ -2181,6 +2181,62 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
+        /// <summary>
+        /// 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
+        /// </summary>        
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="cTeamID">服務團隊</param>
+        /// <param name="tLoginERPID">登入者ERPID</param>
+        /// <param name="tLoginName">登入者姓名(中+英)</param>
+        /// <param name="tIsMIS">登入者是否為MIS</param>
+        /// <param name="tIsCSManager">登入者是否為客服主管</param>
+        /// <param name="tIsDCC">登入者是否為文管中心人員</param>
+        /// <param name="tIsContractManager">登入者是否為合約主管</param>
+        /// <param name="tContractCenterID">中心單位ID(若為中心單位合約管理員就會有值，ex.12G3)</param>
+        /// <param name="cAPIURLName">API URLName</param>
+        /// <returns></returns>
+        public bool checkIsCanReadContractReport(string cContractID, string cTeamID, string tLoginERPID, string tLoginName, bool tIsMIS, bool tIsCSManager, bool tIsDCC, bool tIsContractManager, List<string> tContractCenterID, string cAPIURLName)
+        {
+            bool reValue = false;          
+
+            if (tIsMIS || tIsCSManager || tIsDCC || tIsContractManager)
+            {
+                reValue = true;
+            }
+            else
+            {
+                //判斷是否為中心單位管理者
+                reValue = checkIsSRTeamMappingCenterManager(cTeamID, tContractCenterID);
+
+                if (!reValue)
+                {
+                    #region call ONE SERVICE 查詢是否可以讀取合約書PDF權限接口
+                    VIEWCONTRACTSMEMBERSINFO_INPUT beanIN = new VIEWCONTRACTSMEMBERSINFO_INPUT();
+
+                    beanIN.IV_LOGINEMPNO = tLoginERPID;
+                    beanIN.IV_LOGINEMPNAME = tLoginName;
+                    beanIN.IV_CONTRACTID = cContractID;
+                    beanIN.IV_SRTEAM = cTeamID;
+                    beanIN.IV_APIURLName = cAPIURLName;
+
+                    VIEWCONTRACTSMEMBERSINFO_OUTPUT beanOUT = GetAPI_VIEWCONTRACTSMEMBERSINFO(beanIN);
+
+                    if (beanOUT.EV_MSGT == "Y")
+                    {
+                        if (beanOUT.EV_IsCanRead == "Y")
+                        {
+                            reValue = true;
+                        }
+                    }
+                    #endregion
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #region 判斷登入人員是否有在傳入的服務團隊裡(true.有 false.否)，抓舊組織
         /// <summary>
         /// 判斷登入人員是否有在傳入的服務團隊裡(true.有 false.否)，抓舊組織

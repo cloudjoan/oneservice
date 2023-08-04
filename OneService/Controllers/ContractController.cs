@@ -591,7 +591,7 @@ namespace OneService.Controllers
                 #endregion
 
                 #region 是否可顯示合約書link
-                pIsCanRead = checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, tAPIURLName);
+                pIsCanRead = CMF.checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, ViewBag.cLoginUser_ERPID, ViewBag.empEngName, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, tAPIURLName);
 
                 if (pIsCanRead)
                 {
@@ -660,51 +660,7 @@ namespace OneService.Controllers
         }
         #endregion       
 
-        #region 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
-        /// <summary>
-        /// 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
-        /// </summary>        
-        /// <param name="cContractID">文件編號</param>
-        /// <param name="cTeamID">服務團隊</param>
-        /// <param name="cAPIURLName">API URLName</param>
-        /// <returns></returns>
-        public bool checkIsCanReadContractReport(string cContractID, string cTeamID, string cAPIURLName)
-        {
-            bool reValue = false;
-
-            getLoginAccount();
-            getEmployeeInfo();
-
-            #region call ONE SERVICE 查詢是否可以讀取合約書PDF權限接口
-            VIEWCONTRACTSMEMBERSINFO_INPUT beanIN = new VIEWCONTRACTSMEMBERSINFO_INPUT();
-
-            beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-            beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
-            beanIN.IV_CONTRACTID = cContractID;
-            beanIN.IV_SRTEAM = cTeamID;
-            beanIN.IV_APIURLName = cAPIURLName;
-
-            VIEWCONTRACTSMEMBERSINFO_OUTPUT beanOUT = CMF.GetAPI_VIEWCONTRACTSMEMBERSINFO(beanIN);
-
-            if (beanOUT.EV_MSGT == "Y")
-            {
-                if (pIsMIS || pIsCSManager)
-                {
-                    reValue = true;
-                }
-                else
-                {
-                    if (beanOUT.EV_IsCanRead == "Y")
-                    {
-                        reValue = true;
-                    }
-                }
-            }
-            #endregion
-
-            return reValue;
-        }
-        #endregion
+        
 
         #region 儲存合約主數據內容
         [HttpPost]
@@ -960,7 +916,7 @@ namespace OneService.Controllers
                     #endregion
 
                     #region 是否可顯示合約書link
-                    pIsCanRead = checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, tAPIURLName);
+                    pIsCanRead = CMF.checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, ViewBag.cLoginUser_ERPID, ViewBag.empEngName, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, tAPIURLName);                    
 
                     if (pIsCanRead)
                     {
