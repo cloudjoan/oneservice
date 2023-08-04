@@ -1155,11 +1155,11 @@ namespace OneService.Controllers
             tSQL.AppendLine("        ) as Products");
             tSQL.AppendLine(" From TB_ONE_SRMain M");
             tSQL.AppendLine(ttJoin);
-            tSQL.AppendLine(" Where 1=1 " + ttWhere);
+            tSQL.AppendLine(" Where 1=1 " + ttWhere);            
             #endregion
 
-            dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
-            dtProgress = CMF.DistinctTable(dt);
+            dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");            
+            dtProgress = CMF.DistinctTable(dt);           
 
             #region 先取得所有協助工程師和技術主管的ERPID
             foreach (DataRow dr in dtProgress.Rows)
@@ -1220,6 +1220,7 @@ namespace OneService.Controllers
                 QueryToList.Add(QueryInfo);
             }
 
+            QueryToList = QueryToList.OrderByDescending(x => x[16]).ToList();
             ViewBag.QueryToListBean = QueryToList;
             #endregion
 
