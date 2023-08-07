@@ -4086,6 +4086,35 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 依關鍵字查詢物料資訊(for備品)
+        /// <summary>
+        /// 依關鍵字查詢物料資訊(for備品)
+        /// </summary>    
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="keyword">料號/料號說明關鍵字</param>
+        /// <returns></returns>
+        public Object findMaterialSpareByKeyWords(string cBUKRS, string keyword)
+        {
+            string cMARD_WERKS = string.Empty;
+
+            switch (cBUKRS)
+            {
+                case "T012":
+                    cMARD_WERKS = "12G9";
+                    break;
+                case "T016":
+                    cMARD_WERKS = "16G9";
+                    break;
+            }
+
+            Object contentObj = dbProxy.ViewMaterialByComps.Where(x => (x.MaraMatnr.Contains(keyword) || x.MaktTxza1Zf.Contains(keyword)) &&
+                                                                   (string.IsNullOrEmpty(cMARD_WERKS) ? true : x.MardWerks == cMARD_WERKS)
+                                                             ).Take(8);
+
+            return contentObj;
+        }
+        #endregion
+
         #region 取得服務團隊名稱
         /// <summary>
         /// 取得服務團隊名稱

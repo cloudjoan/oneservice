@@ -1501,7 +1501,7 @@ namespace OneService.Controllers
                 ViewBag.cTechManagerID = beanM.CTechManagerId;
                 #endregion
 
-                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
+                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
 
                 #region 取得客戶聯絡人資訊(明細)
                 var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
@@ -3537,7 +3537,7 @@ namespace OneService.Controllers
                 ViewBag.cSecretaryName = beanM.CSecretaryName;                
                 #endregion
 
-                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
+                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
 
                 #region 取得客戶聯絡人資訊(明細)
                 var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
@@ -4394,7 +4394,7 @@ namespace OneService.Controllers
                 ViewBag.cSecretaryName = beanM.CSecretaryName;
                 #endregion
 
-                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd");
+                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
 
                 #region 取得客戶聯絡人資訊(明細)
                 var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
@@ -8154,6 +8154,21 @@ namespace OneService.Controllers
         public IActionResult findMaterial(string cBUKRS, string keyword)
         {
             Object contentObj = CMF.findMaterialByKeyWords(cBUKRS, keyword);
+
+            return Json(contentObj);
+        }
+        #endregion
+
+        #region Ajax依關鍵字查詢物料資訊(for備品)
+        /// <summary>
+        /// Ajax依關鍵字查詢物料資訊(for備品)
+        /// </summary>
+        /// <param name="cBUKRS">公司別(T012、T016、C069、T022)</param>
+        /// <param name="keyword">關鍵字</param>        
+        /// <returns></returns>
+        public IActionResult findMaterialSpare(string cBUKRS, string keyword)
+        {
+            Object contentObj = CMF.findMaterialSpareByKeyWords(cBUKRS, keyword);
 
             return Json(contentObj);
         }

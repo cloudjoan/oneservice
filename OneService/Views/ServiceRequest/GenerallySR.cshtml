@@ -1791,8 +1791,7 @@
 								url: '@Url.Action("findMaterial", "ServiceRequest")',
 								type: 'post',
 								dataType: 'json',
-								data: { 
-									functionName: 'findMaterial', 
+								data: { 									
 									cBUKRS: cBUKRS,
 									keyword: keyword 
 								},
@@ -1817,8 +1816,58 @@
 											if (ojbID.indexOf('tbx_PRcMaterialID') >= 0)
 											{
 												tds.eq(3).children().val(ui.item.Name);
-											}
-											else if (ojbID.indexOf('tbx_PAcMaterialID') >= 0)
+											}																						
+										}
+									}).bind('focus', function () { $(this).autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();
+								}
+							})
+					}
+				}
+			})
+		}
+
+		//用關鍵字查詢物料(for備品)
+		function findMaterialByKeyword() {
+			var cBUKRS = $("#hid_cLoginUser_BUKRS").val();		  //公司別
+			$(".materialSpare").unbind();
+
+			$(".materialSpare").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 38 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						var obj = $(this);
+						var ojbID = $(this).attr("id");
+							$.ajax({
+								url: '@Url.Action("findMaterialSpare", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: { 									
+									cBUKRS: cBUKRS,
+									keyword: keyword 
+								},
+								success: function (result) {
+									materials = [];
+									$.each(result, function (i, idata) {
+										materials[i] = {
+											label: idata.maraMatnr + "\\" + idata.maktTxza1Zf,
+											idx: i,
+											value: idata.maraMatnr,
+											Name: idata.maktTxza1Zf,
+										Desc: idata.maktTxza1Zf
+										};
+									});
+
+									 //綁定foucs事件
+									obj.autocomplete({
+										source: materials,
+										select: function (event, ui) {
+											var tr = obj.parent().parent();
+											var tds = tr.find("td");
+											if (ojbID.indexOf('tbx_PAcMaterialID') >= 0)
 											{
 												tds.eq(3).children().val(ui.item.Name);
 											}												
@@ -4061,7 +4110,7 @@
 		
 		//組更換零件料號ID
 		function SetMaterialID_Parts() {
-			var reValue = "<td><input type='text' name='tbx_PAcMaterialID' id='tbx_PAcMaterialID" + trPartsNoCount + "' class='form-control material' style='width:150px;' placeholder='請輸入料號或料號說明的關鍵字'></td>";
+			var reValue = "<td><input type='text' name='tbx_PAcMaterialID' id='tbx_PAcMaterialID" + trPartsNoCount + "' class='form-control materialSpare' style='width:150px;' placeholder='請輸入料號或料號說明的關鍵字'></td>";
 			return reValue;
 		}
 
@@ -5182,7 +5231,7 @@
 																								<input type='hidden' name='hid_PAcDisabled' @("id=hid_PAcDisabled" + count) value=@bean.Disabled>																		
 																							</td>																	
 																							<td>
-																								<input type='text' name='tbx_PAcMaterialID' @("id=tbx_PAcMaterialID" + count) class='form-control material' style='width:150px;' placeholder='更換零件料號ID' value="@bean.CMaterialId" title="@bean.CMaterialId">
+																								<input type='text' name='tbx_PAcMaterialID' @("id=tbx_PAcMaterialID" + count) class='form-control materialSpare' style='width:150px;' placeholder='更換零件料號ID' value="@bean.CMaterialId" title="@bean.CMaterialId">
 																							</td>																	
 																							<td>
 																								<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_PAcMaterialName" @("id=tbx_PAcMaterialName" + count) title="@bean.CMaterialName">@bean.CMaterialName</textarea>
