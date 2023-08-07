@@ -569,6 +569,7 @@ namespace OneService.Controllers
 			actTypeDict.Add("J", "前置準備");
 			actTypeDict.Add("K", "查修/維運");
 			actTypeDict.Add("L", "文書處理");
+			actTypeDict.Add("M", "產品研發/維護");
 
 			if (file != null)
             {
@@ -588,7 +589,7 @@ namespace OneService.Controllers
 							bean.UserErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
 							bean.Whtype = row.GetCell(1).StringCellValue;
 							bean.ActType = row.GetCell(2).StringCellValue;
-							bean.CrmOppNo = row.GetCell(3).StringCellValue;
+                            bean.CrmOppNo = row.GetCell(3).CellType == CellType.Numeric ? row.GetCell(3).NumericCellValue.ToString() : row.GetCell(3).StringCellValue;
 							bean.WhDescript = row.GetCell(4).StringCellValue;
                             
                             switch (row.GetCell(5).CellType)
