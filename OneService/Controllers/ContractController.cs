@@ -1198,7 +1198,7 @@ namespace OneService.Controllers
 
                 tUrl = "../Contract/ContractMain?ContractID=" + bean.CContractId;
 
-                string[] QueryInfo = new string[12];
+                string[] QueryInfo = new string[10];
 
                 QueryInfo[0] = IsCanEdit;                          //是否可以編輯
                 QueryInfo[1] = bean.CId.ToString();                 //系統ID
@@ -1209,9 +1209,7 @@ namespace OneService.Controllers
                 QueryInfo[6] = bean.CEngineerId;                    //工程師ERPID                
                 QueryInfo[7] = bean.CEngineerName;                  //工程師姓名
                 QueryInfo[8] = bean.CIsMainEngineer;                //是否為主要工程師                
-                QueryInfo[9] = bean.CContactStoreId.ToString();     //門市代號                
-                QueryInfo[10] = bean.CContactStoreName;             //門市名稱                
-                QueryInfo[11] = tUrl;                             //URL
+                QueryInfo[9] = tUrl;                              //URL
 
                 QueryToList.Add(QueryInfo);
             }
@@ -1228,25 +1226,41 @@ namespace OneService.Controllers
         /// <param name="cContractID">文件編號</param>
         /// <param name="cEngineerID">工程師ERPID</param>
         /// <param name="cEngineerName">工程師姓名</param>
-        /// <param name="cIsMainEngineer">是否為主要工程師</param>
-        /// <param name="cContactStoreID">門市代號</param>
-        /// <param name="cContactStoreName">門市名稱</param>
+        /// <param name="cIsMainEngineer">是否為主要工程師</param>        
         /// <returns></returns>
-        public IActionResult saveDetailENG(string cID, string cContractID, string cEngineerID, string cEngineerName, string cIsMainEngineer, string cContactStoreID, string cContactStoreName)
-        {
+        public IActionResult saveDetailENG(string cID, string cContractID, string cEngineerID, string cEngineerName, string cIsMainEngineer)
+        {   
+            bool tIsFormal = false;
             string reValue = "SUCCESS";
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
             string tLog = string.Empty;
 
+            string IV_STATUS = string.Empty;            //狀態(ADD.新增 EDIT.編輯 DEL.刪除)
+            string IV_IsMain = string.Empty;            //是否為主要工程師(Y.是 N.否)
+            string IV_OldMainEngineer = string.Empty;   //呼叫API的原主要工程師
+            string IV_OldAssEngineer = string.Empty;    //呼叫API的原協助工程師
             string OldcEngineerID = string.Empty;
             string OldcEngineerName = string.Empty;
-            string OldcIsMainEngineer = string.Empty;
-            string OldcContactStoreID = string.Empty;
-            string OldcContactStoreName = string.Empty;
+            string OldcIsMainEngineer = string.Empty;            
 
             bool tIsDouble = false; //判斷是否有重覆
 
             getLoginAccount();
             getEmployeeInfo();
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+            #endregion
 
             if (cIsMainEngineer == "Y")
             {
@@ -1261,12 +1275,16 @@ namespace OneService.Controllers
 
             if (!tIsDouble)
             {
+                CONTRACTENGCHANGE_INPUT beanIN = new CONTRACTENGCHANGE_INPUT();
+
                 if (!string.IsNullOrEmpty(cID)) //修改
                 {
                     var bean = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.CId == int.Parse(cID));
 
                     if (bean != null)
                     {
+                        IV_STATUS = "EDIT";
+
                         #region 紀錄新舊值
                         OldcEngineerID = bean.CEngineerId;
                         tLog += CMF.getNewAndOldLog("工程師ERPID", OldcEngineerID, cEngineerID);
@@ -1277,53 +1295,57 @@ namespace OneService.Controllers
                         OldcIsMainEngineer = bean.CIsMainEngineer;
                         tLog += CMF.getNewAndOldLog("是否為主要工程師", OldcIsMainEngineer, cIsMainEngineer);
 
-                        OldcContactStoreID = bean.CContactStoreId.ToString();
-                        tLog += CMF.getNewAndOldLog("門市代號", OldcContactStoreID, cContactStoreID);
-
-                        OldcContactStoreName = bean.CContactStoreName;
-                        tLog += CMF.getNewAndOldLog("門市名稱", OldcContactStoreName, cContactStoreName);
+                        if (cIsMainEngineer == "Y")
+                        {
+                            IV_IsMain = "Y";
+                            IV_OldMainEngineer = OldcEngineerID;
+                        }
+                        else
+                        {
+                            IV_IsMain = "N";
+                            IV_OldAssEngineer = OldcEngineerID;
+                        }
                         #endregion
 
                         bean.CEngineerId = cEngineerID;
                         bean.CEngineerName = cEngineerName;
                         bean.CIsMainEngineer = cIsMainEngineer;
-
-                        if (!string.IsNullOrEmpty(cContactStoreID))
-                        {
-                            bean.CContactStoreId = new Guid(cContactStoreID);
-                        }
-
-                        if (!string.IsNullOrEmpty(cContactStoreName))
-                        {
-                            bean.CContactStoreName = cContactStoreName;
-                        }
-
+                       
                         bean.ModifiedDate = DateTime.Now;
                         bean.ModifiedUserName = ViewBag.empEngName;
                     }
                 }
                 else //新增
                 {
+                    IV_STATUS = "ADD";
+
+                    #region 紀錄新舊值
+                    tLog = "工程師ERPID【" + cEngineerID + "】 工程師姓名【" + cEngineerName + "】 是否為主要工程師【" + cIsMainEngineer + "】已新增！";
+
+                    if (cIsMainEngineer == "Y")
+                    {
+                        IV_IsMain = "Y";
+                        IV_OldMainEngineer = OldcEngineerID;
+                    }
+                    else
+                    {
+                        IV_IsMain = "N";
+                        IV_OldAssEngineer = OldcEngineerID;
+                    }
+                    #endregion
+
                     TbOneContractDetailEng beanENG = new TbOneContractDetailEng();
 
                     beanENG.CContractId = cContractID;
                     beanENG.CEngineerId = cEngineerID;
                     beanENG.CEngineerName = cEngineerName;
-                    beanENG.CIsMainEngineer = cIsMainEngineer;
-
-                    if (!string.IsNullOrEmpty(cContactStoreID))
-                    {
-                        beanENG.CContactStoreId = new Guid(cContactStoreID);
-                    }
-
-                    if (!string.IsNullOrEmpty(cContactStoreName))
-                    {
-                        beanENG.CContactStoreName = cContactStoreName;
-                    }
+                    beanENG.CIsMainEngineer = cIsMainEngineer;                   
 
                     beanENG.Disabled = 0;
                     beanENG.CreatedDate = DateTime.Now;
                     beanENG.CreatedUserName = ViewBag.empEngName;
+                    beanENG.ModifiedDate = DateTime.Now;
+                    beanENG.ModifiedUserName = ViewBag.empEngName;
 
                     dbOne.TbOneContractDetailEngs.Add(beanENG);
                 }
@@ -1342,6 +1364,20 @@ namespace OneService.Controllers
                     {
                         CMF.writeToLog(cContractID, "saveDetailENG", tLog, ViewBag.empEngName);
                     }
+
+                    #region call ONE SERVICE 合約資料新增/異動時發送Mail通知接口                    
+                    beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
+                    beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
+                    beanIN.IV_CONTRACTID = cContractID;
+                    beanIN.IV_LOG = tLog;
+                    beanIN.IV_STATUS = IV_STATUS;
+                    beanIN.IV_IsMain = IV_IsMain;
+                    beanIN.IV_OldMainEngineer = IV_OldMainEngineer;
+                    beanIN.IV_OldAssEngineer = IV_OldAssEngineer;
+                    beanIN.IV_APIURLName = tAPIURLName;
+
+                    CMF.GetAPI_CONTRACTENGCHANGE_SENDMAIL(beanIN);                   
+                    #endregion
                 }
             }
             else
@@ -1370,22 +1406,86 @@ namespace OneService.Controllers
         {
             int result = 0;
 
+            bool tIsFormal = false;
+            string tBPMURLName = string.Empty;
+            string tAPIURLName = string.Empty;
+            string tPSIPURLName = string.Empty;
+            string tAttachURLName = string.Empty;
+            string tLog = string.Empty;
+
+            string IV_STATUS = string.Empty;            //狀態(ADD.新增 EDIT.編輯 DEL.刪除)
+            string IV_IsMain = string.Empty;            //是否為主要工程師(Y.是 N.否)
+            string IV_OldMainEngineer = string.Empty;   //呼叫API的原主要工程師
+            string IV_OldAssEngineer = string.Empty;    //呼叫API的原協助工程師
+            string OldcEngineerID = string.Empty;
+            string OldcEngineerName = string.Empty;
+            string OldcIsMainEngineer = string.Empty;
+
             getLoginAccount();
             getEmployeeInfo();
+
+            #region 取得系統位址參數相關資訊
+            SRSYSPARAINFO ParaBean = CMF.findSRSYSPARAINFO(pOperationID_GenerallySR);
+
+            tIsFormal = ParaBean.IsFormal;
+
+            tBPMURLName = ParaBean.BPMURLName;
+            tPSIPURLName = ParaBean.PSIPURLName;
+            tAPIURLName = ParaBean.APIURLName;
+            tAttachURLName = ParaBean.AttachURLName;
+            #endregion
 
             var bean = dbOne.TbOneContractDetailEngs.FirstOrDefault(x => x.CId == cID);
             if (bean != null)
             {
+                CONTRACTENGCHANGE_INPUT beanIN = new CONTRACTENGCHANGE_INPUT();
+
+                IV_STATUS = "DEL";
+
+                #region 紀錄新舊值
+                tLog = "工程師ERPID【"+ bean.CEngineerId + "】 工程師姓名【" + bean.CEngineerName + "】已被刪除！";
+
+                if (bean.CIsMainEngineer == "Y")
+                {
+                    IV_IsMain = "Y";
+                    IV_OldMainEngineer = bean.CEngineerId;
+                }
+                else
+                {
+                    IV_IsMain = "N";
+                    IV_OldAssEngineer = bean.CEngineerId;
+                }
+                #endregion
+
                 bean.Disabled = 1;
                 bean.ModifiedDate = DateTime.Now;
                 bean.ModifiedUserName = ViewBag.empEngName;
 
-                result = dbOne.SaveChanges();                 
+                result = dbOne.SaveChanges();
+
+                if (!string.IsNullOrEmpty(tLog))
+                {
+                    CMF.writeToLog(bean.CContractId, "deleteDetailENG", tLog, ViewBag.empEngName);
+                }
+
+                #region call ONE SERVICE 合約資料新增/異動時發送Mail通知接口                    
+                beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
+                beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
+                beanIN.IV_CONTRACTID = bean.CContractId;
+                beanIN.IV_LOG = tLog;
+                beanIN.IV_STATUS = IV_STATUS;
+                beanIN.IV_IsMain = IV_IsMain;
+                beanIN.IV_OldMainEngineer = IV_OldMainEngineer;
+                beanIN.IV_OldAssEngineer = IV_OldAssEngineer;
+                beanIN.IV_APIURLName = tAPIURLName;
+
+                CMF.GetAPI_CONTRACTENGCHANGE_SENDMAIL(beanIN);
+                #endregion
             }
 
             return Json(result);
         }
-        #endregion
+        #endregion        
 
         #endregion -----↑↑↑↑↑工程師明細查詢/維謢 ↑↑↑↑↑-----
 
@@ -2267,4 +2367,68 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑共用方法 ↑↑↑↑↑-----   
     }
+
+    #region 合約主數據資料新增/異動時發送Mail通知資料INPUT資訊
+    /// <summary>合約主數據資料新增/異動時發送Mail通知資料INPUT資訊</summary>
+    public struct CONTRACTCHANGE_INPUT
+    {
+        /// <summary>登入者員工編號ERPID</summary>
+        public string IV_LOGINEMPNO { get; set; }
+        /// <summary>修改者員工姓名(中文+英文)</summary>
+        public string IV_LOGINEMPNAME { get; set; }
+        /// <summary>文件編號</summary>
+        public string IV_CONTRACTID { get; set; }
+        /// <summary>LOG記錄</summary>
+        public string IV_LOG { get; set; }
+        /// <summary>APIURL開頭網址</summary>
+        public string IV_APIURLName { get; set; }
+    }
+    #endregion
+
+    #region 合約主數據資料新增/異動時發送Mail通知資料OUTPUT資訊
+    /// <summary>合約主數據資料新增/異動時發送Mail通知資料OUTPUT資訊</summary>
+    public struct CONTRACTCHANGE_OUTPUT
+    {
+        /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+        public string EV_MSGT { get; set; }
+        /// <summary>消息內容</summary>
+        public string EV_MSG { get; set; }
+    }
+    #endregion    
+
+    #region 合約工程師資料新增/異動時發送Mail通知資料INPUT資訊
+    /// <summary>合約工程師資料新增/異動時發送Mail通知資料INPUT資訊</summary>
+    public struct CONTRACTENGCHANGE_INPUT
+    {
+        /// <summary>登入者員工編號ERPID</summary>
+        public string IV_LOGINEMPNO { get; set; }
+        /// <summary>修改者員工姓名(中文+英文)</summary>
+        public string IV_LOGINEMPNAME { get; set; }
+        /// <summary>文件編號</summary>
+        public string IV_CONTRACTID { get; set; }        
+        /// <summary>LOG記錄</summary>
+        public string IV_LOG { get; set; }
+        /// <summary>執行狀態(ADD.新增 EDIT.編輯 DEL.刪除)</summary>
+        public string IV_STATUS { get; set; }
+        /// <summary>是否為主要工程師(Y.是 N.否)</summary>
+        public string IV_IsMain { get; set; }
+        /// <summary>原主要工程師ERPID</summary>
+        public string IV_OldMainEngineer { get; set; }
+        /// <summary>原協助工程師ERPID</summary>
+        public string IV_OldAssEngineer { get; set; }
+        /// <summary>APIURL開頭網址</summary>
+        public string IV_APIURLName { get; set; }
+    }
+    #endregion
+
+    #region 合約工程師資料新增/異動時發送Mail通知資料OUTPUT資訊
+    /// <summary>合約工程師資料新增/異動時發送Mail通知資料OUTPUT資訊</summary>
+    public struct CONTRACTENGCHANGE_OUTPUT
+    {
+        /// <summary>消息類型(E.處理失敗 Y.處理成功)</summary>
+        public string EV_MSGT { get; set; }
+        /// <summary>消息內容</summary>
+        public string EV_MSG { get; set; }
+    }
+    #endregion
 }

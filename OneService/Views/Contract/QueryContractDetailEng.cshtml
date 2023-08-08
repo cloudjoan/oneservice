@@ -70,16 +70,14 @@
 						text: '匯出Excel',
 						sheetName: '工程師明細查詢',
 						exportOptions: {
-							columns: [1, 2, 3, 4, 5, 6] //要顯示的欄位
+							columns: [1, 2, 3, 4] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							addCustomNumberFormat(xlsx, '0');
 							formatTargetColumn(xlsx, 'A');
 							formatTargetColumn(xlsx, 'B');
 							formatTargetColumn(xlsx, 'C');
-							formatTargetColumn(xlsx, 'D');
-							formatTargetColumn(xlsx, 'E');
-							formatTargetColumn(xlsx, 'F');							
+							formatTargetColumn(xlsx, 'D');														
 						}
 					}),
 				],
@@ -345,9 +343,7 @@
 			$("#txt_cContractID").val($(obj).parent().parent().find('.taskContractID').val());					//文件編號
 			$("#txt_cEngineerID").val($(obj).parent().parent().find('.taskEngERPID').text());					//工程師ERPID
 			$("#txt_cEngineerName").val($(obj).parent().parent().find('.taskEngName').text());					//工程師姓名
-			$("#ddl_cIsMainEngineer").val($(obj).parent().parent().find('.taskIsMain').text());					//是否為主要工程師
-			$("#txt_cContactStoreID").val($(obj).parent().parent().find('.taskStoreID').text());					//門市代號
-			$("#txt_cContactStoreName").val($(obj).parent().parent().find('.taskStoreName').text());				//門市名稱
+			$("#ddl_cIsMainEngineer").val($(obj).parent().parent().find('.taskIsMain').text());					//是否為主要工程師			
 
 			//$("#dialog_DetailENG .modal-content").css({ 'width': '110%' });
 			$("#dialog_DetailENG").modal('show');
@@ -386,14 +382,6 @@
 			if ($("#txt_cEngineerID").val() == "") strMsg += "【工程師ERPID】不得為空！\n";
 			if ($("#txt_cEngineerName").val() == "") strMsg += "您未下拉選取【工程師姓名】，請輸入關鍵字後再重新選取！\n";
 			if ($("#ddl_cIsMainEngineer").val() == "-1") strMsg += "請選擇【是否為主要工程師】！\n";
-			
-			if ($("#txt_cContactStoreID").val() != "") 
-			{
-				if ($("#txt_cContactStoreName").val() == "")
-				{
-					strMsg += "您未下拉選取【門市代號】，請輸入關鍵字後再重新選取！\n";
-				}
-			}			
 
 			if (strMsg != "") {
 				alert(strMsg);
@@ -410,9 +398,7 @@
 						cContractID: $("#txt_cContractID").val(),
 						cEngineerID: $("#txt_cEngineerID").val(),
 						cEngineerName: $("#txt_cEngineerName").val(),
-						cIsMainEngineer: $("#ddl_cIsMainEngineer").val(),
-						cContactStoreID: $("#txt_cContactStoreID").val(),
-						cContactStoreName: $("#txt_cContactStoreName").val(),						
+						cIsMainEngineer: $("#ddl_cIsMainEngineer").val()						
 					},
 					success: function (result) {
 						if (result == "SUCCESS") {
@@ -607,9 +593,7 @@
 								<th>文件編號</th>
 								<th>工程師ERPID</th>
 								<th>工程師姓名</th>
-								<th>是否為主要工程師</th>
-								<th>門市代號</th>
-								<th>門市名稱</th>
+								<th>是否為主要工程師</th>								
 							</tr>
 						</thead>
 						<tbody>
@@ -645,12 +629,10 @@
 													<input type="hidden" value="@QueryInfo[5]" class="taskContractID" />
 												</td>
 											}
-											<td><a href="@QueryInfo[11]" target="_blank">@QueryInfo[5]</a></td>
+											<td><a href="@QueryInfo[9]" target="_blank">@QueryInfo[5]</a></td>
 											<td class="taskEngERPID">@Html.Raw(QueryInfo[6])</td>
 											<td class="taskEngName">@Html.Raw(QueryInfo[7])</td>
-											<td class="taskIsMain">@Html.Raw(QueryInfo[8])</td>
-											<td class="taskStoreID">@Html.Raw(QueryInfo[9])</td>
-											<td class="taskStoreName">@Html.Raw(QueryInfo[10])</td>
+											<td class="taskIsMain">@Html.Raw(QueryInfo[8])</td>											
 										</tr>
 									}
 								}
@@ -697,15 +679,7 @@
 							<option value='Y'>Y</option>
 							<option value='N'>N</option> 							
 						</select>						
-					</div>
-					<div class="form-group row">
-						<label class="col-lg-2 col-form-label">門市代號</label>
-						<input type="text" id="txt_cContactStoreID" class="form-control col-lg-10 ContactStore" placeholder="請輸入門市名稱關鍵字搜尋" />						
-					</div>
-					<div class="form-group row">						
-						<label class="col-lg-2 col-form-label">門市名稱</label>
-					<input type="text" id="txt_cContactStoreName" class="form-control col-lg-10" placeholder="門市名稱" disabled />
-					</div>
+					</div>					
 				</div>
 				<div class="modal-footer">
 					<div class="col-lg-5"></div>

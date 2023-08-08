@@ -840,7 +840,7 @@ namespace OneService.Models
                     .HasColumnName("cArriveTime");
 
                 entity.Property(e => e.CDesc)
-                    .HasMaxLength(255)
+                    .HasMaxLength(1000)
                     .HasColumnName("cDesc");
 
                 entity.Property(e => e.CEngineerId)

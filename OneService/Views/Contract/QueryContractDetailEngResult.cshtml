@@ -64,16 +64,14 @@
 					text: '匯出Excel',
 					sheetName: '工程師明細查詢',
 					exportOptions: {
-						columns: [1, 2, 3, 4, 5, 6] //要顯示的欄位
+						columns: [1, 2, 3, 4] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						addCustomNumberFormat(xlsx, '0');
 						formatTargetColumn(xlsx, 'A');
 						formatTargetColumn(xlsx, 'B');
 						formatTargetColumn(xlsx, 'C');
-						formatTargetColumn(xlsx, 'D');
-						formatTargetColumn(xlsx, 'E');
-						formatTargetColumn(xlsx, 'F');						
+						formatTargetColumn(xlsx, 'D');						
 					}
 				}),
 			],
@@ -118,9 +116,7 @@
 			<th>文件編號</th>
 			<th>工程師ERPID</th>
 			<th>工程師姓名</th>
-			<th>是否為主要工程師</th>
-			<th>門市代號</th>
-			<th>門市名稱</th>
+			<th>是否為主要工程師</th>			
 		</tr>
 	</thead>
 	<tbody>
@@ -156,12 +152,10 @@
 								<input type="hidden" value="@QueryInfo[5]" class="taskContractID" />
 							</td>
 						}
-						<td><a href="@QueryInfo[11]" target="_blank">@QueryInfo[5]</a></td>
+						<td><a href="@QueryInfo[9]" target="_blank">@QueryInfo[5]</a></td>
 						<td class="taskEngERPID">@Html.Raw(QueryInfo[6])</td>
 						<td class="taskEngName">@Html.Raw(QueryInfo[7])</td>
-						<td class="taskIsMain">@Html.Raw(QueryInfo[8])</td>
-						<td class="taskStoreID">@Html.Raw(QueryInfo[9])</td>
-						<td class="taskStoreName">@Html.Raw(QueryInfo[10])</td>
+						<td class="taskIsMain">@Html.Raw(QueryInfo[8])</td>						
 					</tr>
 				}
 			}
