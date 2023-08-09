@@ -3319,7 +3319,7 @@ namespace OneService.Controllers
 
             return tList;
         }
-        #endregion
+        #endregion      
 
         #region 判斷是否為管理員、檢測員角色
         /// <summary>
@@ -3591,6 +3591,7 @@ namespace OneService.Controllers
         public bool checkIsCanEditSR(string tSRID, string tLoginERPID, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCS, bool tIsSpareManager)
         {
             bool reValue = false;
+            bool IsSRTeamManager = false;
 
             //服務團隊主管、主要工程師、協助工程師、技術主管
             var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == tSRID);
@@ -3599,7 +3600,9 @@ namespace OneService.Controllers
             {
                 if (beanM.CStatus == "E0006" || beanM.CStatus == "E0015") //完修或取消不可編輯
                 {
-                    if (tIsMIS || tIsCS || tIsSpareManager) //MIS or 客服人員 or 備品管理員 or 檢測員都可編輯
+                    IsSRTeamManager = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //判斷登入人是否為該服務團隊的主管
+
+                    if (tIsMIS || tIsCS || tIsSpareManager || IsSRTeamManager) //MIS or 客服人員 or 備品管理員 or 檢測員 or 服務團隊的主管都可編輯
                     {
                         return true;
                     }

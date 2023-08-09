@@ -78,7 +78,7 @@ namespace OneService.Controllers
         /// <summary>
         /// 登入者是否為客服人員(true.是 false.否)
         /// </summary>
-        bool pIsCS = false;
+        bool pIsCS = false;        
 
         /// <summary>
         /// 登入者是否為備品管理員或檢測員(true.是 false.否)
@@ -7425,7 +7425,7 @@ namespace OneService.Controllers
             #region One Service相關帳號
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
             pIsCSManager = CMF.getIsCustomerServiceManager(pLoginAccount, pSysOperationID);
-            pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
+            pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);            
             pIsSpareManager = CMF.getIsSpareManager(pLoginAccount);
             pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
             pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
@@ -7433,7 +7433,7 @@ namespace OneService.Controllers
 
             ViewBag.pIsMIS = pIsMIS;
             ViewBag.pIsCSManager = pIsCSManager;
-            ViewBag.pIsCS = pIsCS;
+            ViewBag.pIsCS = pIsCS;            
             ViewBag.pIsSpareManager = pIsSpareManager;
             ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
             ViewBag.pIsExePerson = pIsExePerson;
