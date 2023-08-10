@@ -293,8 +293,15 @@
 				type: 'post',
 				dataType: 'json',				
 				success: function (result) {
-					hid_cAssEngineerID.val(result);
-					getpjAssEngineer();
+					if (result == "")
+					{
+						alert("您未設定個人常用工程師！");
+					}
+					else
+					{
+						hid_cAssEngineerID.val(result);
+						getpjAssEngineer();
+					}
 				}
 			});
 
@@ -797,24 +804,24 @@
 							{
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
-									<tr>
-										<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-										<td>@Html.Raw(QueryInfo[2])</td>
-										<td>@Html.Raw(QueryInfo[3])</td>
-										<td>@Html.Raw(QueryInfo[4])</td>
-										<td>@Html.Raw(QueryInfo[5])</td>
-										<td>@Html.Raw(QueryInfo[6])</td>
-										<td>@Html.Raw(QueryInfo[7])</td>
-										<td>@Html.Raw(QueryInfo[8])</td>
-										<td>@Html.Raw(QueryInfo[9])</td>
-										<td>@Html.Raw(QueryInfo[10])</td>
-										<td>@Html.Raw(QueryInfo[12])</td>
-										<td>@Html.Raw(QueryInfo[13])</td>
-										<td>@Html.Raw(QueryInfo[15])</td>
-										<td>@Html.Raw(QueryInfo[16])</td>
-										<td>@Html.Raw(QueryInfo[17])</td>
-										<td>@Html.Raw(QueryInfo[18])</td>
-									</tr>
+												<tr>
+													<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+													<td>@Html.Raw(QueryInfo[2])</td>
+													<td>@Html.Raw(QueryInfo[3])</td>
+													<td>@Html.Raw(QueryInfo[4])</td>
+													<td>@Html.Raw(QueryInfo[5])</td>
+													<td>@Html.Raw(QueryInfo[6])</td>
+													<td>@Html.Raw(QueryInfo[7])</td>
+													<td>@Html.Raw(QueryInfo[8])</td>
+													<td>@Html.Raw(QueryInfo[9])</td>
+													<td>@Html.Raw(QueryInfo[10])</td>
+													<td>@Html.Raw(QueryInfo[12])</td>
+													<td>@Html.Raw(QueryInfo[13])</td>
+													<td>@Html.Raw(QueryInfo[15])</td>
+													<td>@Html.Raw(QueryInfo[16])</td>
+													<td>@Html.Raw(QueryInfo[17])</td>
+													<td>@Html.Raw(QueryInfo[18])</td>
+												</tr>
 								}
 							}
 						}

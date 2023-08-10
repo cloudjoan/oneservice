@@ -65,6 +65,7 @@ namespace OneService.Models
         /// 處理方式
         /// </summary>
         public string? CSrprocessWay { get; set; }
+        public string? CSrrepairLevel { get; set; }
         /// <summary>
         /// 是否為二修
         /// </summary>

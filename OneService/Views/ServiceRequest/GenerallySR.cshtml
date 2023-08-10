@@ -782,7 +782,7 @@
 			disabledPopup("#form1", false);
 			getFaultInfo(true);
 
-			$("#tbx_cCustomerName").prop('disabled', true); //客戶名稱不得編輯
+			//$("#tbx_cCustomerName").prop('disabled', true); //客戶名稱不得編輯
 		}
 
 		 //送出前檢查
@@ -1618,6 +1618,36 @@
 			});			
 		}		
 
+		//客戶名稱onchange事件(清除客戶報修人和聯絡人資訊)
+		function onChang_tbx_cCustomerName()
+		{
+			$("#tbx_cRepairName").val("");		//客戶報修人			
+			$("#tbx_cRepairAddress").val("");	//地址(報修人)
+			$("#tbx_cRepairPhone").val("");	//電話(報修人)
+			$("#tbx_cRepairMobile").val("");	//手機(報修人)
+			$("#tbx_cRepairEmail").val("");	//Email(報修人)
+
+			clearDetail_CO();				//清除所有【聯絡人窗口資訊】檢查
+		}
+
+		//清除所有【聯絡人窗口資訊】檢查
+		function clearDetail_CO() {
+			var Msg = "";
+			var tableName = "tableCO";
+			var trs = $("#" + tableName + " tr");			
+
+			$.each(trs, function (i, itr) {
+				var tds = $(itr).find('td');
+				var objContactName = tds.eq(1).children().eq(0);	//姓名(聯絡人)
+				var objDisabled = tds.eq(1).children().eq(1);		//是否停用(0.啟用 1.停用)
+
+				if (objContactName.val() != undefined) {                    
+					tds.hide();
+					objDisabled.val("1");
+                }				
+			})			
+		}
+
 		//SAP客戶代號/客戶名稱查詢
 		//compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
 		function CustSearch() {
@@ -1652,8 +1682,16 @@
 									obj.autocomplete({
 										source: Customers,
 										select: function (event, ui) {
-											$("#lbl_cCustomerID").html(ui.item.id);
-											$('#hid_cCustomerID').val(ui.item.id);
+											var hid_cCustomerID = $("#hid_cCustomerID");			//客戶ID		
+											var lbl_cCustomerID = $("#lbl_cCustomerID");			//客戶ID Lable
+
+											if (hid_cCustomerID.val() != "" && hid_cCustomerID.val() != ui.item.id)
+											{
+												onChang_tbx_cCustomerName(); //清除客戶報修人和聯絡人資訊
+											}
+
+											lbl_cCustomerID.html(ui.item.id);
+											hid_cCustomerID.val(ui.item.id);
 											
 											var tType =  ui.item.id.substr(0,1);
 
@@ -4399,16 +4437,20 @@
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">延遲結案原因</label>
-							<div class="col-lg-4">
-							<textarea rows="3" class="form-control" placeholder="延遲結案原因" id="tbx_cDelayReason" name="tbx_cDelayReason" title="@ViewBag.cDelayReason">@ViewBag.cDelayReason</textarea>
-							</div>							
+							<label class="col-lg-2 col-form-label">*故障報修等級</label>
+							<div class="col-lg-4">								
+								<select asp-for="ddl_cSRRepairLevel" asp-items="Model.ListSRRepairLevel" class="form-control"></select>
+							</div>
 							<label class="col-lg-2 col-form-label">是否為二修</label>
 							<div class="col-lg-4">								
 								<select asp-for="ddl_cIsSecondFix" asp-items="Model.ListIsSecondFix" class="form-control"></select>
 							</div>
 						</div>	
 						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">延遲結案原因</label>
+							<div class="col-lg-4">
+								<textarea rows="3" class="form-control" placeholder="延遲結案原因" id="tbx_cDelayReason" name="tbx_cDelayReason" title="@ViewBag.cDelayReason">@ViewBag.cDelayReason</textarea>
+							</div>							
 							<label class="col-lg-2 col-form-label">派單人員</label>
 							<div class="col-lg-4">
 								<label class="col-form-label">@ViewBag.CreatedUserName</label>

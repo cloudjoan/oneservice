@@ -248,6 +248,7 @@
 
 									//開啟autocomplete選單
 									obj.focus();
+									$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
 								}
 							})
 
@@ -309,8 +310,15 @@
 				type: 'post',
 				dataType: 'json',				
 				success: function (result) {
-					hid_cAssEngineerID.val(result);
-					getpjAssEngineer();
+					if (result == "")
+					{
+						alert("您未設定個人常用工程師！");
+					}
+					else
+					{
+						hid_cAssEngineerID.val(result);
+						getpjAssEngineer();
+					}
 				}
 			});
 

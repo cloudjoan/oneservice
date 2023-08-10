@@ -841,7 +841,7 @@ namespace OneService.Models
                     .HasColumnName("cArriveTime");
 
                 entity.Property(e => e.CDesc)
-                    .HasMaxLength(1000)
+                    .HasMaxLength(4000)
                     .HasColumnName("cDesc");
 
                 entity.Property(e => e.CEngineerId)
@@ -1262,6 +1262,10 @@ namespace OneService.Models
                     .HasMaxLength(3)
                     .HasColumnName("cSRProcessWay")
                     .HasComment("處理方式");
+
+                entity.Property(e => e.CSrrepairLevel)
+                    .HasMaxLength(3)
+                    .HasColumnName("cSRRepairLevel");
 
                 entity.Property(e => e.CSrtypeOne)
                     .HasMaxLength(20)

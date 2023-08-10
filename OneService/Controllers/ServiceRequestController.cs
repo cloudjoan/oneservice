@@ -1354,6 +1354,7 @@ namespace OneService.Controllers
                 ViewBag.cSRPathWay = beanM.CSrpathWay;
                 ViewBag.cMAServiceType = beanM.CMaserviceType;
                 ViewBag.cSRProcessWay = beanM.CSrprocessWay;
+                ViewBag.cSRRepairLevel = beanM.CSrrepairLevel;
                 ViewBag.cDelayReason = beanM.CDelayReason;
                 ViewBag.cIsSecondFix = beanM.CIsSecondFix;
                 ViewBag.cIsInternalWork = beanM.CIsInternalWork;
@@ -1566,6 +1567,7 @@ namespace OneService.Controllers
                 ViewBag.pStatus = "E0001";      //新建
                 ViewBag.cMAServiceType = "";    //請選擇
                 ViewBag.cSRProcessWay = "";     //請選擇
+                ViewBag.cSRRepairLevel = "Z03"; //三級(一般叫修)
                 ViewBag.cDelayReason = "";      //空值
                 ViewBag.cIsSecondFix = "";     //請選擇
                 ViewBag.cIsInternalWork = "N";
@@ -1578,6 +1580,7 @@ namespace OneService.Controllers
             model.ddl_cSRPathWay = ViewBag.cSRPathWay;          //設定報修管道
             model.ddl_cMAServiceType = ViewBag.cMAServiceType;   //設定維護服務種類
             model.ddl_cSRProcessWay = ViewBag.cSRProcessWay;    //設定處理方式
+            model.ddl_cSRRepairLevel = ViewBag.cSRRepairLevel;  //設定故障報修等級
             model.ddl_cIsSecondFix = ViewBag.cIsSecondFix;      //是否為二修
             model.ddl_cCustomerType = ViewBag.cCustomerType;    //客戶類型(P.個人 C.法人)
             model.ddl_cIsInternalWork = ViewBag.cIsInternalWork; //是否為內部作業
@@ -1628,6 +1631,7 @@ namespace OneService.Controllers
             string OldCSrtypeThr = string.Empty;
             string OldCSrpathWay = string.Empty;
             string OldCSrprocessWay = string.Empty;
+            string OldCSrrepairLevel = string.Empty;
             string OldCDelayReason = string.Empty;
             string OldCIsSecondFix = string.Empty;
             string OldCIsInternalWork = string.Empty;
@@ -1685,6 +1689,7 @@ namespace OneService.Controllers
             string CSrtypeThr = formCollection["ddl_cSRTypeThr"].FirstOrDefault();
             string CSrpathWay = formCollection["ddl_cSRPathWay"].FirstOrDefault();
             string CSrprocessWay = formCollection["ddl_cSRProcessWay"].FirstOrDefault();
+            string CSrrepairLevel = formCollection["ddl_cSRRepairLevel"].FirstOrDefault();
             string CRepairEmail = formCollection["tbx_cRepairEmail"].FirstOrDefault();
             string CIsSecondFix = formCollection["ddl_cIsSecondFix"].FirstOrDefault();
             string CIsInternalWork = formCollection["ddl_cIsInternalWork"].FirstOrDefault();
@@ -1759,6 +1764,7 @@ namespace OneService.Controllers
                     beanM.CSrtypeThr = CSrtypeThr;
                     beanM.CSrpathWay = CSrpathWay;
                     beanM.CSrprocessWay = CSrprocessWay;
+                    beanM.CSrrepairLevel = CSrrepairLevel;
                     beanM.CDelayReason = CDelayReason;
                     beanM.CIsSecondFix = CIsSecondFix;
                     beanM.CIsInternalWork = CIsInternalWork;
@@ -1976,6 +1982,9 @@ namespace OneService.Controllers
                     OldCSrprocessWay = beanNowM.CSrprocessWay;
                     tLog += CMF.getNewAndOldLog("處理方式", OldCSrprocessWay, CSrprocessWay);
 
+                    OldCSrrepairLevel = beanNowM.CSrrepairLevel;
+                    tLog += CMF.getNewAndOldLog("故障報修等級", OldCSrrepairLevel, CSrrepairLevel);
+
                     OldCDelayReason = beanNowM.CDelayReason;
                     tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
 
@@ -2096,6 +2105,7 @@ namespace OneService.Controllers
                     beanNowM.CSrtypeThr = CSrtypeThr;
                     beanNowM.CSrpathWay = CSrpathWay;
                     beanNowM.CSrprocessWay = CSrprocessWay;
+                    beanNowM.CSrrepairLevel = CSrrepairLevel;
                     beanNowM.CDelayReason = CDelayReason;
                     beanNowM.CIsSecondFix = CIsSecondFix;
                     beanNowM.CIsInternalWork = CIsInternalWork;
@@ -3854,6 +3864,7 @@ namespace OneService.Controllers
                     beanM.CMaserviceType = "";
                     beanM.CSrpathWay = "";
                     beanM.CSrprocessWay = "";
+                    beanM.CSrrepairLevel = "";
                     beanM.CIsSecondFix = "";
                     beanM.CTechManagerId = "";
                     beanM.CSqpersonId = "";
@@ -4690,6 +4701,7 @@ namespace OneService.Controllers
                     beanM.CMaserviceType = "";
                     beanM.CSrpathWay = "";
                     beanM.CSrprocessWay = "";
+                    beanM.CSrrepairLevel = "";
                     beanM.CIsSecondFix = "";
                     beanM.CTechManagerId = "";
                     beanM.CSqpersonId = "";
@@ -8716,6 +8728,11 @@ namespace OneService.Controllers
             #region 處理方式
             public string ddl_cSRProcessWay { get; set; }            
             public List<SelectListItem> ListSRProcessWay = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPROCESS", true);
+            #endregion
+
+            #region 故障報修等級
+            public string ddl_cSRRepairLevel { get; set; }
+            public List<SelectListItem> ListSRRepairLevel = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRREPAIRLEVEL", false);
             #endregion
 
             #region 是否為內部作業
