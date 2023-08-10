@@ -492,12 +492,21 @@ namespace OneService.Controllers
                     ttWhere += "AND cSRType IN (" + ttStrItem + ") " + Environment.NewLine;
                 }
             }
-            #endregion
+            #endregion         
 
             #region 工程師ERPID
             if (!string.IsNullOrEmpty(EngineerID))
             {
-                ttWhere += "AND cEngineerID LIKE N'%" + EngineerID.Trim() + "%' " + Environment.NewLine;
+                string[] AryAss = EngineerID.Split(';');
+
+                ttStrItem = "";
+
+                foreach (string Ass in AryAss)
+                {
+                    ttStrItem += "N'" + Ass + "',";
+                }
+
+                ttWhere += "AND cEngineerID IN (" + ttStrItem.TrimEnd(',') + ") " + Environment.NewLine;
             }
             #endregion
 
