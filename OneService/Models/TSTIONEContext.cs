@@ -35,6 +35,7 @@ namespace OneService.Models
         public virtual DbSet<TbOneSrdetailWarranty> TbOneSrdetailWarranties { get; set; } = null!;
         public virtual DbSet<TbOneSridformat> TbOneSridformats { get; set; } = null!;
         public virtual DbSet<TbOneSrmain> TbOneSrmains { get; set; } = null!;
+        public virtual DbSet<TbOneSroftenUsedDatum> TbOneSroftenUsedData { get; set; } = null!;
         public virtual DbSet<TbOneSrrepairType> TbOneSrrepairTypes { get; set; } = null!;
         public virtual DbSet<TbOneSrsqperson> TbOneSrsqpeople { get; set; } = null!;
         public virtual DbSet<TbOneSrteamMapping> TbOneSrteamMappings { get; set; } = null!;
@@ -1298,6 +1299,52 @@ namespace OneService.Models
                     .HasComment("技術主管ERPID");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedUserName).HasMaxLength(50);
+
+                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedUserName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<TbOneSroftenUsedDatum>(entity =>
+            {
+                entity.HasKey(e => e.CId);
+
+                entity.ToTable("TB_ONE_SROftenUsedData");
+
+                entity.HasIndex(e => new { e.CFunctionId, e.CCompanyId, e.CNo, e.CreatedErpid }, "NonClusteredIndex-20230809-172232");
+
+                entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CCompanyId)
+                    .HasMaxLength(5)
+                    .IsUnicode(false)
+                    .HasColumnName("cCompanyID");
+
+                entity.Property(e => e.CDescription)
+                    .HasMaxLength(255)
+                    .HasColumnName("cDescription");
+
+                entity.Property(e => e.CFunctionId)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("cFunctionID");
+
+                entity.Property(e => e.CNo)
+                    .HasMaxLength(30)
+                    .IsUnicode(false)
+                    .HasColumnName("cNo");
+
+                entity.Property(e => e.CValue)
+                    .HasMaxLength(1000)
+                    .HasColumnName("cValue");
+
+                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+
+                entity.Property(e => e.CreatedErpid)
+                    .HasMaxLength(20)
+                    .HasColumnName("CreatedERPID");
 
                 entity.Property(e => e.CreatedUserName).HasMaxLength(50);
 

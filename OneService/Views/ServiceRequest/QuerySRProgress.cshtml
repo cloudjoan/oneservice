@@ -9,7 +9,7 @@
 		$(document).ready(function () {
 			initTable();
 			CustSearch();
-			PeopleSearch();
+			PeopleSearch();			
 		});
 
 		function initTable() {
@@ -100,6 +100,11 @@
 
 			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
 			$('#ddl_cTeamID option').prop('selected', false).trigger('chosen:updated');	//服務團隊
+
+			//顯示工程師設定popup
+			$('#btn_pjAssEngineer').click(function () {
+				$('#dialog_pjAssEngineer').modal('show');
+			})
 		}
 
 		function addCustomNumberFormat(xlsx, numberFormat) {
@@ -206,6 +211,7 @@
 											label: idata.CEmployeeCName + "\\" + idata.CEmployeeEname + "\\" + idata.CEmployeeErpid,
 											idx: i,
 											Name: idata.CEmployeeCName + "\\" + idata.CEmployeeEname,
+											ERPID: idata.CEmployeeErpid,
 											value: idata.CEmployeeErpid //value這個值，一定要在label裡才能顯示出下拉											
 										};
 									});
@@ -214,20 +220,18 @@
 									obj.autocomplete({
 										source: objects,
 										select: function (event, ui) {
-											if (ojbID.indexOf('tbx_cMainEngineerID') >= 0) {
-												$('#lbl_cMainEngineerID').html(ui.item.Name);
-											}
-											else if (ojbID.indexOf('tbx_cAssEngineerID') >= 0) {
-												$('#lbl_cAssEngineerID').html(ui.item.Name);
-											}
-											else if (ojbID.indexOf('tbx_cTechManagerID') >= 0) {
+											if (ojbID.indexOf('tbx_cTechManagerID') >= 0) {
 												$('#lbl_cTechManagerID').html(ui.item.Name);
+											}
+											else if (ojbID.indexOf('tbx_pjAssEngineerName') >= 0) {
+												$('#hid_pjAssEngineerAcc').val(ui.item.ERPID);
 											}
 										}
 									}).bind('focus', function () { $(this).autocomplete("search"); });
 
 									//開啟autocomplete選單
-									obj.focus();									
+									obj.focus();
+									$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
 								}
 							})
 
@@ -236,6 +240,189 @@
 				}
 			})
 		}
+
+		//-----↓↓↓↓↓協助工程師 ↓↓↓↓↓-----
+		//儲存個人常用工程師
+		function savepjPersonallyEngineer() {			
+			var hid_cAssEngineerID = $("#hid_cAssEngineerID");
+			var tbx_cAssEngineerName = $("#tbx_cAssEngineerName");
+
+			if ($("#tbx_cAssEngineerName").val() == "") {
+				alert("您無輸入任何工程師姓名");
+			}
+			else {
+				var tIsDo = confirm("您是否要儲存本次工程師清單至個人常用工程師?")
+
+				if (tIsDo) {
+					$("#btn_savepjPersonallyEngineer").hide();
+					$("#img_waiting_savepjAssEngineer").show();
+
+					$.ajax({
+						url: '@Url.Action("savepjPersonallyEngineer", "ServiceRequest")',
+						type: 'post',
+						dataType: 'json',
+						data: {
+							cAssEngineerID: hid_cAssEngineerID.val()						
+						},
+						success: function (result) {
+							if (result == "SUCCESS") {
+								alert("儲存成功！");
+							}
+							else
+							{
+								alert(result);
+							}
+						}
+					});
+
+					$("#img_waiting_savepjAssEngineer").hide();
+					$("#btn_savepjPersonallyEngineer").show();
+				}				
+			}
+		}
+
+		//帶入個人常用工程師
+		function getpjPersonallyEngineer() {
+			var hid_cAssEngineerID = $("#hid_cAssEngineerID");
+
+			$("#btn_getpjPersonallyEngineer").hide();
+			$("#img_waiting_savepjAssEngineer").show();
+
+			$.ajax({
+				url: '@Url.Action("getpjPersonallyEngineer", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',				
+				success: function (result) {
+					hid_cAssEngineerID.val(result);
+					getpjAssEngineer();
+				}
+			});
+
+			$("#img_waiting_savepjAssEngineer").hide();
+			$("#btn_getpjPersonallyEngineer").show();			
+		}
+
+		//修改工程師
+		function savepjAssEngineer() {
+			var hid_cAssEngineerID = $("#hid_cAssEngineerID");
+
+			if ($("#hid_pjAssEngineerAcc").val() == "") {
+				alert("請輸入工程師姓名");
+			}
+			else {
+				$("#btn_savepjAssEngineer").hide();
+				$("#img_waiting_savepjAssEngineer").show();
+
+				$.ajax({
+					url: '@Url.Action("SavepjAssEngineer", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cAssEngineerID: hid_cAssEngineerID.val(),
+						cAssEngineerAcc: $("#hid_pjAssEngineerAcc").val(),
+					},
+					success: function (result) {
+						if (result.indexOf("Error") >= 0) {
+							alert("儲存失敗！" + result);
+						}
+						else {							
+							hid_cAssEngineerID.val(result);
+							getpjAssEngineer();
+						}
+					}
+				});
+
+				$("#img_waiting_savepjAssEngineer").hide();
+				$("#btn_savepjAssEngineer").show();
+			}
+		}
+
+		//取得工程師
+		function getpjAssEngineer() {
+			$("#hid_pjAssEngineerAcc").val("");
+			$("#tbx_pjAssEngineerName").val("");
+
+			var hid_cAssEngineerID = $("#hid_cAssEngineerID");
+
+			$.ajax({
+				url: '@Url.Action("GetpjAssEngineer", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cAssEngineerID: hid_cAssEngineerID.val(),
+				},
+				success: function (result) {
+					var list = "";
+					var pjAssEngineerName = "";
+					$.each(result, function (i, bean) {
+						if (bean != null) {
+							pjAssEngineerName += bean.name + ";";
+
+							list += '<tr id="tr_pjAssEngineer_' + bean.id + '">'
+								+ "<input type='hidden' class='hidpjAssEngineerAcc' value='" + bean.acc + "'>"
+								+ '<td>'
+								+ '<button class="btn btn-danger btn-sm btnCtDelete btnPreventDefault" type="button" onclick="deletepjAssEngineer(this);" style="margin: 2px;">'
+								+ '<i class="fa fa-trash"></i>'
+								+ '</button>'
+								+ '</td>'
+								+ "<td style='vertical-align: middle;'>" + bean.name + "</td>"
+								+ "<td style='vertical-align: middle;'>" + bean.ext + "</td>"
+								+ "<td style='vertical-align: middle;'>" + bean.mobile + "</td>"
+								+ "<td style='vertical-align: middle; text-align: left;'>" + bean.email + "</td>"
+								+ "<td style='vertical-align: middle;'>" + bean.deptName + "</td>"
+								+ "</tr>";
+						}
+					});
+
+					if (list != "") {
+						list = "<table class='table table-striple table-bordered table-hover dataTables-example' style='word-break: keep-all; white-space: nowrap; text-align: center;'>"
+							+ "<thead><tr>"
+							+ "<th>刪除</th>"
+							+ "<th>姓名</th>"
+							+ "<th>分機</th>"
+							+ "<th>手機</th>"
+							+ "<th>Email</th>"
+							+ "<th>部門</th>"
+							+ "</tr></thead><tbody>"
+							+ list
+							+ "</tbody></table>";
+					}
+					$("#tb_pjAssEngineer").html(list);
+
+					pjAssEngineerName = pjAssEngineerName.substr(0, pjAssEngineerName.length - 1);
+					$("#tbx_cAssEngineerName").val(pjAssEngineerName);
+				}
+			});
+		}
+
+		//刪除工程師
+		function deletepjAssEngineer(obj) {
+			var pjAssEngineerAcc = $(obj).parent().parent().find(".hidpjAssEngineerAcc").val();
+			var hid_cAssEngineerID = $("#hid_cAssEngineerID");
+
+			if (confirm("確認刪除此工程師？")) {
+				$.ajax({
+					url: '@Url.Action("DeletepjAssEngineer", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cAssEngineerID: hid_cAssEngineerID.val(),
+						cAssEngineerAcc: pjAssEngineerAcc,
+					},
+					success: function (result) {
+						if (result.indexOf("Error") >= 0) {
+							alert("刪除失敗！");
+						}
+						else {
+							//alert("刪除成功");
+							hid_cAssEngineerID.val(result);
+							getpjAssEngineer();
+						}
+					}
+				});
+			}
+		}
+		//-----↑↑↑↑↑工程師 ↑↑↑↑↑-----
 
 		//-----↓↓↓↓↓報修類別 ↓↓↓↓↓-----
 		//第一階(大類) onChange
@@ -301,9 +488,8 @@
 			var ddl_cIsSecondFix = $('#ddl_cIsSecondFix');				//是否為二修
 			var tbx_CreatedUserName = $('#tbx_CreatedUserName');			//派單人員
 			var tbx_cRepairName = $('#tbx_cRepairName');				//報修人姓名			
-			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道
-			var tbx_cMainEngineerID = $('#tbx_cMainEngineerID');			//主要工程師ERPID
-			var tbx_cAssEngineerID = $('#tbx_cAssEngineerID');			//協助工程師ERPID
+			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道			
+			var hid_cAssEngineerID = $('#hid_cAssEngineerID');			//工程師ERPID
 			var tbx_cTechManagerID = $('#tbx_cTechManagerID');			//技術主管ERPID
 			var cTeamID = $("#ddl_cTeamID").val().join();			    //服務團隊
 
@@ -317,7 +503,7 @@
 
 			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
 				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && SRPathWay == "" &&
-				tbx_cMainEngineerID.val() == "" && tbx_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" &&
+				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" &&
 				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
@@ -341,7 +527,7 @@
 			else {
 				searchQuerySRProgress(SRCaseType, Status, tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
 									  tbx_cCustomerName.val(), tbx_cSRID.val(), ddl_cIsSecondFix.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
-									  tbx_cMainEngineerID.val(), tbx_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID,
+									  hid_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID,
 									  ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
 									  tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
 			}
@@ -351,7 +537,7 @@
 
 		//查詢結果
 		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID,cCustomerName, cSRID, cIsSecondFix, CreatedUserName, cRepairName, cSRPathWay,
-									  cMainEngineerID, cAssEngineerID, cTechManagerID, cTeamID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
+			cAssEngineerID, cTechManagerID, cTeamID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
 			
 			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
 			$("#dataDiv").html('');
@@ -372,8 +558,7 @@
 					cIsSecondFix: cIsSecondFix,
 					CreatedUserName: CreatedUserName,
 					cRepairName: cRepairName,
-					cSRPathWay: cSRPathWay,
-					cMainEngineerID: cMainEngineerID,
+					cSRPathWay: cSRPathWay,					
 					cAssEngineerID: cAssEngineerID,
 					cTechManagerID: cTechManagerID,
 					cTeamID: cTeamID,
@@ -404,10 +589,7 @@
 			$('#ddl_cIsSecondFix').val("");
 			$('#tbx_CreatedUserName').val("");
 			$('#tbx_cRepairName').val("");			
-			$('#tbx_cMainEngineerID').val("");
-			$('#lbl_cMainEngineerID').html("");
-			$('#tbx_cAssEngineerID').val("");
-			$('#lbl_cAssEngineerID').html("");
+			$('#lbl_cMainEngineerID').html("");			
 			$('#tbx_cTechManagerID').val("");
 			$('#lbl_cTechManagerID').html("");
 			$('#tbx_cSerialID').val("");
@@ -422,6 +604,11 @@
 			$('#ddl_cSRTypeOne').val("");			
 			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
 			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
+
+			//清空工程師
+			$('#hid_cAssEngineerID').val("");
+			$('#tbx_cAssEngineerName').val("");
+			getpjAssEngineer();
 		}
 	</script>
 }
@@ -511,27 +698,27 @@
 							</div>
 						</div>												
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">報修管道</label>
-							<div class="col-lg-4">								
-								@Html.DropDownList("ddl_cSRPathWay", (IEnumerable<SelectListItem>)ViewBag.ddl_cSRPathWay, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇報修管道" })
-							</div>
-							<label class="col-lg-2 col-form-label">主要工程師ERPID</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cMainEngineerID" id="tbx_cMainEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
-								<label id="lbl_cMainEngineerID" class="col-form-label" style="color:blue;"></label>
-							</div>
+							<label class="col-lg-2 col-form-label">工程師ERPID</label>
+							<div class="col-lg-10 col-sm-10 input-group">
+								<input type="hidden" id="hid_cAssEngineerID" name="hid_cAssEngineerID" value="@ViewBag.cAssEngineerID">
+								<input id="tbx_cAssEngineerName" name="tbx_cAssEngineerName" type="text" class="form-control labelDisabled" placeholder="工程師姓名" disabled>
+								<div class="input-group-append">
+									<button id="btn_pjAssEngineer" class="btn btn-primary" type="button">
+										<i class="fa fa-user-plus" aria-hidden="true"></i>
+									</button>
+								</div>
+							</div>													
 						</div>
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">協助工程師ERPID</label>
-							<div class="col-lg-4">
-								<input type="text" name="tbx_cAssEngineerID" id="tbx_cAssEngineerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
-								<label id="lbl_cAssEngineerID" class="col-form-label" style="color:blue;"></label>
-							</div>
+						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">技術主管ERPID</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cTechManagerID" id="tbx_cTechManagerID" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
 								<label id="lbl_cTechManagerID" class="col-form-label" style="color:blue;"></label>
 							</div>
+							<label class="col-lg-2 col-form-label">報修管道</label>
+							<div class="col-lg-4">								
+								@Html.DropDownList("ddl_cSRPathWay", (IEnumerable<SelectListItem>)ViewBag.ddl_cSRPathWay, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇報修管道" })
+							</div>	
 						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">報修類別</label>
@@ -610,29 +797,72 @@
 							{
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
-										<tr>
-											<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-											<td>@Html.Raw(QueryInfo[2])</td>
-											<td>@Html.Raw(QueryInfo[3])</td>
-											<td>@Html.Raw(QueryInfo[4])</td>
-											<td>@Html.Raw(QueryInfo[5])</td>
-											<td>@Html.Raw(QueryInfo[6])</td>
-											<td>@Html.Raw(QueryInfo[7])</td>
-											<td>@Html.Raw(QueryInfo[8])</td>
-											<td>@Html.Raw(QueryInfo[9])</td>
-											<td>@Html.Raw(QueryInfo[10])</td>
-											<td>@Html.Raw(QueryInfo[12])</td>
-											<td>@Html.Raw(QueryInfo[13])</td>
-											<td>@Html.Raw(QueryInfo[15])</td>
-											<td>@Html.Raw(QueryInfo[16])</td>
-											<td>@Html.Raw(QueryInfo[17])</td>
-											<td>@Html.Raw(QueryInfo[18])</td>
-										</tr>
+									<tr>
+										<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+										<td>@Html.Raw(QueryInfo[2])</td>
+										<td>@Html.Raw(QueryInfo[3])</td>
+										<td>@Html.Raw(QueryInfo[4])</td>
+										<td>@Html.Raw(QueryInfo[5])</td>
+										<td>@Html.Raw(QueryInfo[6])</td>
+										<td>@Html.Raw(QueryInfo[7])</td>
+										<td>@Html.Raw(QueryInfo[8])</td>
+										<td>@Html.Raw(QueryInfo[9])</td>
+										<td>@Html.Raw(QueryInfo[10])</td>
+										<td>@Html.Raw(QueryInfo[12])</td>
+										<td>@Html.Raw(QueryInfo[13])</td>
+										<td>@Html.Raw(QueryInfo[15])</td>
+										<td>@Html.Raw(QueryInfo[16])</td>
+										<td>@Html.Raw(QueryInfo[17])</td>
+										<td>@Html.Raw(QueryInfo[18])</td>
+									</tr>
 								}
 							}
 						}
 					</tbody>
 				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--工程師彈出視窗-->
+<div class="modal fade" id="dialog_pjAssEngineer" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-users"></i> 工程師設定</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group row">						
+					<label class="col-lg-2 col-form-label">工程師姓名</label>
+					<div class="input-group col-sm-10 col-lg-6" style="height: 36px;">
+						<input type="hidden" id="hid_pjAssEngineerAcc" />
+						<input type="text" id="tbx_pjAssEngineerName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
+					</div>
+				</div>
+				<div class="form-group row">					
+					<div class="col-lg-12">
+						<button id="btn_savepjAssEngineer" class="btn btn-primary col-lg-4 col-xs-4" type="button" onclick="savepjAssEngineer();">
+							<i class="fa fa-save" style="margin-right: 4px;"></i> 儲 存
+						</button>&nbsp;&nbsp;&nbsp;						
+						<button id="btn_getpjPersonallyEngineer" class="btn btn-warning col-lg-4 col-xs-4" type="button" onclick="getpjPersonallyEngineer();">
+							<i class="fa fa-upload" style="margin-right: 4px;"></i> 帶入個人常用工程師
+						</button>
+						<img id="img_waiting_savepjAssEngineer" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+					</div>
+				</div>
+			</div>
+			<hr style="border: 1px solid lightgray; width: 98%;" />
+			<div class="col-lg-12">
+				<button id="btn_savepjPersonallyEngineer" class="btn btn-success col-lg-4 col-xs-4" type="button" onclick="savepjPersonallyEngineer();">
+					<i class="fa fa-download" style="margin-right: 4px;"></i> 儲存下方清單至個人常用工程師
+				</button>&nbsp;&nbsp;&nbsp;
+			</div>			
+			<div class="modal-body" id="tb_pjAssEngineer" style="overflow: scroll;">
+
 			</div>
 		</div>
 	</div>

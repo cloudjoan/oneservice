@@ -4608,6 +4608,44 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 儲存常用工程師至系統參數檔
+        /// <summary>
+        /// 儲存常用工程師至系統參數檔
+        /// </summary>
+        /// <param name="LoginAccount">登入者帳號</param>
+        /// <param name="tSysOperationID">程式作業編號檔系統ID</param>
+        /// <param name="cCompanyID">公司別(ALL、T012、T016、C069、T022)</param>
+        /// <param name="cNo">參數</param>
+        /// <returns></returns>
+        public bool savepjPersonallyEngineer(string LoginAccount, string tSysOperationID, string cCompanyID, string cNo)
+        {
+            bool reValue = false;
+
+            //Guid tCOperationId = new Guid(tSysOperationID);
+
+            //TbOneSysParameter beanSys = new TbOneSysParameter();
+
+            //beanSys.COperationId = tCOperationId;
+            //beanSys.CFunctionId = "OTHER";
+            //beanSys.CCompanyId = cCompanyID;
+            //beanSys.CNo = "PersonallyEngineer";
+
+
+            //var beans = psipDb.TbOneSysParameters.Where(x => x.Disabled == 0 && x.COperationId == tcID && x.CFunctionId == "ACCOUNT" && x.CCompanyId == cCompanyID && x.CNo == cNo);
+
+            //foreach (var bean in beans)
+            //{
+            //    if (bean.CValue.ToLower() == LoginAccount.ToLower())
+            //    {
+            //        reValue = true;
+            //        break;
+            //    }
+            //}
+
+            return reValue;
+        }
+        #endregion
+
         #region 服務進度查詢Distinct SRID
         /// <summary>
         /// 服務進度查詢Distinct SRID

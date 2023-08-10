@@ -848,9 +848,8 @@ namespace OneService.Controllers
         /// <param name="cIsSecondFix">是否為二修</param>
         /// <param name="CreatedUserName">派單人員</param>
         /// <param name="cRepairName">報修人姓名</param>
-        /// <param name="cSRPathWay">報修管道</param>
-        /// <param name="cMainEngineerID">主要工程師ERPID</param>
-        /// <param name="cAssEngineerID">協助工程師ERPID</param>
+        /// <param name="cSRPathWay">報修管道</param>      
+        /// <param name="cAssEngineerID">工程師ERPID</param>
         /// <param name="cTechManagerID">技術主管ERPID</param>
         /// <param name="cTeamID">服務團隊</param>
         /// <param name="cSRTypeOne">報修類別-大類</param>
@@ -861,7 +860,7 @@ namespace OneService.Controllers
         /// <param name="cProductNumber">報修Product Number</param>
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
-                                                 string cCustomerID, string cCustomerName, string cSRID, string cIsSecondFix, string CreatedUserName, string cRepairName, string cSRPathWay, string cMainEngineerID, 
+                                                 string cCustomerID, string cCustomerName, string cSRID, string cIsSecondFix, string CreatedUserName, string cRepairName, string cSRPathWay,
                                                  string cAssEngineerID, string cTechManagerID, string cTeamID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
                                                  string cSerialID, string cMaterialName, string cProductNumber)
         {            
@@ -1041,19 +1040,39 @@ namespace OneService.Controllers
                     ttWhere += "AND M.cSRPathWay IN (" + ttStrItem + ") " + Environment.NewLine;
                 }
             }
-            #endregion          
+            #endregion           
 
-            #region 主要工程師ERPID
-            if (!string.IsNullOrEmpty(cMainEngineerID))
-            {
-                ttWhere += "AND M.cMainEngineerID = '" + cMainEngineerID + "' " + Environment.NewLine;
-            }
-            #endregion
-
-            #region 協助工程師ERPID
+            #region 主要/協助工程師ERPID
             if (!string.IsNullOrEmpty(cAssEngineerID))
             {
-                ttWhere += "AND M.cAssEngineerID LIKE N'%" + cAssEngineerID.Trim() + "%' " + Environment.NewLine;
+                string[] AryAss = cAssEngineerID.Split(';');                
+
+                #region 先組主要工程師
+                ttStrItem = "";              
+
+                foreach (string Ass in AryAss)
+                {
+                    ttStrItem += "N'" + Ass + "',";
+                }
+
+                ttWhere += "AND (M.cMainEngineerID IN (" + ttStrItem.TrimEnd(',') + ") or ";
+                #endregion
+
+                #region 再組協助工程師
+                char[] tchar = new char[2];
+                tchar[0] = 'o';
+                tchar[1] = 'r';
+
+                string AssWhere = "(";
+
+                foreach (string Ass in AryAss)
+                {
+                    AssWhere += " M.cAssEngineerID LIKE N'%" + Ass + "%' or";
+                }
+
+                AssWhere = AssWhere.TrimEnd(tchar) + ")) ";
+                ttWhere += AssWhere + Environment.NewLine;
+                #endregion
             }
             #endregion
 
@@ -3013,6 +3032,101 @@ namespace OneService.Controllers
             catch (Exception e)
             {
                 return Json("DeletepjTeam Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 儲存常用工程師
+        /// <summary>
+        /// 儲存常用工程師
+        /// </summary>
+        /// <param name="cAssEngineerID">目前的工程師ERPID(;號隔開)</param>        
+        /// <returns></returns>
+        public IActionResult savepjPersonallyEngineer(string cAssEngineerID)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = "SUCCESS";
+            string cERPID = ViewBag.cLoginUser_ERPID;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(cAssEngineerID))
+                {
+                    var bean = dbOne.TbOneSroftenUsedData.FirstOrDefault(x => x.Disabled == 0 && x.CFunctionId == "PERSONAL" &&
+                                                                      x.CCompanyId == pCompanyCode && x.CNo == "OftenEngineer" &&
+                                                                      x.CreatedErpid == cERPID);
+
+                    if (bean != null)
+                    {
+                        bean.CValue = cAssEngineerID.TrimEnd(';');
+                    }
+                    else
+                    {
+                        TbOneSroftenUsedDatum SRO = new TbOneSroftenUsedDatum();
+
+                        SRO.CFunctionId = "PERSONAL";               //固定為「PERSONAL.個人」
+                        SRO.CCompanyId = pCompanyCode;
+                        SRO.CNo = "OftenEngineer";                  //固定為「OftenEngineer」
+                        SRO.CValue = cAssEngineerID.TrimEnd(';');
+                        SRO.CDescription = "個人常用工程師清單";     //固定為「個人常用工程師清單」
+                        SRO.Disabled = 0;
+
+                        SRO.CreatedErpid = ViewBag.cLoginUser_ERPID;
+                        SRO.CreatedDate = DateTime.Now;
+                        SRO.CreatedUserName = ViewBag.empEngName;
+
+                        dbOne.TbOneSroftenUsedData.Add(SRO);
+
+                    }
+
+                    int result = dbOne.SaveChanges();
+
+                    if (result <= 0 )
+                    {
+                        reValue = "儲存常用工程師失敗！";
+                    }
+                }               
+            }
+            catch (Exception e)
+            {
+                return Json("儲存常用工程師失敗，原因：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 帶入常用工程師
+        /// <summary>
+        /// 儲存常用工程師
+        /// </summary>        
+        /// <returns></returns>
+        public IActionResult getpjPersonallyEngineer()
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = string.Empty;
+            string cERPID = ViewBag.cLoginUser_ERPID;
+
+            try
+            {
+                var bean = dbOne.TbOneSroftenUsedData.FirstOrDefault(x => x.Disabled == 0 && x.CFunctionId == "PERSONAL" &&
+                                                                      x.CCompanyId == pCompanyCode && x.CNo == "OftenEngineer" &&
+                                                                      x.CreatedErpid == cERPID);
+
+                if (bean != null)
+                {
+                    reValue = bean.CValue.Trim();
+                }
+            }
+            catch (Exception e)
+            {
+                
             }
 
             return Json(reValue);
