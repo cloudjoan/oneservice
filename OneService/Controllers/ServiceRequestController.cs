@@ -805,10 +805,18 @@ namespace OneService.Controllers
             #endregion
 
             #region 狀態
-            List<SelectListItem> ListStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode);
+            List<SelectListItem> ListStatus = new List<SelectListItem>();
 
             ListStatus.Add(new SelectListItem("UNDONE_未完成", "UNDONE"));
             ListStatus.Add(new SelectListItem("ALLDONE_已完成", "ALLDONE"));
+
+            List<SelectListItem> ListTempStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode);
+
+            foreach(var tListItem in ListTempStatus)
+            {
+                ListStatus.Add(tListItem);
+            }
+            
             ViewBag.ddl_cStatus = ListStatus;
             #endregion
 
@@ -1944,6 +1952,7 @@ namespace OneService.Controllers
                 else
                 {
                     #region 修改主檔
+                    srCon = SRCondition.SAVE;
 
                     #region 紀錄新舊值
                     OldCStatus = beanNowM.CStatus;
@@ -2519,6 +2528,11 @@ namespace OneService.Controllers
                 pMsg += " 失敗行數：" + ex.ToString();
                 
                 CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, ViewBag.empEngName);
+            }
+
+            if(srCon == SRCondition.ADD)
+            {
+                return RedirectToAction("GenerallySR", new { SRID = pSRID });
             }
 
             return RedirectToAction("finishForm");
@@ -4036,6 +4050,7 @@ namespace OneService.Controllers
                 else
                 {
                     #region 修改主檔
+                    srCon = SRCondition.SAVE;
 
                     #region 紀錄舊值
                     OldCStatus = beanNowM.CStatus;
@@ -4426,6 +4441,11 @@ namespace OneService.Controllers
                 CMF.writeToLog(pSRID, "SaveInstallSR", pMsg, ViewBag.empEngName);
             }
 
+            if (srCon == SRCondition.ADD)
+            {
+                return RedirectToAction("InstallSR", new { SRID = pSRID });
+            }
+
             return RedirectToAction("finishForm");
         }
         #endregion
@@ -4792,6 +4812,7 @@ namespace OneService.Controllers
                 else
                 {
                     #region 修改主檔
+                    srCon = SRCondition.SAVE;
 
                     #region 紀錄舊值
                     OldCStatus = beanNowM.CStatus;
@@ -5059,6 +5080,11 @@ namespace OneService.Controllers
                 pMsg += " 失敗行數：" + ex.ToString();
 
                 CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, ViewBag.empEngName);
+            }
+
+            if (srCon == SRCondition.ADD)
+            {
+                return RedirectToAction("MaintainSR", new { SRID = pSRID });
             }
 
             return RedirectToAction("finishForm");
