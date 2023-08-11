@@ -147,7 +147,7 @@ function dropzoneInit(uploadUrl) {
                     done();
                 }
             },
-            acceptedFiles: ".jpg,.png,.jpge,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx,.zip,.rar,.7z,.csv,.mht",
+            acceptedFiles: ".jpg,.png,.jpge,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx,.zip,.rar,.7z,.csv,.mht,.mp4,.mov",
             createImageThumbnails: false,
             init: function () {
                 this.on("success", function (result) {
