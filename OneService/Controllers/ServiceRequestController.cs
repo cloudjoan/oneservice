@@ -825,10 +825,10 @@ namespace OneService.Controllers
             ViewBag.ddl_cSRPathWay = ListSRPathWay;
             #endregion
 
-            #region 服務團隊
-            var selectTeamList = CMF.findSRTeamIDList("ALL", false);
-            ViewBag.ddl_cTeamID = selectTeamList;
-            #endregion
+            #region 取得服務團隊清單
+            var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
+            ViewBag.SRTeamIDList = SRTeamIDList;
+            #endregion           
 
             #region 報修類別
             //大類
@@ -862,6 +862,7 @@ namespace OneService.Controllers
         /// <param name="cCustomerID">客戶代號</param>
         /// <param name="cCustomerName">客戶名稱</param>
         /// <param name="cSRID">SRID</param>
+        /// <param name="cDesc">說明</param>
         /// <param name="cIsSecondFix">是否為二修</param>
         /// <param name="CreatedUserName">派單人員</param>
         /// <param name="cRepairName">報修人姓名</param>
@@ -869,6 +870,7 @@ namespace OneService.Controllers
         /// <param name="cAssEngineerID">工程師ERPID</param>
         /// <param name="cTechManagerID">技術主管ERPID</param>
         /// <param name="cTeamID">服務團隊</param>
+        /// <param name="cContractID">合約文件編號</param>
         /// <param name="cSRTypeOne">報修類別-大類</param>
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
@@ -877,8 +879,8 @@ namespace OneService.Controllers
         /// <param name="cProductNumber">報修Product Number</param>
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
-                                                 string cCustomerID, string cCustomerName, string cSRID, string cIsSecondFix, string CreatedUserName, string cRepairName, string cSRPathWay,
-                                                 string cAssEngineerID, string cTechManagerID, string cTeamID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
+                                                 string cCustomerID, string cCustomerName, string cSRID, string cDesc, string cIsSecondFix, string CreatedUserName, string cRepairName, string cSRPathWay,
+                                                 string cAssEngineerID, string cTechManagerID, string cTeamID, string cContractID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
                                                  string cSerialID, string cMaterialName, string cProductNumber)
         {            
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
@@ -886,8 +888,9 @@ namespace OneService.Controllers
             DataTable dt = null;
             DataTable dtProgress = null;
 
-            StringBuilder tSQL = new StringBuilder();
-            
+            StringBuilder tSQL = new StringBuilder();            
+
+            string tTop = string.Empty;                 //是否有輸入說明，若有就要限制前1,000筆
             string ttWhere = string.Empty;
             string ttJoin = string.Empty;
             string ttStrItem = string.Empty;
@@ -1011,6 +1014,14 @@ namespace OneService.Controllers
             }
             #endregion
 
+            #region 說明
+            if (!string.IsNullOrEmpty(cDesc))
+            {
+                tTop = " TOP 1000 ";
+                ttWhere += "AND M.cDesc LIKE N'%" + cDesc.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
             #region 是否為二修
             if (!string.IsNullOrEmpty(cIsSecondFix))
             {
@@ -1125,7 +1136,7 @@ namespace OneService.Controllers
             if (!string.IsNullOrEmpty(cTeamID))
             {
                 ttStrItem = "";
-                string[] tAryTeam = cTeamID.TrimEnd(',').Split(',');
+                string[] tAryTeam = cTeamID.TrimEnd(';').Split(';');
 
                 if(tAryTeam.Length >= 0)
                 {
@@ -1148,6 +1159,13 @@ namespace OneService.Controllers
                 }
 
                 ttWhere += ttStrItem + Environment.NewLine;
+            }
+            #endregion
+
+            #region 合約文件編號
+            if (!string.IsNullOrEmpty(cContractID))
+            {
+                ttWhere += "AND M.cContractID LIKE N'%" + cContractID.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
@@ -1183,7 +1201,7 @@ namespace OneService.Controllers
             #region 組待查詢清單
 
             #region SQL語法
-            tSQL.AppendLine(" Select M.*,");
+            tSQL.AppendLine(" Select " + tTop + " M.*,");
             tSQL.AppendLine("        (Select top 1");
             tSQL.AppendLine("            case when sp.cNewSerialID <> '' then sp.cSerialID + '(更換後序號：' + sp.cNewSerialID + ')' + '＃＃' + sp.cMaterialName + '＃＃' + sp.cProductNumber");
             tSQL.AppendLine("            else sp.cSerialID + '＃＃' + sp.cMaterialName + '＃＃' + sp.cProductNumber end");            
@@ -1231,7 +1249,7 @@ namespace OneService.Controllers
                 tCreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
 
-                string[] QueryInfo = new string[19];                
+                string[] QueryInfo = new string[20];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
                 QueryInfo[1] = tSRIDUrl;                       //服務案件URL
@@ -1251,7 +1269,8 @@ namespace OneService.Controllers
                 QueryInfo[15] = tCreatedUserName;              //派單人員
                 QueryInfo[16] = tCreatedDate;                  //派單日期
                 QueryInfo[17] = tModifiedDate;                 //最後編輯日期
-                QueryInfo[18] = tSTATUSDESC;                   //狀態                
+                QueryInfo[18] = tSTATUSDESC;                   //狀態
+                QueryInfo[19] = dr["cContractID"].ToString();    //合約文件編號
 
                 QueryToList.Add(QueryInfo);
             }
@@ -2902,6 +2921,101 @@ namespace OneService.Controllers
 
             ViewBag.SRTypeThrList = tList;
             return Json(tList);
+        }
+        #endregion
+
+        #region 儲存常用服務團隊
+        /// <summary>
+        /// 儲存常用服務團隊
+        /// </summary>
+        /// <param name="cTeamID">目前的服務團隊ID(;號隔開)</param>        
+        /// <returns></returns>
+        public IActionResult savepjPersonallyTeam(string cTeamID)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = "SUCCESS";
+            string cERPID = ViewBag.cLoginUser_ERPID;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(cTeamID))
+                {
+                    var bean = dbOne.TbOneSroftenUsedData.FirstOrDefault(x => x.Disabled == 0 && x.CFunctionId == "PERSONAL" &&
+                                                                      x.CCompanyId == pCompanyCode && x.CNo == "OftenTeam" &&
+                                                                      x.CreatedErpid == cERPID);
+
+                    if (bean != null)
+                    {
+                        bean.CValue = cTeamID.TrimEnd(';');
+                    }
+                    else
+                    {
+                        TbOneSroftenUsedDatum SRO = new TbOneSroftenUsedDatum();
+
+                        SRO.CFunctionId = "PERSONAL";                //固定為「PERSONAL.個人」
+                        SRO.CCompanyId = pCompanyCode;
+                        SRO.CNo = "OftenTeam";                      //固定為「OftenTeam」
+                        SRO.CValue = cTeamID.TrimEnd(';');
+                        SRO.CDescription = "個人常用服務團隊清單";    //固定為「個人常用服務團隊清單」
+                        SRO.Disabled = 0;
+
+                        SRO.CreatedErpid = ViewBag.cLoginUser_ERPID;
+                        SRO.CreatedDate = DateTime.Now;
+                        SRO.CreatedUserName = ViewBag.empEngName;
+
+                        dbOne.TbOneSroftenUsedData.Add(SRO);
+
+                    }
+
+                    int result = dbOne.SaveChanges();
+
+                    if (result <= 0)
+                    {
+                        reValue = "儲存常用服務團隊失敗！";
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("儲存常用服務團隊失敗，原因：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 帶入常用服務團隊
+        /// <summary>
+        /// 儲存常用服務團隊
+        /// </summary>        
+        /// <returns></returns>
+        public IActionResult getpjPersonallyTeam()
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = string.Empty;
+            string cERPID = ViewBag.cLoginUser_ERPID;
+
+            try
+            {
+                var bean = dbOne.TbOneSroftenUsedData.FirstOrDefault(x => x.Disabled == 0 && x.CFunctionId == "PERSONAL" &&
+                                                                      x.CCompanyId == pCompanyCode && x.CNo == "OftenTeam" &&
+                                                                      x.CreatedErpid == cERPID);
+
+                if (bean != null)
+                {
+                    reValue = bean.CValue.Trim();
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+
+            return Json(reValue);
         }
         #endregion
 

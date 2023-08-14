@@ -73,7 +73,7 @@
 						text: '匯出Excel',
 						sheetName: '服務進度查詢作業',
 						exportOptions: {
-							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] //要顯示的欄位
+							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							addCustomNumberFormat(xlsx, '0');
@@ -93,6 +93,7 @@
 							formatTargetColumn(xlsx, 'N');
 							formatTargetColumn(xlsx, 'O');
 							formatTargetColumn(xlsx, 'P');
+							formatTargetColumn(xlsx, 'Q');
 						}
 					}),
 				],
@@ -100,6 +101,11 @@
 
 			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
 			$('#ddl_cTeamID option').prop('selected', false).trigger('chosen:updated');	//服務團隊
+
+			//顯示服務團隊設定popup
+			$('#btn_pjTeam').click(function () {
+				$('#dialog_pjTeam').modal('show');
+			})
 
 			//顯示工程師設定popup
 			$('#btn_pjAssEngineer').click(function () {
@@ -241,17 +247,203 @@
 			})
 		}
 
+		//-----↓↓↓↓↓服務團隊 ↓↓↓↓↓-----
+		//儲存個人常用服務團隊
+		function savepjPersonallyTeam() {			
+			var hid_cTeamID = $("#hid_cTeamID");
+			var tbx_cTeamName = $("#tbx_cTeamName");
+
+			if ($("#tbx_cTeamName").val() == "") {
+				alert("您未選擇任何服務團隊");
+			}
+			else {
+				var tIsDo = confirm("您是否要儲存本次清單至個人常用服務團隊?")
+
+				if (tIsDo) {
+					$("#btn_savepjPersonallyEngineer").hide();
+					$("#img_waiting_savepjPersonallyTeam").show();
+
+					$.ajax({
+						url: '@Url.Action("savepjPersonallyTeam", "ServiceRequest")',
+						type: 'post',
+						dataType: 'json',
+						data: {
+							cTeamID: hid_cTeamID.val()
+						},
+						success: function (result) {
+							if (result == "SUCCESS") {
+								alert("儲存成功！");
+							}
+							else
+							{
+								alert(result);
+							}
+						}
+					});
+
+					$("#img_waiting_savepjPersonallyTeam").hide();
+					$("#btn_savepjPersonallyTeam").show();
+				}				
+			}
+		}
+
+		//帶入個人常用服務團隊
+		function getpjPersonallyTeam() {
+			var hid_cTeamID = $("#hid_cTeamID");
+
+			$("#btn_getpjPersonallyTeam").hide();
+			$("#img_waiting_savepjPersonallyTeam").show();
+
+			$.ajax({
+				url: '@Url.Action("getpjPersonallyTeam", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',				
+				success: function (result) {
+					if (result == "")
+					{
+						alert("您未設定個人常用服務團隊！");
+					}
+					else
+					{
+						hid_cTeamID.val(result);
+						getpjTeam();
+					}
+				}
+			});
+
+			$("#img_waiting_savepjPersonallyTeam").hide();
+			$("#btn_getpjPersonallyTeam").show();			
+		}
+
+        //修改服務團隊
+        function savepjTeam() {
+            var hid_cTeamID = $("#hid_cTeamID");
+
+			if ($("#ddl_cTeamID").val() == "") {
+                alert("請選擇服務團隊");
+            }
+            else {
+					$("#btn_savepjTeam").hide();
+                    $("#img_waiting_savepjTeam").show();
+
+				    $.ajax({
+					    url: '@Url.Action("SavepjTeam", "ServiceRequest")',
+					    type: 'post',
+					    dataType: 'json',
+                        data: {                            
+                            cTeamID: hid_cTeamID.val(),
+							cTeamAcc: $("#ddl_cTeamID").val(),
+                        },
+                        success: function (result) {
+                            if (result.indexOf("Error") >= 0) {
+							   alert("儲存失敗！" + result);
+							}
+							else {
+								//alert("儲存成功");
+								hid_cTeamID.val(result);
+								getpjTeam();                            
+							}
+                        }
+                    });
+
+                    $("#img_waiting_savepjTeam").hide();
+                    $("#btn_savepjTeam").show();
+            }
+        }
+
+        //取得服務團隊
+        function getpjTeam() {            
+			$("#ddl_cTeamID").val("");
+			
+			var hid_cTeamID = $("#hid_cTeamID");
+            
+			$.ajax({
+				url: '@Url.Action("GetpjTeam", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+                data: {                    
+					cTeamID : hid_cTeamID.val(),
+                },
+                success: function (result) {
+                    var list = "";
+					var pjTeamName = "";
+					$.each(result, function (i, bean) {
+                        if (bean != null) {
+							pjTeamName += bean.teamName + ";";
+
+                            list += '<tr id="tr_pjTeam_' + bean.id + '">'
+                                + "<input type='hidden' class='hidpjTeamAcc' value='" + bean.teamID + "'>"
+                                + '<td>'
+                                    + '<button class="btn btn-danger btn-sm btnCtDelete btnPreventDefault" type="button" onclick="deletepjTeam(this);" style="margin: 2px;">'
+                                        + '<i class="fa fa-trash"></i>'
+                                    + '</button>'
+                                + '</td>'								
+                                + "<td style='vertical-align: middle;'>" + bean.teamName + "</td>"
+								+ "<td style='vertical-align: middle;'>" + bean.deptId + "</td>"
+                                + "<td style='vertical-align: middle;'>" + bean.deptName + "</td>"
+                            + "</tr>";
+						}
+                    });
+
+                    if (list != "") {
+                        list = "<table class='table table-striple table-bordered table-hover dataTables-example' style='word-break: keep-all; white-space: nowrap; text-align: center;'>"
+                            + "<thead><tr>"
+                                + "<th>刪除</th>"                                
+                                + "<th>服務團隊</th>"
+                                + "<th>部門ID</th>"
+                                + "<th>部門名稱</th>"                                
+                            + "</tr></thead><tbody>"
+                            + list
+                            + "</tbody></table>";
+					}
+                    $("#tb_pjTeam").html(list);
+
+                    pjTeamName = pjTeamName.substr(0, pjTeamName.length - 1);
+                    $("#tbx_cTeamName").val(pjTeamName);
+                }
+			});
+        }
+
+        //刪除服務團隊
+        function deletepjTeam(obj) {
+            var pjTeamAcc = $(obj).parent().parent().find(".hidpjTeamAcc").val();
+			var hid_cTeamID = $("#hid_cTeamID");
+
+            if (confirm("確認刪除此服務團隊？")) {
+                $.ajax({
+					url: '@Url.Action("DeletepjTeam", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+                    data: {
+                        cTeamID: hid_cTeamID.val(),
+						cTeamAcc: pjTeamAcc,
+                    },
+                    success: function (result) {
+                        if (result.indexOf("Error") >= 0) {
+                           alert("刪除失敗！");
+                        }
+                        else {
+							//alert("刪除成功");
+							hid_cTeamID.val(result);
+                            getpjTeam();                            
+                        }
+                    }
+				});
+            }
+        }
+		//-----↑↑↑↑↑服務團隊 ↑↑↑↑↑-----
+
 		//-----↓↓↓↓↓協助工程師 ↓↓↓↓↓-----
 		//儲存個人常用工程師
 		function savepjPersonallyEngineer() {			
 			var hid_cAssEngineerID = $("#hid_cAssEngineerID");
-			var tbx_cAssEngineerName = $("#tbx_cAssEngineerName");
+			var tbx_cTeamName = $("#tbx_cTeamName");
 
-			if ($("#tbx_cAssEngineerName").val() == "") {
+			if ($("#tbx_cTeamName").val() == "") {
 				alert("您無輸入任何工程師姓名");
 			}
 			else {
-				var tIsDo = confirm("您是否要儲存本次工程師清單至個人常用工程師?")
+				var tIsDo = confirm("您是否要儲存本次清單至個人常用工程師?")
 
 				if (tIsDo) {
 					$("#btn_savepjPersonallyEngineer").hide();
@@ -488,29 +680,31 @@
 			var SRCaseType = $("#ddl_cSRCaseType").val().join();		//服務案件種類
 			var Status = $("#ddl_cStatus").val().join();				//狀態
 			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//派單起始日期
-			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');			//派單結束日期
+			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');		//派單結束日期
 			var tbx_cCustomerID = $('#tbx_cCustomerID');				//客戶代號
-			var tbx_cCustomerName = $('#tbx_cCustomerName');				//客戶名稱
+			var tbx_cCustomerName = $('#tbx_cCustomerName');			//客戶名稱
 			var tbx_cSRID = $('#tbx_cSRID');							//SRID
+			var tbx_cDesc = $('#tbx_cDesc');							//說明
 			var ddl_cIsSecondFix = $('#ddl_cIsSecondFix');				//是否為二修
-			var tbx_CreatedUserName = $('#tbx_CreatedUserName');			//派單人員
+			var tbx_CreatedUserName = $('#tbx_CreatedUserName');		//派單人員
 			var tbx_cRepairName = $('#tbx_cRepairName');				//報修人姓名			
 			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道			
 			var hid_cAssEngineerID = $('#hid_cAssEngineerID');			//工程師ERPID
 			var tbx_cTechManagerID = $('#tbx_cTechManagerID');			//技術主管ERPID
-			var cTeamID = $("#ddl_cTeamID").val().join();			    //服務團隊
+			var cTeamID = $("#hid_cTeamID").val();						//服務團隊
+			var tbx_cContractID = $('#tbx_cContractID');				//合約文件編號			
 
 			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');					//報修類別-大類
 			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');					//報修類別-中類
 			var ddl_cSRTypeThr = $('#ddl_cSRTypeThr');					//報修類別-小類
 
 			var tbx_cSerialID = $('#tbx_cSerialID');					//報修產品序號
-			var tbx_cMaterialName = $('#tbx_cMaterialName');				//報修產品機器型號
+			var tbx_cMaterialName = $('#tbx_cMaterialName');			//報修產品機器型號
 			var tbx_cProductNumber = $('#tbx_cProductNumber');			//報修Product Number
 
 			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
-				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && SRPathWay == "" &&
-				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" &&
+				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_cDesc.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && SRPathWay == "" &&
+				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && 
 				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
@@ -533,8 +727,8 @@
 			}
 			else {
 				searchQuerySRProgress(SRCaseType, Status, tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
-									  tbx_cCustomerName.val(), tbx_cSRID.val(), ddl_cIsSecondFix.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
-									  hid_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID,
+									  tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_cDesc.val(), ddl_cIsSecondFix.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
+									  hid_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID, tbx_cContractID.val(),
 									  ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
 									  tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
 			}
@@ -543,8 +737,8 @@
 		}
 
 		//查詢結果
-		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID,cCustomerName, cSRID, cIsSecondFix, CreatedUserName, cRepairName, cSRPathWay,
-			cAssEngineerID, cTechManagerID, cTeamID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
+		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID,cCustomerName, cSRID, cDesc, cIsSecondFix, CreatedUserName, cRepairName, cSRPathWay,
+			cAssEngineerID, cTechManagerID, cTeamID, cContractID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
 			
 			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
 			$("#dataDiv").html('');
@@ -562,6 +756,7 @@
 					cCustomerID: cCustomerID,
 					cCustomerName: cCustomerName,
 					cSRID: cSRID,
+					cDesc: cDesc,
 					cIsSecondFix: cIsSecondFix,
 					CreatedUserName: CreatedUserName,
 					cRepairName: cRepairName,
@@ -569,6 +764,7 @@
 					cAssEngineerID: cAssEngineerID,
 					cTechManagerID: cTechManagerID,
 					cTeamID: cTeamID,
+					cContractID: cContractID,
 					cSRTypeOne: cSRTypeOne,
 					cSRTypeSec: cSRTypeSec,
 					cSRTypeThr: cSRTypeThr,
@@ -593,6 +789,8 @@
 			$("#lbl_cCustomerName").html("");
 			$('#tbx_cCustomerName').val("");
 			$('#tbx_cSRID').val("");
+			$('#tbx_cDesc').val("");
+			$('#tbx_cContractID').val("");
 			$('#ddl_cIsSecondFix').val("");
 			$('#tbx_CreatedUserName').val("");
 			$('#tbx_cRepairName').val("");			
@@ -605,12 +803,16 @@
 
 			$("#ddl_cSRCaseType").val("").trigger('chosen:updated');	//服務案件種類
 			$("#ddl_cStatus").val("").trigger('chosen:updated');	//狀態
-			$("#ddl_cSRPathWay").val("").trigger('chosen:updated');	//報修管道
-			$("#ddl_cTeamID").val("").trigger('chosen:updated');	//服務團隊
+			$("#ddl_cSRPathWay").val("").trigger('chosen:updated');	//報修管道			
 			
 			$('#ddl_cSRTypeOne').val("");			
 			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
 			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
+
+			//清空服務團隊
+			$('#hid_cTeamID').val("");
+			$('#tbx_cTeamName').val("");
+			getpjTeam();
 
 			//清空工程師
 			$('#hid_cAssEngineerID').val("");
@@ -689,10 +891,10 @@
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cSRID" id="tbx_cSRID" class="form-control" placeholder="SRID">
 							</div>
-							<label class="col-lg-2 col-form-label">是否為二修</label>
+							<label class="col-lg-2 col-form-label">說明</label>
 							<div class="col-lg-4">
-								<select asp-for="ddl_cIsSecondFix" asp-items="Model.ListIsSecondFix" class="form-control"></select>
-							</div>
+								<input type="text" id="tbx_cDesc" name="tbx_cDesc" class="form-control" placeholder="若有輸入說明，最大限制1,000筆">
+							</div>	
 						</div>
 						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">派單人員</label>
@@ -703,7 +905,19 @@
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cRepairName" id="tbx_cRepairName" class="form-control" placeholder="客戶報修人姓名">
 							</div>
-						</div>												
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">服務團隊</label>
+							<div class="col-lg-10 col-sm-10 input-group">
+								<input type="hidden" id="hid_cTeamID" name="hid_cTeamID" value="@ViewBag.cTeamID">
+								<input id="tbx_cTeamName" name="tbx_cTeamName" type="text" class="form-control labelDisabled" placeholder="服務團隊名稱" disabled>
+								<div class="input-group-append">
+									<button id="btn_pjTeam" class="btn btn-primary" type="button">
+										<i class="fa fa-user-plus" aria-hidden="true"></i>
+									</button>
+								</div>
+							</div>
+						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">工程師ERPID</label>
 							<div class="col-lg-10 col-sm-10 input-group">
@@ -734,11 +948,17 @@
 								@Html.DropDownList("ddl_cSRTypeSec", (IEnumerable<SelectListItem>)ViewBag.SRTypeSecList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeSec();" })
 								@Html.DropDownList("ddl_cSRTypeThr", (IEnumerable<SelectListItem>)ViewBag.SRTypeThrList, new { @class = "form-control" })
 							</div>
-							<label class="col-lg-2 col-form-label">服務團隊</label>
+							<label class="col-lg-2 col-form-label">是否為二修</label>
 							<div class="col-lg-4">
-								@Html.DropDownList("ddl_cTeamID", (IEnumerable<SelectListItem>)ViewBag.ddl_cTeamID, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務團隊" })
+								<select asp-for="ddl_cIsSecondFix" asp-items="Model.ListIsSecondFix" class="form-control"></select>
 							</div>
-						</div>						
+						</div>	
+						<div class="form-group row">							
+							<label class="col-lg-2 col-form-label">合約文件編號</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_cContractID" name="tbx_cContractID" class="form-control" placeholder="合約文件編號">
+							</div>							
+						</div>
 						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">報修產品序號</label>
 							<div class="col-lg-4">
@@ -792,6 +1012,7 @@
 								<th>報修類別</th>
 								<th>主要工程師</th>
 								<th>協助工程師</th>
+								<th>合約文件編號</th>
 								<th>派單人員</th>
 								<th>派單日期</th>
 								<th>最後編輯日期</th>
@@ -800,33 +1021,76 @@
 						</thead>
 						<tbody>
 							@{
-							if (ViewBag.QueryToListBean != null)
-							{
-								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+								if (ViewBag.QueryToListBean != null)
 								{
-												<tr>
-													<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-													<td>@Html.Raw(QueryInfo[2])</td>
-													<td>@Html.Raw(QueryInfo[3])</td>
-													<td>@Html.Raw(QueryInfo[4])</td>
-													<td>@Html.Raw(QueryInfo[5])</td>
-													<td>@Html.Raw(QueryInfo[6])</td>
-													<td>@Html.Raw(QueryInfo[7])</td>
-													<td>@Html.Raw(QueryInfo[8])</td>
-													<td>@Html.Raw(QueryInfo[9])</td>
-													<td>@Html.Raw(QueryInfo[10])</td>
-													<td>@Html.Raw(QueryInfo[12])</td>
-													<td>@Html.Raw(QueryInfo[13])</td>
-													<td>@Html.Raw(QueryInfo[15])</td>
-													<td>@Html.Raw(QueryInfo[16])</td>
-													<td>@Html.Raw(QueryInfo[17])</td>
-													<td>@Html.Raw(QueryInfo[18])</td>
-												</tr>
+									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+									{
+										<tr>
+											<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+											<td>@Html.Raw(QueryInfo[2])</td>
+											<td>@Html.Raw(QueryInfo[3])</td>						
+											<td>@Html.Raw(QueryInfo[4])</td>
+											<td>@Html.Raw(QueryInfo[5])</td>
+											<td>@Html.Raw(QueryInfo[6])</td>
+											<td>@Html.Raw(QueryInfo[7])</td>
+											<td>@Html.Raw(QueryInfo[8])</td>
+											<td>@Html.Raw(QueryInfo[9])</td>
+											<td>@Html.Raw(QueryInfo[10])</td>
+											<td>@Html.Raw(QueryInfo[12])</td>
+											<td>@Html.Raw(QueryInfo[13])</td>
+											<td>@Html.Raw(QueryInfo[19])</td>
+											<td>@Html.Raw(QueryInfo[15])</td>
+											<td>@Html.Raw(QueryInfo[16])</td>
+											<td>@Html.Raw(QueryInfo[17])</td>
+											<td>@Html.Raw(QueryInfo[18])</td>
+										</tr>
+									}
 								}
 							}
-						}
-					</tbody>
+						</tbody>
 				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--服務團隊彈出視窗-->
+<div class="modal fade" id="dialog_pjTeam" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-users"></i> 服務團隊設定</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group row">						
+					<label class="col-lg-2 col-form-label">服務團隊名稱</label>
+					<div class="input-group col-sm-10 col-lg-6" style="height: 36px;">							
+						@Html.DropDownList("ddl_cTeamID", (IEnumerable<SelectListItem>)ViewBag.SRTeamIDList, new { @class = "form-control" })
+					</div>					
+				</div>
+				<div class="form-group row">
+					<div class="col-lg-12">
+						<button id="btn_savepjTeam" class="btn btn-primary col-lg-4 col-xs-4" type="button" onclick="savepjTeam();">
+							<i class="fa fa-save" style="margin-right: 4px;"></i> 儲 存
+						</button>&nbsp;&nbsp;&nbsp;
+						<button id="btn_getpjPersonallyTeam" class="btn btn-warning col-lg-4 col-xs-4" type="button" onclick="getpjPersonallyTeam();">
+							<i class="fa fa-upload" style="margin-right: 4px;"></i> 帶入個人常用服務團隊
+						</button>
+						<img id="img_waiting_savepjPersonallyTeam" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+					</div>
+				</div>
+			</div>
+			<hr style="border: 1px solid lightgray; width: 98%;" />
+			<div class="col-lg-12">
+				<button id="btn_savepjPersonallyTeam" class="btn btn-success col-lg-4 col-xs-4" type="button" onclick="savepjPersonallyTeam();">
+					<i class="fa fa-download" style="margin-right: 4px;"></i> 儲存下方清單至個人常用服務團隊
+				</button>&nbsp;&nbsp;&nbsp;
+			</div>
+			<div class="modal-body" id="tb_pjTeam" style="overflow: scroll;">
+
 			</div>
 		</div>
 	</div>
