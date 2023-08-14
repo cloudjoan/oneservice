@@ -408,33 +408,79 @@ namespace OneService.Controllers
         /// <summary>
         /// 取得報修類別說明
         /// </summary>
+        /// <param name="cSRID">SRID</param>
         /// <param name="Products">產品序號＃＃產品機器型號＃＃Product Number</param>        
+        /// <param name="tSFList">序號回報檔清單</param>
         /// <returns></returns>
-        public string TransProductSerial(string Products)
+        public string TransProductSerial(string cSRID, string Products, List<TbOneSrdetailSerialFeedback> tSFList)
         {
             string reValue = string.Empty;
             string cSerialID = string.Empty;        //產品序號
             string cMaterialName = string.Empty;    //產品機器型號
             string cProductNumber = string.Empty;   //Product Number
 
-            string[] tAry = Products.Split("＃＃");
-            cSerialID = tAry.Length >= 1 ? tAry[0] : "";
-            cMaterialName = tAry.Length >= 2 ? tAry[1] : "";
-            cProductNumber = tAry.Length >= 3 ? tAry[2] : "";
-
-            if (!string.IsNullOrEmpty(cSerialID))
+            if (cSRID.Substring(0, 2) == "63")
             {
-                reValue += cSerialID + "<br/>";
+                #region 裝機
+                int count = 0;
+                var beans = tSFList.Where(x => x.CSrid == cSRID);
+
+                foreach(var bean in beans)
+                {
+                    if (count <= 1)
+                    {
+                        cSerialID = bean.CSerialId;
+                        cMaterialName = bean.CMaterialName;
+                        cProductNumber = bean.CMaterialId;
+
+                        if (!string.IsNullOrEmpty(cSerialID))
+                        {
+                            reValue += cSerialID + "<br/>";
+                        }
+
+                        if (!string.IsNullOrEmpty(cMaterialName))
+                        {
+                            reValue += cMaterialName + "<br/>";
+                        }
+
+                        if (!string.IsNullOrEmpty(cProductNumber))
+                        {
+                            reValue += cProductNumber + "<br/>";
+                        }
+                    }
+                    else
+                    {
+                        reValue += "...";
+                        break;
+                    }
+
+                    count++;
+                }
+                #endregion
             }
-
-            if (!string.IsNullOrEmpty(cMaterialName))
+            else
             {
-                reValue += cMaterialName + "<br/>";
-            }
+                #region 非裝機
+                string[] tAry = Products.Split("＃＃");
+                cSerialID = tAry.Length >= 1 ? tAry[0] : "";
+                cMaterialName = tAry.Length >= 2 ? tAry[1] : "";
+                cProductNumber = tAry.Length >= 3 ? tAry[2] : "";
 
-            if (!string.IsNullOrEmpty(cProductNumber))
-            {
-                reValue += cProductNumber;
+                if (!string.IsNullOrEmpty(cSerialID))
+                {
+                    reValue += cSerialID + "<br/>";
+                }
+
+                if (!string.IsNullOrEmpty(cMaterialName))
+                {
+                    reValue += cMaterialName + "<br/>";
+                }
+
+                if (!string.IsNullOrEmpty(cProductNumber))
+                {
+                    reValue += cProductNumber;
+                }
+                #endregion
             }
 
             return reValue;
@@ -1861,6 +1907,20 @@ namespace OneService.Controllers
             writeToLog(beanIN.IV_SRID, "GetAPI_CURRENTINSTALLINFO_Update", pMsg, beanIN.IV_LOGINEMPNAME);
 
             return OUTBean;
+        }
+        #endregion
+
+        #region 傳入SRID清單，並取得SerialFeedbacks(服務明細-序號回報檔)清單
+        /// <summary>
+        /// 傳入SRID清單，並取得SerialFeedbacks(服務明細-序號回報檔)清單
+        /// </summary>
+        /// <param name="SridList">SRID清單</param>
+        /// <returns></returns>
+        public List<TbOneSrdetailSerialFeedback> findSRSerialFeedbackList(List<string> SridList)
+        {
+            var beans = dbOne.TbOneSrdetailSerialFeedbacks.Where(x => x.Disabled == 0 && SridList.Contains(x.CSrid)).ToList();
+
+            return beans;
         }
         #endregion
 

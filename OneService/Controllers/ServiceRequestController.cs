@@ -874,9 +874,9 @@ namespace OneService.Controllers
         /// <param name="cSRTypeOne">報修類別-大類</param>
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
-        /// <param name="cSerialID">報修產品序號</param>
-        /// <param name="cMaterialName">報修產品機器型號</param>
-        /// <param name="cProductNumber">報修Product Number</param>
+        /// <param name="cSerialID">報修/裝機序號</param>
+        /// <param name="cMaterialName">報修機器型號/裝機料號說明</param>
+        /// <param name="cProductNumber">報修Product Number/裝機料號</param>
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
                                                  string cCustomerID, string cCustomerName, string cSRID, string cDesc, string cIsSecondFix, string CreatedUserName, string cRepairName, string cSRPathWay,
@@ -892,7 +892,10 @@ namespace OneService.Controllers
 
             string tTop = string.Empty;                 //是否有輸入說明，若有就要限制前1,000筆
             string ttWhere = string.Empty;
+            string ttWhere2 = string.Empty;
             string ttJoin = string.Empty;
+            string ttJoin2 = string.Empty;
+            string ttUnion = string.Empty;
             string ttStrItem = string.Empty;
             string tTempERPID = string.Empty;            
             string tSRIDUrl = string.Empty;             //服務案件URL
@@ -910,8 +913,9 @@ namespace OneService.Controllers
             string tCreatedDate = string.Empty;         //派單日期
             string tModifiedDate = string.Empty;        //最後編輯日期                          
 
-            List<string> tListAssAndTech = new List<string>();                          //記錄所有協助工程師和所有技術主管的ERPID
-            Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();  //記錄所有協助工程師和所有技術主管的<ERPID,中、英文姓名>
+            List<TbOneSrdetailSerialFeedback> tListSerialFeedback = new List<TbOneSrdetailSerialFeedback>();     //記錄SerialFeedbacks(服務明細-序號回報檔)清單
+            List<string> tListAssAndTech = new List<string>();                                              //記錄所有協助工程師和所有技術主管的ERPID
+            Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();                      //記錄所有協助工程師和所有技術主管的<ERPID,中、英文姓名>
 
             var tSRTeam_List = CMF.findSRTeamIDList("ALL", false);
             var tSRContact_List = CMF.findSRDetailContactList();            
@@ -1169,38 +1173,62 @@ namespace OneService.Controllers
             }
             #endregion
 
-            #region 報修產品序號
+            #region 將ttWhere複製到ttWhere2，要給裝機join用
+            if (ttWhere != "")
+            {
+                ttWhere2 = ttWhere;
+            }
+            #endregion
+
+            #region 報修/裝機序號
             if (!string.IsNullOrEmpty(cSerialID))
             {
                 ttWhere += "AND (P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' or P.cNewSerialID LIKE N'%" + cSerialID.Trim() + "%') " + Environment.NewLine;
+                ttWhere2 += "AND P.cSerialID LIKE N'%" + cSerialID.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
-            #region 報修產品機器型號
+            #region 報修機器型號/裝機料號說明
             if (!string.IsNullOrEmpty(cMaterialName))
             {
                 ttWhere += "AND P.cMaterialName LIKE N'%" + cMaterialName.Trim() + "%' " + Environment.NewLine;
+                ttWhere2 += "AND P.cMaterialName LIKE N'%" + cMaterialName.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
-            #region 報修Product Number
+            #region 報修Product Number/裝機料號
             if (!string.IsNullOrEmpty(cProductNumber))
             {
                 ttWhere += "AND P.cProductNumber LIKE N'%" + cProductNumber.Trim() + "%' " + Environment.NewLine;
+                ttWhere2 += "AND P.cMaterialID LIKE N'%" + cProductNumber.Trim() + "%' " + Environment.NewLine;
             }
             #endregion
 
-            #region 若【報修產品序號】、【報修產品機器型號】、【報修Product Number】其中有一個，就要執行Join語法
+            #region 若【報修/裝機序號】、【報修機器型號/裝機料號說明】、【報修Product Number/裝機料號】其中有一個，就要執行Join語法和Union的語法
             if (!string.IsNullOrEmpty(cSerialID) || !string.IsNullOrEmpty(cMaterialName) || !string.IsNullOrEmpty(cProductNumber))
             {
                 ttJoin = " left join TB_ONE_SRDetail_Product P on M.cSRID = P.cSRID";
                 ttWhere = "AND P.disabled = 0 " + ttWhere;
+
+                ttJoin2 = " left join TB_ONE_SRDetail_SerialFeedback P on M.cSRID = P.cSRID";
+                ttWhere2 = "AND P.disabled = 0 " + ttWhere2;
+
+                #region 組UNION ALL SQL語法(join裝機)
+                tSQL.AppendLine(" UNION ALL");
+                tSQL.AppendLine(" Select " + tTop + " M.*, '' as Feedbacks");                
+                tSQL.AppendLine(" From TB_ONE_SRMain M");
+                tSQL.AppendLine(ttJoin2);
+                tSQL.AppendLine(" Where 1=1 " + ttWhere2);
+
+                ttUnion = tSQL.ToString();
+                #endregion
             }
             #endregion
 
             #region 組待查詢清單
 
             #region SQL語法
+            tSQL = new StringBuilder();
             tSQL.AppendLine(" Select " + tTop + " M.*,");
             tSQL.AppendLine("        (Select top 1");
             tSQL.AppendLine("            case when sp.cNewSerialID <> '' then sp.cSerialID + '(更換後序號：' + sp.cNewSerialID + ')' + '＃＃' + sp.cMaterialName + '＃＃' + sp.cProductNumber");
@@ -1209,13 +1237,24 @@ namespace OneService.Controllers
             tSQL.AppendLine("        ) as Products");
             tSQL.AppendLine(" From TB_ONE_SRMain M");
             tSQL.AppendLine(ttJoin);
-            tSQL.AppendLine(" Where 1=1 " + ttWhere);            
+            tSQL.AppendLine(" Where 1=1 " + ttWhere);
+            tSQL.AppendLine(ttUnion);
             #endregion
 
             dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");            
-            dtProgress = CMF.DistinctTable(dt);           
+            dtProgress = CMF.DistinctTable(dt);
 
-            #region 先取得所有協助工程師和技術主管的ERPID
+            #region 取得所有SRID清單裡的序號回報檔清單
+            List<string> SridList = new List<string>();
+            foreach (DataRow dr in dtProgress.Rows)
+            {
+                SridList.Add(dr["cSRID"].ToString());
+            }
+
+            tListSerialFeedback = CMF.findSRSerialFeedbackList(SridList);
+            #endregion
+
+            #region 取得所有協助工程師和技術主管的ERPID
             foreach (DataRow dr in dtProgress.Rows)
             {
                 #region 協助工程師
@@ -1240,7 +1279,7 @@ namespace OneService.Controllers
                 tSTATUSDESC = CMF.TransSRSTATUS(ListStatus, dr["cStatus"].ToString());
                 tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
                 tSRType = CMF.TransSRType(dr["cSRTypeOne"].ToString(), dr["cSRTypeSec"].ToString(), dr["cSRTypeThr"].ToString());
-                tSRProductSerial = CMF.TransProductSerial(dr["Products"].ToString());
+                tSRProductSerial = CMF.TransProductSerial(dr["cSRID"].ToString(), dr["Products"].ToString(), tListSerialFeedback);
                 tMainEngineerID = string.IsNullOrEmpty(dr["cMainEngineerID"].ToString()) ? "" : dr["cMainEngineerID"].ToString();
                 tMainEngineerName = string.IsNullOrEmpty(dr["cMainEngineerName"].ToString()) ? "" : dr["cMainEngineerName"].ToString();
                 tAssEngineerName = CMF.TransEmployeeName(tDicAssAndTech, dr["cAssEngineerID"].ToString());
@@ -1258,7 +1297,7 @@ namespace OneService.Controllers
                 QueryInfo[4] = tSRContactName;                 //客戶聯絡人
                 QueryInfo[5] = dr["cDesc"].ToString();          //說明
                 QueryInfo[6] = dr["cDelayReason"].ToString();    //延遲結案原因
-                QueryInfo[7] = tSRProductSerial;               //報修產品序號資訊
+                QueryInfo[7] = tSRProductSerial;               //報修/裝機序號資訊
                 QueryInfo[8] = tSRTeam;                        //服務團隊
                 QueryInfo[9] = tSRPathWayNote;                 //報修管道
                 QueryInfo[10] = tSRType;                       //報修類別                
