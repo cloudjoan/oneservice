@@ -112,7 +112,7 @@ function delFile(fileId, fileZoneObjId) {
 Dropzone.autoDiscover = false;
 
 //正式區
-var prdReportUrl = "http://tsticrmmbgw.etatung.com:8081/CSreport/";
+var prdReportUrl = "https://oneservice.etatung.com/files/";
 var fileUrl = prdReportUrl;
 
 //測試區

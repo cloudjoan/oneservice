@@ -207,8 +207,8 @@ namespace OneService.Controllers
             #endregion
 
             #region 服務團隊(新)
-            var SRTeamIDList = CMF.findSRTeamIDList("ALL", false);
-            ViewBag.ddl_TeamID = SRTeamIDList;
+            var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
+            ViewBag.SRTeamIDList = SRTeamIDList;
             #endregion
 
             #region 服務團隊(舊)
@@ -255,6 +255,7 @@ namespace OneService.Controllers
         /// <param name="StartFinishTime">完成時間(起)</param>
         /// <param name="EndFinishTime">完成時間(迄)</param>
         /// <param name="SRID">SRID</param>
+        /// <param name="cDesc">說明</param>
         /// <param name="CustomerID">客戶代號</param>
         /// <param name="RepairName">報修人</param>
         /// <param name="RepairAddress">報修人地址</param>        
@@ -278,7 +279,7 @@ namespace OneService.Controllers
         /// <param name="cSRTypeThr">報修類別-小類</param>
         /// <param name="cIsSecondFix">是否二修</param>
         /// <returns></returns>
-        public IActionResult SRReportResult(string StartCreatedDate, string EndCreatedDate, string StartFinishTime, string EndFinishTime, string SRID, 
+        public IActionResult SRReportResult(string StartCreatedDate, string EndCreatedDate, string StartFinishTime, string EndFinishTime, string SRID, string cDesc,
                                           string CustomerID, string RepairName, string RepairAddress, string SerialID, string PID, string TeamID, string TeamOldID,
                                           string Status, string SRType, string EngineerID, string ContractID, string SO, string XCHP, string HPCT, 
                                           string MaterialID, string MaterialName, string OLDCT, string NEWCT, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr, string cIsSecondFix)
@@ -286,6 +287,7 @@ namespace OneService.Controllers
             StringBuilder tSQL = new StringBuilder();
 
             bool tIsFormal = false;
+            string tTop = string.Empty;                 //是否有輸入說明，若有就要限制前1,000筆
             string ttWhere = string.Empty;
             string ttStrItem = string.Empty;
             string tONEURLName = string.Empty;
@@ -359,6 +361,14 @@ namespace OneService.Controllers
             }
             #endregion
 
+            #region 說明
+            if (!string.IsNullOrEmpty(cDesc))
+            {
+                tTop = " TOP 1000 ";
+                ttWhere += "AND cDesc LIKE N'%" + cDesc.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
             #region 客戶代號
             if (!string.IsNullOrEmpty(CustomerID))
             {
@@ -398,7 +408,7 @@ namespace OneService.Controllers
             if (!string.IsNullOrEmpty(TeamID))
             {
                 ttStrItem = "";
-                string[] tAryTeam = TeamID.TrimEnd(',').Split(',');
+                string[] tAryTeam = TeamID.TrimEnd(';').Split(';');
 
                 if (tAryTeam.Length >= 0)
                 {
@@ -604,7 +614,7 @@ namespace OneService.Controllers
             #region 組待查詢清單
 
             #region SQL語法
-            tSQL.AppendLine(" Select *");            
+            tSQL.AppendLine(" Select " + tTop + " *");
             tSQL.AppendLine(" From VIEW_ONE_SRREPORT ");            
             tSQL.AppendLine(" Where 1=1 " + ttWhere);
             #endregion
@@ -2564,9 +2574,12 @@ namespace OneService.Controllers
                             TempStatus = CStatus + "|TRANS"; //轉單
                         }
 
-                        if (CStatus != "E0001" && OldCStatus != CStatus)
+                        if (OldCMainEngineerId != "")
                         {
-                            TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
+                            if (CStatus != "E0001" && OldCStatus != CStatus)
+                            {
+                                TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
+                            }
                         }
 
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
@@ -4570,9 +4583,12 @@ namespace OneService.Controllers
                             TempStatus = CStatus + "|TRANS"; //轉單
                         }
 
-                        if (CStatus != "E0001" && OldCStatus != CStatus)
+                        if (OldCMainEngineerId != "")
                         {
-                            TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
+                            if (CStatus != "E0001" && OldCStatus != CStatus)
+                            {
+                                TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
+                            }
                         }
 
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
@@ -5211,9 +5227,12 @@ namespace OneService.Controllers
                             TempStatus = CStatus + "|TRANS"; //轉單
                         }
 
-                        if (CStatus != "E0001" && OldCStatus != CStatus)
+                        if (OldCMainEngineerId != "")
                         {
-                            TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
+                            if (CStatus != "E0001" && OldCStatus != CStatus)
+                            {
+                                TempStatus = CStatus + "|" + OldCStatus; //記錄新舊狀態(用來判斷是從網頁結案)
+                            }
                         }
 
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;

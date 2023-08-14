@@ -100,6 +100,11 @@
 
 			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
 
+			//顯示服務團隊設定popup
+			$('#btn_pjTeam').click(function () {
+				$('#dialog_pjTeam').modal('show');
+			})
+
 			//顯示工程師設定popup
 			$('#btn_pjAssEngineer').click(function () {
 				$('#dialog_pjAssEngineer').modal('show');
@@ -257,6 +262,189 @@
 				}
 			})
 		}
+
+		//-----↓↓↓↓↓服務團隊 ↓↓↓↓↓-----
+		//儲存個人常用服務團隊
+		function savepjPersonallyTeam() {
+			var hid_cTeamID = $("#hid_cTeamID");
+			var tbx_cTeamName = $("#tbx_cTeamName");
+
+			if ($("#tbx_cTeamName").val() == "") {
+				alert("您未選擇任何服務團隊");
+			}
+			else {
+				var tIsDo = confirm("您是否要儲存本次清單至個人常用服務團隊?")
+
+				if (tIsDo) {
+					$("#btn_savepjPersonallyEngineer").hide();
+					$("#img_waiting_savepjPersonallyTeam").show();
+
+					$.ajax({
+						url: '@Url.Action("savepjPersonallyTeam", "ServiceRequest")',
+						type: 'post',
+						dataType: 'json',
+						data: {
+							cTeamID: hid_cTeamID.val()
+						},
+						success: function (result) {
+							if (result == "SUCCESS") {
+								alert("儲存成功！");
+							}
+							else {
+								alert(result);
+							}
+						}
+					});
+
+					$("#img_waiting_savepjPersonallyTeam").hide();
+					$("#btn_savepjPersonallyTeam").show();
+				}
+			}
+		}
+
+		//帶入個人常用服務團隊
+		function getpjPersonallyTeam() {
+			var hid_cTeamID = $("#hid_cTeamID");
+
+			$("#btn_getpjPersonallyTeam").hide();
+			$("#img_waiting_savepjPersonallyTeam").show();
+
+			$.ajax({
+				url: '@Url.Action("getpjPersonallyTeam", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				success: function (result) {
+					if (result == "") {
+						alert("您未設定個人常用服務團隊！");
+					}
+					else {
+						hid_cTeamID.val(result);
+						getpjTeam();
+					}
+				}
+			});
+
+			$("#img_waiting_savepjPersonallyTeam").hide();
+			$("#btn_getpjPersonallyTeam").show();
+		}
+
+		//修改服務團隊
+		function savepjTeam() {
+			var hid_cTeamID = $("#hid_cTeamID");
+
+			if ($("#ddl_cTeamID").val() == "") {
+				alert("請選擇服務團隊");
+			}
+			else {
+				$("#btn_savepjTeam").hide();
+				$("#img_waiting_savepjTeam").show();
+
+				$.ajax({
+					url: '@Url.Action("SavepjTeam", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cTeamID: hid_cTeamID.val(),
+						cTeamAcc: $("#ddl_cTeamID").val(),
+					},
+					success: function (result) {
+						if (result.indexOf("Error") >= 0) {
+							alert("儲存失敗！" + result);
+						}
+						else {
+							//alert("儲存成功");
+							hid_cTeamID.val(result);
+							getpjTeam();
+						}
+					}
+				});
+
+				$("#img_waiting_savepjTeam").hide();
+				$("#btn_savepjTeam").show();
+			}
+		}
+
+		//取得服務團隊
+		function getpjTeam() {
+			$("#ddl_cTeamID").val("");
+
+			var hid_cTeamID = $("#hid_cTeamID");
+
+			$.ajax({
+				url: '@Url.Action("GetpjTeam", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cTeamID: hid_cTeamID.val(),
+				},
+				success: function (result) {
+					var list = "";
+					var pjTeamName = "";
+					$.each(result, function (i, bean) {
+						if (bean != null) {
+							pjTeamName += bean.teamName + ";";
+
+							list += '<tr id="tr_pjTeam_' + bean.id + '">'
+								+ "<input type='hidden' class='hidpjTeamAcc' value='" + bean.teamID + "'>"
+								+ '<td>'
+								+ '<button class="btn btn-danger btn-sm btnCtDelete btnPreventDefault" type="button" onclick="deletepjTeam(this);" style="margin: 2px;">'
+								+ '<i class="fa fa-trash"></i>'
+								+ '</button>'
+								+ '</td>'
+								+ "<td style='vertical-align: middle;'>" + bean.teamName + "</td>"
+								+ "<td style='vertical-align: middle;'>" + bean.deptId + "</td>"
+								+ "<td style='vertical-align: middle;'>" + bean.deptName + "</td>"
+								+ "</tr>";
+						}
+					});
+
+					if (list != "") {
+						list = "<table class='table table-striple table-bordered table-hover dataTables-example' style='word-break: keep-all; white-space: nowrap; text-align: center;'>"
+							+ "<thead><tr>"
+							+ "<th>刪除</th>"
+							+ "<th>服務團隊</th>"
+							+ "<th>部門ID</th>"
+							+ "<th>部門名稱</th>"
+							+ "</tr></thead><tbody>"
+							+ list
+							+ "</tbody></table>";
+					}
+					$("#tb_pjTeam").html(list);
+
+					pjTeamName = pjTeamName.substr(0, pjTeamName.length - 1);
+					$("#tbx_cTeamName").val(pjTeamName);
+				}
+			});
+		}
+
+		//刪除服務團隊
+		function deletepjTeam(obj) {
+			var pjTeamAcc = $(obj).parent().parent().find(".hidpjTeamAcc").val();
+			var hid_cTeamID = $("#hid_cTeamID");
+
+			if (confirm("確認刪除此服務團隊？")) {
+				$.ajax({
+					url: '@Url.Action("DeletepjTeam", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cTeamID: hid_cTeamID.val(),
+						cTeamAcc: pjTeamAcc,
+					},
+					success: function (result) {
+						if (result.indexOf("Error") >= 0) {
+							alert("刪除失敗！");
+						}
+						else {
+							//alert("刪除成功");
+							hid_cTeamID.val(result);
+							getpjTeam();
+						}
+					}
+				});
+			}
+		}
+		//-----↑↑↑↑↑服務團隊 ↑↑↑↑↑-----
 
 		//-----↓↓↓↓↓協助工程師 ↓↓↓↓↓-----
 		//儲存個人常用工程師
@@ -507,12 +695,13 @@
 			var tbx_cStartFinishTime = $('#tbx_cStartFinishTime');		//完成時間(起)
 			var tbx_cEndFinishTime = $('#tbx_cEndFinishTime');			//完成時間(迄)
 			var tbx_QuerySRID = $("#tbx_QuerySRID");					//SRID
+			var tbx_cDesc = $('#tbx_cDesc');							//說明
 			var tbx_QueryCustomerID = $("#tbx_QueryCustomerID");			//客戶代號
 			var tbx_QueryRepairName = $("#tbx_QueryRepairName");			//報修人
 			var tbx_QueryRepairAddress = $("#tbx_QueryRepairAddress");	//報修人地址			
 			var tbx_QuerySerialID = $("#tbx_QuerySerialID");				//序號
 			var tbx_QueryPID = $("#tbx_QueryPID");						//機器型號
-			var TeamID = $("#ddl_TeamID").val().join();				//服務團隊(新)
+			var TeamID = $("#hid_cTeamID").val();						//服務團隊(新)
 			var TeamOldID = $("#ddl_TeamOldID").val().join();			//服務團隊(舊)
 			var Status = $("#ddl_Status").val().join();				//狀態
 			var SRType = $("#ddl_SRType").val().join();				//服務案件種類
@@ -531,7 +720,7 @@
 			var ddl_cIsSecondFix = $("#ddl_cIsSecondFix");				//是否二修
 
 			if (tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" && tbx_cStartFinishTime.val() == "" && tbx_cEndFinishTime.val() == "" && 
-			    tbx_QuerySRID.val() == "" && tbx_QueryCustomerID.val() == "" && tbx_QueryRepairName.val() == "" && tbx_QueryRepairAddress.val() == "" &&
+			    tbx_QuerySRID.val() == "" && tbx_cDesc.val() == "" && tbx_QueryCustomerID.val() == "" && tbx_QueryRepairName.val() == "" && tbx_QueryRepairAddress.val() == "" &&
 				tbx_QuerySerialID.val() == "" && tbx_QueryPID.val() == "" && TeamID == "" && TeamOldID == "" && Status == "" && SRType == "" && hid_cAssEngineerID.val() == "" &&
 				tbx_QueryContractID.val() == "" && tbx_QuerySO.val() == "" && tbx_QueryXCHP.val() == "" && tbx_QueryHPCT.val() == "" &&
 				tbx_QueryMaterialID.val() == "" && tbx_QueryMaterialName.val() == "" && tbx_QueryOLDCT.val() == "" && tbx_QueryNEWCT.val() == "" && ddl_cSRTypeOne.val() == "" && ddl_cIsSecondFix.val() == "" &&
@@ -563,7 +752,7 @@
 			}
 			else {
 				searchSRReport(tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cStartFinishTime.val(), tbx_cEndFinishTime.val(),
-					tbx_QuerySRID.val(), tbx_QueryCustomerID.val(), tbx_QueryRepairName.val(), tbx_QueryRepairAddress.val(),
+					tbx_QuerySRID.val(), tbx_cDesc.val(), tbx_QueryCustomerID.val(), tbx_QueryRepairName.val(), tbx_QueryRepairAddress.val(),
 					tbx_QuerySerialID.val(), tbx_QueryPID.val(), TeamID, TeamOldID, Status, SRType, hid_cAssEngineerID.val(), tbx_QueryContractID.val(), tbx_QuerySO.val(),
 					tbx_QueryXCHP.val(), tbx_QueryHPCT.val(), tbx_QueryMaterialID.val(), tbx_QueryMaterialName.val(), tbx_QueryOLDCT.val(), tbx_QueryNEWCT.val(),
 					ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(), ddl_cIsSecondFix.val());
@@ -573,7 +762,7 @@
 		}
 
 		//查詢結果
-		function searchSRReport(StartCreatedDate, EndCreatedDate, StartFinishTime, EndFinishTime, SRID, CustomerID, RepairName, RepairAddress,
+		function searchSRReport(StartCreatedDate, EndCreatedDate, StartFinishTime, EndFinishTime, SRID, cDesc, CustomerID, RepairName, RepairAddress,
 			SerialID, PID, TeamID, TeamOldID, Status, SRType, EngineerID, ContractID, SO, XCHP, HPCT, MaterialID, MaterialName, OLDCT, NEWCT, cSRTypeOne, cSRTypeSec, cSRTypeThr, cIsSecondFix) {
 			$("#dataDiv").html('');
 			$.ajax({
@@ -586,6 +775,7 @@
 					StartFinishTime: StartFinishTime,
 					EndFinishTime: EndFinishTime,
 					SRID: SRID,
+					cDesc: cDesc,
 					CustomerID: CustomerID,
 					RepairName: RepairName,
 					RepairAddress: RepairAddress,					
@@ -625,6 +815,7 @@
 			$('#tbx_cStartFinishTime').val("");
 			$('#tbx_cEndFinishTime').val("");
 			$("#tbx_QuerySRID").val("");
+			$('#tbx_cDesc').val("");
 			$('#tbx_QueryCustomerID').val("");
 			$("#lbl_QueryCustomerID").html("");
 			$("#tbx_QueryRepairName").val("");
@@ -647,6 +838,11 @@
 			$('#ddl_cSRTypeOne').val("");
 			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
 			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
+
+			//清空服務團隊
+			$('#hid_cTeamID').val("");
+			$('#tbx_cTeamName').val("");
+			getpjTeam();
 
 			//清空工程師
 			$('#hid_cAssEngineerID').val("");
@@ -712,16 +908,32 @@
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">SRID</label>
+							<label class="col-lg-2 col-form-label">服務案件種類</label>
 							<div class="col-lg-4">
-								<input type="text" id="tbx_QuerySRID" name="tbx_QuerySRID" class="form-control" placeholder="SRID">
-							</div>
+								@Html.DropDownList("ddl_SRType", (IEnumerable<SelectListItem>)ViewBag.ddl_SRType, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務案件種類" })								
+							</div>	
+							<label class="col-lg-2 col-form-label">狀態</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_Status", (IEnumerable<SelectListItem>)ViewBag.ddl_Status, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇狀態" })
+							</div>							
+						</div>
+						<div  class="form-group row">
 							<label class="col-lg-2 col-form-label">客戶代號</label>
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QueryCustomerID" name="tbx_QueryCustomerID" class="form-control CustName" placeholder="請輸入客戶統編或名稱關鍵字">
 								<label id="lbl_QueryCustomerID" class="col-form-label" style="color:blue;"></label>
 							</div>
 						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">SRID</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerySRID" name="tbx_QuerySRID" class="form-control" placeholder="SRID">
+							</div>
+							<label class="col-lg-2 col-form-label">說明</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_cDesc" name="tbx_cDesc" class="form-control" placeholder="若有輸入說明，最大限制1,000筆">
+							</div>							
+						</div>						
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">報修人</label>
 							<div class="col-lg-4">
@@ -742,21 +954,23 @@
 								<input type="text" id="tbx_QueryPID" name="tbx_QueryPID" class="form-control" placeholder="報修機器型號">
 							</div>
 						</div>
-						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">服務團隊(新)</label>
-							<div class="col-lg-4">
-								@Html.DropDownList("ddl_TeamID", (IEnumerable<SelectListItem>)ViewBag.ddl_TeamID, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務團隊(新)" })
-							</div>
+						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">服務團隊(舊)</label>
 							<div class="col-lg-4">
 								@Html.DropDownList("ddl_TeamOldID", (IEnumerable<SelectListItem>)ViewBag.ddl_TeamOldID, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務團隊(舊)" })
-							</div>
-						</div>
+							</div>							
+						</div>						
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">服務案件種類</label>
-							<div class="col-lg-4">
-								@Html.DropDownList("ddl_SRType", (IEnumerable<SelectListItem>)ViewBag.ddl_SRType, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇服務案件種類" })								
-							</div>													
+							<label class="col-lg-2 col-form-label">服務團隊(新)</label>
+							<div class="col-lg-10 col-sm-10 input-group">
+								<input type="hidden" id="hid_cTeamID" name="hid_cTeamID" value="@ViewBag.cTeamID">
+								<input id="tbx_cTeamName" name="tbx_cTeamName" type="text" class="form-control labelDisabled" placeholder="服務團隊(新)" disabled>
+								<div class="input-group-append">
+									<button id="btn_pjTeam" class="btn btn-primary" type="button">
+										<i class="fa fa-user-plus" aria-hidden="true"></i>
+									</button>
+								</div>
+							</div>
 						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">工程師ERPID</label>
@@ -817,12 +1031,6 @@
 								@Html.DropDownList("ddl_cSRTypeSec", (IEnumerable<SelectListItem>)ViewBag.SRTypeSecList, new { @class = "form-control", @onchange = "javascript:onChangecSRTypeSec();" })
 								@Html.DropDownList("ddl_cSRTypeThr", (IEnumerable<SelectListItem>)ViewBag.SRTypeThrList, new { @class = "form-control" })
 							</div>
-							<label class="col-lg-2 col-form-label">狀態</label>
-							<div class="col-lg-4">
-								@Html.DropDownList("ddl_Status", (IEnumerable<SelectListItem>)ViewBag.ddl_Status, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇狀態" })
-							</div>
-						</div>		
-						<div class="form-group row">						
 							<label class="col-lg-2 col-form-label">是否為二修</label>
 							<div class="col-lg-4">
 								<select asp-for="ddl_cIsSecondFix" asp-items="Model.ListIsSecondFix" class="form-control"></select>
@@ -919,79 +1127,120 @@
 								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
 									count++;
-									<tr id='tr@(count)'>
-										<td>
-											@if (QueryInfo[58] == "Y")
+										<tr id='tr@(count)'>
+											<td>
+												@if (QueryInfo[58] == "Y")
 											{
-												<a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a>
+													<a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a>
 											}
 											else
 											{
-												@Html.Raw(QueryInfo[0])
+													@Html.Raw(QueryInfo[0])
 											}
-										</td>
-										<td>@Html.Raw(QueryInfo[2])</td>
-										<td>@Html.Raw(QueryInfo[3])</td>
-										<td>@Html.Raw(QueryInfo[4])</td>
-										<td>@Html.Raw(QueryInfo[5])</td>
-										<td>@Html.Raw(QueryInfo[6])</td>
-										<td>@Html.Raw(QueryInfo[7])</td>
-										<td>@Html.Raw(QueryInfo[8])</td>
-										<td>@Html.Raw(QueryInfo[9])</td>
-										<td>@Html.Raw(QueryInfo[10])</td>
-										<td>@Html.Raw(QueryInfo[11])</td>
-										<td>@Html.Raw(QueryInfo[12])</td>
-										<td>@Html.Raw(QueryInfo[13])</td>
-										<td>@Html.Raw(QueryInfo[14])</td>
-										<td>@Html.Raw(QueryInfo[15])</td>
-										<td>@Html.Raw(QueryInfo[16])</td>
-										<td>@Html.Raw(QueryInfo[17])</td>
-										<td>@Html.Raw(QueryInfo[18])</td>
-										<td>@Html.Raw(QueryInfo[19])</td>
-										<td>@Html.Raw(QueryInfo[20])</td>
-										<td>@Html.Raw(QueryInfo[21])</td>
-										<td>@Html.Raw(QueryInfo[22])</td>
-										<td>@Html.Raw(QueryInfo[23])</td>
-										<td>@Html.Raw(QueryInfo[24])</td>
-										<td>@Html.Raw(QueryInfo[25])</td>
-										<td>@Html.Raw(QueryInfo[26])</td>
-										<td>@Html.Raw(QueryInfo[27])</td>
-										<td>@Html.Raw(QueryInfo[28])</td>
-										<td>@Html.Raw(QueryInfo[29])</td>
-										<td>@Html.Raw(QueryInfo[30])</td>
-										<td>@Html.Raw(QueryInfo[31])</td>
-										<td>@Html.Raw(QueryInfo[32])</td>
-										<td>@Html.Raw(QueryInfo[33])</td>
-										<td>@Html.Raw(QueryInfo[34])</td>
-										<td>@Html.Raw(QueryInfo[35])</td>
-										<td>@Html.Raw(QueryInfo[36])</td>
-										<td><a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(QueryInfo[37]) })" target="_blank">@Html.Raw(QueryInfo[37])</a></td>
-										<td>@Html.Raw(QueryInfo[38])</td>
-										<td>@Html.Raw(QueryInfo[39])</td>
-										<td>@Html.Raw(QueryInfo[40])</td>
-										<td>@Html.Raw(QueryInfo[41])</td>
-										<td>@Html.Raw(QueryInfo[42])</td>
-										<td>@Html.Raw(QueryInfo[43])</td>
-										<td>@Html.Raw(QueryInfo[44])</td>
-										<td>@Html.Raw(QueryInfo[45])</td>
-										<td>@Html.Raw(QueryInfo[46])</td>
-										<td>@Html.Raw(QueryInfo[47])</td>
-										<td>@Html.Raw(QueryInfo[48])</td>
-										<td>@Html.Raw(QueryInfo[49])</td>
-										<td>@Html.Raw(QueryInfo[50])</td>
-										<td>@Html.Raw(QueryInfo[51])</td>
-										<td>@Html.Raw(QueryInfo[52])</td>
-										<td>@Html.Raw(QueryInfo[53])</td>
-										<td>@Html.Raw(QueryInfo[54])</td>
-										<td>@Html.Raw(QueryInfo[55])</td>
-										<td>@Html.Raw(QueryInfo[56])</td>
-										<td>@Html.Raw(QueryInfo[57])</td>
-									</tr>
+											</td>
+											<td>@Html.Raw(QueryInfo[2])</td>
+											<td>@Html.Raw(QueryInfo[3])</td>
+											<td>@Html.Raw(QueryInfo[4])</td>
+											<td>@Html.Raw(QueryInfo[5])</td>
+											<td>@Html.Raw(QueryInfo[6])</td>
+											<td>@Html.Raw(QueryInfo[7])</td>
+											<td>@Html.Raw(QueryInfo[8])</td>
+											<td>@Html.Raw(QueryInfo[9])</td>
+											<td>@Html.Raw(QueryInfo[10])</td>
+											<td>@Html.Raw(QueryInfo[11])</td>
+											<td>@Html.Raw(QueryInfo[12])</td>
+											<td>@Html.Raw(QueryInfo[13])</td>
+											<td>@Html.Raw(QueryInfo[14])</td>
+											<td>@Html.Raw(QueryInfo[15])</td>
+											<td>@Html.Raw(QueryInfo[16])</td>
+											<td>@Html.Raw(QueryInfo[17])</td>
+											<td>@Html.Raw(QueryInfo[18])</td>
+											<td>@Html.Raw(QueryInfo[19])</td>
+											<td>@Html.Raw(QueryInfo[20])</td>
+											<td>@Html.Raw(QueryInfo[21])</td>
+											<td>@Html.Raw(QueryInfo[22])</td>
+											<td>@Html.Raw(QueryInfo[23])</td>
+											<td>@Html.Raw(QueryInfo[24])</td>
+											<td>@Html.Raw(QueryInfo[25])</td>
+											<td>@Html.Raw(QueryInfo[26])</td>
+											<td>@Html.Raw(QueryInfo[27])</td>
+											<td>@Html.Raw(QueryInfo[28])</td>
+											<td>@Html.Raw(QueryInfo[29])</td>
+											<td>@Html.Raw(QueryInfo[30])</td>
+											<td>@Html.Raw(QueryInfo[31])</td>
+											<td>@Html.Raw(QueryInfo[32])</td>
+											<td>@Html.Raw(QueryInfo[33])</td>
+											<td>@Html.Raw(QueryInfo[34])</td>
+											<td>@Html.Raw(QueryInfo[35])</td>
+											<td>@Html.Raw(QueryInfo[36])</td>
+											<td><a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(QueryInfo[37]) })" target="_blank">@Html.Raw(QueryInfo[37])</a></td>
+											<td>@Html.Raw(QueryInfo[38])</td>
+											<td>@Html.Raw(QueryInfo[39])</td>
+											<td>@Html.Raw(QueryInfo[40])</td>
+											<td>@Html.Raw(QueryInfo[41])</td>
+											<td>@Html.Raw(QueryInfo[42])</td>
+											<td>@Html.Raw(QueryInfo[43])</td>
+											<td>@Html.Raw(QueryInfo[44])</td>
+											<td>@Html.Raw(QueryInfo[45])</td>
+											<td>@Html.Raw(QueryInfo[46])</td>
+											<td>@Html.Raw(QueryInfo[47])</td>
+											<td>@Html.Raw(QueryInfo[48])</td>
+											<td>@Html.Raw(QueryInfo[49])</td>
+											<td>@Html.Raw(QueryInfo[50])</td>
+											<td>@Html.Raw(QueryInfo[51])</td>
+											<td>@Html.Raw(QueryInfo[52])</td>
+											<td>@Html.Raw(QueryInfo[53])</td>
+											<td>@Html.Raw(QueryInfo[54])</td>
+											<td>@Html.Raw(QueryInfo[55])</td>
+											<td>@Html.Raw(QueryInfo[56])</td>
+											<td>@Html.Raw(QueryInfo[57])</td>
+										</tr>
 								}
 							}
 						}
 					</tbody>
 				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--服務團隊彈出視窗-->
+<div class="modal fade" id="dialog_pjTeam" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-users"></i> 服務團隊設定</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">服務團隊名稱</label>
+					<div class="input-group col-sm-10 col-lg-6" style="height: 36px;">
+						@Html.DropDownList("ddl_cTeamID", (IEnumerable<SelectListItem>)ViewBag.SRTeamIDList, new { @class = "form-control" })
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-lg-12">
+						<button id="btn_savepjTeam" class="btn btn-primary col-lg-4 col-xs-4" type="button" onclick="savepjTeam();">
+							<i class="fa fa-save" style="margin-right: 4px;"></i> 儲 存
+						</button>&nbsp;&nbsp;&nbsp;
+						<button id="btn_getpjPersonallyTeam" class="btn btn-warning col-lg-4 col-xs-4" type="button" onclick="getpjPersonallyTeam();">
+							<i class="fa fa-upload" style="margin-right: 4px;"></i> 帶入個人常用服務團隊
+						</button>
+						<img id="img_waiting_savepjPersonallyTeam" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+					</div>
+				</div>
+			</div>
+			<hr style="border: 1px solid lightgray; width: 98%;" />
+			<div class="col-lg-12">
+				<button id="btn_savepjPersonallyTeam" class="btn btn-success col-lg-4 col-xs-4" type="button" onclick="savepjPersonallyTeam();">
+					<i class="fa fa-download" style="margin-right: 4px;"></i> 儲存下方清單至個人常用服務團隊
+				</button>&nbsp;&nbsp;&nbsp;
+			</div>
+			<div class="modal-body" id="tb_pjTeam" style="overflow: scroll;">
 			</div>
 		</div>
 	</div>
