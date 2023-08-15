@@ -260,7 +260,7 @@
 				var tIsDo = confirm("您是否要儲存本次清單至個人常用服務團隊?")
 
 				if (tIsDo) {
-					$("#btn_savepjPersonallyEngineer").hide();
+					$("#btn_savepjPersonallyTeam").hide();
 					$("#img_waiting_savepjPersonallyTeam").show();
 
 					$.ajax({
@@ -437,9 +437,9 @@
 		//儲存個人常用工程師
 		function savepjPersonallyEngineer() {			
 			var hid_cAssEngineerID = $("#hid_cAssEngineerID");
-			var tbx_cTeamName = $("#tbx_cTeamName");
+			var tbx_cAssEngineerName = $("#tbx_cAssEngineerName");
 
-			if ($("#tbx_cTeamName").val() == "") {
+			if ($("#tbx_cAssEngineerName").val() == "") {
 				alert("您無輸入任何工程師姓名");
 			}
 			else {
