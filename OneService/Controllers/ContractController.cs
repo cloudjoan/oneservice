@@ -251,10 +251,10 @@ namespace OneService.Controllers
             getLoginAccount();
             getEmployeeInfo();
 
-            #region 服務團隊
-            var selectTeamList = CMF.findSRTeamIDList("ALL", false);
-            ViewBag.ddl_cTeamID = selectTeamList;
-            #endregion
+            #region 取得服務團隊清單
+            var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
+            ViewBag.SRTeamIDList = SRTeamIDList;
+            #endregion           
 
             return View();
         }
@@ -274,10 +274,12 @@ namespace OneService.Controllers
         /// <param name="cStartDate">合約期間(起)</param>
         /// <param name="cEndDate">合約期間(迄)</param>
         /// <param name="cAssignMainEngineer">未指派主要工程師(Y.未指派)</param>
+        /// <param name="cUploadObjID">未上傳合約標的</param>
         /// <param name="cTeamID">服務團隊(新)</param>
         /// <returns></returns>
         public IActionResult QueryContractMainResult(string cIsSubContract, string cContractID, string cCustomerID, string cCustomerName, 
-                                                   string cSoSales, string cMASales, string cMainEngineerID, string cStartDate, string cEndDate, string cAssignMainEngineer, string cTeamID)
+                                                   string cSoSales, string cMASales, string cMainEngineerID, string cStartDate, string cEndDate, 
+                                                   string cAssignMainEngineer, string cUploadObjID, string cTeamID)
         {
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
@@ -295,8 +297,8 @@ namespace OneService.Controllers
             string tDesc = string.Empty;
             string tContractNotes = string.Empty;
 
-            ttSelect = "ISNULL((select D.cEngineerID from TB_ONE_ContractDetail_ENG D where  M.cContractID = D.cContractID and D.cIsMainEngineer = 'Y'),'') as cEngineerID,";
-            ttSelect += "ISNULL((select D.cEngineerName from TB_ONE_ContractDetail_ENG D where  M.cContractID = D.cContractID and D.cIsMainEngineer = 'Y'),'') as cEngineerName";
+            ttSelect = "ISNULL((select D.cEngineerID from TB_ONE_ContractDetail_ENG D where D.Disabled = 0 and M.cContractID = D.cContractID and D.cIsMainEngineer = 'Y'),'') as cEngineerID," + Environment.NewLine;
+            ttSelect += "ISNULL((select D.cEngineerName from TB_ONE_ContractDetail_ENG D where D.Disabled = 0 and M.cContractID = D.cContractID and D.cIsMainEngineer = 'Y'),'') as cEngineerName";
 
             #region 合約類型
             if (!string.IsNullOrEmpty(cIsSubContract))
@@ -345,23 +347,38 @@ namespace OneService.Controllers
             #endregion           
 
             #region 合約期間
-            if (!string.IsNullOrEmpty(cStartDate))
+            if (!string.IsNullOrEmpty(cStartDate) && !string.IsNullOrEmpty(cEndDate))
             {
-                ttWhere += "AND Convert(varchar(10),M.cStartDate,111) >= N'" + cStartDate.Replace("-", "/") + "' ";
+                ttWhere += "AND (M.cStartDate between CONVERT(DATETIME, '" + cStartDate + "') and CONVERT(DATETIME, '" + cEndDate + "') or ";
+                ttWhere += "     M.cEndDate between CONVERT(DATETIME, '" + cStartDate + "') and CONVERT(DATETIME, '" + cEndDate + "')) " + Environment.NewLine;
             }
-
-            if (!string.IsNullOrEmpty(cEndDate))
+            else
             {
-                ttWhere += "AND Convert(varchar(10),M.cEndDate,111) <= N'" + cEndDate.Replace("-", "/") + "' ";
+                if (!string.IsNullOrEmpty(cStartDate) || !string.IsNullOrEmpty(cEndDate))
+                {
+                    string tStrDate = string.IsNullOrEmpty(cStartDate) ? cEndDate : cStartDate;
+                    ttWhere += "AND CONVERT(DATETIME, '" + tStrDate + "') between M.cStartDate and M.cEndDate " + Environment.NewLine;
+                }               
             }
             #endregion
 
-            #region 主要工程師ERPID
+            #region 主要/協助工程師ERPID
             if (!string.IsNullOrEmpty(cMainEngineerID))
             {
-                ttWhere += "AND D.disabled = 0 AND D.cIsMainEngineer='Y' AND D.cEngineerID = '" + cMainEngineerID + "' " + Environment.NewLine;                
+                string[] AryAss = cMainEngineerID.Split(';');
+
+                #region 先組主要工程師
+                ttStrItem = "";
+
+                foreach (string Ass in AryAss)
+                {
+                    ttStrItem += "N'" + Ass + "',";
+                }
+
+                ttWhere += "AND D.disabled = 0 AND D.cIsMainEngineer='Y' AND D.cEngineerID IN (" + ttStrItem.TrimEnd(',') + ") ";
+                #endregion              
             }
-            #endregion
+            #endregion          
 
             #region 未指派主要工程師
             if (!string.IsNullOrEmpty(cAssignMainEngineer))
@@ -371,11 +388,18 @@ namespace OneService.Controllers
             }
             #endregion
 
+            #region 未上傳合約標的
+            if (!string.IsNullOrEmpty(cUploadObjID))
+            {                
+                ttWhere += "AND (select count(*) from TB_ONE_ContractDetail_OBJ O where M.cContractID = O.cContractID) = 0 " + Environment.NewLine;
+            }
+            #endregion
+
             #region 服務團隊
             if (!string.IsNullOrEmpty(cTeamID))
             {
                 ttStrItem = "";
-                string[] tAryTeam = cTeamID.TrimEnd(',').Split(',');
+                string[] tAryTeam = cTeamID.TrimEnd(';').Split(';');
 
                 if (tAryTeam.Length >= 0)
                 {
@@ -1900,18 +1924,22 @@ namespace OneService.Controllers
             #endregion
 
             #region 合約期間
-            if (!string.IsNullOrEmpty(cStartDate))
+            if (!string.IsNullOrEmpty(cStartDate) && !string.IsNullOrEmpty(cEndDate))
             {
-                ttWhere += "AND Convert(varchar(10),M.cStartDate,111) >= N'" + cStartDate.Replace("-", "/") + "' ";
+                ttWhere += "AND (M.cStartDate between CONVERT(DATETIME, '" + cStartDate + "') and CONVERT(DATETIME, '" + cEndDate + "') or ";
+                ttWhere += "     M.cEndDate between CONVERT(DATETIME, '" + cStartDate + "') and CONVERT(DATETIME, '" + cEndDate + "')) " + Environment.NewLine;
                 tLefJoin = " left join TB_ONE_ContractMain M on M.cContractID = O.cContractID";
             }
-
-            if (!string.IsNullOrEmpty(cEndDate))
+            else
             {
-                ttWhere += "AND Convert(varchar(10),M.cEndDate,111) <= N'" + cEndDate.Replace("-", "/") + "' ";
-                tLefJoin = " left join TB_ONE_ContractMain M on M.cContractID = O.cContractID";
+                if (!string.IsNullOrEmpty(cStartDate) || !string.IsNullOrEmpty(cEndDate))
+                {
+                    string tStrDate = string.IsNullOrEmpty(cStartDate) ? cEndDate : cStartDate;
+                    ttWhere += "AND CONVERT(DATETIME, '" + tStrDate + "') between M.cStartDate and M.cEndDate " + Environment.NewLine;
+                    tLefJoin = " left join TB_ONE_ContractMain M on M.cContractID = O.cContractID";
+                }
             }
-            #endregion
+            #endregion          
 
             #region SQL語法
             tSQL.AppendLine(" Select O.* ");

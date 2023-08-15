@@ -3001,6 +3001,8 @@ namespace OneService.Controllers
                     if (bean != null)
                     {
                         bean.CValue = cTeamID.TrimEnd(';');
+                        bean.ModifiedDate = DateTime.Now;
+                        bean.ModifiedUserName = ViewBag.empEngName;
                     }
                     else
                     {
@@ -3262,6 +3264,8 @@ namespace OneService.Controllers
                     if (bean != null)
                     {
                         bean.CValue = cAssEngineerID.TrimEnd(';');
+                        bean.ModifiedDate = DateTime.Now;
+                        bean.ModifiedUserName = ViewBag.empEngName;
                     }
                     else
                     {
