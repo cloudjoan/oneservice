@@ -224,6 +224,10 @@ namespace OneService.Models
                     .HasMaxLength(40)
                     .HasColumnName("cContactName");
 
+                entity.Property(e => e.CContactPhone)
+                    .HasMaxLength(50)
+                    .HasColumnName("cContactPhone");
+
                 entity.Property(e => e.CContractNotes)
                     .HasMaxLength(512)
                     .HasColumnName("cContractNotes");

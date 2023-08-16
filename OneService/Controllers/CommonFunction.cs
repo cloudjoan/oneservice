@@ -3278,6 +3278,11 @@ namespace OneService.Controllers
         {
             string reValue = string.Empty;
 
+            if (tCustomerID.Substring(0, 1) == "1" && tCustomerID.Length == 9)
+            {
+                tCustomerID = "0" + tCustomerID;
+            }
+
             var bean = dbProxy.ViewCustomer2s.FirstOrDefault(x => x.Kna1Kunnr == tCustomerID);
 
             if (bean != null)
@@ -3286,6 +3291,38 @@ namespace OneService.Controllers
             }
 
             return reValue;               
+        }
+        #endregion
+
+        #region 傳入銷售訂單號並取得內部訂單號，再取得內部訂單號說明
+        /// <summary>
+        /// 傳入銷售訂單號並取得內部訂單號，再取得內部訂單號說明
+        /// </summary>
+        /// <param name="cSalesNo">銷售訂單號</param>
+        /// <returns></returns>
+        public string findInternalExpBySoNo(string cSalesNo)
+        {
+            string reValue = string.Empty;
+            string InternalNo = string.Empty;
+
+            var beanSO = dbProxy.Sos.FirstOrDefault(x => x.Vbeln == cSalesNo);
+
+            if (beanSO != null)
+            {
+                InternalNo = beanSO.Bstnk;
+
+                if (!string.IsNullOrEmpty(InternalNo))
+                {
+                    var bean = dbProxy.F4301codetails.FirstOrDefault(x => x.InternalNo == InternalNo.Trim());
+
+                    if (bean != null)
+                    {
+                        reValue = bean.InternalExp.Trim();
+                    }
+                }
+            }
+
+            return reValue;
         }
         #endregion
 

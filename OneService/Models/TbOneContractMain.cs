@@ -32,6 +32,7 @@ namespace OneService.Models
         public string? CInvalidReason { get; set; }
         public string? CContactName { get; set; }
         public string? CContactEmail { get; set; }
+        public string? CContactPhone { get; set; }
         public int? Disabled { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }

@@ -19,10 +19,12 @@ namespace OneService.Models
         public virtual DbSet<CustomerContact> CustomerContacts { get; set; } = null!;
         public virtual DbSet<CustomerContactStore> CustomerContactStores { get; set; } = null!;
         public virtual DbSet<F0005> F0005s { get; set; } = null!;
+        public virtual DbSet<F4301codetail> F4301codetails { get; set; } = null!;
         public virtual DbSet<F4501> F4501s { get; set; } = null!;
         public virtual DbSet<Material> Materials { get; set; } = null!;
         public virtual DbSet<PersonalContact> PersonalContacts { get; set; } = null!;
         public virtual DbSet<PostalaAddressAndCode> PostalaAddressAndCodes { get; set; } = null!;
+        public virtual DbSet<So> Sos { get; set; } = null!;
         public virtual DbSet<Stockall> Stockalls { get; set; } = null!;
         public virtual DbSet<TbCrmOppHead> TbCrmOppHeads { get; set; } = null!;
         public virtual DbSet<TbMailContent> TbMailContents { get; set; } = null!;
@@ -47,6 +49,8 @@ namespace OneService.Models
                 entity.HasKey(e => e.ContactId);
 
                 entity.ToTable("CUSTOMER_Contact");
+
+                entity.HasIndex(e => new { e.Kna1Kunnr, e.Knb1Bukrs }, "NonClusteredIndex-20221004-134356");
 
                 entity.Property(e => e.ContactId)
                     .HasColumnName("ContactID")
@@ -74,7 +78,9 @@ namespace OneService.Models
                     .HasMaxLength(200)
                     .HasComment("聯絡人Email");
 
-                entity.Property(e => e.ContactMobile).HasMaxLength(50);
+                entity.Property(e => e.ContactMobile)
+                    .HasMaxLength(50)
+                    .HasComment("聯絡人手機");
 
                 entity.Property(e => e.ContactName)
                     .HasMaxLength(40)
@@ -92,7 +98,7 @@ namespace OneService.Models
                     .HasMaxLength(1)
                     .IsUnicode(false)
                     .IsFixedLength()
-                    .HasComment("聯絡人類別(0:發票,1:驗收,2:收貨,3:存出保證金經辦,4:客戶建檔聯絡人)");
+                    .HasComment("聯絡人類別(0:發票,1:驗收,2:收貨,3:存出保證金經辦,4:客戶建檔聯絡人,5.OneService建立)");
 
                 entity.Property(e => e.IsMain).HasComment("是否為對帳窗口");
 
@@ -221,7 +227,8 @@ namespace OneService.Models
 
                 entity.Property(e => e.Dsc2)
                     .HasMaxLength(80)
-                    .HasColumnName("DSC2");
+                    .HasColumnName("DSC2")
+                    .HasComment("天數");
 
                 entity.Property(e => e.Id)
                     .ValueGeneratedOnAdd()
@@ -259,6 +266,62 @@ namespace OneService.Models
                     .HasMaxLength(20)
                     .IsUnicode(false)
                     .HasColumnName("UP_USER");
+            });
+
+            modelBuilder.Entity<F4301codetail>(entity =>
+            {
+                entity.HasKey(e => new { e.CompanyId, e.InternalNo });
+
+                entity.ToTable("F4301CODetail");
+
+                entity.HasIndex(e => new { e.InternalNo, e.Applicant, e.OldInternalNo }, "NonClusteredIndex-20230110-140821");
+
+                entity.Property(e => e.CompanyId)
+                    .HasMaxLength(10)
+                    .HasColumnName("CompanyID");
+
+                entity.Property(e => e.InternalNo).HasMaxLength(15);
+
+                entity.Property(e => e.Applicant).HasMaxLength(20);
+
+                entity.Property(e => e.ApplyDate).HasMaxLength(20);
+
+                entity.Property(e => e.ApproveDate).HasMaxLength(20);
+
+                entity.Property(e => e.CostCenter).HasMaxLength(15);
+
+                entity.Property(e => e.CostFormNo).HasMaxLength(30);
+
+                entity.Property(e => e.CrmOppNo).HasMaxLength(20);
+
+                entity.Property(e => e.FdeptId)
+                    .HasMaxLength(30)
+                    .HasColumnName("FDeptID");
+
+                entity.Property(e => e.ImportDate).HasMaxLength(20);
+
+                entity.Property(e => e.InternalExp).HasColumnName("InternalEXP");
+
+                entity.Property(e => e.InternalType).HasMaxLength(15);
+
+                entity.Property(e => e.OldInternalNo).HasMaxLength(30);
+
+                entity.Property(e => e.OrderCost).HasColumnType("numeric(18, 0)");
+
+                entity.Property(e => e.SapPurchasePrice).HasColumnType("numeric(18, 0)");
+
+                entity.Property(e => e.SurplusBudget).HasColumnType("numeric(18, 0)");
+
+                entity.Property(e => e.TotalPurchasePrice).HasColumnType("numeric(18, 0)");
+
+                entity.Property(e => e.WorkDateE)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("WorkDate_E");
+
+                entity.Property(e => e.WorkDateS)
+                    .HasMaxLength(20)
+                    .HasColumnName("WorkDate_S");
             });
 
             modelBuilder.Entity<F4501>(entity =>
@@ -770,11 +833,300 @@ namespace OneService.Models
                 entity.Property(e => e.No).HasMaxLength(50);
             });
 
+            modelBuilder.Entity<So>(entity =>
+            {
+                entity.HasKey(e => new { e.Auart, e.Vbeln, e.Posnr, e.Vbeln1, e.Posnn })
+                    .HasName("PK_SO_1");
+
+                entity.ToTable("SO");
+
+                entity.HasIndex(e => new { e.Bstnk, e.Status }, "NonClusteredIndex-20220826-192157");
+
+                entity.Property(e => e.Auart)
+                    .HasMaxLength(4)
+                    .HasColumnName("AUART")
+                    .HasComment("銷售文件類型");
+
+                entity.Property(e => e.Vbeln)
+                    .HasMaxLength(10)
+                    .HasColumnName("VBELN")
+                    .HasComment("銷售文件");
+
+                entity.Property(e => e.Posnr)
+                    .HasColumnType("numeric(6, 0)")
+                    .HasColumnName("POSNR")
+                    .HasComment("銷售文件項目");
+
+                entity.Property(e => e.Vbeln1)
+                    .HasMaxLength(10)
+                    .HasColumnName("VBELN1")
+                    .HasComment("出貨單號");
+
+                entity.Property(e => e.Posnn)
+                    .HasColumnType("numeric(6, 0)")
+                    .HasColumnName("POSNN")
+                    .HasComment("項目");
+
+                entity.Property(e => e.Abgru)
+                    .HasMaxLength(2)
+                    .HasColumnName("ABGRU");
+
+                entity.Property(e => e.Aedat)
+                    .HasColumnType("datetime")
+                    .HasColumnName("AEDAT")
+                    .HasComment("更改日期");
+
+                entity.Property(e => e.Aedat1)
+                    .HasColumnType("datetime")
+                    .HasColumnName("AEDAT1")
+                    .HasComment("輸入時間");
+
+                entity.Property(e => e.Arktx)
+                    .HasMaxLength(50)
+                    .HasColumnName("ARKTX")
+                    .HasComment("說明");
+
+                entity.Property(e => e.Audat)
+                    .HasColumnType("datetime")
+                    .HasColumnName("AUDAT")
+                    .HasComment("文件日期");
+
+                entity.Property(e => e.BstkdE)
+                    .HasMaxLength(35)
+                    .HasColumnName("BSTKD_E");
+
+                entity.Property(e => e.Bstnk)
+                    .HasMaxLength(20)
+                    .HasColumnName("BSTNK")
+                    .HasComment("採購單號碼");
+
+                entity.Property(e => e.City1)
+                    .HasMaxLength(40)
+                    .HasColumnName("CITY1")
+                    .HasComment("城市");
+
+                entity.Property(e => e.City2)
+                    .HasMaxLength(40)
+                    .HasColumnName("CITY2")
+                    .HasComment("城市");
+
+                entity.Property(e => e.Country1)
+                    .HasMaxLength(3)
+                    .HasColumnName("COUNTRY1")
+                    .HasComment("國家碼");
+
+                entity.Property(e => e.Country2)
+                    .HasMaxLength(3)
+                    .HasColumnName("COUNTRY2")
+                    .HasComment("國家碼");
+
+                entity.Property(e => e.Erdat)
+                    .HasColumnType("datetime")
+                    .HasColumnName("ERDAT")
+                    .HasComment("建立日期");
+
+                entity.Property(e => e.Ernam)
+                    .HasMaxLength(12)
+                    .HasColumnName("ERNAM")
+                    .HasComment("建立者");
+
+                entity.Property(e => e.IndustryApply)
+                    .HasMaxLength(100)
+                    .HasColumnName("INDUSTRY_APPLY");
+
+                entity.Property(e => e.InvoiceQuantity).HasColumnType("decimal(15, 3)");
+
+                entity.Property(e => e.Kkber)
+                    .HasMaxLength(4)
+                    .HasColumnName("KKBER")
+                    .HasComment("信用控制範圍");
+
+                entity.Property(e => e.Kunnr)
+                    .HasMaxLength(10)
+                    .HasColumnName("KUNNR")
+                    .HasComment("買方");
+
+                entity.Property(e => e.Kunnr1)
+                    .HasMaxLength(10)
+                    .HasColumnName("KUNNR1")
+                    .HasComment("收貨人");
+
+                entity.Property(e => e.Kwmeng)
+                    .HasColumnType("decimal(15, 3)")
+                    .HasColumnName("KWMENG")
+                    .HasComment("訂購數量");
+
+                entity.Property(e => e.Lgmng)
+                    .HasColumnType("decimal(15, 3)")
+                    .HasColumnName("LGMNG")
+                    .HasComment("交貨數量");
+
+                entity.Property(e => e.Lgort)
+                    .HasMaxLength(4)
+                    .HasColumnName("LGORT")
+                    .HasComment("儲存地點");
+
+                entity.Property(e => e.Matnr)
+                    .HasMaxLength(18)
+                    .HasColumnName("MATNR")
+                    .HasComment("物料");
+
+                entity.Property(e => e.Mbdat)
+                    .HasColumnType("datetime")
+                    .HasColumnName("MBDAT")
+                    .HasComment("供貨日期");
+
+                entity.Property(e => e.Meins)
+                    .HasMaxLength(3)
+                    .HasColumnName("MEINS")
+                    .HasComment("基礎計量單位");
+
+                entity.Property(e => e.Nachn)
+                    .HasMaxLength(40)
+                    .HasColumnName("NACHN")
+                    .HasComment("姓");
+
+                entity.Property(e => e.Name1)
+                    .HasMaxLength(40)
+                    .HasColumnName("NAME1")
+                    .HasComment("名稱");
+
+                entity.Property(e => e.Name2)
+                    .HasMaxLength(40)
+                    .HasColumnName("NAME2")
+                    .HasComment("名稱");
+
+                entity.Property(e => e.Netpr)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasColumnName("NETPR");
+
+                entity.Property(e => e.OldProfitCenterId)
+                    .HasMaxLength(10)
+                    .HasColumnName("OldProfitCenterID");
+
+                entity.Property(e => e.PaymentTerms).HasMaxLength(50);
+
+                entity.Property(e => e.Pernr)
+                    .HasColumnType("numeric(8, 0)")
+                    .HasColumnName("PERNR")
+                    .HasComment("員工號碼");
+
+                entity.Property(e => e.PinvoiceDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("PInvoiceDate");
+
+                entity.Property(e => e.PostCode1)
+                    .HasMaxLength(10)
+                    .HasColumnName("POST_CODE1")
+                    .HasComment("郵遞區號");
+
+                entity.Property(e => e.PostCode2)
+                    .HasMaxLength(10)
+                    .HasColumnName("POST_CODE2")
+                    .HasComment("郵遞區號");
+
+                entity.Property(e => e.Preservation)
+                    .HasMaxLength(40)
+                    .HasColumnName("PRESERVATION")
+                    .HasComment("保固條件");
+
+                entity.Property(e => e.ProfitCenterId)
+                    .HasMaxLength(10)
+                    .HasColumnName("ProfitCenterID");
+
+                entity.Property(e => e.PurchaseAmount).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.PurchaseWaers)
+                    .HasMaxLength(5)
+                    .HasColumnName("PurchaseWAERS");
+
+                entity.Property(e => e.ReceiverName2).HasMaxLength(500);
+
+                entity.Property(e => e.ReceiverName3).HasMaxLength(500);
+
+                entity.Property(e => e.ReceiverName4).HasMaxLength(500);
+
+                entity.Property(e => e.Spart)
+                    .HasMaxLength(2)
+                    .HasColumnName("SPART")
+                    .HasComment("部門");
+
+                entity.Property(e => e.Status).HasMaxLength(2);
+
+                entity.Property(e => e.Street1)
+                    .HasMaxLength(60)
+                    .HasColumnName("STREET1")
+                    .HasComment("街道");
+
+                entity.Property(e => e.Street2)
+                    .HasMaxLength(60)
+                    .HasColumnName("STREET2")
+                    .HasComment("街道");
+
+                entity.Property(e => e.Vdatu)
+                    .HasColumnType("datetime")
+                    .HasColumnName("VDATU")
+                    .HasComment("請求交貨日期");
+
+                entity.Property(e => e.Vkbur)
+                    .HasMaxLength(4)
+                    .HasColumnName("VKBUR")
+                    .HasComment("銷售據點");
+
+                entity.Property(e => e.Vkgrp)
+                    .HasMaxLength(3)
+                    .HasColumnName("VKGRP")
+                    .HasComment("銷售群組");
+
+                entity.Property(e => e.Vkorg)
+                    .HasMaxLength(4)
+                    .HasColumnName("VKORG")
+                    .HasComment("銷售組織");
+
+                entity.Property(e => e.Vorna)
+                    .HasMaxLength(40)
+                    .HasColumnName("VORNA")
+                    .HasComment("名");
+
+                entity.Property(e => e.Vstel)
+                    .HasMaxLength(4)
+                    .HasColumnName("VSTEL")
+                    .HasComment("出貨點/收貨點");
+
+                entity.Property(e => e.Vtweg)
+                    .HasMaxLength(2)
+                    .HasColumnName("VTWEG")
+                    .HasComment("配銷通路");
+
+                entity.Property(e => e.Vvc01)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasColumnName("VVC01");
+
+                entity.Property(e => e.Vvq01)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasColumnName("VVQ01");
+
+                entity.Property(e => e.Vvr01)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasColumnName("VVR01");
+
+                entity.Property(e => e.Waerk)
+                    .HasMaxLength(5)
+                    .HasColumnName("WAERK");
+
+                entity.Property(e => e.Werks)
+                    .HasMaxLength(4)
+                    .HasColumnName("WERKS")
+                    .HasComment("工廠");
+            });
+
             modelBuilder.Entity<Stockall>(entity =>
             {
                 entity.HasKey(e => e.IvSerial);
 
                 entity.ToTable("STOCKALL");
+
+                entity.HasIndex(e => new { e.VendoromSdate, e.VendoromEdate, e.OmSdate, e.OmEdate, e.ExSdate, e.ExEdate, e.TmSdate, e.TmEdate }, "NonClusteredIndex-20220901-160826");
 
                 entity.Property(e => e.IvSerial)
                     .HasMaxLength(40)
@@ -915,15 +1267,32 @@ namespace OneService.Models
 
                 entity.HasComment("商機表頭檔");
 
+                entity.HasIndex(e => new { e.CrmOppNo, e.CreateAccount }, "NonClusteredIndex-20220901-123346");
+
                 entity.Property(e => e.Id)
                     .HasColumnType("numeric(18, 0)")
                     .ValueGeneratedOnAdd()
                     .HasColumnName("ID");
 
+                entity.Property(e => e.CancelReason)
+                    .HasMaxLength(120)
+                    .IsUnicode(false)
+                    .HasColumnName("CANCEL_REASON");
+
+                entity.Property(e => e.ChangeTime)
+                    .HasMaxLength(22)
+                    .IsUnicode(false)
+                    .HasColumnName("CHANGE_TIME");
+
                 entity.Property(e => e.CompName)
                     .HasMaxLength(200)
                     .HasColumnName("COMP_NAME")
                     .HasComment("客戶名稱");
+
+                entity.Property(e => e.ContractType)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("CONTRACT_TYPE");
 
                 entity.Property(e => e.CreateAccount)
                     .HasMaxLength(15)
@@ -1035,6 +1404,11 @@ namespace OneService.Models
                     .HasMaxLength(20)
                     .HasColumnName("STATUS")
                     .HasComment("狀態");
+
+                entity.Property(e => e.TechCheckStatus)
+                    .HasMaxLength(2)
+                    .HasColumnName("TechCheck_Status")
+                    .HasDefaultValueSql("('0')");
             });
 
             modelBuilder.Entity<TbMailContent>(entity =>
@@ -1058,6 +1432,8 @@ namespace OneService.Models
                 entity.ToTable("TB_SR_REPORT");
 
                 entity.HasComment("服務請求總表");
+
+                entity.HasIndex(e => new { e.ObjectId, e.Customerid, e.Contactid, e.Sn, e.Csrid }, "NonClusteredIndex-20221024-102229");
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 

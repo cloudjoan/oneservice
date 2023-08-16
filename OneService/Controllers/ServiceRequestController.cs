@@ -116,6 +116,11 @@ namespace OneService.Controllers
         string pSRID = string.Empty;
 
         /// <summary>
+        /// 複製的來源服務ID
+        /// </summary>
+        string pCopySRID = string.Empty;
+
+        /// <summary>
         /// 批次上傳類型(裝機備料服務通知單/合約書文件)
         /// </summary>
         string pBatchUploadType = string.Empty;
@@ -1390,6 +1395,15 @@ namespace OneService.Controllers
             {
                 pSRID = HttpContext.Request.Query["SRID"].FirstOrDefault();
             }
+
+            ViewBag.CopySRID = "";
+
+            if (HttpContext.Request.Query["CopySRID"].FirstOrDefault() != null)
+            {
+                pCopySRID = HttpContext.Request.Query["CopySRID"].FirstOrDefault();
+                
+                ViewBag.CopySRID = pCopySRID;
+            }            
             #endregion
 
             #region 報修類別
@@ -1409,247 +1423,373 @@ namespace OneService.Controllers
             var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);           
             #endregion
 
-            #region 取得SRID
-            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
-
-            if (beanM != null)
+            if (!string.IsNullOrEmpty(pCopySRID))
             {
-                //記錄目前GUID，用來判斷更新的先後順序
-                ViewBag.pGUID = beanM.CSystemGuid.ToString();
-                
-                //判斷登入者是否可以編輯服務案件                
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
+                #region 取得複製來源的SRID
+                var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pCopySRID);
 
-                #region 報修資訊
-                ViewBag.cSRID = beanM.CSrid;
-                ViewBag.cCustomerID = beanM.CCustomerId;
-                ViewBag.cCustomerName = beanM.CCustomerName;                
-                ViewBag.cDesc = beanM.CDesc;
-                ViewBag.cNotes = beanM.CNotes;
-                ViewBag.cAttachement = beanM.CAttachement;
-                ViewBag.cSRPathWay = beanM.CSrpathWay;
-                ViewBag.cMAServiceType = beanM.CMaserviceType;
-                ViewBag.cSRProcessWay = beanM.CSrprocessWay;
-                ViewBag.cSRRepairLevel = beanM.CSrrepairLevel;
-                ViewBag.cDelayReason = beanM.CDelayReason;
-                ViewBag.cIsSecondFix = beanM.CIsSecondFix;
-                ViewBag.cIsInternalWork = beanM.CIsInternalWork;
-                ViewBag.pStatus = beanM.CStatus;
-                ViewBag.CreatedUserName = beanM.CreatedUserName;
-
-                ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
-                #endregion
-
-                #region 報修類別
-                if (!string.IsNullOrEmpty(beanM.CSrtypeOne))    
-                {                    
-                    SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
-                }
-
-                if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
+                if (beanM != null)
                 {
-                    SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
-                    SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
-                }
+                    #region 報修資訊                    
+                    ViewBag.cSRID = "";
+                    ViewBag.cCustomerID = beanM.CCustomerId;
+                    ViewBag.cCustomerName = beanM.CCustomerName;
+                    ViewBag.cDesc = beanM.CDesc;
+                    ViewBag.cNotes = beanM.CNotes;
+                    ViewBag.cAttachement = "";
+                    ViewBag.cSRPathWay = "Z05";                         //手動建立
+                    ViewBag.cMAServiceType = beanM.CMaserviceType;
+                    ViewBag.cSRProcessWay = "";
+                    ViewBag.cSRRepairLevel = "Z03";                     //三級(一般叫修)
+                    ViewBag.cDelayReason = "";
+                    ViewBag.cIsSecondFix = "";
+                    ViewBag.cIsInternalWork = "N";
+                    ViewBag.pStatus = "E0001";                          //新建
+                    ViewBag.CreatedUserName = "";
 
-                if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
-                {
-                    SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
-                    SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
-                }
-                #endregion
+                    ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+                    #endregion
 
-                #region 客戶故障狀況分類資訊(L2處理中)
-
-                #region 客戶故障狀況分類
-                ViewBag.cFaultGroup = "";
-                ViewBag.cFaultGroup1 = "";
-                ViewBag.cFaultGroup2 = "";
-                ViewBag.cFaultGroup3 = "";
-                ViewBag.cFaultGroup4 = "";
-                ViewBag.cFaultGroupOther = "";
-
-                ViewBag.cFaultGroupNote1 = "";
-                ViewBag.cFaultGroupNote2 = "";
-                ViewBag.cFaultGroupNote3 = "";
-                ViewBag.cFaultGroupNote4 = "";
-                ViewBag.cFaultGroupNoteOther = "";
-
-                if (!string.IsNullOrEmpty(beanM.CFaultGroup))
-                {
-                    ViewBag.cFaultGroup = beanM.CFaultGroup;
-
-                    string[] tAryGroup = beanM.CFaultGroup.Split(';');
-
-                    foreach (string tValue in tAryGroup)
+                    #region 報修類別
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
                     {
-                        switch(tValue)
-                        {
-                            case "Z01": //硬體
-                                ViewBag.cFaultGroup1 = "Y";
-                                ViewBag.cFaultGroupNote1 = beanM.CFaultGroupNote1;
-                                break;
-                            case "Z02": //系統
-                                ViewBag.cFaultGroup2 = "Y";
-                                ViewBag.cFaultGroupNote2 = beanM.CFaultGroupNote2;
-                                break;
-                            case "Z03": //服務
-                                ViewBag.cFaultGroup3 = "Y";
-                                ViewBag.cFaultGroupNote3 = beanM.CFaultGroupNote3;
-                                break;
-                            case "Z04": //網路
-                                ViewBag.cFaultGroup4 = "Y";
-                                ViewBag.cFaultGroupNote4 = beanM.CFaultGroupNote4;
-                                break;
-                            case "Z99": //其他
-                                ViewBag.cFaultGroupOther = "Y";
-                                ViewBag.cFaultGroupNoteOther = beanM.CFaultGroupNoteOther;
-                                break;
-                        }                        
+                        SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
                     }
-                }
-                #endregion
 
-                #region 客戶故障狀況
-                ViewBag.cFaultState = "";
-                ViewBag.cFaultState1 = "";
-                ViewBag.cFaultState2 = "";                
-                ViewBag.cFaultStateOther = "";
-
-                ViewBag.cFaultStateNote1 = "";
-                ViewBag.cFaultStateNote2 = "";                
-                ViewBag.cFaultStateNoteOther = "";
-
-                if (!string.IsNullOrEmpty(beanM.CFaultState))
-                {
-                    ViewBag.cFaultState = beanM.CFaultState;
-
-                    string[] tAryState = beanM.CFaultState.Split(';');
-
-                    foreach (string tValue in tAryState)
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
                     {
-                        switch (tValue)
-                        {
-                            case "Z01": //面板燈號
-                                ViewBag.cFaultState1 = "Y";
-                                ViewBag.cFaultStateNote1 = beanM.CFaultStateNote1;
-                                break;
-                            case "Z02": //管理介面(iLO、IMM、iDRAC)
-                                ViewBag.cFaultState2 = "Y";
-                                ViewBag.cFaultStateNote2 = beanM.CFaultStateNote2;
-                                break;                                
-                            case "Z99": //其他
-                                ViewBag.cFaultStateOther = "Y";
-                                ViewBag.cFaultStateNoteOther = beanM.CFaultStateNoteOther;
-                                break;
-                        }
+                        SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
+                        SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
                     }
-                }
-                #endregion
 
-                #region 故障零件規格料號
-                ViewBag.cFaultSpec = "";
-                ViewBag.cFaultSpec1 = "";
-                ViewBag.cFaultSpec2 = "";
-                ViewBag.cFaultSpecOther = "";
-
-                ViewBag.cFaultSpecNote1 = "";
-                ViewBag.cFaultSpecNote2 = "";
-                ViewBag.cFaultSpecNoteOther = "";
-
-                if (!string.IsNullOrEmpty(beanM.CFaultSpec))
-                {
-                    ViewBag.cFaultSpec = beanM.CFaultSpec;
-
-                    string[] tArySpec = beanM.CFaultSpec.Split(';');
-
-                    foreach (string tValue in tArySpec)
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
                     {
-                        switch (tValue)
-                        {
-                            case "Z01": //零件規格
-                                ViewBag.cFaultSpec1 = "Y";
-                                ViewBag.cFaultSpecNote1 = beanM.CFaultSpecNote1;
-                                break;
-                            case "Z02": //零件料號
-                                ViewBag.cFaultSpec2 = "Y";
-                                ViewBag.cFaultSpecNote2 = beanM.CFaultSpecNote2;
-                                break;
-                            case "Z99": //其他
-                                ViewBag.cFaultSpecOther = "Y";
-                                ViewBag.cFaultSpecNoteOther = beanM.CFaultSpecNoteOther;
-                                break;
-                        }
+                        SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
+                        SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
                     }
-                }
-                #endregion
+                    #endregion
 
-                #endregion
+                    #region 客戶故障狀況分類資訊(L2處理中)
 
-                #region 客戶報修窗口資訊
-                ViewBag.cRepairName = beanM.CRepairName;
-                ViewBag.cRepairAddress = beanM.CRepairAddress;
-                ViewBag.cRepairPhone = beanM.CRepairPhone;
-                ViewBag.cRepairMobile = beanM.CRepairMobile;
-                ViewBag.cRepairEmail = beanM.CRepairEmail;               
-                #endregion
+                    #region 客戶故障狀況分類
+                    ViewBag.cFaultGroup = "";
+                    ViewBag.cFaultGroup1 = "";
+                    ViewBag.cFaultGroup2 = "";
+                    ViewBag.cFaultGroup3 = "";
+                    ViewBag.cFaultGroup4 = "";
+                    ViewBag.cFaultGroupOther = "";
 
-                #region 服務團隊
-                ViewBag.cTeamID = beanM.CTeamId;
-                ViewBag.cMainEngineerID = beanM.CMainEngineerId;
-                ViewBag.cMainEngineerName = beanM.CMainEngineerName;
-                ViewBag.cSQPersonID = beanM.CSqpersonId;
-                ViewBag.cSQPersonName = beanM.CSqpersonName;
-                ViewBag.cSalesID = beanM.CSalesId;
-                ViewBag.cSalesName = beanM.CSalesName;
-                ViewBag.cAssEngineerID = beanM.CAssEngineerId;
-                ViewBag.cTechManagerID = beanM.CTechManagerId;
-                #endregion
+                    ViewBag.cFaultGroupNote1 = "";
+                    ViewBag.cFaultGroupNote2 = "";
+                    ViewBag.cFaultGroupNote3 = "";
+                    ViewBag.cFaultGroupNote4 = "";
+                    ViewBag.cFaultGroupNoteOther = "";                    
+                    #endregion
 
-                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
+                    #region 客戶故障狀況
+                    ViewBag.cFaultState = "";
+                    ViewBag.cFaultState1 = "";
+                    ViewBag.cFaultState2 = "";
+                    ViewBag.cFaultStateOther = "";
 
-                #region 取得客戶聯絡人資訊(明細)
-                var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+                    ViewBag.cFaultStateNote1 = "";
+                    ViewBag.cFaultStateNote2 = "";
+                    ViewBag.cFaultStateNoteOther = "";                    
+                    #endregion
 
-                ViewBag.Detailbean_Contact = beansContact;
-                ViewBag.trContactNo = beansContact.Count();
-                #endregion
+                    #region 故障零件規格料號
+                    ViewBag.cFaultSpec = "";
+                    ViewBag.cFaultSpec1 = "";
+                    ViewBag.cFaultSpec2 = "";
+                    ViewBag.cFaultSpecOther = "";
 
-                #region 取得產品序號資訊(明細)
-                var beansProduct = dbOne.TbOneSrdetailProducts.OrderBy(x => x.CSerialId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
-                
-                ViewBag.Detailbean_Product = beansProduct;
-                ViewBag.trProductNo = beansProduct.Count();
-                #endregion
+                    ViewBag.cFaultSpecNote1 = "";
+                    ViewBag.cFaultSpecNote2 = "";
+                    ViewBag.cFaultSpecNoteOther = "";                    
+                    #endregion
 
-                #region 取得工時紀錄檔資訊(明細)
-                var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
-                
-                ViewBag.Detailbean_Record = beansRecord;
-                ViewBag.trRecordNo = beansRecord.Count();
-                #endregion
+                    #endregion
 
-                #region 取得零件更換資訊(明細)
-                var beansParts = dbOne.TbOneSrdetailPartsReplaces.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
-                
-                ViewBag.Detailbean_Parts = beansParts;
-                ViewBag.trPartsNo = beansParts.Count();
+                    #region 客戶報修窗口資訊
+                    ViewBag.cRepairName = beanM.CRepairName;
+                    ViewBag.cRepairAddress = beanM.CRepairAddress;
+                    ViewBag.cRepairPhone = beanM.CRepairPhone;
+                    ViewBag.cRepairMobile = beanM.CRepairMobile;
+                    ViewBag.cRepairEmail = beanM.CRepairEmail;
+                    #endregion
+
+                    #region 服務團隊
+                    ViewBag.cTeamID = beanM.CTeamId;
+                    ViewBag.cMainEngineerID = beanM.CMainEngineerId;
+                    ViewBag.cMainEngineerName = beanM.CMainEngineerName;
+                    ViewBag.cSQPersonID = beanM.CSqpersonId;
+                    ViewBag.cSQPersonName = beanM.CSqpersonName;
+                    ViewBag.cSalesID = beanM.CSalesId;
+                    ViewBag.cSalesName = beanM.CSalesName;
+                    ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                    ViewBag.cTechManagerID = beanM.CTechManagerId;
+                    #endregion                    
+
+                    #region 取得客戶聯絡人資訊(明細)
+                    var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pCopySRID);
+
+                    ViewBag.Detailbean_Contact = beansContact;
+                    ViewBag.trContactNo = beansContact.Count();
+                    #endregion
+
+                    #region 取得產品序號資訊(明細)
+                    var beansProduct = dbOne.TbOneSrdetailProducts.OrderBy(x => x.CSerialId).Where(x => x.Disabled == 0 && x.CSrid == pCopySRID);
+
+                    ViewBag.Detailbean_Product = beansProduct;
+                    ViewBag.trProductNo = beansProduct.Count();
+                    #endregion                   
+                }                
                 #endregion
             }
             else
             {
-                ViewBag.cSRID = "";
-                ViewBag.cSRPathWay = "Z05";     //手動建立
-                ViewBag.pStatus = "E0001";      //新建
-                ViewBag.cMAServiceType = "";    //請選擇
-                ViewBag.cSRProcessWay = "";     //請選擇
-                ViewBag.cSRRepairLevel = "Z03"; //三級(一般叫修)
-                ViewBag.cDelayReason = "";      //空值
-                ViewBag.cIsSecondFix = "";     //請選擇
-                ViewBag.cIsInternalWork = "N";
-                ViewBag.CreatedUserName = "";
+                #region 取得SRID
+                var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
+
+                if (beanM != null)
+                {
+                    //記錄目前GUID，用來判斷更新的先後順序
+                    ViewBag.pGUID = beanM.CSystemGuid.ToString();
+
+                    //判斷登入者是否可以編輯服務案件                
+                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
+
+                    #region 報修資訊
+                    ViewBag.cSRID = beanM.CSrid;
+                    ViewBag.cCustomerID = beanM.CCustomerId;
+                    ViewBag.cCustomerName = beanM.CCustomerName;
+                    ViewBag.cDesc = beanM.CDesc;
+                    ViewBag.cNotes = beanM.CNotes;
+                    ViewBag.cAttachement = beanM.CAttachement;
+                    ViewBag.cSRPathWay = beanM.CSrpathWay;
+                    ViewBag.cMAServiceType = beanM.CMaserviceType;
+                    ViewBag.cSRProcessWay = beanM.CSrprocessWay;
+                    ViewBag.cSRRepairLevel = beanM.CSrrepairLevel;
+                    ViewBag.cDelayReason = beanM.CDelayReason;
+                    ViewBag.cIsSecondFix = beanM.CIsSecondFix;
+                    ViewBag.cIsInternalWork = beanM.CIsInternalWork;
+                    ViewBag.pStatus = beanM.CStatus;
+                    ViewBag.CreatedUserName = beanM.CreatedUserName;
+
+                    ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+                    #endregion
+
+                    #region 報修類別
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                    {
+                        SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
+                    {
+                        SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
+                        SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
+                    {
+                        SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
+                        SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
+                    }
+                    #endregion
+
+                    #region 客戶故障狀況分類資訊(L2處理中)
+
+                    #region 客戶故障狀況分類
+                    ViewBag.cFaultGroup = "";
+                    ViewBag.cFaultGroup1 = "";
+                    ViewBag.cFaultGroup2 = "";
+                    ViewBag.cFaultGroup3 = "";
+                    ViewBag.cFaultGroup4 = "";
+                    ViewBag.cFaultGroupOther = "";
+
+                    ViewBag.cFaultGroupNote1 = "";
+                    ViewBag.cFaultGroupNote2 = "";
+                    ViewBag.cFaultGroupNote3 = "";
+                    ViewBag.cFaultGroupNote4 = "";
+                    ViewBag.cFaultGroupNoteOther = "";
+
+                    if (!string.IsNullOrEmpty(beanM.CFaultGroup))
+                    {
+                        ViewBag.cFaultGroup = beanM.CFaultGroup;
+
+                        string[] tAryGroup = beanM.CFaultGroup.Split(';');
+
+                        foreach (string tValue in tAryGroup)
+                        {
+                            switch (tValue)
+                            {
+                                case "Z01": //硬體
+                                    ViewBag.cFaultGroup1 = "Y";
+                                    ViewBag.cFaultGroupNote1 = beanM.CFaultGroupNote1;
+                                    break;
+                                case "Z02": //系統
+                                    ViewBag.cFaultGroup2 = "Y";
+                                    ViewBag.cFaultGroupNote2 = beanM.CFaultGroupNote2;
+                                    break;
+                                case "Z03": //服務
+                                    ViewBag.cFaultGroup3 = "Y";
+                                    ViewBag.cFaultGroupNote3 = beanM.CFaultGroupNote3;
+                                    break;
+                                case "Z04": //網路
+                                    ViewBag.cFaultGroup4 = "Y";
+                                    ViewBag.cFaultGroupNote4 = beanM.CFaultGroupNote4;
+                                    break;
+                                case "Z99": //其他
+                                    ViewBag.cFaultGroupOther = "Y";
+                                    ViewBag.cFaultGroupNoteOther = beanM.CFaultGroupNoteOther;
+                                    break;
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region 客戶故障狀況
+                    ViewBag.cFaultState = "";
+                    ViewBag.cFaultState1 = "";
+                    ViewBag.cFaultState2 = "";
+                    ViewBag.cFaultStateOther = "";
+
+                    ViewBag.cFaultStateNote1 = "";
+                    ViewBag.cFaultStateNote2 = "";
+                    ViewBag.cFaultStateNoteOther = "";
+
+                    if (!string.IsNullOrEmpty(beanM.CFaultState))
+                    {
+                        ViewBag.cFaultState = beanM.CFaultState;
+
+                        string[] tAryState = beanM.CFaultState.Split(';');
+
+                        foreach (string tValue in tAryState)
+                        {
+                            switch (tValue)
+                            {
+                                case "Z01": //面板燈號
+                                    ViewBag.cFaultState1 = "Y";
+                                    ViewBag.cFaultStateNote1 = beanM.CFaultStateNote1;
+                                    break;
+                                case "Z02": //管理介面(iLO、IMM、iDRAC)
+                                    ViewBag.cFaultState2 = "Y";
+                                    ViewBag.cFaultStateNote2 = beanM.CFaultStateNote2;
+                                    break;
+                                case "Z99": //其他
+                                    ViewBag.cFaultStateOther = "Y";
+                                    ViewBag.cFaultStateNoteOther = beanM.CFaultStateNoteOther;
+                                    break;
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region 故障零件規格料號
+                    ViewBag.cFaultSpec = "";
+                    ViewBag.cFaultSpec1 = "";
+                    ViewBag.cFaultSpec2 = "";
+                    ViewBag.cFaultSpecOther = "";
+
+                    ViewBag.cFaultSpecNote1 = "";
+                    ViewBag.cFaultSpecNote2 = "";
+                    ViewBag.cFaultSpecNoteOther = "";
+
+                    if (!string.IsNullOrEmpty(beanM.CFaultSpec))
+                    {
+                        ViewBag.cFaultSpec = beanM.CFaultSpec;
+
+                        string[] tArySpec = beanM.CFaultSpec.Split(';');
+
+                        foreach (string tValue in tArySpec)
+                        {
+                            switch (tValue)
+                            {
+                                case "Z01": //零件規格
+                                    ViewBag.cFaultSpec1 = "Y";
+                                    ViewBag.cFaultSpecNote1 = beanM.CFaultSpecNote1;
+                                    break;
+                                case "Z02": //零件料號
+                                    ViewBag.cFaultSpec2 = "Y";
+                                    ViewBag.cFaultSpecNote2 = beanM.CFaultSpecNote2;
+                                    break;
+                                case "Z99": //其他
+                                    ViewBag.cFaultSpecOther = "Y";
+                                    ViewBag.cFaultSpecNoteOther = beanM.CFaultSpecNoteOther;
+                                    break;
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #endregion
+
+                    #region 客戶報修窗口資訊
+                    ViewBag.cRepairName = beanM.CRepairName;
+                    ViewBag.cRepairAddress = beanM.CRepairAddress;
+                    ViewBag.cRepairPhone = beanM.CRepairPhone;
+                    ViewBag.cRepairMobile = beanM.CRepairMobile;
+                    ViewBag.cRepairEmail = beanM.CRepairEmail;
+                    #endregion
+
+                    #region 服務團隊
+                    ViewBag.cTeamID = beanM.CTeamId;
+                    ViewBag.cMainEngineerID = beanM.CMainEngineerId;
+                    ViewBag.cMainEngineerName = beanM.CMainEngineerName;
+                    ViewBag.cSQPersonID = beanM.CSqpersonId;
+                    ViewBag.cSQPersonName = beanM.CSqpersonName;
+                    ViewBag.cSalesID = beanM.CSalesId;
+                    ViewBag.cSalesName = beanM.CSalesName;
+                    ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                    ViewBag.cTechManagerID = beanM.CTechManagerId;
+                    #endregion
+
+                    ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
+
+                    #region 取得客戶聯絡人資訊(明細)
+                    var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Contact = beansContact;
+                    ViewBag.trContactNo = beansContact.Count();
+                    #endregion
+
+                    #region 取得產品序號資訊(明細)
+                    var beansProduct = dbOne.TbOneSrdetailProducts.OrderBy(x => x.CSerialId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Product = beansProduct;
+                    ViewBag.trProductNo = beansProduct.Count();
+                    #endregion
+
+                    #region 取得工時紀錄檔資訊(明細)
+                    var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Record = beansRecord;
+                    ViewBag.trRecordNo = beansRecord.Count();
+                    #endregion
+
+                    #region 取得零件更換資訊(明細)
+                    var beansParts = dbOne.TbOneSrdetailPartsReplaces.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Parts = beansParts;
+                    ViewBag.trPartsNo = beansParts.Count();
+                    #endregion
+                }
+                else
+                {
+                    ViewBag.cSRID = "";
+                    ViewBag.cSRPathWay = "Z05";     //手動建立
+                    ViewBag.pStatus = "E0001";      //新建
+                    ViewBag.cMAServiceType = "";    //請選擇
+                    ViewBag.cSRProcessWay = "";     //請選擇
+                    ViewBag.cSRRepairLevel = "Z03"; //三級(一般叫修)
+                    ViewBag.cDelayReason = "";      //空值
+                    ViewBag.cIsSecondFix = "";     //請選擇
+                    ViewBag.cIsInternalWork = "N";
+                    ViewBag.CreatedUserName = "";
+                }
+                #endregion
             }
-            #endregion
 
             #region 指派Option值
             model.ddl_cStatus = ViewBag.pStatus;                //設定狀態
@@ -3777,6 +3917,15 @@ namespace OneService.Controllers
             {
                 pSRID = HttpContext.Request.Query["SRID"].FirstOrDefault();
             }
+
+            ViewBag.CopySRID = "";
+
+            if (HttpContext.Request.Query["CopySRID"].FirstOrDefault() != null)
+            {
+                pCopySRID = HttpContext.Request.Query["CopySRID"].FirstOrDefault();
+
+                ViewBag.CopySRID = pCopySRID;
+            }
             #endregion
 
             #region 報修類別
@@ -3796,104 +3945,177 @@ namespace OneService.Controllers
             var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
             #endregion
 
-            #region 取得SRID
-            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
-
-            if (beanM != null)
+            if (!string.IsNullOrEmpty(pCopySRID))
             {
-                //記錄目前GUID，用來判斷更新的先後順序
-                ViewBag.pGUID = beanM.CSystemGuid.ToString();
+                #region 取得複製來源的SRID
+                var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pCopySRID);
 
-                //判斷登入者是否可以編輯服務案件                
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
-
-                #region 裝機資訊
-                ViewBag.cSRID = beanM.CSrid;
-                ViewBag.cCustomerID = beanM.CCustomerId;
-                ViewBag.cCustomerName = beanM.CCustomerName;
-                ViewBag.cDesc = beanM.CDesc;
-                ViewBag.cNotes = beanM.CNotes;
-                ViewBag.cAttachement = beanM.CAttachement;
-                ViewBag.cAttachementStockNo = beanM.CAttachementStockNo;                
-                ViewBag.cDelayReason = beanM.CDelayReason;
-                ViewBag.cSalesNo = beanM.CSalesNo;
-                ViewBag.cShipmentNo = beanM.CShipmentNo;
-                ViewBag.pStatus = beanM.CStatus;
-                ViewBag.CreatedUserName = beanM.CreatedUserName;
-
-                ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
-                #endregion                
-
-                #region 報修類別
-                if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                if (beanM != null)
                 {
-                    SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
-                }
+                    #region 裝機資訊                    
+                    ViewBag.cSRID = "";
+                    ViewBag.cCustomerID = beanM.CCustomerId;
+                    ViewBag.cCustomerName = beanM.CCustomerName;
+                    ViewBag.cDesc = beanM.CDesc;
+                    ViewBag.cNotes = beanM.CNotes;
+                    ViewBag.cAttachement = "";
+                    ViewBag.cAttachementStockNo = "";
+                    ViewBag.cDelayReason = "";
+                    ViewBag.cSalesNo = beanM.CSalesNo;
+                    ViewBag.cShipmentNo = beanM.CShipmentNo;
+                    ViewBag.pStatus = "E0001";
+                    ViewBag.CreatedUserName = "";
 
-                if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
-                {
-                    SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
-                    SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
-                }
+                    ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+                    #endregion
 
-                if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
-                {
-                    SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
-                    SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
-                }
-                #endregion              
+                    #region 報修類別
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                    {
+                        SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
+                    }
 
-                #region 服務團隊
-                ViewBag.cTeamID = beanM.CTeamId;
-                ViewBag.cMainEngineerID = beanM.CMainEngineerId;
-                ViewBag.cMainEngineerName = beanM.CMainEngineerName;
-                ViewBag.cAssEngineerID = beanM.CAssEngineerId;
-                ViewBag.cSalesID = beanM.CSalesId;
-                ViewBag.cSalesName = beanM.CSalesName;
-                ViewBag.cSecretaryID = beanM.CSecretaryId;
-                ViewBag.cSecretaryName = beanM.CSecretaryName;                
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
+                    {
+                        SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
+                        SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
+                    {
+                        SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
+                        SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
+                    }
+                    #endregion
+
+                    #region 服務團隊
+                    ViewBag.cTeamID = beanM.CTeamId;
+                    ViewBag.cMainEngineerID = beanM.CMainEngineerId;
+                    ViewBag.cMainEngineerName = beanM.CMainEngineerName;
+                    ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                    ViewBag.cSalesID = beanM.CSalesId;
+                    ViewBag.cSalesName = beanM.CSalesName;
+                    ViewBag.cSecretaryID = beanM.CSecretaryId;
+                    ViewBag.cSecretaryName = beanM.CSecretaryName;
+                    #endregion                    
+
+                    #region 取得客戶聯絡人資訊(明細)
+                    var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pCopySRID);
+
+                    ViewBag.Detailbean_Contact = beansContact;
+                    ViewBag.trContactNo = beansContact.Count();
+                    #endregion
+
+                    #region 取得物料訊息檔資訊(明細)
+                    var beansMaterial = dbOne.TbOneSrdetailMaterialInfos.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pCopySRID);
+
+                    ViewBag.Detailbean_Material = beansMaterial;
+                    ViewBag.trMaterialNo = beansMaterial.Count();
+                    #endregion                  
+                }               
                 #endregion
-
-                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
-
-                #region 取得客戶聯絡人資訊(明細)
-                var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
-
-                ViewBag.Detailbean_Contact = beansContact;
-                ViewBag.trContactNo = beansContact.Count();
-                #endregion
-
-                #region 取得物料訊息檔資訊(明細)
-                var beansMaterial = dbOne.TbOneSrdetailMaterialInfos.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);                
-
-                ViewBag.Detailbean_Material = beansMaterial;
-                ViewBag.trMaterialNo = beansMaterial.Count();
-                #endregion
-
-                #region 取得序號回報檔資訊(明細)
-                var beansSerial = dbOne.TbOneSrdetailSerialFeedbacks.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);                
-
-                ViewBag.Detailbean_Serial = beansSerial;
-                ViewBag.trSerialNo = beansSerial.Count();
-                #endregion
-
-                #region 取得工時紀錄檔資訊(明細)
-                var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
-
-                ViewBag.Detailbean_Record = beansRecord;
-                ViewBag.trRecordNo = beansRecord.Count();
-                #endregion               
             }
             else
             {
-                ViewBag.cSRID = "";                
-                ViewBag.pStatus = "E0001";      //新建
-                ViewBag.cDelayReason = "";      //空值
-                ViewBag.cSalesNo = "";          //空值
-                ViewBag.cShipmentNo = "";       //空值
-                ViewBag.CreatedUserName = "";
+                #region 取得SRID
+                var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
+
+                if (beanM != null)
+                {
+                    //記錄目前GUID，用來判斷更新的先後順序
+                    ViewBag.pGUID = beanM.CSystemGuid.ToString();
+
+                    //判斷登入者是否可以編輯服務案件                
+                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
+
+                    #region 裝機資訊
+                    ViewBag.cSRID = beanM.CSrid;
+                    ViewBag.cCustomerID = beanM.CCustomerId;
+                    ViewBag.cCustomerName = beanM.CCustomerName;
+                    ViewBag.cDesc = beanM.CDesc;
+                    ViewBag.cNotes = beanM.CNotes;
+                    ViewBag.cAttachement = beanM.CAttachement;
+                    ViewBag.cAttachementStockNo = beanM.CAttachementStockNo;
+                    ViewBag.cDelayReason = beanM.CDelayReason;
+                    ViewBag.cSalesNo = beanM.CSalesNo;
+                    ViewBag.cShipmentNo = beanM.CShipmentNo;
+                    ViewBag.pStatus = beanM.CStatus;
+                    ViewBag.CreatedUserName = beanM.CreatedUserName;
+
+                    ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+                    #endregion
+
+                    #region 報修類別
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                    {
+                        SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
+                    {
+                        SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
+                        SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
+                    {
+                        SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
+                        SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
+                    }
+                    #endregion
+
+                    #region 服務團隊
+                    ViewBag.cTeamID = beanM.CTeamId;
+                    ViewBag.cMainEngineerID = beanM.CMainEngineerId;
+                    ViewBag.cMainEngineerName = beanM.CMainEngineerName;
+                    ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                    ViewBag.cSalesID = beanM.CSalesId;
+                    ViewBag.cSalesName = beanM.CSalesName;
+                    ViewBag.cSecretaryID = beanM.CSecretaryId;
+                    ViewBag.cSecretaryName = beanM.CSecretaryName;
+                    #endregion
+
+                    ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
+
+                    #region 取得客戶聯絡人資訊(明細)
+                    var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Contact = beansContact;
+                    ViewBag.trContactNo = beansContact.Count();
+                    #endregion
+
+                    #region 取得物料訊息檔資訊(明細)
+                    var beansMaterial = dbOne.TbOneSrdetailMaterialInfos.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Material = beansMaterial;
+                    ViewBag.trMaterialNo = beansMaterial.Count();
+                    #endregion
+
+                    #region 取得序號回報檔資訊(明細)
+                    var beansSerial = dbOne.TbOneSrdetailSerialFeedbacks.OrderBy(x => x.CId).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Serial = beansSerial;
+                    ViewBag.trSerialNo = beansSerial.Count();
+                    #endregion
+
+                    #region 取得工時紀錄檔資訊(明細)
+                    var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Record = beansRecord;
+                    ViewBag.trRecordNo = beansRecord.Count();
+                    #endregion
+                }
+                else
+                {
+                    ViewBag.cSRID = "";
+                    ViewBag.pStatus = "E0001";      //新建
+                    ViewBag.cDelayReason = "";      //空值
+                    ViewBag.cSalesNo = "";          //空值
+                    ViewBag.cShipmentNo = "";       //空值
+                    ViewBag.CreatedUserName = "";
+                }
+                #endregion
             }
-            #endregion
 
             #region 指派Option值
             model.ddl_cStatus = ViewBag.pStatus;                //設定狀態            
@@ -4645,6 +4867,15 @@ namespace OneService.Controllers
             {
                 pSRID = HttpContext.Request.Query["SRID"].FirstOrDefault();
             }
+
+            ViewBag.CopySRID = "";
+
+            if (HttpContext.Request.Query["CopySRID"].FirstOrDefault() != null)
+            {
+                pCopySRID = HttpContext.Request.Query["CopySRID"].FirstOrDefault();
+
+                ViewBag.CopySRID = pCopySRID;
+            }
             #endregion
 
             #region 報修類別
@@ -4664,88 +4895,151 @@ namespace OneService.Controllers
             var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
             #endregion
 
-            #region 取得SRID
-            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
-
-            if (beanM != null)
+            if (!string.IsNullOrEmpty(pCopySRID))
             {
-                //記錄目前GUID，用來判斷更新的先後順序
-                ViewBag.pGUID = beanM.CSystemGuid.ToString();
+                #region 取得複製來源的SRID
+                var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pCopySRID);
 
-                //判斷登入者是否可以編輯服務案件
-                pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
-
-                #region 裝機資訊
-                ViewBag.cSRID = beanM.CSrid;
-                ViewBag.cCustomerID = beanM.CCustomerId;
-                ViewBag.cCustomerName = beanM.CCustomerName;
-                ViewBag.cDesc = beanM.CDesc;
-                ViewBag.cNotes = beanM.CNotes;
-                ViewBag.cAttachement = beanM.CAttachement;
-                ViewBag.cAttachementStockNo = beanM.CAttachementStockNo;
-                ViewBag.cDelayReason = beanM.CDelayReason;
-                ViewBag.cContractID = beanM.CContractId;
-                ViewBag.pStatus = beanM.CStatus;
-                ViewBag.CreatedUserName = beanM.CreatedUserName;
-
-                ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
-                #endregion                
-
-                #region 報修類別
-                if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                if (beanM != null)
                 {
-                    SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
-                }
+                    #region 定維資訊
+                    ViewBag.cSRID = "";
+                    ViewBag.cCustomerID = beanM.CCustomerId;
+                    ViewBag.cCustomerName = beanM.CCustomerName;
+                    ViewBag.cDesc = beanM.CDesc;
+                    ViewBag.cNotes = beanM.CNotes;
+                    ViewBag.cAttachement = "";                    
+                    ViewBag.cDelayReason = "";
+                    ViewBag.cContractID = beanM.CContractId;
+                    ViewBag.pStatus = "E0001";
+                    ViewBag.CreatedUserName = "";
 
-                if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
-                {
-                    SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
-                    SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
-                }
+                    ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+                    #endregion
 
-                if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
-                {
-                    SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
-                    SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
-                }
-                #endregion              
+                    #region 報修類別
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                    {
+                        SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
+                    }
 
-                #region 服務團隊
-                ViewBag.cTeamID = beanM.CTeamId;
-                ViewBag.cMainEngineerID = beanM.CMainEngineerId;
-                ViewBag.cMainEngineerName = beanM.CMainEngineerName;
-                ViewBag.cAssEngineerID = beanM.CAssEngineerId;
-                ViewBag.cSalesID = beanM.CSalesId;
-                ViewBag.cSalesName = beanM.CSalesName;
-                ViewBag.cSecretaryID = beanM.CSecretaryId;
-                ViewBag.cSecretaryName = beanM.CSecretaryName;
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
+                    {
+                        SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
+                        SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
+                    {
+                        SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
+                        SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
+                    }
+                    #endregion
+
+                    #region 服務團隊
+                    ViewBag.cTeamID = beanM.CTeamId;
+                    ViewBag.cMainEngineerID = beanM.CMainEngineerId;
+                    ViewBag.cMainEngineerName = beanM.CMainEngineerName;
+                    ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                    ViewBag.cSalesID = beanM.CSalesId;
+                    ViewBag.cSalesName = beanM.CSalesName;
+                    ViewBag.cSecretaryID = beanM.CSecretaryId;
+                    ViewBag.cSecretaryName = beanM.CSecretaryName;
+                    #endregion                    
+
+                    #region 取得客戶聯絡人資訊(明細)
+                    var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pCopySRID);
+
+                    ViewBag.Detailbean_Contact = beansContact;
+                    ViewBag.trContactNo = beansContact.Count();
+                    #endregion                   
+                }               
                 #endregion
-
-                ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
-
-                #region 取得客戶聯絡人資訊(明細)
-                var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
-
-                ViewBag.Detailbean_Contact = beansContact;
-                ViewBag.trContactNo = beansContact.Count();
-                #endregion              
-
-                #region 取得工時紀錄檔資訊(明細)
-                var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
-
-                ViewBag.Detailbean_Record = beansRecord;
-                ViewBag.trRecordNo = beansRecord.Count();
-                #endregion               
             }
             else
             {
-                ViewBag.cSRID = "";
-                ViewBag.pStatus = "E0001";      //新建
-                ViewBag.cDelayReason = "";      //空值
-                ViewBag.cContractID = "";       //空值
-                ViewBag.CreatedUserName = "";
+                #region 取得SRID
+                var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == pSRID);
+
+                if (beanM != null)
+                {
+                    //記錄目前GUID，用來判斷更新的先後順序
+                    ViewBag.pGUID = beanM.CSystemGuid.ToString();
+
+                    //判斷登入者是否可以編輯服務案件
+                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
+
+                    #region 定維資訊
+                    ViewBag.cSRID = beanM.CSrid;
+                    ViewBag.cCustomerID = beanM.CCustomerId;
+                    ViewBag.cCustomerName = beanM.CCustomerName;
+                    ViewBag.cDesc = beanM.CDesc;
+                    ViewBag.cNotes = beanM.CNotes;
+                    ViewBag.cAttachement = beanM.CAttachement;                    
+                    ViewBag.cDelayReason = beanM.CDelayReason;
+                    ViewBag.cContractID = beanM.CContractId;
+                    ViewBag.pStatus = beanM.CStatus;
+                    ViewBag.CreatedUserName = beanM.CreatedUserName;
+
+                    ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+                    #endregion
+
+                    #region 報修類別
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeOne))
+                    {
+                        SRTypeOneList.Where(q => q.Value == beanM.CSrtypeOne).First().Selected = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeSec))
+                    {
+                        SRTypeSecList = CMF.findSRTypeSecList(beanM.CSrtypeOne);
+                        SRTypeSecList.Where(q => q.Value == beanM.CSrtypeSec).First().Selected = true;
+                    }
+
+                    if (!string.IsNullOrEmpty(beanM.CSrtypeThr))
+                    {
+                        SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
+                        SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
+                    }
+                    #endregion
+
+                    #region 服務團隊
+                    ViewBag.cTeamID = beanM.CTeamId;
+                    ViewBag.cMainEngineerID = beanM.CMainEngineerId;
+                    ViewBag.cMainEngineerName = beanM.CMainEngineerName;
+                    ViewBag.cAssEngineerID = beanM.CAssEngineerId;
+                    ViewBag.cSalesID = beanM.CSalesId;
+                    ViewBag.cSalesName = beanM.CSalesName;
+                    ViewBag.cSecretaryID = beanM.CSecretaryId;
+                    ViewBag.cSecretaryName = beanM.CSecretaryName;
+                    #endregion
+
+                    ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
+
+                    #region 取得客戶聯絡人資訊(明細)
+                    var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Contact = beansContact;
+                    ViewBag.trContactNo = beansContact.Count();
+                    #endregion
+
+                    #region 取得工時紀錄檔資訊(明細)
+                    var beansRecord = dbOne.TbOneSrdetailRecords.OrderBy(x => x.CId).ThenByDescending(x => x.CFinishTime).Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+
+                    ViewBag.Detailbean_Record = beansRecord;
+                    ViewBag.trRecordNo = beansRecord.Count();
+                    #endregion
+                }
+                else
+                {
+                    ViewBag.cSRID = "";
+                    ViewBag.pStatus = "E0001";      //新建
+                    ViewBag.cDelayReason = "";      //空值
+                    ViewBag.cContractID = "";       //空值
+                    ViewBag.CreatedUserName = "";
+                }
+                #endregion
             }
-            #endregion
 
             #region 指派Option值
             model.ddl_cStatus = ViewBag.pStatus;                //設定狀態            
@@ -6799,6 +7093,10 @@ namespace OneService.Controllers
                                 {
                                     SRMain_INSTALLSR_INPUT beanIN = new SRMain_INSTALLSR_INPUT();
 
+                                    cCustomerName = CMF.findCustomerName(cCustomerID);
+                                    string InternalExp = CMF.findInternalExpBySoNo(cSalesNo);
+                                    string tNote = "【" + cShipmentNo + "】" + cCustomerName + " " + InternalExp + "_OneService系統批次裝機派單";
+
                                     #region 設定主檔                                    
                                     beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                                     beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
@@ -6807,8 +7105,8 @@ namespace OneService.Controllers
                                     beanIN.IV_SHIPMENTNO = cShipmentNo;
                                     beanIN.IV_SALESEMPNO = cSalesID;
                                     beanIN.IV_SECRETARYEMPNO = cSecretaryID;
-                                    beanIN.IV_DESC = "【" + cShipmentNo + "】OneService系統批次裝機派單";
-                                    beanIN.IV_LTXT = "【" + cShipmentNo + "】OneService系統批次裝機派單";
+                                    beanIN.IV_DESC = tNote;
+                                    beanIN.IV_LTXT = tNote;
                                     beanIN.IV_SRTEAM = cTeamID;
                                     beanIN.IV_EMPNO = cMainEngineerID;
                                     beanIN.IV_APIURLName = tAPIURLName;
@@ -6866,7 +7164,7 @@ namespace OneService.Controllers
                                     cSRID = CMF.callAPI_INSTALLSR_CREATE(beanIN);
 
                                     if (cSRID != "")
-                                    {
+                                    {                                        
                                         #region 回寫批次上傳裝機派工紀錄(主檔)
                                         TbOneSrbatchInstallRecord BInsM = new TbOneSrbatchInstallRecord();
 
