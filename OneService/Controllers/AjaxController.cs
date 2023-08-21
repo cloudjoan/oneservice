@@ -136,8 +136,8 @@ namespace OneService.Controllers
 
 
 
-
-        [HttpPost]
+		[RequestSizeLimit(50 * 1024 * 1024)]
+		[HttpPost]
         public async Task<ActionResult> AjaxFileUpload()
         {
             TbOneDocument docBean = new TbOneDocument();

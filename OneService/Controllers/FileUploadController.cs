@@ -12,8 +12,8 @@ namespace OneService.Controllers
 			return View();
 		}
 
-
-        [HttpPost]
+		[RequestSizeLimit(50 * 1024 * 1024)]
+		[HttpPost]
         public ActionResult UploadFile(IFormFile upload, bool needResize, int? width, int? height)
         {
             try
