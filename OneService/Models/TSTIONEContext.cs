@@ -228,9 +228,7 @@ namespace OneService.Models
                     .HasMaxLength(50)
                     .HasColumnName("cContactPhone");
 
-                entity.Property(e => e.CContractNotes)
-                    .HasMaxLength(512)
-                    .HasColumnName("cContractNotes");
+                entity.Property(e => e.CContractNotes).HasColumnName("cContractNotes");
 
                 entity.Property(e => e.CContractReport).HasColumnName("cContractReport");
 
@@ -268,7 +266,7 @@ namespace OneService.Models
                     .HasColumnName("cMACycle");
 
                 entity.Property(e => e.CManotes)
-                    .HasMaxLength(512)
+                    .HasMaxLength(1000)
                     .HasColumnName("cMANotes");
 
                 entity.Property(e => e.CMasales)
