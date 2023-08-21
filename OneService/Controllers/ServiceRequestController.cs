@@ -8171,9 +8171,9 @@ namespace OneService.Controllers
         /// <summary>
         /// Ajax取得鄉鎮市區、路段(名)、門牌號碼
         /// </summary>
-        /// <param name="keyword"></param>
-        /// <param name="keyword2"></param>
-        /// <param name="keyword3"></param>
+        /// <param name="keyword">縣市</param>
+        /// <param name="keyword2">鄉鎮市區</param>
+        /// <param name="keyword3">路段(名)</param>
         /// <returns></returns>
         public IActionResult findPostalaAddressInfo(string keyword, string keyword2, string keyword3)
         {
@@ -8219,6 +8219,28 @@ namespace OneService.Controllers
                     reLists = result.ToList();
                 }
             }
+
+            return Json(reLists);
+        }
+        #endregion
+
+        #region Ajax路段(名)關鍵字查詢
+        /// <summary>
+        /// Ajax路段(名)關鍵字查詢
+        /// </summary>
+        /// <param name="keyword">縣市</param>
+        /// <param name="keyword2">鄉鎮市區</param>
+        /// <param name="keyword3">路段(名)關鍵字</param>
+        /// <returns></returns>
+        public IActionResult findPostalRoadsInfo(string keyword, string keyword2, string keyword3)
+        {
+            List<string> reLists = new List<string>();
+
+            var result = (from p in dbProxy.PostalaAddressAndCodes
+                                where p.City == keyword.Trim() && p.Township == keyword2.Trim() && p.Road.Contains(keyword3.Trim())
+                                select p.Road).Distinct();
+
+            reLists = result.ToList();
 
             return Json(reLists);
         }

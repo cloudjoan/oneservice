@@ -263,10 +263,10 @@ $('.changePostTownship').change(function () {
     callPostAddress('Township');
 });
 
-//change路段(名)
-$('.changePostRoad').change(function () {
-    callPostAddress('Road');
-});
+////change路段(名)
+//$('.changePostRoad').change(function () {
+//    callPostAddress('Road');
+//});
 
 //開啟郵遞區號和地址查詢視窗
 function openPostAddress() {
@@ -449,6 +449,78 @@ function selectPostalaAddress(Code, City, Township, Road, No) {
     tbx_cAddContactAddress.val(tAddress);
 
     $("#div_PostAddress").modal('hide');
+}
+
+//Ajax路段(名)關鍵字查詢
+function RoadSearch() {   
+    $(".changePostRoad").unbind();
+
+    $(".changePostRoad").koala({
+        delay: 300,
+        keyup: function (event) {
+            if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+                var keyword = $(this).val();
+                if (keyword.length > 1) {                   
+                    var obj = $(this);
+                    var Msg = "";
+                    var ddl_PostAddressCity = $("#ddl_PostAddressCity");        //縣市名稱
+                    var ddl_PostAddressTownship = $("#ddl_PostAddressTownship"); //鄉鎮市區
+                    var tbx_cAddContactCity = $("#tbx_cAddContactCity");        //客戶聯絡人城市
+                    var tbx_cAddContactAddress = $("#tbx_cAddContactAddress");   //客戶聯絡人詳細地址
+
+                    if (ddl_PostAddressCity.val() == null || ddl_PostAddressCity.val() == "") {
+                        Msg += "請選擇【縣市名稱】！\n";
+                    }
+
+                    if (ddl_PostAddressTownship.val() == null || ddl_PostAddressTownship.val() == "") {
+                        Msg += "請選擇【鄉鎮市區】！\n";
+                    }
+                    
+                    if (Msg != "") {
+                        alert(Msg);
+                    }
+                    else
+                    {
+                        $.ajax({
+                            url: '../ServiceRequest/findPostalRoadsInfo',
+                            type: 'post',
+                            dataType: 'json',
+                            data: {
+                                keyword: ddl_PostAddressCity.val(),
+                                keyword2: ddl_PostAddressTownship.val(),
+                                keyword3: obj.val()
+                            },
+                            success: function (result) {
+                                objects = [];
+                                $.each(result, function (i, idata) {
+                                    objects[i] = {
+                                        label: idata,
+                                        idx: i,
+                                        value: idata, //value這個值，一定要在label裡才能顯示出下拉                                    
+                                        Road: idata
+                                    };
+                                });
+
+                                //綁定foucs事件
+                                obj.autocomplete({
+                                    source: objects,
+                                    select: function (event, ui) {                                        
+                                        var tAddress = ddl_PostAddressTownship.val() + ui.item.Road;
+                                        tbx_cAddContactCity.val(ddl_PostAddressCity.val());
+                                        tbx_cAddContactAddress.val(tAddress); 
+                                    }
+                                }).bind('focus', function () { obj.autocomplete("search"); });
+
+                                //開啟autocomplete選單
+                                obj.focus();
+                                $(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
+                            }
+                        })
+                    }
+                }
+            }
+        }
+    })
 }
 //-----↑↑↑↑↑客戶聯絡人 ↑↑↑↑↑-----
 
