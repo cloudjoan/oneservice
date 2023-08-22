@@ -136,7 +136,7 @@ namespace OneService.Controllers
 
 
 
-		[RequestSizeLimit(50 * 1024 * 1024)]
+		[RequestSizeLimit(100 * 1024 * 1024)]
 		[HttpPost]
         public async Task<ActionResult> AjaxFileUpload()
         {
