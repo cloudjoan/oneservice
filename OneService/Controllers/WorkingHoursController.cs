@@ -496,7 +496,7 @@ namespace OneService.Controllers
             IRow headerRow = sheet.CreateRow(0);
             headerRow.Height = 150 * 20;
 			headerRow.CreateCell(0).SetCellValue("");
-			headerRow.CreateCell(1).SetCellValue("工時類型(輸入代號):\nB(專案導入)\nC(內部作業)\nD(專業服務)");
+			headerRow.CreateCell(1).SetCellValue("工時類型(輸入代號):\nB(專案導入)\nC(內部作業)\nD(專業服務(軟體))");
             headerRow.CreateCell(2).SetCellValue("任務活動(輸入代號):\nD(會議)\nE(需求訪談)\nF(分析/設計)\nG(開發/測試)\nH(佈版/版控)\nK(查修/維運)\nI(教育訓練)\nL(文書處理)\nM(產品研發/維護)");
 			headerRow.CreateCell(3).SetCellValue("專案(商機號碼):");
 			headerRow.CreateCell(4).SetCellValue("工作說明              ");
