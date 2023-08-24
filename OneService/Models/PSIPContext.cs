@@ -37,7 +37,7 @@ namespace OneService.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=172.31.7.67;Database=PSIP;User=psip;Password=einck!@!NNd");
+                optionsBuilder.UseSqlServer("Server=172.31.7.66;Database=PSIP;User=psip;Password=einck!@!NNd");
             }
         }
 
@@ -68,7 +68,8 @@ namespace OneService.Models
 
                 entity.Property(e => e.BulletinRemind)
                     .HasMaxLength(100)
-                    .HasColumnName("bulletinRemind");
+                    .HasColumnName("bulletinRemind")
+                    .HasComment("預設提醒");
 
                 entity.Property(e => e.BulletinSubject)
                     .HasMaxLength(100)
@@ -610,15 +611,17 @@ namespace OneService.Models
 
                 entity.Property(e => e.CrmOppName).HasMaxLength(200);
 
-                entity.Property(e => e.FinishTime).HasMaxLength(22);
+                entity.Property(e => e.FinishTime).HasColumnType("datetime");
 
                 entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.Labor).HasColumnType("numeric(10, 0)");
 
                 entity.Property(e => e.SourceFrom)
                     .HasMaxLength(11)
                     .IsUnicode(false);
 
-                entity.Property(e => e.SrId).HasMaxLength(10);
+                entity.Property(e => e.SrId).HasMaxLength(20);
 
                 entity.Property(e => e.UserErpId).HasMaxLength(30);
 
