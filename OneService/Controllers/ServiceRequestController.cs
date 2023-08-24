@@ -5902,6 +5902,155 @@ namespace OneService.Controllers
 
         #endregion -----↑↑↑↑↑客戶Email對照設定作業 ↑↑↑↑↑-----   
 
+        #region -----↓↓↓↓↓滿意度調查排除設定作業 ↓↓↓↓↓-----
+        /// <summary>
+        /// 滿意度調查排除設定作業
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult SRSatisfactionSurveyRemove()
+        {
+            if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            getLoginAccount();
+            getEmployeeInfo();            
+
+            return View();
+        }
+
+        #region 滿意度調查排除設定作業查詢結果
+        /// <summary>
+        /// 滿意度調查排除設定作業查詢結果
+        /// </summary>        
+        /// <param name="cCustomerID">客戶代號</param>  
+        /// <param name="cCustomerName">客戶名稱</param>
+        /// <returns></returns>
+        public IActionResult SRSatisfactionSurveyRemoveResult(string cCustomerID, string cCustomerName)
+        {
+            List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            #region 組待查詢清單
+            var beans = dbOne.TbOneSrsatisfactionSurveyRemoves.Where(x => x.Disabled == 0 &&
+                                                                (string.IsNullOrEmpty(cCustomerID) ? true : x.CCustomerId == cCustomerID) &&
+                                                                (string.IsNullOrEmpty(cCustomerName) ? true : x.CCustomerName.Contains(cCustomerName)));
+
+            foreach (var bean in beans)
+            {
+                string[] QueryInfo = new string[3];
+
+                QueryInfo[0] = bean.CId.ToString();  //系統ID
+                QueryInfo[1] = bean.CCustomerId;     //客戶代號
+                QueryInfo[2] = bean.CCustomerName;   //客戶名稱
+
+                QueryToList.Add(QueryInfo);
+            }
+
+            ViewBag.QueryToListBean = QueryToList;
+            #endregion
+
+            return View();
+        }
+        #endregion
+
+        #region 儲存滿意度調查排除設定檔
+        /// <summary>
+        /// 儲存滿意度調查排除設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <param name="cCustomerID">客戶代號</param>
+        /// <param name="cCustomerName">客戶名稱</param>        
+        /// <returns></returns>
+        public ActionResult saveSRSatisfactionSurveyRemove(string cID, string cCustomerID, string cCustomerName)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string tMsg = string.Empty;            
+
+            try
+            {
+                int result = 0;
+                if (cID == null)
+                {
+                    #region -- 新增 --
+                    var prBean = dbOne.TbOneSrsatisfactionSurveyRemoves.FirstOrDefault(x => x.Disabled == 0 && x.CCustomerId == cCustomerID.Trim());
+                    if (prBean == null)
+                    {
+                        TbOneSrsatisfactionSurveyRemove prBean1 = new TbOneSrsatisfactionSurveyRemove();
+
+                        prBean1.CCustomerId = cCustomerID.Trim();
+                        prBean1.CCustomerName = cCustomerName.Trim();                        
+                        prBean1.Disabled = 0;
+
+                        prBean1.CreatedUserName = ViewBag.empEngName;
+                        prBean1.CreatedDate = DateTime.Now;
+
+                        dbOne.TbOneSrsatisfactionSurveyRemoves.Add(prBean1);
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此客戶ID已存在，請重新輸入！";
+                    }
+                    #endregion                
+                }
+                else
+                {
+                    #region -- 編輯 --
+                    var prBean = dbOne.TbOneSrsatisfactionSurveyRemoves.FirstOrDefault(x => x.Disabled == 0 &&
+                                                                                       x.CId.ToString() != cID &&
+                                                                                       x.CCustomerId == cCustomerID.Trim());
+                    if (prBean == null)
+                    {
+                        var prBean1 = dbOne.TbOneSrsatisfactionSurveyRemoves.FirstOrDefault(x => x.CId.ToString() == cID);
+                        prBean1.CCustomerId = cCustomerID.Trim();
+                        prBean1.CCustomerName = cCustomerName.Trim();                       
+
+                        prBean1.ModifiedUserName = ViewBag.empEngName;
+                        prBean1.ModifiedDate = DateTime.Now;
+                        result = dbOne.SaveChanges();
+                    }
+                    else
+                    {
+                        tMsg = "此客戶ID已存在，請重新輸入！";
+                    }
+                    #endregion
+                }
+                return Json(tMsg);
+            }
+            catch (Exception e)
+            {
+                return Json(e.Message);
+            }
+        }
+        #endregion
+
+        #region 刪除滿意度調查排除設定檔
+        /// <summary>
+        /// 刪除滿意度調查排除設定檔
+        /// </summary>
+        /// <param name="cID">系統ID</param>
+        /// <returns></returns>
+        public ActionResult DeleteSRSatisfactionSurveyRemove(string cID)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            var ctBean = dbOne.TbOneSrsatisfactionSurveyRemoves.FirstOrDefault(x => x.CId.ToString() == cID);
+            ctBean.Disabled = 1;
+            ctBean.ModifiedUserName = ViewBag.empEngName;
+            ctBean.ModifiedDate = DateTime.Now;
+
+            var result = dbOne.SaveChanges();
+
+            return Json(result);
+        }
+        #endregion       
+
+        #endregion -----↑↑↑↑↑滿意度調查排除設定作業 ↑↑↑↑↑-----   
+
         #region -----↓↓↓↓↓SQ人員設定作業 ↓↓↓↓↓-----
         /// <summary>
         /// SQ人員設定作業

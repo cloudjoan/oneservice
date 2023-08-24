@@ -1,0 +1,427 @@
+﻿@{
+	ViewData["Title"] = "SRSatisfactionSurveyRemove";
+	Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<!--Java Script寫在js_section裡面-->
+@section js_section{
+	<script>
+		$(document).ready(function () {
+			initTable();			
+			CustSearch();			
+		});
+
+		function initTable() {
+			var buttonCommon = {
+				exportOptions: {
+					format: {
+						body: function (data, row, column, node) {
+							//替換&符號
+							var translate_re = /&(nbsp|amp|quot|lt|gt);/g,
+								translate = {
+									'nbsp': String.fromCharCode(160),
+									'amp': '&',
+									'quot': '"',
+									'lt': '<',
+									'gt': '>'
+								},
+								translator = function ($0, $1) {
+									return translate[$1];
+								};
+
+							if (typeof data === 'string')
+								data = data.replace(translate_re, translator);
+
+							return data;
+						}
+					}
+				}
+			};
+
+			$('#tableAll').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				order: [[0, "desc"]],
+				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
+				buttons: [
+					$.extend(true, {}, buttonCommon, {
+						extend: 'excelHtml5',
+						title: '滿意度調查排除設定檔作業_' + new Date().toISOString().slice(0, 10).replace("-", "").replace("-", ""),
+						text: '匯出Excel',
+						sheetName: '滿意度調查排除設定檔作業',
+						exportOptions: {
+							columns: [1, 2] //要顯示的欄位
+						},
+						customize: function (xlsx) {
+							var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+							$('row c[r^="A"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式							
+						}
+					}),
+				],
+			});
+
+			$("#tableAll_wrapper .dt-buttons.btn-group").css("float", "right"); //匯出excel按鈕位置靠右
+		}		
+
+		//SAP客戶代號/客戶名稱查詢
+		//compcde(Comp-1.大世科 Comp-2.群輝 Comp-3.上海 Comp-4.協志)
+		function CustSearch() {
+			var compcde = $("#hid_cLoginUser_CompCode").val();
+
+			$(".CustName").unbind();
+
+			$(".CustName").koala({
+				delay: 300,
+				keyup: function (event) {
+					if (event.keyCode != 13 && event.keyCode != 37 && event.keyCode != 38 && event.keyCode != 39 && event.keyCode != 40) {
+						var keyword = $(this).val();
+						if (keyword.length > 1) {
+							var obj = $(this);
+							var ojbID = $(this).attr("id");
+
+							$.ajax({
+								url: '@Url.Action("findCustByKeywordAndComp", "ServiceRequest")',
+								type: 'post',
+								dataType: 'json',
+								data: { functionName: 'findCustByKeywordAndComp', keyword: keyword, compcde: compcde },
+								success: function (result) {
+									Customers = [];
+									$.each(result, function (i, idata) {
+										Customers[i] = {
+											label: idata.Kna1Kunnr + "\\" + idata.Kna1Name1, //顯示在清單的東西
+											idx: i,
+											value: idata.Kna1Kunnr,
+											Name: idata.Kna1Name1 //這個是要填入textbox的值
+										};
+									});
+
+									//綁定foucs事件
+									obj.autocomplete({
+										source: Customers,
+										select: function (event, ui) {
+											if (ojbID.indexOf('tbx_QuerycCustomerID') >= 0) {
+												$("#tbx_QuerycCustomerName").val(ui.item.Name);
+											}
+											else if (ojbID.indexOf('tbx_cCustomerID') >= 0) {
+												$("#tbx_cCustomerName").val(ui.item.Name);
+											}
+										}
+									}).bind('focus', function () { $(this).autocomplete("search"); });
+
+									//開啟autocomplete選單
+									obj.focus();
+									$(".ui-autocomplete").css({ 'z-index': '2051', 'font-size': '16px' }); //可以正常顯示關鍵字查詢
+								}
+							})
+						}
+					}
+
+				}
+			})
+		}		
+
+		//儲存明細
+		function saveSRSatisfactionSurveyRemove() {
+			var strMsg = "";
+			var cType = $("#hid_cType").val();					//目前狀態
+			var IsDo = $("#hid_IsDoADD");						//是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			var hid_cID = $("#hid_cID");						//系統ID
+			var tbx_cCustomerID = $("#tbx_cCustomerID");		//客戶代號
+			var tbx_cCustomerName = $("#tbx_cCustomerName");		//客戶名稱			
+
+			if (tbx_cCustomerID.val() == "") {
+				strMsg += "客戶代號不得為空！\n";
+			}
+
+			if (tbx_cCustomerName.val() == "") {
+				strMsg += "客戶名稱不得為空！\n";
+			}			
+
+			if (strMsg != "") {
+				alert(strMsg);
+			}
+			else {
+				$("#btn_saveSRSatisfactionSurveyRemove").hide();
+				$("#img_waiting_saveSRSatisfactionSurveyRemove").show();
+				$.ajax({
+					url: '@Url.Action("saveSRSatisfactionSurveyRemove", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						cID: hid_cID.val(),
+						cCustomerID: tbx_cCustomerID.val(),
+						cCustomerName: tbx_cCustomerName.val()						
+					},
+					success: function (result) {
+						if (result == "") {
+							alert("儲存成功");
+							$("#dialog_pSRSatisfactionSurveyRemove").modal('hide');
+
+							if (cType == "ADD") {
+								IsDo.val("Y");
+							}
+							else {
+								IsDo.val("");
+							}
+
+							Query();
+						}
+						else {
+							alert(result);
+						}
+						$("#img_waiting_saveSRSatisfactionSurveyRemove").hide();
+						$("#btn_saveSRSatisfactionSurveyRemove").show();
+					},
+				});
+			}
+		}
+
+		//刪除
+		function deleteSRSatisfactionSurveyRemove(rowId, cID) {
+			if (confirm("確定刪除？")) {
+				$.ajax({
+					url: '@Url.Action("DeleteSRSatisfactionSurveyRemove", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: { cID: cID },
+					success: function (result) {
+						if (result > 0) {
+							$('#' + rowId).remove();
+						}
+					}
+				})
+			}
+		}
+
+		//新增
+		function btn_add_pSRSatisfactionSurveyRemoveonclick() {
+			$("#hid_cType").val("ADD");	//目前狀態
+			$("#hid_cID").val("");		//清空系統ID
+
+			resetPopup("#dialog_pSRSatisfactionSurveyRemove"); //popup各欄位reset
+
+			$("#tbx_cCustomerID").removeAttr("disabled");	//客戶代號			
+
+			$("#dialog_pSRSatisfactionSurveyRemove .dropzone").show();
+			$("#dialog_pSRSatisfactionSurveyRemove").modal('show');
+		}		
+
+		//popup各欄位reset
+		function resetPopup(popupId) {
+			var cType = $("#hid_cType").val();		//ADD.新增 EDIT.編輯
+			var cIsDo = $("#hid_IsDoADD").val();	//是否已執行新增存檔過(Y.已執行 空白.未執行)
+
+			if (cType == "ADD" && cIsDo == "Y") {
+				//不做事
+			}
+			else {
+				$(popupId).find("input").each(function (index, value) {
+					$(this).val("");
+				});
+				$(popupId).find("select").each(function (index, value) {
+					$(this).val("-1");
+				});
+			}
+
+			$(popupId).find("textarea").each(function (index, value) {
+				$(this).val("");
+			});
+			$(popupId).find(".file-box").each(function (index, value) {
+				$(this).remove();
+			});
+		}
+
+		//查詢
+		function Query() {
+			$("#waitingImg").show();
+
+			var tMsg = "";
+			var tbx_QuerycCustomerID = $("#tbx_QuerycCustomerID");	  //客戶代號	
+			var tbx_QuerycCustomerName = $("#tbx_QuerycCustomerName"); //客戶名稱			
+
+			if (tMsg != "") {
+				alert(tMsg);
+				$("#waitingImg").hide();
+				return false;
+			}
+			else {
+				searchSRSatisfactionSurveyRemove(tbx_QuerycCustomerID.val(), tbx_QuerycCustomerName.val());
+			}
+
+			return true;
+		}
+
+		//查詢結果
+		function searchSRSatisfactionSurveyRemove(cCustomerID, cCustomerName) {
+			$("#dataDiv").html('');
+			$.ajax({
+				url: '@Url.Action("SRSatisfactionSurveyRemoveResult", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {
+					cCustomerID: cCustomerID,
+					cCustomerName: cCustomerName
+				},
+				success: function (result) {
+				},
+				complete: function (result) {
+					$("#dataDiv").html(result.responseText);
+					$("#waitingImg").hide();
+				}
+			});
+		}
+
+		//清除
+		function clearSRSatisfactionSurveyRemove() {
+			$("#tbx_QuerycCustomerID").val("");
+			$("#tbx_QuerycCustomerName").val("");
+		}
+	</script>
+}
+
+	@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>滿意度調查排除設定作業</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">服務管理系統參數設定</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>滿意度調查排除設定作業</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+	<div class="row">
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>
+						滿意度調查排除設定作業
+						<button id="btn_add_pNA" class="btn btn-success" type="button" style="margin-left: 10px;" onclick="btn_add_pSRSatisfactionSurveyRemoveonclick();"><i class="fa fa-plus" style="margin-right: 5px;"></i>新增</button>
+					</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content">					
+					<form id="form1" name="form" action='#' method="post">
+						<!--目前狀態 ADD.新增 or EDIT.編輯-->
+						<input type="hidden" id="hid_cType" />
+						<!--是否已經執行過新增存檔，用來判斷下次新增的時候，會預設帶上一次的值-->
+						<input type="hidden" id="hid_IsDoADD" />
+						<!--登人者公司別-->
+						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
+						<!--登人者工廠別-->
+						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">客戶代號</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerycCustomerID" name="tbx_QuerycCustomerID" class="form-control CustName" placeholder="請輸入客戶名稱或統編的關鍵字">								
+							</div>							
+							<label class="col-lg-2 col-form-label">客戶名稱</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerycCustomerName" name="tbx_QuerycCustomerName" class="form-control" placeholder="客戶名稱">
+							</div>
+						</div>
+						<div class="form-group row">
+							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+							<button class="btn btn-default btn-lg" type="button" onclick="clearSRSatisfactionSurveyRemove();"><i class="fa fa-trash"></i> 清 除 </button>
+							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div class="ibox ">
+				<div class="ibox-title">
+					<h5>滿意度調查排除設定作業查詢結果</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content" id="dataDiv" style="overflow: scroll">
+					<table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
+						<thead>
+							<tr>
+								<th></th>
+								<th>客戶代號</th>
+								<th>客戶名稱</th>								
+							</tr>
+						</thead>
+						<tbody>
+							@{
+								if (ViewBag.QueryToListBean != null)
+								{
+									int count = 0;
+									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
+									{
+										count++;
+										<tr id='tr@(count)'>
+											<td style="width:100px;">												
+												<button class="btn btn-danger" type="button" onclick="deleteSRSatisfactionSurveyRemove('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
+											</td>
+											<td class="tdcCustomerID">@Html.Raw(QueryInfo[1])</td>
+											<td class="tdcCustomerName">@Html.Raw(QueryInfo[2])</td>										
+										</tr>
+									}
+								}
+							}
+						</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--新增/修改彈出視窗-->
+<div class="modal fade" id="dialog_pSRSatisfactionSurveyRemove" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<label class="col-form-label"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i>滿意度調查排除設定作業</label>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<!--系統ID-->
+				<input type="hidden" id="hid_cID" />
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">客戶代號*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cCustomerID" name="tbx_cCustomerID" class="form-control CustName" placeholder="請輸入客戶統編或名稱關鍵字" disabled>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">客戶名稱*</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cCustomerName" name="tbx_cCustomerName" class="form-control" placeholder="客戶名稱" disabled>
+					</div>
+				</div>				
+			</div>
+			<div class="modal-footer">
+				<div class="col-lg-5"></div>
+				<button id="btn_saveSRSatisfactionSurveyRemove" class="btn btn-primary col-lg-2 col-xs-12" type="button" onclick="saveSRSatisfactionSurveyRemove();"> <i class="fa fa-save"></i> 儲 存</button>
+				<img id="img_waiting_saveSRSatisfactionSurveyRemove" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:6px" alt="">
+				<div class="col-lg-5"></div>
+			</div>
+		</div>
+	</div>
+</div>
