@@ -1403,7 +1403,13 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_SRSatisfactionSurveyRemove");
 
+                entity.HasIndex(e => new { e.CCustomerId, e.CContactEmail }, "NonClusteredIndex-20230825-093319");
+
                 entity.Property(e => e.CId).HasColumnName("cID");
+
+                entity.Property(e => e.CContactEmail)
+                    .HasMaxLength(200)
+                    .HasColumnName("cContactEmail");
 
                 entity.Property(e => e.CCustomerId)
                     .HasMaxLength(10)
@@ -1412,6 +1418,11 @@ namespace OneService.Models
                 entity.Property(e => e.CCustomerName)
                     .HasMaxLength(35)
                     .HasColumnName("cCustomerName");
+
+                entity.Property(e => e.CDimension)
+                    .HasMaxLength(1)
+                    .IsUnicode(false)
+                    .HasColumnName("cDimension");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 

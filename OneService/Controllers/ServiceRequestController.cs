@@ -5926,23 +5926,31 @@ namespace OneService.Controllers
         /// </summary>        
         /// <param name="cCustomerID">客戶代號</param>  
         /// <param name="cCustomerName">客戶名稱</param>
+        /// <param name="cContactEmail">客戶聯絡人E-Mail</param>
         /// <returns></returns>
-        public IActionResult SRSatisfactionSurveyRemoveResult(string cCustomerID, string cCustomerName)
+        public IActionResult SRSatisfactionSurveyRemoveResult(string cCustomerID, string cCustomerName, string cContactEmail)
         {
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            string CDimension = string.Empty;
 
             #region 組待查詢清單
             var beans = dbOne.TbOneSrsatisfactionSurveyRemoves.Where(x => x.Disabled == 0 &&
                                                                 (string.IsNullOrEmpty(cCustomerID) ? true : x.CCustomerId == cCustomerID) &&
-                                                                (string.IsNullOrEmpty(cCustomerName) ? true : x.CCustomerName.Contains(cCustomerName)));
+                                                                (string.IsNullOrEmpty(cCustomerName) ? true : x.CCustomerName.Contains(cCustomerName)) &&
+                                                                (string.IsNullOrEmpty(cContactEmail) ? true : x.CContactEmail.Contains(cContactEmail)));
 
             foreach (var bean in beans)
             {
-                string[] QueryInfo = new string[3];
+                string[] QueryInfo = new string[5];
+
+                CDimension = bean.CDimension == "0" ? "0_依客戶" : "1_依聯絡人";
 
                 QueryInfo[0] = bean.CId.ToString();  //系統ID
-                QueryInfo[1] = bean.CCustomerId;     //客戶代號
-                QueryInfo[2] = bean.CCustomerName;   //客戶名稱
+                QueryInfo[1] = CDimension;          //依據維度
+                QueryInfo[2] = bean.CCustomerId;     //客戶代號
+                QueryInfo[3] = bean.CCustomerName;   //客戶名稱
+                QueryInfo[4] = bean.CContactEmail;   //客戶聯絡人E-Mail
 
                 QueryToList.Add(QueryInfo);
             }
@@ -5959,15 +5967,19 @@ namespace OneService.Controllers
         /// 儲存滿意度調查排除設定檔
         /// </summary>
         /// <param name="cID">系統ID</param>
+        /// <param name="cDimension">依據維度(0.依客戶、1.依聯絡人)</param>
         /// <param name="cCustomerID">客戶代號</param>
-        /// <param name="cCustomerName">客戶名稱</param>        
+        /// <param name="cCustomerName">客戶名稱</param>
+        /// <param name="cContactEmail">客戶聯絡人E-Mail</param>
         /// <returns></returns>
-        public ActionResult saveSRSatisfactionSurveyRemove(string cID, string cCustomerID, string cCustomerName)
+        public ActionResult saveSRSatisfactionSurveyRemove(string cID, string cDimension, string cCustomerID, string cCustomerName, string cContactEmail)
         {
             getLoginAccount();
             getEmployeeInfo();
 
-            string tMsg = string.Empty;            
+            string tMsg = string.Empty;
+
+            cContactEmail = string.IsNullOrEmpty(cContactEmail) ? "" : cContactEmail;
 
             try
             {
@@ -5975,13 +5987,15 @@ namespace OneService.Controllers
                 if (cID == null)
                 {
                     #region -- 新增 --
-                    var prBean = dbOne.TbOneSrsatisfactionSurveyRemoves.FirstOrDefault(x => x.Disabled == 0 && x.CCustomerId == cCustomerID.Trim());
+                    var prBean = dbOne.TbOneSrsatisfactionSurveyRemoves.FirstOrDefault(x => x.Disabled == 0 && x.CCustomerId == cCustomerID.Trim() && x.CContactEmail == cContactEmail);
                     if (prBean == null)
                     {
                         TbOneSrsatisfactionSurveyRemove prBean1 = new TbOneSrsatisfactionSurveyRemove();
 
+                        prBean1.CDimension = cDimension;
                         prBean1.CCustomerId = cCustomerID.Trim();
-                        prBean1.CCustomerName = cCustomerName.Trim();                        
+                        prBean1.CCustomerName = cCustomerName.Trim();
+                        prBean1.CContactEmail = cContactEmail;
                         prBean1.Disabled = 0;
 
                         prBean1.CreatedUserName = ViewBag.empEngName;
@@ -5992,32 +6006,11 @@ namespace OneService.Controllers
                     }
                     else
                     {
-                        tMsg = "此客戶ID已存在，請重新輸入！";
+                        tMsg = "此【客戶ID + 客戶聯絡人E-Mail】已存在，請重新輸入！";
                     }
                     #endregion                
                 }
-                else
-                {
-                    #region -- 編輯 --
-                    var prBean = dbOne.TbOneSrsatisfactionSurveyRemoves.FirstOrDefault(x => x.Disabled == 0 &&
-                                                                                       x.CId.ToString() != cID &&
-                                                                                       x.CCustomerId == cCustomerID.Trim());
-                    if (prBean == null)
-                    {
-                        var prBean1 = dbOne.TbOneSrsatisfactionSurveyRemoves.FirstOrDefault(x => x.CId.ToString() == cID);
-                        prBean1.CCustomerId = cCustomerID.Trim();
-                        prBean1.CCustomerName = cCustomerName.Trim();                       
-
-                        prBean1.ModifiedUserName = ViewBag.empEngName;
-                        prBean1.ModifiedDate = DateTime.Now;
-                        result = dbOne.SaveChanges();
-                    }
-                    else
-                    {
-                        tMsg = "此客戶ID已存在，請重新輸入！";
-                    }
-                    #endregion
-                }
+                
                 return Json(tMsg);
             }
             catch (Exception e)

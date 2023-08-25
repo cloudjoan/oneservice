@@ -55,13 +55,15 @@
 						text: '匯出Excel',
 						sheetName: '滿意度調查排除設定檔作業',
 						exportOptions: {
-							columns: [1, 2] //要顯示的欄位
+							columns: [1, 2, 3, 4] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							var sheet = xlsx.xl.worksheets['sheet1.xml'];
 
 							$('row c[r^="A"]', sheet).attr('s', '0');	//設成文字格式
-							$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式							
+							$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
+							$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
 						}
 					}),
 				],
@@ -134,8 +136,10 @@
 			var IsDo = $("#hid_IsDoADD");						//是否已執行新增存檔過(Y.已執行 空白.未執行)
 
 			var hid_cID = $("#hid_cID");						//系統ID
+			var ddl_cDimension = $("#ddl_cDimension");		    //依據維度(0.依客戶、1.依聯絡人)
 			var tbx_cCustomerID = $("#tbx_cCustomerID");		//客戶代號
-			var tbx_cCustomerName = $("#tbx_cCustomerName");		//客戶名稱			
+			var tbx_cCustomerName = $("#tbx_cCustomerName");		//客戶名稱
+			var tbx_cContactEmail = $("#tbx_cContactEmail");		//客戶聯絡人E-Mail
 
 			if (tbx_cCustomerID.val() == "") {
 				strMsg += "客戶代號不得為空！\n";
@@ -143,7 +147,15 @@
 
 			if (tbx_cCustomerName.val() == "") {
 				strMsg += "客戶名稱不得為空！\n";
-			}			
+			}
+
+			if (ddl_cDimension.val() == "1") //1.依聯絡人
+			{
+				if (tbx_cContactEmail.val() == "")
+				{
+					strMsg += "客戶聯絡人E-Mail不得為空！\n";
+				}
+			}
 
 			if (strMsg != "") {
 				alert(strMsg);
@@ -157,8 +169,10 @@
 					dataType: 'json',
 					data: {
 						cID: hid_cID.val(),
+						cDimension : ddl_cDimension.val(),
 						cCustomerID: tbx_cCustomerID.val(),
-						cCustomerName: tbx_cCustomerName.val()						
+						cCustomerName: tbx_cCustomerName.val(),
+						cContactEmail: tbx_cContactEmail.val()
 					},
 					success: function (result) {
 						if (result == "") {
@@ -201,13 +215,31 @@
 			}
 		}
 
+		//依據維度onchang事件
+		function onchang_ddl_cDimension()
+		{
+			var ddl_cDimension = $("#ddl_cDimension");		    //依據維度(0.依客戶、1.依聯絡人)			
+			var tbx_cContactEmail = $("#tbx_cContactEmail");		//客戶聯絡人E-Mail
+
+			if (ddl_cDimension.val() == "0")
+			{
+				tbx_cContactEmail.attr('disabled', 'disabled');
+				tbx_cContactEmail.val("");
+			}
+			else
+			{
+				tbx_cContactEmail.removeAttr("disabled")
+			}
+		}
+
 		//新增
 		function btn_add_pSRSatisfactionSurveyRemoveonclick() {
 			$("#hid_cType").val("ADD");	//目前狀態
 			$("#hid_cID").val("");		//清空系統ID
 
 			resetPopup("#dialog_pSRSatisfactionSurveyRemove"); //popup各欄位reset
-
+			
+			$("#ddl_cDimension").removeAttr("disabled");   //依據維度(0.依客戶、1.依聯絡人)
 			$("#tbx_cCustomerID").removeAttr("disabled");	//客戶代號			
 
 			$("#dialog_pSRSatisfactionSurveyRemove .dropzone").show();
@@ -227,7 +259,7 @@
 					$(this).val("");
 				});
 				$(popupId).find("select").each(function (index, value) {
-					$(this).val("-1");
+					$(this).val("0");
 				});
 			}
 
@@ -244,8 +276,9 @@
 			$("#waitingImg").show();
 
 			var tMsg = "";
-			var tbx_QuerycCustomerID = $("#tbx_QuerycCustomerID");	  //客戶代號	
-			var tbx_QuerycCustomerName = $("#tbx_QuerycCustomerName"); //客戶名稱			
+			var tbx_QuerycCustomerID = $("#tbx_QuerycCustomerID");	   //客戶代號	
+			var tbx_QuerycCustomerName = $("#tbx_QuerycCustomerName");  //客戶名稱
+			var tbx_QuerycContactEmail = $("#tbx_QuerycContactEmail");  //客戶聯絡人E-Mail
 
 			if (tMsg != "") {
 				alert(tMsg);
@@ -253,14 +286,14 @@
 				return false;
 			}
 			else {
-				searchSRSatisfactionSurveyRemove(tbx_QuerycCustomerID.val(), tbx_QuerycCustomerName.val());
+				searchSRSatisfactionSurveyRemove(tbx_QuerycCustomerID.val(), tbx_QuerycCustomerName.val(), tbx_QuerycContactEmail.val());
 			}
 
 			return true;
 		}
 
 		//查詢結果
-		function searchSRSatisfactionSurveyRemove(cCustomerID, cCustomerName) {
+		function searchSRSatisfactionSurveyRemove(cCustomerID, cCustomerName, cContactEmail) {
 			$("#dataDiv").html('');
 			$.ajax({
 				url: '@Url.Action("SRSatisfactionSurveyRemoveResult", "ServiceRequest")',
@@ -268,7 +301,8 @@
 				dataType: 'json',
 				data: {
 					cCustomerID: cCustomerID,
-					cCustomerName: cCustomerName
+					cCustomerName: cCustomerName,
+					cContactEmail: cContactEmail
 				},
 				success: function (result) {
 				},
@@ -283,6 +317,7 @@
 		function clearSRSatisfactionSurveyRemove() {
 			$("#tbx_QuerycCustomerID").val("");
 			$("#tbx_QuerycCustomerName").val("");
+			$("#tbx_QuerycContactEmail").val("");
 		}
 	</script>
 }
@@ -334,6 +369,12 @@
 							<label class="col-lg-2 col-form-label">客戶名稱</label>
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QuerycCustomerName" name="tbx_QuerycCustomerName" class="form-control" placeholder="客戶名稱">
+							</div>							
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">客戶聯絡人E-Mail</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_QuerycContactEmail" name="tbx_QuerycContactEmail" class="form-control Contact" placeholder="客戶聯絡人E-Mail">
 							</div>
 						</div>
 						<div class="form-group row">
@@ -361,29 +402,33 @@
 						<thead>
 							<tr>
 								<th></th>
+								<th>依據維度</th>
 								<th>客戶代號</th>
-								<th>客戶名稱</th>								
+								<th>客戶名稱</th>
+								<th>客戶聯絡人E-Mail</th>
 							</tr>
 						</thead>
 						<tbody>
 							@{
-								if (ViewBag.QueryToListBean != null)
+							if (ViewBag.QueryToListBean != null)
+							{
+								int count = 0;
+								foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 								{
-									int count = 0;
-									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
-									{
-										count++;
+									count++;
 										<tr id='tr@(count)'>
-											<td style="width:100px;">												
+											<td style="width:100px;">
 												<button class="btn btn-danger" type="button" onclick="deleteSRSatisfactionSurveyRemove('tr@(count)', '@Html.Raw(QueryInfo[0])')" title="刪除"><i class="fa fa-trash"></i></button>
 											</td>
-											<td class="tdcCustomerID">@Html.Raw(QueryInfo[1])</td>
-											<td class="tdcCustomerName">@Html.Raw(QueryInfo[2])</td>										
+											<td class="tdcDimension">@Html.Raw(QueryInfo[1])</td>
+											<td class="tdcCustomerID">@Html.Raw(QueryInfo[2])</td>
+											<td class="tdcCustomerName">@Html.Raw(QueryInfo[3])</td>
+											<td class="tdcContactEmail">@Html.Raw(QueryInfo[4])</td>
 										</tr>
-									}
 								}
 							}
-						</tbody>
+						}
+					</tbody>
 				</table>
 			</div>
 		</div>
@@ -402,7 +447,16 @@
 			</div>
 			<div class="modal-body">
 				<!--系統ID-->
-				<input type="hidden" id="hid_cID" />
+				<input type="hidden" id="hid_cID" />				
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">依據維度*</label>
+					<div class="col-lg-10">
+						<select class="form-control" name='ddl_cDimension' id="ddl_cDimension" onchange="onchang_ddl_cDimension();">
+							<option value="0" selected="selected">依客戶</option>
+							<option value="1">依聯絡人</option>
+						</select>
+					</div>					
+				</div>
 				<div class="form-group row">
 					<label class="col-lg-2 col-form-label">客戶代號*</label>
 					<div class="col-lg-10">
@@ -414,7 +468,13 @@
 					<div class="col-lg-10">
 						<input type="text" id="tbx_cCustomerName" name="tbx_cCustomerName" class="form-control" placeholder="客戶名稱" disabled>
 					</div>
-				</div>				
+				</div>	
+				<div class="form-group row">
+					<label class="col-lg-2 col-form-label">客戶聯絡人E-Mail</label>
+					<div class="col-lg-10">
+						<input type="text" id="tbx_cContactEmail" name="tbx_cContactEmail" class="form-control Contact" placeholder="客戶聯絡人E-Mail" disabled>
+					</div>
+				</div>
 			</div>
 			<div class="modal-footer">
 				<div class="col-lg-5"></div>
