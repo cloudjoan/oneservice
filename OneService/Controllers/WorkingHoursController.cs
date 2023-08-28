@@ -15,6 +15,7 @@ using NPOI.XSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.HSSF.UserModel;
 using Org.BouncyCastle.Utilities;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace OneService.Controllers
 {
@@ -221,8 +222,10 @@ namespace OneService.Controllers
                 psipDB.TbWorkingHoursMains.Add(bean);
             }
 
-            //如果有商機跟專案管理的話，就需加入專案管理的工時計算
-            if (!string.IsNullOrEmpty(bean.CrmOppNo))
+            //如果商機有進PMO的話，就需加入專案管理的工時計算
+            var oppBena = psipDB.ViewProPjOppInfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
+
+			if (oppBena != null)
             {
                 var pjInfoBean = psipDB.TbProPjinfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
 
