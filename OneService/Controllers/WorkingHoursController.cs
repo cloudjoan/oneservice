@@ -223,9 +223,9 @@ namespace OneService.Controllers
             }
 
             //如果商機有進PMO的話，就需加入專案管理的工時計算
-            var oppBena = psipDB.ViewProPjOppInfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
+            var oppBean = psipDB.ViewProPjOppInfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
 
-			if (oppBena != null)
+			if (oppBean != null)
             {
                 var pjInfoBean = psipDB.TbProPjinfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
 
@@ -648,8 +648,10 @@ namespace OneService.Controllers
 
 							psipDB.TbWorkingHoursMains.Add(bean);
 
-							//如果有商機跟專案管理的話，就需加入專案管理的工時計算
-							if (!string.IsNullOrEmpty(bean.CrmOppNo))
+							//如果商機有進PMO的話，就需加入專案管理的工時計算
+							var _oppBean = psipDB.ViewProPjOppInfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
+
+							if (_oppBean != null)
 							{
 								int prId = 0;
 								var pjInfoBean = psipDB.TbProPjinfos.FirstOrDefault(x => x.CrmOppNo == bean.CrmOppNo);
