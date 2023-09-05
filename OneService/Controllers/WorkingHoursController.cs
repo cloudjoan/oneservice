@@ -592,10 +592,14 @@ namespace OneService.Controllers
 							bean.UserErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
 							bean.Whtype = row.GetCell(1).StringCellValue;
 							bean.ActType = row.GetCell(2).StringCellValue;
-                            bean.CrmOppNo = row.GetCell(3).CellType == CellType.Numeric ? row.GetCell(3).NumericCellValue.ToString() : row.GetCell(3).StringCellValue;
 							bean.WhDescript = row.GetCell(4).StringCellValue;
-                            
-                            switch (row.GetCell(5).CellType)
+                           if(row.GetCell(3) != null)
+                            {
+								bean.CrmOppNo = row.GetCell(3).CellType == CellType.Numeric ? row.GetCell(3).NumericCellValue.ToString() : row.GetCell(3).StringCellValue;
+							}
+							
+
+							switch (row.GetCell(5).CellType)
                             {
                                 case CellType.Numeric:
 									bean.StartTime = string.Format("{0:yyyy-MM-dd HH:mm}", DateTime.FromOADate(row.GetCell(5).NumericCellValue));
