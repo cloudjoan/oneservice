@@ -46,7 +46,7 @@
 								objects = [];
 								$.each(result, function (i, idata) {
 									objects[i] = {
-										label: idata.CrmOppNo + " - " + idata.OppDescription,
+										label: idata.CrmOppNo + " - " + idata.OppDescription + "(" + idata.CompName + ")",
 										idx: i,
 										value: idata.CrmOppNo,
 										oppDesc: idata.CrmOppNo + " - " + idata.OppDescription
