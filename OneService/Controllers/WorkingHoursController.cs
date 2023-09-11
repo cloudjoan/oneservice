@@ -95,27 +95,6 @@ namespace OneService.Controllers
             var userAccount = User.Identity.Name;
             System.Diagnostics.Debug.WriteLine(userAccount);
 
-            var client = new RestClient("http://tsti-sapapp01.etatung.com.tw/api/ticc");
-
-            var request = new RestRequest();
-            request.Method = RestSharp.Method.Post;
-
-            Dictionary<Object, Object> parameters = new Dictionary<Object, Object>();
-            parameters.Add("SAP_FUNCTION_NAME", "ZFM_TICC_SERIAL_SEARCH");
-            parameters.Add("IV_SERIAL", "2CE3231K6X");
-
-            request.AddHeader("Content-Type", "application/json");
-            request.AddHeader("X-MBX-APIKEY", "6xdTlREsMbFd0dBT28jhb5W3BNukgLOos");
-            request.AddParameter("application/json", parameters, ParameterType.RequestBody);
-
-            RestResponse response = client.Execute(request);
-
-            Console.WriteLine(response.Content);
-
-            var data = (JObject)JsonConvert.DeserializeObject(response.Content);
-
-            System.Diagnostics.Debug.WriteLine(data["ET_REQUEST"]["SyncRoot"][0]["cNAMEField"]);
-
             ViewBag.deptName = HttpContext.Session.GetString(SessionKey.DEPT_NAME);
             ViewBag.userName = HttpContext.Session.GetString(SessionKey.USER_NAME);
             ViewBag.userErpId = HttpContext.Session.GetString(SessionKey.USER_ERP_ID);
@@ -499,7 +478,7 @@ namespace OneService.Controllers
             IRow headerRow = sheet.CreateRow(0);
             headerRow.Height = 150 * 20;
 			headerRow.CreateCell(0).SetCellValue("");
-			headerRow.CreateCell(1).SetCellValue("工時類型(輸入代號):\nB(專案導入)\nC(內部作業)\nD(專業服務(軟體))");
+			headerRow.CreateCell(1).SetCellValue("工時類型(輸入代號):\nB(專案導入)\nC(內部作業)");
             headerRow.CreateCell(2).SetCellValue("任務活動(輸入代號):\nD(會議)\nE(需求訪談)\nF(分析/設計)\nG(開發/測試)\nH(佈版/版控)\nK(查修/維運)\nI(教育訓練)\nL(文書處理)\nM(產品研發/維護)");
 			headerRow.CreateCell(3).SetCellValue("專案(商機號碼):");
 			headerRow.CreateCell(4).SetCellValue("工作說明              ");

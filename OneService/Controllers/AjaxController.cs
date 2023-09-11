@@ -125,7 +125,7 @@ namespace OneService.Controllers
                 case "findCrmOppByKeyword":
                     //contentObj = psipDB.ViewProPjOppInfos.Where(x => x.CrmOppNo.Contains(keyword) || x.OppDescription.Contains(keyword));
                     string[] exStatus = { "E0004", "E0007", "E0008" };
-                    contentObj = proxyDB.TbCrmOppHeads.Where(x => (x.CrmOppNo.Contains(keyword) || x.OppDescription.Contains(keyword)) && !exStatus.Contains(x.Status)).Take(15);
+                    contentObj = proxyDB.TbCrmOppHeads.Where(x => (x.CrmOppNo.Contains(keyword) || x.OppDescription.Contains(keyword)) && !exStatus.Contains(x.Status)).Take(150);
 					break;
 				default:
                     break;
