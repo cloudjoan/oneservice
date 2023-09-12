@@ -8876,6 +8876,55 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region Ajax產品序號資訊和合約標的查詢
+        /// <summary>
+        /// Ajax產品序號資訊和合約標的查詢
+        /// </summary>
+        /// <param name="IV_SERIAL">序號</param>
+        /// <returns></returns>
+        public IActionResult findMaterialAndContractObjBySerial(string IV_SERIAL)
+        {
+            var beans = dbProxy.Stockalls.Where(x => x.IvSerial.Contains(IV_SERIAL.Trim())).Take(30);
+
+            List<SerialMaterialInfo> tList = new List<SerialMaterialInfo>();
+
+            if (beans.Count() > 0)
+            {
+                #region 先找產品序號資訊
+                foreach (var bean in beans)
+                {
+                    SerialMaterialInfo ProBean = new SerialMaterialInfo();
+
+                    ProBean.IV_SERIAL = bean.IvSerial;
+                    ProBean.ProdID = bean.ProdId;
+                    ProBean.Product = bean.Product;
+
+                    tList.Add(ProBean);
+                }
+                #endregion
+            }
+            else
+            {
+                #region 再找合約標的
+                var beansObj = dbOne.TbOneContractDetailObjs.Where(x => x.Disabled == 0 && x.CSerialId == IV_SERIAL.Trim()).Take(30);
+
+                foreach (var bean in beansObj)
+                {
+                    SerialMaterialInfo ProBean = new SerialMaterialInfo();
+
+                    ProBean.IV_SERIAL = bean.CSerialId;
+                    ProBean.ProdID = bean.CPid;
+                    ProBean.Product = bean.CModel;
+
+                    tList.Add(ProBean);
+                }
+                #endregion
+            }
+
+            return Json(tList);
+        }
+        #endregion
+
         #region Ajax取得製造商零件號碼和裝機號碼
         /// <summary>
         /// Ajax取得製造商零件號碼和裝機號碼
@@ -8886,6 +8935,9 @@ namespace OneService.Controllers
         public IActionResult findMFRPandInstallNumber(string ProdID, string IV_SERIAL)
         {
             string[] tAry = new string[2];
+
+            ProdID = string.IsNullOrEmpty(ProdID) ? "" : ProdID;
+            IV_SERIAL = string.IsNullOrEmpty(IV_SERIAL) ? "" : IV_SERIAL;
 
             tAry[0] = CMF.findMFRPNumber(ProdID);
             tAry[1] = CMF.findInstallNumber(IV_SERIAL);

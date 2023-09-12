@@ -1757,7 +1757,7 @@
 						if (IV_SERIAL.length > 1) {
 							var obj = $(this);
 							$.ajax({
-								url: '@Url.Action("findMaterialBySerial", "ServiceRequest")',
+								url: '@Url.Action("findMaterialAndContractObjBySerial", "ServiceRequest")',
 								type: 'post',
 								dataType: 'json',
 								data: { functionName: 'findMaterialBySerial', IV_SERIAL: IV_SERIAL},
