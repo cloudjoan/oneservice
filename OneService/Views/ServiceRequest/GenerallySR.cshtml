@@ -1760,7 +1760,9 @@
 								url: '@Url.Action("findMaterialAndContractObjBySerial", "ServiceRequest")',
 								type: 'post',
 								dataType: 'json',
-								data: { functionName: 'findMaterialBySerial', IV_SERIAL: IV_SERIAL},
+								data: { 
+									IV_SERIAL: IV_SERIAL
+								},
 								success: function (result) {
 									materials = [];
 									$.each(result, function (i, idata) {
