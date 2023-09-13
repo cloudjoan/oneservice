@@ -166,6 +166,11 @@ namespace OneService.Controllers
         static string pOperationID_QueryBatchMaintain = "7F07161D-D086-4004-AB25-B292469C979C";
 
         /// <summary>
+        /// 程式作業編號檔系統ID(合約主數據查詢/維護)
+        /// </summary>
+        string pOperationID_Contract = "A9556C2C-E5DE-4745-A76B-5F2E1F69A3A9";
+
+        /// <summary>
         /// 公司別(T012、T016、C069、T022)
         /// </summary>
         static string pCompanyCode = string.Empty;
@@ -1420,7 +1425,17 @@ namespace OneService.Controllers
             #endregion
 
             #region 取得服務團隊清單
-            var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);           
+            var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
+            #endregion
+
+            #region SLA回應條件(單筆per call)
+            List<SelectListItem> SLARESPList = CMF.findSysParameterListItem(pOperationID_Contract, "OTHER", ViewBag.cLoginUser_BUKRS, "SLARESP", true);
+            ViewBag.SLARESPList = SLARESPList;
+            #endregion
+
+            #region SLA服務條件(單筆per call)
+            List<SelectListItem> SLASRVList = CMF.findSysParameterListItem(pOperationID_Contract, "OTHER", ViewBag.cLoginUser_BUKRS, "SLASRV", true);
+            ViewBag.SLASRVList = SLASRVList;
             #endregion
 
             if (!string.IsNullOrEmpty(pCopySRID))
@@ -1442,6 +1457,7 @@ namespace OneService.Controllers
                     ViewBag.cSRProcessWay = "";
                     ViewBag.cSRRepairLevel = "Z03";                     //三級(一般叫修)
                     ViewBag.cDelayReason = "";
+                    ViewBag.cRemark = "";
                     ViewBag.cIsSecondFix = "";
                     ViewBag.cIsInternalWork = "N";
                     ViewBag.pStatus = "E0001";                          //新建
@@ -1467,7 +1483,7 @@ namespace OneService.Controllers
                         SRTypeThrList = CMF.findSRTypeThrList(beanM.CSrtypeSec);
                         SRTypeThrList.Where(q => q.Value == beanM.CSrtypeThr).First().Selected = true;
                     }
-                    #endregion
+                    #endregion                  
 
                     #region 客戶故障狀況分類資訊(L2處理中)
 
@@ -1528,6 +1544,16 @@ namespace OneService.Controllers
                     ViewBag.cSalesName = beanM.CSalesName;
                     ViewBag.cAssEngineerID = beanM.CAssEngineerId;
                     ViewBag.cTechManagerID = beanM.CTechManagerId;
+                    #endregion
+                    
+                    #region SLA回應條件(單筆per call)
+                    SLARESPList.Where(q => q.Value == beanM.CPerCallSlaresp).First().Selected = true;
+                    ViewBag.SLARESPList = SLARESPList;
+                    #endregion
+
+                    #region SLA服務條件(單筆per call)
+                    SLASRVList.Where(q => q.Value == beanM.CPerCallSlasrv).First().Selected = true;
+                    ViewBag.SLASRVList = SLASRVList;
                     #endregion                    
 
                     #region 取得客戶聯絡人資訊(明細)
@@ -1571,6 +1597,7 @@ namespace OneService.Controllers
                     ViewBag.cSRProcessWay = beanM.CSrprocessWay;
                     ViewBag.cSRRepairLevel = beanM.CSrrepairLevel;
                     ViewBag.cDelayReason = beanM.CDelayReason;
+                    ViewBag.cRemark = beanM.CRemark;
                     ViewBag.cIsSecondFix = beanM.CIsSecondFix;
                     ViewBag.cIsInternalWork = beanM.CIsInternalWork;
                     ViewBag.pStatus = beanM.CStatus;
@@ -1745,6 +1772,16 @@ namespace OneService.Controllers
                     ViewBag.cTechManagerID = beanM.CTechManagerId;
                     #endregion
 
+                    #region SLA回應條件(單筆per call)
+                    SLARESPList.Where(q => q.Value == beanM.CPerCallSlaresp).First().Selected = true;
+                    ViewBag.SLARESPList = SLARESPList;
+                    #endregion
+
+                    #region SLA服務條件(單筆per call)
+                    SLASRVList.Where(q => q.Value == beanM.CPerCallSlasrv).First().Selected = true;
+                    ViewBag.SLASRVList = SLASRVList;
+                    #endregion   
+
                     ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
 
                     #region 取得客戶聯絡人資訊(明細)
@@ -1784,6 +1821,7 @@ namespace OneService.Controllers
                     ViewBag.cSRProcessWay = "";     //請選擇
                     ViewBag.cSRRepairLevel = "Z03"; //三級(一般叫修)
                     ViewBag.cDelayReason = "";      //空值
+                    ViewBag.cRemark = "";          //空值
                     ViewBag.cIsSecondFix = "";     //請選擇
                     ViewBag.cIsInternalWork = "N";
                     ViewBag.CreatedUserName = "";
@@ -1849,6 +1887,7 @@ namespace OneService.Controllers
             string OldCSrprocessWay = string.Empty;
             string OldCSrrepairLevel = string.Empty;
             string OldCDelayReason = string.Empty;
+            string OldCRemark = string.Empty;
             string OldCIsSecondFix = string.Empty;
             string OldCIsInternalWork = string.Empty;
             string OldCRepairName = string.Empty;
@@ -1865,6 +1904,8 @@ namespace OneService.Controllers
             string OldCMainEngineerId = string.Empty;
             string OldCAssEngineerId = string.Empty;
             string OldCTechManagerId = string.Empty;
+            string OldCPerCallSlaresp = string.Empty;
+            string OldCPerCallSlasrv = string.Empty;
 
             string OldCFaultGroup = string.Empty;
             string OldCFaultGroup1 = string.Empty;
@@ -1913,7 +1954,8 @@ namespace OneService.Controllers
             string CRepairAddress = formCollection["tbx_cRepairAddress"].FirstOrDefault();
             string CRepairPhone = formCollection["tbx_cRepairPhone"].FirstOrDefault();
             string CRepairMobile = formCollection["tbx_cRepairMobile"].FirstOrDefault();
-            string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();            
+            string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
+            string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CSqpersonId = formCollection["hid_cSQPersonID"].FirstOrDefault();
             string CSqpersonName = formCollection["tbx_cSQPersonName"].FirstOrDefault();
@@ -1923,7 +1965,8 @@ namespace OneService.Controllers
             string CMainEngineerId = formCollection["hid_cMainEngineerID"].FirstOrDefault();
             string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();
             string CTechManagerId = formCollection["hid_cTechManagerID"].FirstOrDefault();
-            //string LoginUser_Name = formCollection["hid_cLoginUser_Name"].FirstOrDefault();
+            string CPerCallSlaresp = formCollection["ddl_cPerCallSLARESP"].FirstOrDefault();
+            string CPerCallSlasrv = formCollection["ddl_cPerCallSLASRV"].FirstOrDefault();
 
             string CFaultGroup = formCollection["hid_cFaultGroup"].FirstOrDefault();            
             string CFaultState = formCollection["hid_cFaultState"].FirstOrDefault();            
@@ -1982,6 +2025,7 @@ namespace OneService.Controllers
                     beanM.CSrprocessWay = CSrprocessWay;
                     beanM.CSrrepairLevel = CSrrepairLevel;
                     beanM.CDelayReason = CDelayReason;
+                    beanM.CRemark = CRemark;
                     beanM.CIsSecondFix = CIsSecondFix;
                     beanM.CIsInternalWork = CIsInternalWork;
                     beanM.CRepairName = CRepairName;
@@ -1998,6 +2042,8 @@ namespace OneService.Controllers
                     beanM.CMainEngineerId = CMainEngineerId;
                     beanM.CAssEngineerId = CAssEngineerId;
                     beanM.CTechManagerId = CTechManagerId;
+                    beanM.CPerCallSlaresp = CPerCallSlaresp;
+                    beanM.CPerCallSlasrv = CPerCallSlasrv;
                     beanM.CSystemGuid = Guid.NewGuid();
                     beanM.CIsAppclose = "";                    
 
@@ -2205,6 +2251,9 @@ namespace OneService.Controllers
                     OldCDelayReason = beanNowM.CDelayReason;
                     tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
 
+                    OldCRemark = beanNowM.CRemark;
+                    tLog += CMF.getNewAndOldLog("備註", OldCRemark, CRemark);
+
                     OldCIsSecondFix = beanNowM.CIsSecondFix;
                     tLog += CMF.getNewAndOldLog("是否為二修", OldCIsSecondFix, CIsSecondFix);
 
@@ -2252,6 +2301,12 @@ namespace OneService.Controllers
 
                     OldCTechManagerId = beanNowM.CTechManagerId;
                     tLog += CMF.getNewAndOldLog("技術主管ERPID", OldCTechManagerId, CTechManagerId);
+
+                    OldCPerCallSlaresp = beanNowM.CPerCallSlaresp;
+                    tLog += CMF.getNewAndOldLog("SLA回應條件(單筆per call)", OldCPerCallSlaresp, CPerCallSlaresp);
+
+                    OldCPerCallSlasrv = beanNowM.CPerCallSlasrv;
+                    tLog += CMF.getNewAndOldLog("SLA服務條件(單筆per call)", OldCPerCallSlasrv, CPerCallSlasrv);
 
                     #region 客戶故障狀況分類
                     OldCFaultGroup = string.IsNullOrEmpty(beanNowM.CFaultGroup) ? "" : beanNowM.CFaultGroup;
@@ -2324,6 +2379,7 @@ namespace OneService.Controllers
                     beanNowM.CSrprocessWay = CSrprocessWay;
                     beanNowM.CSrrepairLevel = CSrrepairLevel;
                     beanNowM.CDelayReason = CDelayReason;
+                    beanNowM.CRemark = CRemark;
                     beanNowM.CIsSecondFix = CIsSecondFix;
                     beanNowM.CIsInternalWork = CIsInternalWork;
                     beanNowM.CRepairName = CRepairName;
@@ -2340,6 +2396,8 @@ namespace OneService.Controllers
                     beanNowM.CMainEngineerId = CMainEngineerId;
                     beanNowM.CAssEngineerId = CAssEngineerId;
                     beanNowM.CTechManagerId = CTechManagerId;
+                    beanNowM.CPerCallSlaresp = CPerCallSlaresp;
+                    beanNowM.CPerCallSlasrv = CPerCallSlasrv;
                     beanNowM.CSystemGuid = Guid.NewGuid();
 
                     #region 客戶故障狀況分類
@@ -3961,6 +4019,7 @@ namespace OneService.Controllers
                     ViewBag.cAttachement = "";
                     ViewBag.cAttachementStockNo = "";
                     ViewBag.cDelayReason = "";
+                    ViewBag.cRemark = "";
                     ViewBag.cSalesNo = beanM.CSalesNo;
                     ViewBag.cShipmentNo = beanM.CShipmentNo;
                     ViewBag.pStatus = "E0001";
@@ -4037,6 +4096,7 @@ namespace OneService.Controllers
                     ViewBag.cAttachement = beanM.CAttachement;
                     ViewBag.cAttachementStockNo = beanM.CAttachementStockNo;
                     ViewBag.cDelayReason = beanM.CDelayReason;
+                    ViewBag.cRemark = beanM.CRemark;
                     ViewBag.cSalesNo = beanM.CSalesNo;
                     ViewBag.cShipmentNo = beanM.CShipmentNo;
                     ViewBag.pStatus = beanM.CStatus;
@@ -4110,6 +4170,7 @@ namespace OneService.Controllers
                     ViewBag.cSRID = "";
                     ViewBag.pStatus = "E0001";      //新建
                     ViewBag.cDelayReason = "";      //空值
+                    ViewBag.cRemark = "";          //空值
                     ViewBag.cSalesNo = "";          //空值
                     ViewBag.cShipmentNo = "";       //空值
                     ViewBag.CreatedUserName = "";
@@ -4170,7 +4231,8 @@ namespace OneService.Controllers
             string OldCSrtypeThr = string.Empty;
             string OldCSalesNo = string.Empty;
             string OldCShipmentNo = string.Empty;
-            string OldCDelayReason = string.Empty;            
+            string OldCDelayReason = string.Empty;
+            string OldCRemark = string.Empty;
             string OldCTeamId = string.Empty;
             string OldCMainEngineerName = string.Empty;
             string OldCMainEngineerId = string.Empty;
@@ -4193,7 +4255,8 @@ namespace OneService.Controllers
             string CSalesNo = formCollection["tbx_cSalesNo"].FirstOrDefault();
             string CShipmentNo = formCollection["tbx_cShipmentNo"].FirstOrDefault();
             string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
-            
+            string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
+
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CMainEngineerName = formCollection["tbx_cMainEngineerName"].FirstOrDefault();
             string CMainEngineerId = formCollection["hid_cMainEngineerID"].FirstOrDefault();
@@ -4245,7 +4308,8 @@ namespace OneService.Controllers
                     beanM.CSrtypeThr = CSrtypeThr;
                     beanM.CSalesNo = CSalesNo;
                     beanM.CShipmentNo = CShipmentNo;
-                    beanM.CDelayReason = CDelayReason;                    
+                    beanM.CDelayReason = CDelayReason;
+                    beanM.CRemark = CRemark;
                     
                     beanM.CTeamId = CTeamId;
                     beanM.CMainEngineerName = CMainEngineerName;
@@ -4276,7 +4340,8 @@ namespace OneService.Controllers
                     beanM.CSqpersonId = "";
                     beanM.CSqpersonName = "";
                     beanM.CIsAppclose = "";
-                  
+                    beanM.CPerCallSlaresp = "";
+                    beanM.CPerCallSlasrv = "";
                     #endregion
 
                     dbOne.TbOneSrmains.Add(beanM);
@@ -4482,7 +4547,10 @@ namespace OneService.Controllers
                     tLog += CMF.getNewAndOldLog("出貨單號", OldCShipmentNo, CShipmentNo);
 
                     OldCDelayReason = beanNowM.CDelayReason;
-                    tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);                    
+                    tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
+
+                    OldCRemark = beanNowM.CRemark;
+                    tLog += CMF.getNewAndOldLog("備註", OldCRemark, CRemark);
 
                     OldCTeamId = beanNowM.CTeamId;
                     tLog += CMF.getNewAndOldLog("服務團隊", OldCTeamId, CTeamId);
@@ -4524,6 +4592,7 @@ namespace OneService.Controllers
                     beanNowM.CSalesNo = CSalesNo;
                     beanNowM.CShipmentNo = CShipmentNo;
                     beanNowM.CDelayReason = CDelayReason;
+                    beanNowM.CRemark = CRemark;
                     
                     beanNowM.CTeamId = CTeamId;
                     beanNowM.CMainEngineerName = CMainEngineerName;
@@ -4910,6 +4979,7 @@ namespace OneService.Controllers
                     ViewBag.cNotes = beanM.CNotes;
                     ViewBag.cAttachement = "";                    
                     ViewBag.cDelayReason = "";
+                    ViewBag.cRemark = "";
                     ViewBag.cContractID = beanM.CContractId;
                     ViewBag.pStatus = "E0001";
                     ViewBag.CreatedUserName = "";
@@ -4977,6 +5047,7 @@ namespace OneService.Controllers
                     ViewBag.cNotes = beanM.CNotes;
                     ViewBag.cAttachement = beanM.CAttachement;                    
                     ViewBag.cDelayReason = beanM.CDelayReason;
+                    ViewBag.cRemark = beanM.CRemark;
                     ViewBag.cContractID = beanM.CContractId;
                     ViewBag.pStatus = beanM.CStatus;
                     ViewBag.CreatedUserName = beanM.CreatedUserName;
@@ -5035,6 +5106,7 @@ namespace OneService.Controllers
                     ViewBag.cSRID = "";
                     ViewBag.pStatus = "E0001";      //新建
                     ViewBag.cDelayReason = "";      //空值
+                    ViewBag.cRemark = "";           //空值
                     ViewBag.cContractID = "";       //空值
                     ViewBag.CreatedUserName = "";
                 }
@@ -5093,6 +5165,7 @@ namespace OneService.Controllers
             string OldCSrtypeThr = string.Empty;
             string OldCContractId = string.Empty;            
             string OldCDelayReason = string.Empty;
+            string OldCRemark = string.Empty;
             string OldCTeamId = string.Empty;
             string OldCMainEngineerName = string.Empty;
             string OldCMainEngineerId = string.Empty;
@@ -5113,6 +5186,7 @@ namespace OneService.Controllers
             string CSrtypeThr = formCollection["ddl_cSRTypeThr"].FirstOrDefault();
             string CContractId = formCollection["tbx_cContractID"].FirstOrDefault();            
             string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
+            string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
 
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CMainEngineerName = formCollection["tbx_cMainEngineerName"].FirstOrDefault();
@@ -5164,6 +5238,7 @@ namespace OneService.Controllers
                     beanM.CSrtypeThr = CSrtypeThr;
                     beanM.CContractId = CContractId;                    
                     beanM.CDelayReason = CDelayReason;
+                    beanM.CRemark = CRemark;
 
                     beanM.CTeamId = CTeamId;
                     beanM.CMainEngineerName = CMainEngineerName;
@@ -5195,7 +5270,9 @@ namespace OneService.Controllers
                     beanM.CSqpersonName = "";
                     beanM.CIsAppclose = "";
                     beanM.CSalesNo = "";
-                    beanM.CShipmentNo = "";                    
+                    beanM.CShipmentNo = "";
+                    beanM.CPerCallSlaresp = "";
+                    beanM.CPerCallSlasrv = "";
                     #endregion
 
                     dbOne.TbOneSrmains.Add(beanM);
@@ -5315,6 +5392,9 @@ namespace OneService.Controllers
                     OldCDelayReason = beanNowM.CDelayReason;
                     tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
 
+                    OldCRemark = beanNowM.CRemark;
+                    tLog += CMF.getNewAndOldLog("備註", OldCRemark, CRemark);
+
                     OldCTeamId = beanNowM.CTeamId;
                     tLog += CMF.getNewAndOldLog("服務團隊", OldCTeamId, CTeamId);
 
@@ -5352,6 +5432,7 @@ namespace OneService.Controllers
                     beanNowM.CSrtypeThr = CSrtypeThr;
                     beanNowM.CContractId = CContractId;                    
                     beanNowM.CDelayReason = CDelayReason;
+                    beanNowM.CRemark = CRemark;
 
                     beanNowM.CTeamId = CTeamId;
                     beanNowM.CMainEngineerName = CMainEngineerName;

@@ -126,7 +126,7 @@ namespace OneService.Models
                     .HasColumnName("cLocation");
 
                 entity.Property(e => e.CModel)
-                    .HasMaxLength(40)
+                    .HasMaxLength(100)
                     .HasColumnName("cModel");
 
                 entity.Property(e => e.CNotes)
@@ -1190,6 +1190,16 @@ namespace OneService.Models
                     .HasMaxLength(2000)
                     .HasColumnName("cNotes")
                     .HasComment("詳細描述");
+
+                entity.Property(e => e.CPerCallSlaresp)
+                    .HasMaxLength(10)
+                    .HasColumnName("cPerCallSLARESP");
+
+                entity.Property(e => e.CPerCallSlasrv)
+                    .HasMaxLength(10)
+                    .HasColumnName("cPerCallSLASRV");
+
+                entity.Property(e => e.CRemark).HasColumnName("cRemark");
 
                 entity.Property(e => e.CRepairAddress)
                     .HasMaxLength(110)

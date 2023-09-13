@@ -206,6 +206,9 @@ namespace OneService.Models
         /// 故障零件規格料號-其他
         /// </summary>
         public string? CFaultSpecNoteOther { get; set; }
+        public string? CPerCallSlaresp { get; set; }
+        public string? CPerCallSlasrv { get; set; }
+        public string? CRemark { get; set; }
         /// <summary>
         /// 系統目前GUID
         /// </summary>
