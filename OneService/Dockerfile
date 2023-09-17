@@ -5,12 +5,14 @@ WORKDIR /app
 EXPOSE 80
 
 RUN apt-get update \
-&&  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata cifs-utils
+&&  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata cifs-utils \
+                                                                                     nfs-common
 
 # mount如果遇到 Unable to apply new capability set. 錯誤時，就要在docker run的時候，加上 --privileged=true
 #RUN mount -t cifs -o user=bpmadmin,password=Bpm@dmin '//172.31.7.188/checkout_doc' /app/wwwroot/files
 RUN mkdir -p /app/wwwroot/files
 #測試
+#RUN mount -t nfs 172.31.7.60:/CSREPORT_TEST /app/wwwroot/files
 #RUN mount -t cifs  -o user=prjadmin,password=Prj\@dmin '//172.31.7.60/csreport_test' /app/wwwroot/files
 #正式
 #RUN mount -t cifs  -o user=prjadmin,password=Prj\@dmin '//172.31.7.60/csreport' /app/wwwroot/files
