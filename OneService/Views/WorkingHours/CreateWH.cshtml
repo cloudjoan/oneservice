@@ -111,6 +111,8 @@
 						if (result.endTime.split(' ')[1] == $(obj).val()) $(obj).addClass("active");
 					});
 
+					$('.for_edit').show();
+
 					$("#tbx_WhDescript").focus();
 				}
 			})
@@ -246,7 +248,7 @@
 									@*<option value="A">A.客戶服務</option>*@
 									<option value="B">專案導入</option>
 									<option value="C">內部作業</option>
-									<!--<option value="D">專業服務</option>-->
+									<option value="D" class="for_edit" style="display:none">專業服務(停用)</option>
 								</select>
 							</div>
 							<label class="col-lg-2 col-form-label">任務活動：</label>
