@@ -1597,134 +1597,163 @@ namespace OneService.Controllers
 
                 if (tErrorMsg == "")
                 {
-                    #region 寫入DataTable到資料庫                    
-                    foreach(DataRow dr in dt.Rows)
+                    bool tIsDoADD = true;
+
+                    #region 先將所有已存在的資料改為停用
+                    var beansOBJ = dbOne.TbOneContractDetailObjs.Where(x => x.Disabled == 0 && x.CContractId == cMainContractID);
+
+                    foreach(var bean in beansOBJ)
                     {
-                        try
+                        bean.Disabled = 1;
+
+                        bean.ModifiedDate = DateTime.Now;
+                        bean.ModifiedUserName = ViewBag.empEngName;
+                    }
+
+                    if (beansOBJ.Count() > 0)
+                    {
+                        int resultObj = dbOne.SaveChanges();
+
+                        if (resultObj <= 0)
                         {
-                            tIsNew = true;
+                            tErrorMsg += "文件編號【" + cMainContractID + "】，刪除合約標的明細資料庫失敗！" + Environment.NewLine;
+                            CMF.writeToLog(cMainContractID, "saveDetailOBJ", tErrorMsg, ViewBag.empEngName);
+                            tIsDoADD = false;
+                        }                       
+                    }
+                    #endregion
 
-                            cContractID = dr[0].ToString();
-                            cHostName = dr[1].ToString();
-                            cSerialID = dr[2].ToString();
-                            cPID = dr[3].ToString();
-                            cBrands = dr[4].ToString();
-                            cModel = dr[5].ToString();
-                            cLocation = dr[6].ToString();
-                            cAddress = dr[7].ToString();
-                            cArea = dr[8].ToString();
-                            cSLARESP = dr[9].ToString();
-                            cSLASRV = dr[10].ToString();
-                            cNotes = dr[11].ToString();
-                            cSubContractID = dr[12].ToString();
-
-                            if (cSerialID.ToUpper() != "N/A")                          
+                    #region 寫入DataTable到資料庫    
+                    if (tIsDoADD)                   
+                    {
+                        foreach (DataRow dr in dt.Rows)
+                        {
+                            try
                             {
-                                var bean = dbOne.TbOneContractDetailObjs.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID && x.CSerialId == cSerialID);
+                                tIsNew = true;
 
-                                if (bean != null)
+                                cContractID = dr[0].ToString();
+                                cHostName = dr[1].ToString();
+                                cSerialID = dr[2].ToString();
+                                cPID = dr[3].ToString();
+                                cBrands = dr[4].ToString();
+                                cModel = dr[5].ToString();
+                                cLocation = dr[6].ToString();
+                                cAddress = dr[7].ToString();
+                                cArea = dr[8].ToString();
+                                cSLARESP = dr[9].ToString();
+                                cSLASRV = dr[10].ToString();
+                                cNotes = dr[11].ToString();
+                                cSubContractID = dr[12].ToString();
+
+                                if (cSerialID.ToUpper() != "N/A")
                                 {
-                                    tIsNew = false;
+                                    var bean = dbOne.TbOneContractDetailObjs.FirstOrDefault(x => x.Disabled == 0 && x.CContractId == cContractID && x.CSerialId == cSerialID);
 
-                                    #region 紀錄新舊值
-                                    OldcHostName = bean.CHostName;
-                                    tLog += CMF.getNewAndOldLog("HostName", OldcHostName, cHostName);
+                                    if (bean != null)
+                                    {
+                                        tIsNew = false;
 
-                                    OldcSerialID = bean.CSerialId;
-                                    tLog += CMF.getNewAndOldLog("序號", OldcSerialID, cSerialID);
+                                        #region 紀錄新舊值
+                                        OldcHostName = bean.CHostName;
+                                        tLog += CMF.getNewAndOldLog("HostName", OldcHostName, cHostName);
 
-                                    OldcPID = bean.CPid;
-                                    tLog += CMF.getNewAndOldLog("ProductID", OldcPID, cPID);
+                                        OldcSerialID = bean.CSerialId;
+                                        tLog += CMF.getNewAndOldLog("序號", OldcSerialID, cSerialID);
 
-                                    OldcBrands = bean.CBrands;
-                                    tLog += CMF.getNewAndOldLog("廠牌", OldcBrands, cBrands);
+                                        OldcPID = bean.CPid;
+                                        tLog += CMF.getNewAndOldLog("ProductID", OldcPID, cPID);
 
-                                    OldcModel = bean.CModel;
-                                    tLog += CMF.getNewAndOldLog("ProductModel", OldcModel, cModel);
+                                        OldcBrands = bean.CBrands;
+                                        tLog += CMF.getNewAndOldLog("廠牌", OldcBrands, cBrands);
 
-                                    OldcLocation = bean.CLocation;
-                                    tLog += CMF.getNewAndOldLog("Location", OldcLocation, cLocation);
+                                        OldcModel = bean.CModel;
+                                        tLog += CMF.getNewAndOldLog("ProductModel", OldcModel, cModel);
 
-                                    OldcAddress = bean.CAddress;
-                                    tLog += CMF.getNewAndOldLog("地址", OldcAddress, cAddress);
+                                        OldcLocation = bean.CLocation;
+                                        tLog += CMF.getNewAndOldLog("Location", OldcLocation, cLocation);
 
-                                    OldcArea = bean.CArea;
-                                    tLog += CMF.getNewAndOldLog("區域", OldcArea, cArea);
+                                        OldcAddress = bean.CAddress;
+                                        tLog += CMF.getNewAndOldLog("地址", OldcAddress, cAddress);
 
-                                    OldcSLARESP = bean.CSlaresp;
-                                    tLog += CMF.getNewAndOldLog("回應條件", OldcSLARESP, cSLARESP);
+                                        OldcArea = bean.CArea;
+                                        tLog += CMF.getNewAndOldLog("區域", OldcArea, cArea);
 
-                                    OldcSLASRV = bean.CSlasrv;
-                                    tLog += CMF.getNewAndOldLog("服務條件", OldcSLASRV, cSLASRV);
+                                        OldcSLARESP = bean.CSlaresp;
+                                        tLog += CMF.getNewAndOldLog("回應條件", OldcSLARESP, cSLARESP);
 
-                                    OldcNotes = bean.CNotes;
-                                    tLog += CMF.getNewAndOldLog("備註", OldcNotes, cNotes);
+                                        OldcSLASRV = bean.CSlasrv;
+                                        tLog += CMF.getNewAndOldLog("服務條件", OldcSLASRV, cSLASRV);
 
-                                    OldcSubContractID = bean.CSubContractId;
-                                    tLog += CMF.getNewAndOldLog("下包文件編號", OldcSubContractID, cSubContractID);
-                                    #endregion
+                                        OldcNotes = bean.CNotes;
+                                        tLog += CMF.getNewAndOldLog("備註", OldcNotes, cNotes);
 
-                                    bean.CHostName = cHostName;
-                                    bean.CSerialId = cSerialID;
-                                    bean.CPid = cPID;
-                                    bean.CBrands = cBrands;
-                                    bean.CModel = cModel;
-                                    bean.CLocation = cLocation;
-                                    bean.CAddress = cAddress;
-                                    bean.CArea = cArea;
-                                    bean.CSlaresp = cSLARESP;
-                                    bean.CSlasrv = cSLASRV;
-                                    bean.CNotes = cNotes;
-                                    bean.CSubContractId = cSubContractID;
+                                        OldcSubContractID = bean.CSubContractId;
+                                        tLog += CMF.getNewAndOldLog("下包文件編號", OldcSubContractID, cSubContractID);
+                                        #endregion
 
-                                    bean.ModifiedDate = DateTime.Now;
-                                    bean.ModifiedUserName = ViewBag.empEngName;
+                                        bean.CHostName = cHostName;
+                                        bean.CSerialId = cSerialID;
+                                        bean.CPid = cPID;
+                                        bean.CBrands = cBrands;
+                                        bean.CModel = cModel;
+                                        bean.CLocation = cLocation;
+                                        bean.CAddress = cAddress;
+                                        bean.CArea = cArea;
+                                        bean.CSlaresp = cSLARESP;
+                                        bean.CSlasrv = cSLASRV;
+                                        bean.CNotes = cNotes;
+                                        bean.CSubContractId = cSubContractID;
+
+                                        bean.ModifiedDate = DateTime.Now;
+                                        bean.ModifiedUserName = ViewBag.empEngName;
+                                    }
+                                }
+
+                                if (tIsNew) //為新建才進來執行
+                                {
+                                    TbOneContractDetailObj beanOBJ = new TbOneContractDetailObj();
+
+                                    beanOBJ.CContractId = cContractID;
+                                    beanOBJ.CHostName = cHostName;
+                                    beanOBJ.CSerialId = cSerialID;
+                                    beanOBJ.CPid = cPID;
+                                    beanOBJ.CBrands = cBrands;
+                                    beanOBJ.CModel = cModel;
+                                    beanOBJ.CLocation = cLocation;
+                                    beanOBJ.CAddress = cAddress;
+                                    beanOBJ.CArea = cArea;
+                                    beanOBJ.CSlaresp = cSLARESP;
+                                    beanOBJ.CSlasrv = cSLASRV;
+                                    beanOBJ.CNotes = cNotes;
+                                    beanOBJ.CSubContractId = cSubContractID;
+
+                                    beanOBJ.Disabled = 0;
+                                    beanOBJ.CreatedDate = DateTime.Now;
+                                    beanOBJ.CreatedUserName = ViewBag.empEngName;
+
+                                    dbOne.TbOneContractDetailObjs.Add(beanOBJ);
+                                }
+
+                                int result = dbOne.SaveChanges();
+
+                                if (result <= 0)
+                                {
+                                    tErrorMsg += "序號為【" + cSerialID + "】，寫入合約標的資料庫失敗！" + Environment.NewLine;
+                                    CMF.writeToLog(cContractID, "saveDetailOBJ", tErrorMsg, ViewBag.empEngName);
+                                }
+                                else
+                                {
+                                    if (!string.IsNullOrEmpty(tLog))
+                                    {
+                                        CMF.writeToLog(cContractID, "saveDetailOBJ", tLog, ViewBag.empEngName);
+                                    }
                                 }
                             }
-
-                            if (tIsNew) //為新建才進來執行
+                            catch (Exception e)
                             {
-                                TbOneContractDetailObj beanOBJ = new TbOneContractDetailObj();
-
-                                beanOBJ.CContractId = cContractID;
-                                beanOBJ.CHostName = cHostName;
-                                beanOBJ.CSerialId = cSerialID;
-                                beanOBJ.CPid = cPID;
-                                beanOBJ.CBrands = cBrands;
-                                beanOBJ.CModel = cModel;
-                                beanOBJ.CLocation = cLocation;
-                                beanOBJ.CAddress = cAddress;
-                                beanOBJ.CArea = cArea;
-                                beanOBJ.CSlaresp = cSLARESP;
-                                beanOBJ.CSlasrv = cSLASRV;
-                                beanOBJ.CNotes = cNotes;
-                                beanOBJ.CSubContractId = cSubContractID;
-
-                                beanOBJ.Disabled = 0;
-                                beanOBJ.CreatedDate = DateTime.Now;
-                                beanOBJ.CreatedUserName = ViewBag.empEngName;
-
-                                dbOne.TbOneContractDetailObjs.Add(beanOBJ);
+                                tErrorMsg += "序號為【" + cSerialID + "】，寫入合約標的資料庫失敗！" + e.Message + Environment.NewLine;
                             }
-
-                            int result = dbOne.SaveChanges();
-
-                            if (result <= 0)
-                            {
-                                tErrorMsg += "序號為【" + cSerialID + "】，寫入合約標的資料庫失敗！" + Environment.NewLine;
-                                CMF.writeToLog(cContractID, "saveDetailOBJ", tErrorMsg, ViewBag.empEngName);                                
-                            }
-                            else
-                            {
-                                if (!string.IsNullOrEmpty(tLog))
-                                {
-                                    CMF.writeToLog(cContractID, "saveDetailOBJ", tLog, ViewBag.empEngName);
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            tErrorMsg += "序號為【" + cSerialID + "】，寫入合約標的資料庫失敗！" + e.Message + Environment.NewLine;
                         }
                     }
                     #endregion
