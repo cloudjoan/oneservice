@@ -211,10 +211,10 @@ namespace OneService.Controllers
                 //取得MileStone
                 string ms = GetMileStone(bean.CrmOppNo, bean.StartTime, bean.EndTime);
 
-                var workHours = Math.Ceiling((decimal)bean.Labor / 60);
+                var workHours = Math.Round((decimal)bean.Labor / 60, 1);
 
                 //int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
-                var _prId = SavePjRecord(prId, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours.ToString(), "", "", bean.WhDescript, "");
+                var _prId = SavePjRecord(prId, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours, "", "", bean.WhDescript, "", bean.UserErpId);
 
                 bean.PrId = _prId;
             }
@@ -257,14 +257,14 @@ namespace OneService.Controllers
 
         #region -- 儲存專案執行紀錄 --
         /// <summary>儲存專案執行紀錄</summary>
-        public int? SavePjRecord(int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
+        public int? SavePjRecord(int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, decimal workHours, string withPpl, string withPplPhone, string desc, string attach, string erpId)
         {
             #region -- 取得登入者資訊 --
 
             string userAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT);
             //取得登入者資訊            
-            Person empBean = eipDB.People.FirstOrDefault(x => x.Account == userAccount && string.IsNullOrEmpty(x.LeaveReason));
-            ViewEmpInfo empInfoBean = eipDB.ViewEmpInfos.FirstOrDefault(x => x.Account == userAccount);
+            Person empBean = eipDB.People.FirstOrDefault(x => x.ErpId == erpId);
+            ViewEmpInfo empInfoBean = eipDB.ViewEmpInfos.FirstOrDefault(x => x.ErpId == erpId);
 
             #endregion
 
@@ -284,7 +284,7 @@ namespace OneService.Controllers
                     prBean.Place = place;
                     prBean.StartDatetime = startDate; //Convert.ToDateTime(startDate).ToString("yyyy-MM-dd HH:mm:ss")
                     prBean.EndDatetime = endDate;
-                    prBean.WorkHours = Convert.ToInt32(workHours);
+                    prBean.WorkHours = workHours;
                     prBean.TotalWorkHours = prBean.ImplementersCount * prBean.WorkHours;
                     prBean.WithPpl = withPpl;
                     prBean.WithPplPhone = withPplPhone;
@@ -642,10 +642,10 @@ namespace OneService.Controllers
 								//取得MileStone
 								string ms = GetMileStone(bean.CrmOppNo, bean.StartTime, bean.EndTime);
 
-								var workHours = Math.Ceiling((decimal)bean.Labor / 60);
+								var workHours = Math.Round((decimal)bean.Labor / 60, 1);
 
 								//int? prId, string oppNo, string bundleMs, string bundleTask, string impBy, string ImplementersCount, string Attendees, string place, string startDate, string endDate, string workHours, string withPpl, string withPplPhone, string desc, string attach)
-								var _prId = SavePjRecord(prId, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours.ToString(), "", "", bean.WhDescript, "");
+								var _prId = SavePjRecord(prId, bean.CrmOppNo, ms, "", "", "1", "", "", bean.StartTime, bean.EndTime, workHours, "", "", bean.WhDescript, "", bean.UserErpId);
 
 								bean.PrId = _prId;
 							}
