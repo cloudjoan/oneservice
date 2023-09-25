@@ -819,6 +819,16 @@ namespace OneService.Controllers
 
             var model = new ViewModelQuerySRProgress();
 
+            #region 個人查詢條件下拉選項
+            List<SelectListItem> ddl_cPersonalFilter = CMF.findSRPersonalFilter(pCompanyCode, ViewBag.cLoginUser_ERPID);
+            ViewBag.ddl_cPersonalFilter = ddl_cPersonalFilter;
+            #endregion
+
+            #region 派單日期(期間)
+            var ListSRCreatedDate = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRCREATEDATE", true);
+            ViewBag.ddl_cCreatedDate = ListSRCreatedDate;
+            #endregion
+
             #region 服務案件種類
             var ListSRCaseType = findSRIDTypeList(false);
             ViewBag.ddl_cSRCaseType = ListSRCaseType;
@@ -886,6 +896,7 @@ namespace OneService.Controllers
         /// <param name="cIsSecondFix">是否為二修</param>
         /// <param name="CreatedUserName">派單人員</param>
         /// <param name="cRepairName">報修人姓名</param>
+        /// <param name="cContactName">聯絡人姓名</param>
         /// <param name="cSRPathWay">報修管道</param>      
         /// <param name="cAssEngineerID">工程師ERPID</param>
         /// <param name="cTechManagerID">技術主管ERPID</param>
@@ -899,7 +910,7 @@ namespace OneService.Controllers
         /// <param name="cProductNumber">報修Product Number/裝機料號</param>
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
-                                                 string cCustomerID, string cCustomerName, string cSRID, string cDesc, string cIsSecondFix, string CreatedUserName, string cRepairName, string cSRPathWay,
+                                                 string cCustomerID, string cCustomerName, string cSRID, string cDesc, string cIsSecondFix, string CreatedUserName, string cRepairName, string cContactName, string cSRPathWay,
                                                  string cAssEngineerID, string cTechManagerID, string cTeamID, string cContractID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
                                                  string cSerialID, string cMaterialName, string cProductNumber)
         {            
@@ -915,6 +926,7 @@ namespace OneService.Controllers
             string ttWhere2 = string.Empty;
             string ttJoin = string.Empty;
             string ttJoin2 = string.Empty;
+            string ttJoin3 = string.Empty;
             string ttUnion = string.Empty;
             string ttStrItem = string.Empty;
             string tTempERPID = string.Empty;            
@@ -1071,6 +1083,14 @@ namespace OneService.Controllers
             if (!string.IsNullOrEmpty(cRepairName))
             {
                 ttWhere += "AND M.cRepairName LIKE N'%" + cRepairName.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 聯絡人姓名
+            if (!string.IsNullOrEmpty(cContactName))
+            {
+                ttJoin3 = " left join TB_ONE_SRDetail_Contact C on M.cSRID = C.cSRID ";
+                ttWhere += "AND (C.cContactName LIKE N'%" + cContactName.Trim() + "%' AND C.disabled = 0) " + Environment.NewLine;
             }
             #endregion
 
@@ -1238,6 +1258,7 @@ namespace OneService.Controllers
                 tSQL.AppendLine(" Select " + tTop + " M.*, '' as Feedbacks");                
                 tSQL.AppendLine(" From TB_ONE_SRMain M");
                 tSQL.AppendLine(ttJoin2);
+                tSQL.AppendLine(ttJoin3);
                 tSQL.AppendLine(" Where 1=1 " + ttWhere2);
 
                 ttUnion = tSQL.ToString();
@@ -1257,6 +1278,7 @@ namespace OneService.Controllers
             tSQL.AppendLine("        ) as Products");
             tSQL.AppendLine(" From TB_ONE_SRMain M");
             tSQL.AppendLine(ttJoin);
+            tSQL.AppendLine(ttJoin3);
             tSQL.AppendLine(" Where 1=1 " + ttWhere);
             tSQL.AppendLine(ttUnion);
             #endregion
@@ -1339,6 +1361,226 @@ namespace OneService.Controllers
             #endregion
 
             return View();
+        }
+        #endregion
+
+        #region 執行個人查詢條件刪除
+        /// <summary>
+        /// 執行個人查詢條件刪除
+        /// </summary>
+        /// <param name="cPersonalFilter">參數值說明(ex.ibon一般服務)</param>
+        /// <returns></returns>
+        public IActionResult DeletePersonalFilter(string cPersonalFilter)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = "SUCCESS";
+            string cERPID = ViewBag.cLoginUser_ERPID;
+
+            try
+            {
+                var bean = dbOne.TbOneSroftenUsedData.FirstOrDefault(x => x.Disabled == 0 && x.CFunctionId == "PERSONAL" &&
+                                                                      x.CCompanyId == pCompanyCode && x.CNo == "OftenSRProgress" && x.CDescription == cPersonalFilter &&
+                                                                      x.CreatedErpid == cERPID);
+                if (bean != null)
+                {
+                    bean.Disabled = 1;
+                    bean.ModifiedDate = DateTime.Now;
+                    bean.ModifiedUserName = ViewBag.empEngName;
+
+                    int result = dbOne.SaveChanges();
+
+                    if (result <= 0)
+                    {
+                        reValue = "個人查詢條件刪除失敗！";
+                    }
+                }
+                else
+                {
+                    reValue = "欲刪除的個人查詢條件不存在，請重新確認！";
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("個人查詢條件刪除失敗，原因：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 執行個人查詢條件儲存
+        /// <summary>
+        /// 執行個人查詢條件儲存
+        /// </summary>
+        /// <param name="SRFilter">所有查詢條件</param>
+        /// <param name="cPersonalFilter">參數值說明(ex.ibon一般服務)</param>
+        /// <returns></returns>
+        public IActionResult DoSavePersonalFilter(string SRFilter, string cPersonalFilter)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = "SUCCESS";
+            string cERPID = ViewBag.cLoginUser_ERPID;
+
+            char[] trimChars = { '＃', '＃' };
+            SRFilter = SRFilter.TrimEnd(trimChars);
+
+            try
+            {
+                var bean = dbOne.TbOneSroftenUsedData.FirstOrDefault(x => x.Disabled == 0 && x.CFunctionId == "PERSONAL" &&
+                                                                      x.CCompanyId == pCompanyCode && x.CNo == "OftenSRProgress" && x.CDescription == cPersonalFilter &&
+                                                                      x.CreatedErpid == cERPID);
+                if (bean != null)
+                {
+                    bean.CValue = SRFilter;
+                    bean.ModifiedDate = DateTime.Now;
+                    bean.ModifiedUserName = ViewBag.empEngName;
+                }
+                else
+                {
+                    TbOneSroftenUsedDatum SRO = new TbOneSroftenUsedDatum();
+
+                    SRO.CFunctionId = "PERSONAL";        //固定為「PERSONAL.個人」
+                    SRO.CCompanyId = pCompanyCode;
+                    SRO.CNo = "OftenSRProgress";         //固定為「OftenSRProgress」
+                    SRO.CValue = SRFilter;
+                    SRO.CDescription = cPersonalFilter;
+                    SRO.Disabled = 0;
+
+                    SRO.CreatedErpid = ViewBag.cLoginUser_ERPID;
+                    SRO.CreatedDate = DateTime.Now;
+                    SRO.CreatedUserName = ViewBag.empEngName;
+
+                    dbOne.TbOneSroftenUsedData.Add(SRO);
+
+                }
+
+                int result = dbOne.SaveChanges();
+
+                if (result <= 0)
+                {
+                    reValue = "個人查詢條件儲存失敗！";
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("個人查詢條件儲存失敗，原因：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion        
+
+        #region 呼叫個人查詢條件下拉值
+        /// <summary>
+        /// 呼叫個人查詢條件下拉值
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult QuerySRPersonalFilter()
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            List<SelectListItem> tList = CMF.findSRPersonalFilter(pCompanyCode, ViewBag.cLoginUser_ERPID);
+
+            return Json(tList);            
+        }
+        #endregion
+
+        #region 呼叫個人查詢條件值(傳入參數)
+        /// <summary>
+        /// 呼叫個人查詢條件值(傳入參數)
+        /// </summary>
+        /// <param name="cPersonalFilter">查詢條件名稱</param>
+        /// <returns></returns>
+        public IActionResult QuerySRPersonalFilterValue(string cPersonalFilter)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = CMF.findSRPersonalFilterValue(pCompanyCode, ViewBag.cLoginUser_ERPID, cPersonalFilter);            
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 呼叫派單日期(期間)對應到派單日期
+        /// <summary>
+        /// 呼叫個人查詢條件值(傳入參數)
+        /// </summary>
+        /// <param name="cCreatedDate">派單日期(期間)條件值</param>
+        /// <returns></returns>
+        public IActionResult findCreatedDateRange(string cCreatedDate)
+        {
+            string[] reValue = new string[2];
+            reValue[0] = "";
+            reValue[1] = "";
+
+            DateTime currentTime = DateTime.Now;
+            
+            int week = Convert.ToInt32(currentTime.DayOfWeek);
+            week = week == 0 ? 7 : week;
+
+            switch (cCreatedDate)
+            {
+                case "D-1": //昨天
+                    reValue[0] = currentTime.AddDays(-1).ToString("yyyy-MM-dd");
+                    reValue[1] = currentTime.AddDays(-1).ToString("yyyy-MM-dd");
+                    break;
+                case "D+0": //今日
+                    reValue[0] = currentTime.ToString("yyyy-MM-dd");
+                    reValue[1] = currentTime.ToString("yyyy-MM-dd");
+                    break;
+                case "D+1": //明日
+                    reValue[0] = currentTime.AddDays(1).ToString("yyyy-MM-dd");
+                    reValue[1] = currentTime.AddDays(1).ToString("yyyy-MM-dd");
+                    break;
+                case "W*2": //<-14天->
+                    reValue[0] = currentTime.ToString("yyyy-MM-dd");
+                    reValue[1] = currentTime.AddDays(14).ToString("yyyy-MM-dd");
+                    break;
+                case "W-1": //上週
+                    reValue[0] = currentTime.AddDays(1 - week - 7).ToString("yyyy-MM-dd");
+                    reValue[1] = currentTime.AddDays(7 - week - 7).ToString("yyyy-MM-dd");
+                    break;
+                case "W+0": //本週
+                    reValue[0] = currentTime.AddDays(1 - week).ToString("yyyy-MM-dd");
+                    reValue[1] = currentTime.AddDays(7 - week).ToString("yyyy-MM-dd");
+                    break;
+                case "W+1": //下星期
+                    reValue[0] = currentTime.AddDays(1 - week + 7).ToString("yyyy-MM-dd");
+                    reValue[1] = currentTime.AddDays(7 - week + 7).ToString("yyyy-MM-dd");
+                    break;
+                case "M-1": //上個月
+                    reValue[0] = currentTime.AddMonths(-1).ToString("yyyy-MM-01");
+                    reValue[1] = currentTime.AddDays(1 - currentTime.Day).AddDays(-1).ToString("yyyy-MM-dd");
+                    break;
+                case "M A": //本月份
+                    reValue[0] = currentTime.ToString("yyyy-MM-01");
+                    reValue[1] = currentTime.AddMonths(1).AddDays(-currentTime.AddMonths(1).Day).ToString("yyyy-MM-dd");
+                    break;
+                case "M+1": //下個月
+                    reValue[0] = currentTime.AddMonths(1).ToString("yyyy-MM-01");
+                    reValue[1] = currentTime.AddMonths(2).AddDays(-currentTime.AddMonths(2).Day).ToString("yyyy-MM-dd");
+                    break;
+                case "Y-1": //去年
+                    reValue[0] = currentTime.AddYears(-1).ToString("yyyy-01-01");
+                    reValue[1] = currentTime.AddYears(-1).ToString("yyyy-12-31");
+                    break;
+                case "Y A": //今年
+                    reValue[0] = currentTime.ToString("yyyy-01-01");
+                    reValue[1] = currentTime.ToString("yyyy-12-31"); ;
+                    break;
+                case "Y+1": //下一年度
+                    reValue[0] = currentTime.AddYears(1).ToString("yyyy-01-01");
+                    reValue[1] = currentTime.AddYears(1).ToString("yyyy-12-31");
+                    break;
+            }
+
+            return Json(reValue);
         }
         #endregion
 

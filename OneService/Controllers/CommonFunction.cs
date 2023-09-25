@@ -32,6 +32,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Routing;
 using NPOI.OpenXmlFormats.Spreadsheet;
 using Org.BouncyCastle.Bcpg.OpenPgp;
+using NPOI.XSSF.Streaming.Values;
 
 namespace OneService.Controllers
 {
@@ -4578,7 +4579,56 @@ namespace OneService.Controllers
 
             return ListTempStatus;
         }
-        #endregion       
+        #endregion
+
+        #region 服務進度查詢個人條件下拉選項匯入
+        /// <summary>
+        /// 服務進度查詢個人條件下拉選項匯入
+        /// </summary>
+        /// <param name="pCompanyCode">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cERPID"></param>
+        /// <returns></returns>
+        public List<SelectListItem> findSRPersonalFilter(string pCompanyCode, string cERPID)
+        {
+            var beans = dbOne.TbOneSroftenUsedData.Where(x => x.Disabled == 0 && x.CFunctionId == "PERSONAL" &&
+                                                            x.CCompanyId == pCompanyCode && x.CNo == "OftenSRProgress" &&
+                                                            x.CreatedErpid == cERPID);
+
+            var tList = new List<SelectListItem>();
+            tList.Add(new SelectListItem { Text = " ", Value = "" });
+
+            foreach (var bean in beans)
+            {
+                tList.Add(new SelectListItem { Text = bean.CDescription, Value = bean.CDescription });
+            }
+
+            return tList;
+        }
+        #endregion
+
+        #region 服務進度查詢個人條件值(傳入參數)
+        /// <summary>
+        /// 服務進度查詢個人條件件匯入
+        /// </summary>
+        /// <param name="pCompanyCode">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cERPID"></param>
+        /// <param name="cPersonalFilter">查詢條件名稱</param>
+        /// <returns></returns>
+        public string findSRPersonalFilterValue(string pCompanyCode, string cERPID, string cPersonalFilter)
+        {
+            string reValue = string.Empty;
+
+            var bean = dbOne.TbOneSroftenUsedData.FirstOrDefault(x => x.Disabled == 0 && x.CFunctionId == "PERSONAL" &&
+                                                                  x.CCompanyId == pCompanyCode && x.CNo == "OftenSRProgress" && x.CDescription == cPersonalFilter &&
+                                                                  x.CreatedErpid == cERPID);
+            if (bean != null)
+            {
+                reValue = bean.CValue;
+            }
+
+            return reValue;
+        }
+        #endregion
 
         #region 取得【資訊系統參數設定檔】的參數值清單(回傳SelectListItem)
         /// <summary>

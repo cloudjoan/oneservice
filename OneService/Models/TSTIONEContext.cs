@@ -1354,7 +1354,7 @@ namespace OneService.Models
                     .HasColumnName("cNo");
 
                 entity.Property(e => e.CValue)
-                    .HasMaxLength(1000)
+                    .HasMaxLength(2000)
                     .HasColumnName("cValue");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");

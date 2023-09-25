@@ -643,7 +643,7 @@
 						$("#ddl_cSRTypeSec").append(
 							$('<option></option>').val(obj.value).html(obj.text)
 						);
-					});
+					});					
 				}
 			});
 		}
@@ -666,7 +666,7 @@
 						$("#ddl_cSRTypeThr").append(
 							$('<option></option>').val(obj.value).html(obj.text)
 						);
-					});
+					});					
 				}
 			});
 		}
@@ -680,14 +680,15 @@
 			var SRCaseType = $("#ddl_cSRCaseType").val().join();		//服務案件種類
 			var Status = $("#ddl_cStatus").val().join();				//狀態
 			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//派單起始日期
-			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');		//派單結束日期
+			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');		    //派單結束日期
 			var tbx_cCustomerID = $('#tbx_cCustomerID');				//客戶代號
-			var tbx_cCustomerName = $('#tbx_cCustomerName');			//客戶名稱
+			var tbx_cCustomerName = $('#tbx_cCustomerName');			    //客戶名稱
 			var tbx_cSRID = $('#tbx_cSRID');							//SRID
 			var tbx_cDesc = $('#tbx_cDesc');							//說明
 			var ddl_cIsSecondFix = $('#ddl_cIsSecondFix');				//是否為二修
-			var tbx_CreatedUserName = $('#tbx_CreatedUserName');		//派單人員
+			var tbx_CreatedUserName = $('#tbx_CreatedUserName');		    //派單人員
 			var tbx_cRepairName = $('#tbx_cRepairName');				//報修人姓名			
+			var tbx_cContactName = $('#tbx_cContactName');				//聯絡人姓名
 			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道			
 			var hid_cAssEngineerID = $('#hid_cAssEngineerID');			//工程師ERPID
 			var tbx_cTechManagerID = $('#tbx_cTechManagerID');			//技術主管ERPID
@@ -703,13 +704,13 @@
 			var tbx_cProductNumber = $('#tbx_cProductNumber');			//報修Product Number/裝機料號
 
 			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
-				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_cDesc.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && SRPathWay == "" &&
+				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_cDesc.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && tbx_cContactName.val() == "" && SRPathWay == "" &&
 				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && 
 				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
 
-				tMsg += "請至少輸入一項查詢條件！　\n";
+				tMsg += "請至少輸入一項查詢條件！\n";
 			}
 
 			if (tbx_cStartCreatedDate.val() != "" && tbx_cEndCreatedDate.val() != "") {
@@ -727,7 +728,7 @@
 			}
 			else {
 				searchQuerySRProgress(SRCaseType, Status, tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
-									  tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_cDesc.val(), ddl_cIsSecondFix.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), SRPathWay,
+									  tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_cDesc.val(), ddl_cIsSecondFix.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), tbx_cContactName.val(), SRPathWay,
 									  hid_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID, tbx_cContractID.val(),
 									  ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
 									  tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
@@ -737,7 +738,7 @@
 		}
 
 		//查詢結果
-		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID,cCustomerName, cSRID, cDesc, cIsSecondFix, CreatedUserName, cRepairName, cSRPathWay,
+		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID, cCustomerName, cSRID, cDesc, cIsSecondFix, CreatedUserName, cRepairName, cContactName, cSRPathWay,
 			cAssEngineerID, cTechManagerID, cTeamID, cContractID, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
 			
 			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
@@ -760,6 +761,7 @@
 					cIsSecondFix: cIsSecondFix,
 					CreatedUserName: CreatedUserName,
 					cRepairName: cRepairName,
+					cContactName: cContactName,
 					cSRPathWay: cSRPathWay,					
 					cAssEngineerID: cAssEngineerID,
 					cTechManagerID: cTechManagerID,
@@ -782,7 +784,14 @@
 		}
 
 		//清除
-		function clearQuerySRProgress() {			
+		function clearQuerySRProgress(IsCancelALL) {						
+			if (IsCancelALL)
+			{
+				$('#tbx_cPersonalFilter').val("");
+				$('#ddl_cPersonalFilter').val("");
+			}
+
+			$("#ddl_cCreatedDate").val("");
 			$('#tbx_cStartCreatedDate').val("");
 			$('#tbx_cEndCreatedDate').val("");
 			$('#tbx_cCustomerID').val("");
@@ -793,7 +802,8 @@
 			$('#tbx_cContractID').val("");
 			$('#ddl_cIsSecondFix').val("");
 			$('#tbx_CreatedUserName').val("");
-			$('#tbx_cRepairName').val("");			
+			$('#tbx_cRepairName').val("");		
+			$('#tbx_cContactName').val("");
 			$('#lbl_cMainEngineerID').html("");			
 			$('#tbx_cTechManagerID').val("");
 			$('#lbl_cTechManagerID').html("");
@@ -818,6 +828,478 @@
 			$('#hid_cAssEngineerID').val("");
 			$('#tbx_cAssEngineerName').val("");
 			getpjAssEngineer();
+		}
+
+		//個人查詢條件儲存
+		function SavePersonalFilter()
+		{
+			var tMsg = "";
+			var SRSplitText = "＃＃";									//查詢欄位名稱用＃＃隔開
+			var SRSplitValue = "＄＄";									//查詢欄位資料用＄＄隔開
+			var SRFilter = "";									    //所有查詢條件值
+			var SRCaseType = $("#ddl_cSRCaseType").val().join();		//服務案件種類
+			var Status = $("#ddl_cStatus").val().join();				//狀態
+			var ddl_cCreatedDate = $("#ddl_cCreatedDate");              //派單日期(期間)
+			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//派單起始日期
+			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');		    //派單結束日期
+			var tbx_cCustomerID = $('#tbx_cCustomerID');				//客戶代號
+			var tbx_cCustomerName = $('#tbx_cCustomerName');			    //客戶名稱
+			var tbx_cSRID = $('#tbx_cSRID');							//SRID
+			var tbx_cDesc = $('#tbx_cDesc');							//說明
+			var ddl_cIsSecondFix = $('#ddl_cIsSecondFix');				//是否為二修
+			var tbx_CreatedUserName = $('#tbx_CreatedUserName');		    //派單人員
+			var tbx_cRepairName = $('#tbx_cRepairName');				//報修人姓名	
+			var tbx_cContactName = $('#tbx_cContactName');				//聯絡人姓名
+			var SRPathWay = $("#ddl_cSRPathWay").val().join();			//報修管道			
+			var hid_cAssEngineerID = $('#hid_cAssEngineerID');			//工程師ERPID
+			var tbx_cTechManagerID = $('#tbx_cTechManagerID');			//技術主管ERPID
+			var cTeamID = $("#hid_cTeamID").val();						//服務團隊
+			var tbx_cContractID = $('#tbx_cContractID');				//合約文件編號			
+
+			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');					//報修類別-大類
+			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');					//報修類別-中類
+			var ddl_cSRTypeThr = $('#ddl_cSRTypeThr');					//報修類別-小類
+
+			var tbx_cSerialID = $('#tbx_cSerialID');					//報修/裝機序號
+			var tbx_cMaterialName = $('#tbx_cMaterialName');				//報修機器型號/裝機料號說明
+			var tbx_cProductNumber = $('#tbx_cProductNumber');			//報修Product Number/裝機料號
+
+			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
+				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_cDesc.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && tbx_cContactName.val() == "" && SRPathWay == "" &&
+				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && 
+				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
+				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
+				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
+
+				tMsg += "請至少輸入一項查詢條件！\n";
+			}
+
+			if (tMsg != "") {
+				alert(tMsg);				
+				return false;
+			}
+			else {				
+				if (SRCaseType != "")
+				{
+					SRFilter += "ddl_cSRCaseType" + SRSplitValue + SRCaseType + SRSplitText;
+				}
+
+				if (Status != "")
+				{
+					SRFilter += "ddl_cStatus" + SRSplitValue + Status + SRSplitText;
+				}
+
+				if (ddl_cCreatedDate.val() != "")
+				{
+					SRFilter += "ddl_cCreatedDate" + SRSplitValue + ddl_cCreatedDate.val() + SRSplitText;
+				}
+
+				if (tbx_cStartCreatedDate.val() != "")
+				{
+					SRFilter += "tbx_cStartCreatedDate" + SRSplitValue + tbx_cStartCreatedDate.val() + SRSplitText;
+				}
+
+				if (tbx_cEndCreatedDate.val() != "")
+				{
+					SRFilter += "tbx_cEndCreatedDate" + SRSplitValue + tbx_cEndCreatedDate.val() + SRSplitText;
+				}
+
+				if (tbx_cCustomerID.val() != "")
+				{
+					SRFilter += "tbx_cCustomerID" + SRSplitValue + tbx_cCustomerID.val() + SRSplitText;
+				}
+
+				if (tbx_cCustomerName.val() != "")
+				{
+					SRFilter += "tbx_cCustomerName" + SRSplitValue + tbx_cCustomerName.val() + SRSplitText;
+				}
+
+				if (tbx_cSRID.val() != "")
+				{
+					SRFilter += "tbx_cSRID" + SRSplitValue + tbx_cSRID.val() + SRSplitText;
+				}
+
+				if (tbx_cDesc.val() != "")
+				{
+					SRFilter += "tbx_cDesc" + SRSplitValue + tbx_cDesc.val() + SRSplitText;
+				}
+
+				if (ddl_cIsSecondFix.val() != "")
+				{
+					SRFilter += "ddl_cIsSecondFix" + SRSplitValue + ddl_cIsSecondFix.val() + SRSplitText;
+				}
+				
+				if (tbx_CreatedUserName.val() != "")
+				{
+					SRFilter += "tbx_CreatedUserName" + SRSplitValue + tbx_CreatedUserName.val() + SRSplitText;
+				}
+
+				if (tbx_cRepairName.val() != "")
+				{
+					SRFilter += "tbx_cRepairName" + SRSplitValue + tbx_cRepairName.val() + SRSplitText;
+				}
+
+				if (tbx_cContactName.val() != "")
+				{
+					SRFilter += "tbx_cContactName" + SRSplitValue + tbx_cContactName.val() + SRSplitText;
+				}
+
+				if (SRPathWay != "")
+				{
+					SRFilter += "ddl_cSRPathWay" + SRSplitValue + SRPathWay + SRSplitText;
+				}
+
+				if (hid_cAssEngineerID.val() != "")
+				{
+					SRFilter += "hid_cAssEngineerID" + SRSplitValue + hid_cAssEngineerID.val() + SRSplitText;
+				}
+
+				if (tbx_cTechManagerID.val() != "")
+				{
+					SRFilter += "tbx_cTechManagerID" + SRSplitValue + tbx_cTechManagerID.val() + SRSplitText;
+				}
+
+				if (cTeamID != "")
+				{
+					SRFilter += "hid_cTeamID" + SRSplitValue + cTeamID + SRSplitText;
+				}
+
+				if (tbx_cContractID.val() != "")
+				{
+					SRFilter += "tbx_cContractID" + SRSplitValue + tbx_cContractID.val() + SRSplitText;
+				}
+
+				if (ddl_cSRTypeOne.val() != "")
+				{
+					SRFilter += "ddl_cSRTypeOne" + SRSplitValue + ddl_cSRTypeOne.val() + SRSplitText;
+				}
+
+				if (ddl_cSRTypeSec.val() != "" && ddl_cSRTypeSec.val() != null)
+				{
+					SRFilter += "ddl_cSRTypeSec" + SRSplitValue + ddl_cSRTypeSec.val() + SRSplitText;
+				}
+
+				if (ddl_cSRTypeThr.val() != "" && ddl_cSRTypeThr.val() != null)
+				{
+					SRFilter += "ddl_cSRTypeThr" + SRSplitValue + ddl_cSRTypeThr.val() + SRSplitText;
+				}
+
+				if (tbx_cSerialID.val() != "")
+				{
+					SRFilter += "tbx_cSerialID" + SRSplitValue + tbx_cSerialID.val() + SRSplitText;
+				}
+
+				if (tbx_cMaterialName.val() != "")
+				{
+					SRFilter += "tbx_cMaterialName" + SRSplitValue + tbx_cMaterialName.val() + SRSplitText;
+				}
+
+				if (tbx_cProductNumber.val() != "")
+				{
+					SRFilter += "tbx_cProductNumber" + SRSplitValue + tbx_cProductNumber.val() + SRSplitText;
+				}
+
+				DoSavePersonalFilter(SRFilter);
+			}
+		}
+
+		//執行個人查詢條件儲存
+		function DoSavePersonalFilter(SRFilter) 
+		{
+			var cPersonalFilter = $('#tbx_cPersonalFilter').val();  //另存個人查詢條件為
+
+			if (cPersonalFilter != "")
+			{
+				$.ajax({
+					url: '@Url.Action("DoSavePersonalFilter", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						SRFilter: SRFilter,
+						cPersonalFilter: cPersonalFilter
+					},
+					success: function (result) {
+						if (result == "SUCCESS") {
+							alert("儲存成功！");
+							QuerySRPersonalFilter();
+						}
+						else
+						{
+							alert(result);
+						}
+					}
+				});
+			}
+			else
+			{
+				alert("另存個人查詢條件不得為空！");
+			}
+		}
+
+		//呼叫個人查詢條件下拉值
+		function QuerySRPersonalFilter()
+		{
+			var ddl_cPersonalFilter = $('#ddl_cPersonalFilter');	   //個人查詢條件
+
+			//先清空下拉選單選項，才不會一直append
+			ddl_cPersonalFilter.empty();						
+
+			$.ajax({
+				url: '@Url.Action("QuerySRPersonalFilter", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',							
+				success: function (result) {
+					$.each(result, function (index, obj) {
+						ddl_cPersonalFilter.append(
+							$('<option></option>').val(obj.value).html(obj.text)
+						);
+					});
+				}
+			});
+		}
+
+		//個人查詢條件刪除
+		function DeletePersonalFilter()
+		{
+			var reValue = false;
+			var tbx_cPersonalFilter = $('#tbx_cPersonalFilter');     //另存個人查詢條件為		
+			cPersonalFilter = tbx_cPersonalFilter.val();
+
+			if (cPersonalFilter != "")
+			{
+				var IsDO = confirm("是否確定要刪除【" + cPersonalFilter + "】個人查詢條件？");			
+
+				if (IsDO)
+				{
+					$.ajax({
+						url: '@Url.Action("DeletePersonalFilter", "ServiceRequest")',
+						type: 'post',
+						dataType: 'json',
+						data: {					
+							cPersonalFilter: cPersonalFilter
+						},
+						success: function (result) {
+							if (result == "SUCCESS") {
+								alert("刪除成功！");
+								QuerySRPersonalFilter();
+							}
+							else
+							{
+								alert(result);
+							}
+						}
+					});
+				}
+			}
+			else
+			{
+				alert("您尚未輸入另存個人查詢條件！");
+			}
+
+			return reValue;
+		}
+
+		//個人查詢條件onChange事件
+		function onChangePersonalFilter()
+		{
+			var ddl_cPersonalFilter = $('#ddl_cPersonalFilter');	    //個人查詢條件
+			var tbx_cPersonalFilter = $('#tbx_cPersonalFilter');     //另存個人查詢條件為
+
+			tbx_cPersonalFilter.val(ddl_cPersonalFilter.val());
+
+			$.ajax({
+				url: '@Url.Action("QuerySRPersonalFilterValue", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				data: {					
+					cPersonalFilter: ddl_cPersonalFilter.val()
+				},
+				success: function (result) {
+					if (result != "") {
+						clearQuerySRProgress(false);						
+						ImportPersonalFilter(result);
+					}					
+				}
+			});
+		}	
+
+		//帶入查詢條件(cPersonalFilter.所有查詢條件值)
+		function ImportPersonalFilter(cPersonalFilter)
+		{
+			var ArryColumn = cPersonalFilter.split('＃＃');
+
+			ArryColumn.forEach(function (item, i) {
+				var ArryValue = item.split('＄＄');
+				var FieldName = ArryValue[0];
+				var FieldValue = ArryValue[1];
+
+				ShowPersonalFilter(FieldName, FieldValue);
+			});
+		}
+
+		//顯示相關查詢條件到畫面上
+		//FieldName.欄位名稱 FieldValue.欄位值
+		function ShowPersonalFilter(FieldName,FieldValue)
+		{
+			if (FieldName == "ddl_cSRCaseType") //服務案件種類
+			{
+				var array = FieldValue.split(',');
+				$("#ddl_cSRCaseType").val(array).trigger('chosen:updated');
+			}
+
+			if (FieldName == "ddl_cStatus") //狀態
+			{
+				var array = FieldValue.split(',');
+				$("#ddl_cStatus").val(array).trigger('chosen:updated');
+			}
+
+			if (FieldName == "ddl_cCreatedDate") //派單日期(期間)
+			{				
+				$("#ddl_cCreatedDate").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cStartCreatedDate") //派單起始日期
+			{				
+				$("#tbx_cStartCreatedDate").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cEndCreatedDate") //派單結束日期
+			{				
+				$("#tbx_cEndCreatedDate").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cCustomerID") //客戶代號
+			{
+				$("#tbx_cCustomerID").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cCustomerName") //客戶名稱
+			{
+				$("#tbx_cCustomerName").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cSRID") //SRID
+			{
+				$("#tbx_cSRID").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cDesc") //說明
+			{
+				$("#tbx_cDesc").val(FieldValue);
+			}
+
+			if (FieldName == "ddl_cIsSecondFix") //是否為二修
+			{
+				$("#ddl_cIsSecondFix").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_CreatedUserName") //派單人員
+			{
+				$("#tbx_CreatedUserName").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cRepairName") //報修人姓名
+			{
+				$("#tbx_cRepairName").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cContactName") //聯絡人姓名
+			{
+				$("#tbx_cContactName").val(FieldValue);
+			}
+
+			if (FieldName == "ddl_cSRPathWay") //報修管道
+			{
+				var array = FieldValue.split(',');
+				$("#ddl_cSRPathWay").val(array).trigger('chosen:updated');
+			}
+
+			if (FieldName == "hid_cAssEngineerID") //工程師ERPID
+			{
+				$("#hid_cAssEngineerID").val(FieldValue);				
+				getpjAssEngineer();
+			}
+
+			if (FieldName == "tbx_cTechManagerID") //技術主管
+			{
+				$("#tbx_cTechManagerID").val(FieldValue);
+			}
+
+			if (FieldName == "hid_cTeamID") //服務團隊
+			{
+				$("#hid_cTeamID").val(FieldValue);
+				getpjTeam();
+			}
+
+			if (FieldName == "tbx_cContractID") //合約文件編號
+			{
+				$("#tbx_cContractID").val(FieldValue);
+			}
+
+			if (FieldName == "ddl_cSRTypeOne") //報修類別-大類
+			{
+				$("#ddl_cSRTypeOne").val(FieldValue);
+				onChangecSRTypeOne();
+			}
+
+			if (FieldName == "ddl_cSRTypeSec") //報修類別-中類
+			{
+				setTimeout(function () {
+					$("#ddl_cSRTypeSec").val(FieldValue);
+					onChangecSRTypeSec();
+				}, 300);
+			}
+
+			if (FieldName == "ddl_cSRTypeThr") //報修類別-小類
+			{
+				setTimeout(function () {
+					$("#ddl_cSRTypeThr").val(FieldValue);
+				}, 500);				
+			}
+
+			if (FieldName == "tbx_cSerialID") //報修/裝機序號
+			{
+				$("#tbx_cSerialID").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cMaterialName") //報修機器型號/裝機料號說明
+			{
+				$("#tbx_cMaterialName").val(FieldValue);
+			}
+
+			if (FieldName == "tbx_cProductNumber") //報修Product Number/裝機料號
+			{
+				$("#tbx_cProductNumber").val(FieldValue);
+			}
+		}
+
+		//派單日期(期間)onChange事件
+		function onChangeCreatedDate()
+		{
+			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//派單起始日期
+			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');		    //派單結束日期
+			var cCreatedDate = $("#ddl_cCreatedDate").val();			//派單日期(期間)
+
+			if (cCreatedDate != "")
+			{
+				$.ajax({
+					url: '@Url.Action("findCreatedDateRange", "ServiceRequest")',
+					type: 'post',
+					dataType: 'json',
+					data: {					
+						cCreatedDate: cCreatedDate
+					},
+					success: function (result) {
+						tbx_cStartCreatedDate.val(result[0]);
+						tbx_cEndCreatedDate.val(result[1]);
+					}
+				});
+			}
+			else
+			{
+				tbx_cStartCreatedDate.val("");
+				tbx_cEndCreatedDate.val("");
+			}
 		}
 	</script>
 }
@@ -857,8 +1339,21 @@
 						<input type="hidden" id="hid_cLoginUser_CompCode" name="hid_cLoginUser_CompCode" value="@ViewBag.cLoginUser_CompCode">
 						<!--登人者公司別(T012、T016...)-->
 						<input type="hidden" id="hid_cLoginUser_BUKRS" name="hid_cLoginUser_BUKRS" value="@ViewBag.cLoginUser_BUKRS">
+						<div class="form-group row">							
+							<label class="col-lg-2 col-form-label">個人查詢條件</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_cPersonalFilter", (IEnumerable<SelectListItem>)ViewBag.ddl_cPersonalFilter, new { @class = "form-control", @onchange = "javascript:onChangePersonalFilter();" })
+							</div>	
+						</div>
+						<div class="hr-line-dashed"></div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label">派單日期</label>
+							<label class="col-lg-2 col-form-label">派單日期(期間)</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_cCreatedDate", (IEnumerable<SelectListItem>)ViewBag.ddl_cCreatedDate, new { @class = "form-control", @onchange = "javascript:onChangeCreatedDate();" })
+							</div>						
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">派單日期(建立日期)</label>
 							<div class="input-group col-md-10 col-lg-6">
 								<span class="input-group-addon">起</span>
 								<input type="text" name="tbx_cStartCreatedDate" id="tbx_cStartCreatedDate" class="calendar form-control" placeholder="起始日期"><span class="input-group-addon">迄</span>
@@ -900,10 +1395,16 @@
 							<label class="col-lg-2 col-form-label">派單人員</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_CreatedUserName" id="tbx_CreatedUserName" class="form-control" placeholder="派單人員">
-							</div>
+							</div>							
+						</div>
+						<div class="form-group row">														
 							<label class="col-lg-2 col-form-label">報修人姓名</label>
 							<div class="col-lg-4">
 								<input type="text" name="tbx_cRepairName" id="tbx_cRepairName" class="form-control" placeholder="客戶報修人姓名">
+							</div>
+							<label class="col-lg-2 col-form-label">聯絡人姓名</label>
+							<div class="col-lg-4">
+								<input type="text" name="tbx_cContactName" id="tbx_cContactName" class="form-control" placeholder="聯絡人姓名">
 							</div>
 						</div>
 						<div class="form-group row">
@@ -978,8 +1479,13 @@
 						<div class="hr-line-dashed"></div>
 						<div class="form-group row">
 							<button class="btn btn-success btn-lg" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
-							<button class="btn btn-default btn-lg" type="button" onclick="clearQuerySRProgress();"><i class="fa fa-trash"></i> 清 除 </button>
+							<button class="btn btn-default btn-lg" type="button" onclick="clearQuerySRProgress(true);"><i class="fa fa-trash"></i> 清 除 </button>
 							<img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							<label class="col-form-label">另存個人查詢條件為：</label>
+							<input type="text" name="tbx_cPersonalFilter" id="tbx_cPersonalFilter" class="form-control" style="width:250px;" placeholder="請輸入定義名稱">
+							<button class="btn btn-info btn-lg" type="button" onclick="if (!SavePersonalFilter()) { return false; }"><i class="fa fa-floppy-o"></i> 儲 存 </button>
+							<button class="btn btn-danger btn-lg" type="button" onclick="if (!DeletePersonalFilter()) { return false; }"><i class="fa fa-floppy-o"></i> 刪 除 </button>
 						</div>
 					</form>
 				</div>
@@ -1025,25 +1531,25 @@
 								{
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
-										<tr>
-											<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-											<td>@Html.Raw(QueryInfo[2])</td>
-											<td>@Html.Raw(QueryInfo[3])</td>						
-											<td>@Html.Raw(QueryInfo[4])</td>
-											<td>@Html.Raw(QueryInfo[5])</td>
-											<td>@Html.Raw(QueryInfo[6])</td>
-											<td>@Html.Raw(QueryInfo[7])</td>
-											<td>@Html.Raw(QueryInfo[8])</td>
-											<td>@Html.Raw(QueryInfo[9])</td>
-											<td>@Html.Raw(QueryInfo[10])</td>
-											<td>@Html.Raw(QueryInfo[12])</td>
-											<td>@Html.Raw(QueryInfo[13])</td>
-											<td>@Html.Raw(QueryInfo[19])</td>
-											<td>@Html.Raw(QueryInfo[15])</td>
-											<td>@Html.Raw(QueryInfo[16])</td>
-											<td>@Html.Raw(QueryInfo[17])</td>
-											<td>@Html.Raw(QueryInfo[18])</td>
-										</tr>
+																																					<tr>
+																																						<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+																																						<td>@Html.Raw(QueryInfo[2])</td>
+																																						<td>@Html.Raw(QueryInfo[3])</td>						
+																																						<td>@Html.Raw(QueryInfo[4])</td>
+																																						<td>@Html.Raw(QueryInfo[5])</td>
+																																						<td>@Html.Raw(QueryInfo[6])</td>
+																																						<td>@Html.Raw(QueryInfo[7])</td>
+																																						<td>@Html.Raw(QueryInfo[8])</td>
+																																						<td>@Html.Raw(QueryInfo[9])</td>
+																																						<td>@Html.Raw(QueryInfo[10])</td>
+																																						<td>@Html.Raw(QueryInfo[12])</td>
+																																						<td>@Html.Raw(QueryInfo[13])</td>
+																																						<td>@Html.Raw(QueryInfo[19])</td>
+																																						<td>@Html.Raw(QueryInfo[15])</td>
+																																						<td>@Html.Raw(QueryInfo[16])</td>
+																																						<td>@Html.Raw(QueryInfo[17])</td>
+																																						<td>@Html.Raw(QueryInfo[18])</td>
+																																					</tr>
 									}
 								}
 							}
