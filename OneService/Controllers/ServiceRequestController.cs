@@ -902,6 +902,7 @@ namespace OneService.Controllers
         /// <param name="cTechManagerID">技術主管ERPID</param>
         /// <param name="cTeamID">服務團隊</param>
         /// <param name="cContractID">合約文件編號</param>
+        /// <param name="cNoAssignMainEngineer">未指派主要工程師</param>
         /// <param name="cSRTypeOne">報修類別-大類</param>
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
@@ -911,7 +912,7 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
                                                  string cCustomerID, string cCustomerName, string cSRID, string cDesc, string cIsSecondFix, string CreatedUserName, string cRepairName, string cContactName, string cSRPathWay,
-                                                 string cAssEngineerID, string cTechManagerID, string cTeamID, string cContractID, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
+                                                 string cAssEngineerID, string cTechManagerID, string cTeamID, string cContractID, string cNoAssignMainEngineer, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
                                                  string cSerialID, string cMaterialName, string cProductNumber)
         {            
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
@@ -1210,6 +1211,13 @@ namespace OneService.Controllers
             if (!string.IsNullOrEmpty(cContractID))
             {
                 ttWhere += "AND M.cContractID LIKE N'%" + cContractID.Trim() + "%' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 未指派主要工程師
+            if (!string.IsNullOrEmpty(cNoAssignMainEngineer))
+            {                
+                ttWhere += "AND M.cMainEngineerID = '' " + Environment.NewLine;
             }
             #endregion
 
