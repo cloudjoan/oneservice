@@ -944,7 +944,8 @@ namespace OneService.Controllers
             string tTechManagerName = string.Empty;     //技術主管姓名
             string tCreatedUserName = string.Empty;     //派單人員
             string tCreatedDate = string.Empty;         //派單日期
-            string tModifiedDate = string.Empty;        //最後編輯日期                          
+            string tModifiedDate = string.Empty;        //最後編輯日期
+            string tSRProcessWay = string.Empty;        //處理方式
 
             List<TbOneSrdetailSerialFeedback> tListSerialFeedback = new List<TbOneSrdetailSerialFeedback>();     //記錄SerialFeedbacks(服務明細-序號回報檔)清單
             List<string> tListAssAndTech = new List<string>();                                              //記錄所有協助工程師和所有技術主管的ERPID
@@ -953,6 +954,7 @@ namespace OneService.Controllers
             var tSRTeam_List = CMF.findSRTeamIDList("ALL", false);
             var tSRContact_List = CMF.findSRDetailContactList();            
             List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
+            List<TbOneSysParameter> tSRProcessWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPROCESS");
             List<SelectListItem> ListStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, cCompanyID);
 
             #region 服務案件種類
@@ -1338,7 +1340,12 @@ namespace OneService.Controllers
                 tCreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
 
-                string[] QueryInfo = new string[20];                
+                if (dr["cSRID"].ToString().Substring(0, 2) == "61") //一般服務才顯示
+                {
+                    tSRProcessWay = CMF.TransSysParameterByList(tSRProcessWay_List, dr["cSRProcessWay"].ToString());
+                }
+
+                string[] QueryInfo = new string[21];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
                 QueryInfo[1] = tSRIDUrl;                       //服務案件URL
@@ -1360,6 +1367,7 @@ namespace OneService.Controllers
                 QueryInfo[17] = tModifiedDate;                 //最後編輯日期
                 QueryInfo[18] = tSTATUSDESC;                   //狀態
                 QueryInfo[19] = dr["cContractID"].ToString();    //合約文件編號
+                QueryInfo[20] = tSRProcessWay;                 //處理方式
 
                 QueryToList.Add(QueryInfo);
             }

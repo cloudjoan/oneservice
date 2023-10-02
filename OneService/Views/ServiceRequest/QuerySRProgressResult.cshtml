@@ -69,7 +69,7 @@
 					text: '匯出Excel',
 					sheetName: '服務進度查詢作業',
 					exportOptions: {
-						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] //要顯示的欄位
+						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						addCustomNumberFormat(xlsx, '0');
@@ -90,6 +90,7 @@
 						formatTargetColumn(xlsx, 'O');
 						formatTargetColumn(xlsx, 'P');
 						formatTargetColumn(xlsx, 'Q');
+						formatTargetColumn(xlsx, 'R');
 					}
 				}),
 			],
@@ -145,6 +146,7 @@
 			<th>主要工程師</th>
 			<th>協助工程師</th>
 			<th>合約文件編號</th>
+			<th>處理方式</th>
 			<th>派單人員</th>
 			<th>派單日期</th>
 			<th>最後編輯日期</th>
@@ -171,6 +173,7 @@
 						<td>@Html.Raw(QueryInfo[12])</td>
 						<td>@Html.Raw(QueryInfo[13])</td>
 						<td>@Html.Raw(QueryInfo[19])</td>
+						<td>@Html.Raw(QueryInfo[20])</td>
 						<td>@Html.Raw(QueryInfo[15])</td>
 						<td>@Html.Raw(QueryInfo[16])</td>
 						<td>@Html.Raw(QueryInfo[17])</td>
