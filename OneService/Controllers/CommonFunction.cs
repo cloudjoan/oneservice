@@ -1925,6 +1925,81 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得裝機序號回報檔的序號資訊By List
+        /// <summary>
+        /// 取得裝機序號回報檔的序號資訊By List
+        /// </summary>
+        /// <param name="tList">裝機序號回報檔清單</param>
+        /// <param name="tSRID">SRID</param>
+        /// <returns></returns>
+        public string TransSRDetailSerialFeedbackInfoBySerialID(List<TbOneSrdetailSerialFeedback> tList, string tSRID)
+        {
+            string reValue = string.Empty;
+
+            var beans = tList.Where(x => x.CSrid == tSRID);
+
+            foreach (var bean in beans)
+            {
+                if (!string.IsNullOrEmpty(bean.CSerialId))
+                {
+                    reValue += bean.CSerialId + "<br/>";
+                }                
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得裝機序號回報檔的裝機料號說明資訊By List
+        /// <summary>
+        /// 取得裝機序號回報檔的裝機料號說明資訊By List
+        /// </summary>
+        /// <param name="tList">裝機序號回報檔清單</param>
+        /// <param name="tSRID">SRID</param>
+        /// <returns></returns>
+        public string TransSRDetailSerialFeedbackInfoByMaterialName(List<TbOneSrdetailSerialFeedback> tList, string tSRID)
+        {
+            string reValue = string.Empty;
+
+            var beans = tList.Where(x => x.CSrid == tSRID);
+
+            foreach (var bean in beans)
+            {
+                if (!string.IsNullOrEmpty(bean.CMaterialName))
+                {
+                    reValue += bean.CMaterialName + "<br/>";
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
+        #region 取得裝機序號回報檔的裝機物料代號資訊By List
+        /// <summary>
+        /// 取得裝機序號回報檔的裝機物料代號資訊By List
+        /// </summary>
+        /// <param name="tList">裝機序號回報檔清單</param>
+        /// <param name="tSRID">SRID</param>
+        /// <returns></returns>
+        public string TransSRDetailSerialFeedbackInfoByMaterialID(List<TbOneSrdetailSerialFeedback> tList, string tSRID)
+        {
+            string reValue = string.Empty;
+
+            var beans = tList.Where(x => x.CSrid == tSRID);
+
+            foreach (var bean in beans)
+            {
+                if (!string.IsNullOrEmpty(bean.CMaterialId))
+                {
+                    reValue += bean.CMaterialId + "<br/>";
+                }
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #endregion -----↑↑↑↑↑裝機服務 ↑↑↑↑↑-----
 
         #region -----↓↓↓↓↓合約管理 ↓↓↓↓↓-----
@@ -3202,11 +3277,74 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得客戶聯絡資訊檔清單By SRID清單
+        /// <summary>
+        /// 取得客戶聯絡資訊檔清單By SRID清單
+        /// </summary>
+        /// <param name="ListSRID">SRID清單</param>
+        /// <returns></returns>
+        public List<TbOneSrdetailContact> findSRDetailContactListByListSRID(List<string> ListSRID)
+        {
+            var beans = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && ListSRID.Contains(x.CSrid)).ToList();
+
+            return beans;
+        }
+        #endregion
+
+        #region 取得客戶聯絡資訊檔的聯絡人相關資訊By List
+        /// <summary>
+        /// 取得客戶聯絡資訊檔的聯絡人相關資訊By List
+        /// </summary>
+        /// <param name="tList">客戶聯絡資訊檔清單</param>
+        /// <param name="tSRID">SRID</param>
+        /// <returns></returns>
+        public string TransSRDetailContactInfo(List<TbOneSrdetailContact> tList, string tSRID)
+        {
+            string reValue = string.Empty;
+
+            var beans = tList.Where(x => x.CSrid == tSRID);
+
+            foreach (var bean in beans)
+            {
+                string tTempValue = string.Empty;
+
+                if (!string.IsNullOrEmpty(bean.CContactName))
+                {
+                    tTempValue += bean.CContactName + ";";
+                }
+
+                if (!string.IsNullOrEmpty(bean.CContactAddress))
+                {
+                    tTempValue += bean.CContactAddress + ";";
+                }
+
+                if (!string.IsNullOrEmpty(bean.CContactPhone))
+                {
+                    tTempValue += bean.CContactPhone + ";";
+                }
+
+                if (!string.IsNullOrEmpty(bean.CContactMobile))
+                {
+                    tTempValue += bean.CContactMobile + ";";
+                }
+
+                if (!string.IsNullOrEmpty(bean.CContactEmail))
+                {
+                    tTempValue += bean.CContactEmail + ";";
+                }
+
+                reValue += tTempValue.TrimEnd(';') + "<br/>";
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #region 取得客戶聯絡資訊檔的聯絡人名稱By List
         /// <summary>
         /// 取得客戶聯絡資訊檔的聯絡人名稱By List
         /// </summary>
-        /// <param name="tList">服務團隊清單</param>
+        /// <param name="tList">戶聯絡資訊檔清單</param>
         /// <param name="tSRID">SRID</param>
         /// <returns></returns>
         public string TransSRDetailContactName(List<TbOneSrdetailContact> tList, string tSRID)

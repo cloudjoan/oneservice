@@ -320,6 +320,13 @@ namespace OneService.Controllers
             string cWTYEDATE = string.Empty;
             string cIsShowLink = string.Empty;
             string UrlFront = string.Empty;
+            string cContactInfo = string.Empty;
+            string fPID = string.Empty;
+            string fPN = string.Empty;
+            string fSerialID = string.Empty;
+
+            List<TbOneSrdetailContact> tListContact = new List<TbOneSrdetailContact>();
+            List<TbOneSrdetailSerialFeedback> tListSerialFeedback = new List<TbOneSrdetailSerialFeedback>();
 
             getLoginAccount();
             getEmployeeInfo();
@@ -633,21 +640,38 @@ namespace OneService.Controllers
 
             var tSRTeam_List = CMF.findSRTeamIDList("ALL", false);
 
+            #region 取得所有SRID
+            List<string> tListSRID = new List<string>();
+
             foreach (DataRow dr in dt.Rows)
             {
-                string[] QueryInfo = new string[59];
+                if (!tListSRID.Contains(dr["cSRID"].ToString()))
+                {
+                    tListSRID.Add(dr["cSRID"].ToString());
+                }
+            }
+            #endregion
+
+            #region 取得所有SRID清單的聯絡窗口和裝機序號回報
+            if (tListSRID.Count > 0)
+            {
+                tListContact = CMF.findSRDetailContactListByListSRID(tListSRID);
+                tListSerialFeedback = CMF.findSRSerialFeedbackList(tListSRID);
+            }
+            #endregion            
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                string[] QueryInfo = new string[60];
 
                 CreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd");
                 tSRIDUrl = CMF.findSRIDUrl(dr["cSRID"].ToString());
 
-                if (dr["cTeamID"].ToString().Length >= 14)
+                tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
+                if (string.IsNullOrEmpty(tSRTeam))
                 {
                     tSRTeam = dr["cTeamID"].ToString();
-                }
-                else
-                {
-                    tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
-                }
+                }               
 
                 if (dr["cSRID"].ToString().Substring(0,1) == "6") //新版SR才要顯示連結
                 {
@@ -670,7 +694,22 @@ namespace OneService.Controllers
 
                 cUsed = (dr["cWTYID"].ToString() != "" || dr["cWTYName"].ToString() != "") ? "Y" : "N";
                 cWTYSDATE = Convert.ToDateTime(dr["cWTYSDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYSDATE"].ToString()).ToString("yyyy-MM-dd");
-                cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");                
+                cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");
+
+                cContactInfo = CMF.TransSRDetailContactInfo(tListContact, dr["cSRID"].ToString());
+
+                if (dr["cSRID"].ToString().Substring(0, 2) == "63")
+                {
+                    fPID = CMF.TransSRDetailSerialFeedbackInfoByMaterialName(tListSerialFeedback, dr["cSRID"].ToString());
+                    fPN = CMF.TransSRDetailSerialFeedbackInfoByMaterialID(tListSerialFeedback, dr["cSRID"].ToString());
+                    fSerialID = CMF.TransSRDetailSerialFeedbackInfoBySerialID(tListSerialFeedback, dr["cSRID"].ToString());
+                }
+                else
+                {
+                    fPID = dr["PID"].ToString();
+                    fPN = dr["PN"].ToString();
+                    fSerialID = dr["cSerialID"].ToString();
+                }
 
                 QueryInfo[0] = dr["cSRID"].ToString();              //SR_ID
                 QueryInfo[1] = tSRIDUrl;                           //服務案件URL
@@ -698,9 +737,9 @@ namespace OneService.Controllers
                 QueryInfo[23] = dr["cIsSecondFix"].ToString();      //是否為二修
                 QueryInfo[24] = dr["cIsAPPClose"].ToString();       //是否為APP結案
                 QueryInfo[25] = dr["cDelayReason"].ToString();      //延遲結案原因
-                QueryInfo[26] = dr["PID"].ToString();              //機器型號
-                QueryInfo[27] = dr["PN"].ToString();               //Product Number
-                QueryInfo[28] = dr["cSerialID"].ToString();         //序號
+                QueryInfo[26] = fPID;                             //報修機器型號/裝機料號說明
+                QueryInfo[27] = fPN;                              //報修Product Number/裝機物料代號
+                QueryInfo[28] = fSerialID;                        //報修/裝機序號
                 QueryInfo[29] = cReceiveTime;                     //接單時間
                 QueryInfo[30] = cStartTime;                       //出發時間
                 QueryInfo[31] = cArriveTime;                      //到場時間
@@ -731,6 +770,7 @@ namespace OneService.Controllers
                 QueryInfo[56] = dr["SO"].ToString();             //銷售單號
                 QueryInfo[57] = dr["DN"].ToString();             //出貨單號
                 QueryInfo[58] = cIsShowLink;                    //是否要顯示Link
+                QueryInfo[59] = cContactInfo;                   //聯絡人窗口資訊
 
                 QueryToList.Add(QueryInfo);
             }
