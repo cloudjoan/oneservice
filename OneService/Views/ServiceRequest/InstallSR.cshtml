@@ -254,7 +254,7 @@
 		//要略過的清單(textarea)
 		function checkTextareaSkipList(tID)
 		{
-			var ArrayList = ["tbx_MIcMaterialName", "tbx_SFcMaterialName"]; 			
+			var ArrayList = ["tbx_MIcMaterialName"]; 			
 			return SkiptList(tID, ArrayList);
 		}		
 
@@ -2497,7 +2497,7 @@
 
 		//組料號說明
 		function SetSFMaterialName() {
-			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_SFcMaterialName' id='tbx_SFcMaterialName" + trSerialNoCount + "' readonly></textarea></td>";
+			var reValue = "<td><textarea rows='3' class='form-control' style='width:200px;' placeholder='料號說明' name='tbx_SFcMaterialName' id='tbx_SFcMaterialName" + trSerialNoCount + "' ></textarea></td>";
 			return reValue;
 		}
 
@@ -3293,10 +3293,10 @@
 																<input type='hidden' name='hid_SFcDisabled' @("id=hid_SFcDisabled" + count) value=@bean.Disabled>
 															</td>															
 															<td>
-														<input type='text' name='tbx_SFcMaterialID' @("id=tbx_SFcMaterialID" + count) class='form-control' style='width:150px;' value="@bean.CMaterialId" title="@bean.CMaterialId">
+																<input type='text' name='tbx_SFcMaterialID' @("id=tbx_SFcMaterialID" + count) class='form-control material' style='width:150px;' value="@bean.CMaterialId" title="@bean.CMaterialId">
 															</td>
 															<td>
-																<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_SFcMaterialName" @("id=tbx_SFcMaterialName" + count) title="@bean.CMaterialName" readonly>@bean.CMaterialName</textarea>
+																<textarea rows="3" class="form-control" style='width:200px;' placeholder="料號說明" name="tbx_SFcMaterialName" @("id=tbx_SFcMaterialName" + count) title="@bean.CMaterialName">@bean.CMaterialName</textarea>
 															</td>
 															<td>
 																<div class="dropzone" @("id=zoneSF_" + count) style="width: 200px; min-height: 100px !important; padding: 0px;">
