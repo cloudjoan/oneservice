@@ -9737,6 +9737,83 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 記錄登入人員匯出Excel的時間點Log
+        /// <summary>
+        /// 記錄登入人員匯出Excel的時間點Log
+        /// </summary>
+        /// <param name="EventName">事件名稱</param>
+        /// <returns></returns>
+        public IActionResult SaveQueryLog(string EventName)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = "SUCCESS";
+            string tLog = string.Empty;
+
+            switch(EventName)
+            {
+                case "QuerySRProgress_ExportExcel":
+                    tLog = "服務進度查詢作業_匯出Excel";
+                    break;
+                case "QueryBatchInstall_ExportExcel":
+                    tLog = "批次上傳裝機派工作業_匯出Excel";
+                    break;
+                case "QueryBatchMaintain_ExportExcel":
+                    tLog = "批次上傳定維派工作業_匯出Excel";
+                    break;
+                case "SRCustomerEmailMapping_ExportExcel":
+                    tLog = "客戶Email對照設定作業_匯出Excel";
+                    break;
+                case "SRPersonCustomer_ExportExcel":
+                    tLog = "個人客戶設定作業_匯出Excel";
+                    break;
+                case "SRRepairType_ExportExcel":
+                    tLog = "報修類別設定作業_匯出Excel";
+                    break;
+                case "SRReport_ExportExcel":
+                    tLog = "服務總表_匯出Excel";
+                    break;
+                case "SRSatisfactionSurveyRemove_ExportExcel":
+                    tLog = "滿意度調查排除設定檔作業_匯出Excel";
+                    break;
+                case "SRSQPerson_ExportExcel":
+                    tLog = "SQ人員設定檔作業_匯出Excel";
+                    break;
+                case "SRTeamMapping_ExportExcel":
+                    tLog = "服務團隊對照組織設定檔作業_匯出Excel";
+                    break;
+                case "ToDoList_ExportExcel":
+                    tLog = "待辦清單_匯出Excel";
+                    break;
+                case "QueryContractMain_ExportExcel":
+                    tLog = "合約主數據查詢/維護作業_匯出Excel";
+                    break;
+                case "QueryContractDetailEng_ExportExcel":
+                    tLog = "合約工程師查詢/維護作業_匯出Excel";
+                    break;
+                case "QueryContractDetailObj_ExportExcel":
+                    tLog = "合約標的查詢/維護作業_匯出Excel";
+                    break;
+            }           
+
+            #region 新增
+            TbOneLog beanOne = new TbOneLog();
+            
+            beanOne.CSrid = "";
+            beanOne.EventName = EventName;
+            beanOne.Log = tLog;
+            beanOne.CreatedDate = DateTime.Now;
+            beanOne.CreatedUserName = ViewBag.empEngName;
+
+            dbOne.TbOneLogs.Add(beanOne);
+            dbOne.SaveChanges();
+            #endregion
+
+            return Json(reValue);
+        }
+        #endregion
+
         #region 檢查【姓名和ERPID】是否不一致
         /// <summary>
         /// 檢查【姓名和ERPID】是否不一致

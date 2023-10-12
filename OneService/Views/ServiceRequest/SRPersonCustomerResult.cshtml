@@ -65,6 +65,8 @@
 						$('row c[r^="G"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="H"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="I"]', sheet).attr('s', '0');	//設成文字格式
+
+						SaveQueryLog("SRPersonCustomer_ExportExcel"); //記錄登入人員匯出Excel的時間點Log
 					}
 				}),
 			],

@@ -91,6 +91,8 @@
 						formatTargetColumn(xlsx, 'P');
 						formatTargetColumn(xlsx, 'Q');
 						formatTargetColumn(xlsx, 'R');
+						
+						SaveQueryLog("QuerySRProgress_ExportExcel"); //記錄登入人員匯出Excel的時間點Log
 					}
 				}),
 			],
@@ -127,7 +129,7 @@
 		{
 			$('row c[r^="' + col + '"]', sheet).attr('s', '0'); //設成文字格式
 		}
-	}	
+	}		
 </script>
 
 <table id="tableAll" class="table table-striple table-bordered table-hover dataTables-example">
@@ -159,26 +161,26 @@
 			{
 				foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 				{
-					<tr>
-						<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-						<td>@Html.Raw(QueryInfo[2])</td>
-						<td>@Html.Raw(QueryInfo[3])</td>						
-						<td>@Html.Raw(QueryInfo[4])</td>
-						<td>@Html.Raw(QueryInfo[5])</td>
-						<td>@Html.Raw(QueryInfo[6])</td>
-						<td>@Html.Raw(QueryInfo[7])</td>
-						<td>@Html.Raw(QueryInfo[8])</td>
-						<td>@Html.Raw(QueryInfo[9])</td>
-						<td>@Html.Raw(QueryInfo[10])</td>
-						<td>@Html.Raw(QueryInfo[12])</td>
-						<td>@Html.Raw(QueryInfo[13])</td>
-						<td>@Html.Raw(QueryInfo[19])</td>
-						<td>@Html.Raw(QueryInfo[20])</td>
-						<td>@Html.Raw(QueryInfo[15])</td>
-						<td>@Html.Raw(QueryInfo[16])</td>
-						<td>@Html.Raw(QueryInfo[17])</td>
-						<td>@Html.Raw(QueryInfo[18])</td>
-					</tr>
+						<tr>
+							<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+							<td>@Html.Raw(QueryInfo[2])</td>
+							<td>@Html.Raw(QueryInfo[3])</td>						
+							<td>@Html.Raw(QueryInfo[4])</td>
+							<td>@Html.Raw(QueryInfo[5])</td>
+							<td>@Html.Raw(QueryInfo[6])</td>
+							<td>@Html.Raw(QueryInfo[7])</td>
+							<td>@Html.Raw(QueryInfo[8])</td>
+							<td>@Html.Raw(QueryInfo[9])</td>
+							<td>@Html.Raw(QueryInfo[10])</td>
+							<td>@Html.Raw(QueryInfo[12])</td>
+							<td>@Html.Raw(QueryInfo[13])</td>
+							<td>@Html.Raw(QueryInfo[19])</td>
+							<td>@Html.Raw(QueryInfo[20])</td>
+							<td>@Html.Raw(QueryInfo[15])</td>
+							<td>@Html.Raw(QueryInfo[16])</td>
+							<td>@Html.Raw(QueryInfo[17])</td>
+							<td>@Html.Raw(QueryInfo[18])</td>
+						</tr>
 				}
 			}
 		}

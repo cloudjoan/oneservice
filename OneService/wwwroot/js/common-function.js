@@ -549,3 +549,20 @@ function dateValidationCheck(str) {
     
     return infoValidation;
 }
+
+//記錄登入人員匯出Excel的時間點Log
+function SaveQueryLog(EventName) {
+    var url = "../ServiceRequest/SaveQueryLog";
+
+    $.ajax({
+        url: url,
+        type: 'post',
+        dataType: 'json',
+        data: {
+            EventName: EventName
+        },
+        success: function (result) {
+
+        }
+    });
+}

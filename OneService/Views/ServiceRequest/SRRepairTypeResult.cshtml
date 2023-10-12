@@ -60,6 +60,8 @@
 						$('row c[r^="B"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="C"]', sheet).attr('s', '0');	//設成文字格式
 						$('row c[r^="D"]', sheet).attr('s', '0');	//設成文字格式
+
+						SaveQueryLog("SRRepairType_ExportExcel"); //記錄登入人員匯出Excel的時間點Log
 					}
 				}),
 			],
