@@ -1214,11 +1214,11 @@
 
 													if (FILE_URL.IndexOf("tsti-csreportfs01") >= 0)
 													{
-														<a href="@FILE_URL" download="@FILE_ORG_NAME" target="_blank">@FILE_ORG_NAME</a><br/>
+														<a href="@FILE_URL" download="@FILE_ORG_NAME" target="_blank">@FILE_URL</a><br/>
 													}
 													else
 													{
-													<a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(FILE_URL) })" download="@FILE_ORG_NAME" target="_blank">@FILE_ORG_NAME</a><br/>
+														<a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(FILE_URL) })" download="@FILE_ORG_NAME" target="_blank">@FILE_URL</a><br/>
 													}
 												}
 											</td>
