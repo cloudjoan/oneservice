@@ -33,7 +33,7 @@
 							if (typeof data === 'string')
 								data = data.replace(translate_re, translator);
 
-							if (column === 0 || column === 37) //去除連結的部份
+							if (column === 0) //去除連結的部份
 							{
 								var splitName = data.split(">");
 								var length = splitName.length;
@@ -44,7 +44,38 @@
 								else {
 									return data;
 								}
-							}	
+							}
+							else if (column === 37) //去除連結的部份
+							{
+								var TempData = data.replace(/<br\s*\/?>/ig, "|");
+								var AryData = TempData.split("|");
+								var finalStr = "";
+
+								if (AryData.length > 2) {
+									for (let i = 0; i < AryData.length; i++) {
+										var splitName = AryData[i].split(">");
+										var length = splitName.length;
+
+										if (splitName != "")
+										{
+											finalStr += AryData[i].split(">")[1].split("<")[0] + "\n";
+										}
+									}
+
+									return finalStr;
+								}
+								else {
+									var splitName = data.split(">");
+									var length = splitName.length;
+
+									if (length > 1) {
+										return data.split(">")[1].split("<")[0];
+									}
+									else {
+										return data;
+									}
+								}
+							}
 							else if (column === 2 || column === 14 || column === 21 || column === 26 || column === 27 || column === 28) //將換行符號<br>換成excel可以識別的\n
 							{
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
@@ -1183,11 +1214,11 @@
 
 													if (FILE_URL.IndexOf("tsti-csreportfs01") >= 0)
 													{
-														<a href="@FILE_URL" download="@FILE_ORG_NAME" target="_blank">@FILE_ORG_NAME</a>
+														<a href="@FILE_URL" download="@FILE_ORG_NAME" target="_blank">@FILE_ORG_NAME</a><br/>
 													}
 													else
 													{
-														<a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(FILE_URL) })" download="@FILE_ORG_NAME" target="_blank">@FILE_ORG_NAME</a>
+													<a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(FILE_URL) })" download="@FILE_ORG_NAME" target="_blank">@FILE_ORG_NAME</a><br/>
 													}
 												}
 											</td>
