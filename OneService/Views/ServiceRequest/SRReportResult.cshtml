@@ -220,13 +220,13 @@
 					<tr id='tr@(count)'>						
 						<td>
 							@if (QueryInfo[58] == "Y")
-							{
+						{
 								<a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a>
-							}
-							else
-							{
+						}
+						else
+						{
 								@Html.Raw(QueryInfo[0])
-							}
+						}
 						</td>												
 						<td>@Html.Raw(QueryInfo[2])</td>
 						<td>@Html.Raw(QueryInfo[3])</td>
@@ -264,7 +264,23 @@
 						<td>@Html.Raw(QueryInfo[34])</td>
 						<td>@Html.Raw(QueryInfo[35])</td>
 						<td>@Html.Raw(QueryInfo[36])</td>
-						<td><a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(QueryInfo[37]) })" target="_blank">@Html.Raw(QueryInfo[37])</a></td>
+						<td>
+							@foreach (string tUrl in QueryInfo[37].Split("<br/>"))
+							{
+								string[] AryUrl = tUrl.Split("|");																
+								string FILE_URL = AryUrl[0];
+								string FILE_ORG_NAME = AryUrl[1];
+
+								if (FILE_URL.IndexOf("tsti-csreportfs01") >= 0)
+								{
+									<a href="@FILE_URL" download="@FILE_ORG_NAME" target="_blank">@FILE_ORG_NAME</a>
+								}
+								else
+								{
+									<a href="@Url.Action("findSRReportName", "ServiceRequest", new { filePath = @Html.Raw(FILE_URL) })" download="@FILE_ORG_NAME" target="_blank">@FILE_ORG_NAME</a>
+								}
+							}
+						</td>
 						<td>@Html.Raw(QueryInfo[38])</td>
 						<td>@Html.Raw(QueryInfo[39])</td>
 						<td>@Html.Raw(QueryInfo[40])</td>

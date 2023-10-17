@@ -689,7 +689,7 @@ namespace OneService.Controllers
                 cFinishTime = Convert.ToDateTime(dr["cFinishTime"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cFinishTime"].ToString()).ToString("yyyy-MM-dd HH:mm");
                 cWorkHours = dr["cWorkHours"].ToString() == "0" ? "" : dr["cWorkHours"].ToString();
                 
-                cSRReportURL = CMF.findAttachUrl(dr["cSRReport"].ToString(), tAttachURLName);
+                cSRReportURL = CMF.findAttachUrlandName(dr["cSRReport"].ToString(), tAttachURLName);
                 cSRReportURL = cSRReportURL.Replace("http://tsticrmmbgw.etatung.com:8081/CSreport/", UrlFront).Replace("http://tsticrmmbgw.etatung.com:8082/CSreport/", UrlFront);
 
                 cUsed = (dr["cWTYID"].ToString() != "" || dr["cWTYName"].ToString() != "") ? "Y" : "N";

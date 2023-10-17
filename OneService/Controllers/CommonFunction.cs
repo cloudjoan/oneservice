@@ -900,6 +900,39 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得附件/服務報告書URL和原始檔名(多筆以;號隔開)
+        /// <summary>
+        /// 取得附件/服務報告書URL和原始檔名(多筆以;號隔開)
+        /// </summary>
+        /// <param name="tAttach">附件GUID(多筆以,號隔開)</param>
+        /// <param name="tAttachURLName">附件URL站台名稱</param>
+        /// <returns></returns>
+        public string findAttachUrlandName(string tAttach, string tAttachURLName)
+        {
+            string reValue = string.Empty;
+
+            List<SRATTACHINFO> SR_List = findSRATTACHINFO(tAttach, tAttachURLName);
+
+            foreach (var bean in SR_List)
+            {
+                if (bean.FILE_ORG_NAME.IndexOf("http") >= 0)
+                {
+                    string tFILE_ORG_NAME = bean.FILE_ORG_NAME.Replace("http://tsti-csreportfs01/CSREPORT/", "").Replace("http://tsti-csreportfs01/INSTALL/", "").Replace("http://tsti-csreportfs01/TWM/", "");
+
+                    reValue += bean.FILE_URL + "|" + tFILE_ORG_NAME + ";";
+                }
+                else
+                {
+                    reValue += bean.FILE_URL + "|" + bean.FILE_ORG_NAME + ";";
+                }
+            }
+
+            reValue = reValue.TrimEnd(';').Replace(";", "<br/>");
+
+            return reValue;
+        }
+        #endregion
+
         #region 取得附件相關資訊
         /// <summary>
         /// 取得附件相關資訊
@@ -942,7 +975,7 @@ namespace OneService.Controllers
                 else
                 {
                     #region 取不到代表是舊的服務報告書
-                    string tFileName = tKey.Replace("http://tsticrmmbgw.etatung.com:8081/CSreport/", "").Replace("http://tsticrmmbgw.etatung.com:8082/CSreport/", "");
+                    string tFileName = tKey.Replace("http://tsticrmmbgw.etatung.com:8081/CSreport/", "").Replace("http://tsticrmmbgw.etatung.com:8082/CSreport/", "").Replace("http://tsti-csreportfs01/CSREPORT/", "");
                     SRATTACHINFO beanSR = new SRATTACHINFO();                   
 
                     beanSR.ID = Guid.NewGuid().ToString();
