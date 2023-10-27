@@ -587,12 +587,16 @@
 
 			var Msg = "";
 			var cSRID = $("input[name='hid_cSRID']").val();			//SRID
+			var cNowStatus = $("#hid_cNowStatus").val();			//目前狀態
 			var ddl_cStatus = $("#ddl_cStatus");					//狀態
 			var tbx_cCustomerName = $("#tbx_cCustomerName");			//客戶名稱	
 			var hid_cCustomerID = $("#hid_cCustomerID");			//客戶ID							
 			var tbx_cDesc = $("#tbx_cDesc");						//說明
 			var tbx_cNotes = $("#tbx_cNotes");						//詳細描述						
 			var tbx_cContractID = $("#tbx_cContractID");			//合約文件編號
+			var tbx_cDelayReason =  $("#tbx_cDelayReason");			//延遲結案原因
+			var hid_cNowScheduleDate = $("#hid_cNowScheduleDate");	//目前預排日期值
+			var tbx_cScheduleDate = $("#tbx_cScheduleDate");			//預排日期
 			//var ddl_cSRTypeOne = $("#ddl_cSRTypeOne");				//報修類別(大類)
 			//var ddl_cSRTypeSec = $("#ddl_cSRTypeSec");				//報修類別(中類)
 			//var ddl_cSRTypeThr = $("#ddl_cSRTypeThr");				//報修類別(小類)
@@ -689,6 +693,27 @@
 
 			//提交前【業務祕書姓名和ERPID】是否不一致
 			Msg += checkPersonIsMatch("ASS");
+
+			//預排日期檢查
+			if (cNowStatus != "E0017" && cNowStatus != "E0015") //非定保完成且非取消才檢查
+			{
+				if (tbx_cDelayReason.val() != "" && hid_cNowScheduleDate.val() == "")
+				{
+					if (tbx_cScheduleDate.val() == "")
+					{
+						Msg += "【預排日期】不得為空！\n";
+					}
+					else
+					{
+						var Today = new Date();
+						var NowDay = Today.getFullYear() + "-" + (Today.getMonth() + 1) + "-" + Today.getDate();
+
+						if (tbx_cScheduleDate.val() < NowDay) {
+							Msg += "【預排日期】不能小於系統日期！\n";							
+						}
+					}
+				}
+			}
 
 			//【聯絡人窗口資訊】明細檢查
 			Msg += checkDetail_CO();			
@@ -2582,6 +2607,10 @@
 							<input type="hidden" id="hid_cLoginUser_IsManager" name="hid_cLoginUser_IsManager" value="@ViewBag.pIsManager">
 							<!--程式作業編號檔系統ID(定維服務)-->
 							<input type="hidden" id="hid_OperationID" name="hid_OperationID" value="@ViewBag.pOperationID">
+							<!--目前狀態-->
+							<input type="hidden" id="hid_cNowStatus" name="hid_cNowStatus" value="@ViewBag.pStatus">
+							<!--目前預排日期值-->
+							<input type="hidden" id="hid_cNowScheduleDate" name="hid_cNowScheduleDate" value="@ViewBag.cScheduleDate">
 							<label class="col-lg-2 col-form-label">*狀態</label>
 							<div class="col-lg-4">
 								<select asp-for="ddl_cStatus" asp-items="Model.ListStatus" class="form-control Status" disabled="@(ViewBag.cSRID == "" ? false : true)" ></select>
@@ -2651,9 +2680,10 @@
 							<div class="col-lg-4">
 							<textarea rows="3" class="form-control" placeholder="延遲結案原因" id="tbx_cDelayReason" name="tbx_cDelayReason" title="@ViewBag.cDelayReason">@ViewBag.cDelayReason</textarea>
 							</div>
-							<label class="col-lg-2 col-form-label">建立日期</label>
-							<div class="col-lg-4">
-							<input type="text" id="tbx_CreatedDate" name="tbx_CreatedDate" class="form-control" placeholder="建立日期" value="@ViewBag.CreatedDate" readonly>
+							<label class="col-lg-2 col-form-label">預排日期</label>
+							<div class="col-lg-4">								
+								<input type="text" name="tbx_cScheduleDate" id="tbx_cScheduleDate" class="calendar form-control" placeholder="預排日期" value="@ViewBag.cScheduleDate">
+								<label class="col-form-label" style="color:red;">※提醒：【延遲結案原因】欄位不為空白時，預排日期為必填。</label>
 							</div>
 						</div>		
 						<div class="form-group row">
@@ -2662,6 +2692,14 @@
 								<textarea rows="3" class="form-control" placeholder="備註" id="tbx_cRemark" name="tbx_cRemark" title="@ViewBag.cRemark">@ViewBag.cRemark</textarea>
 							<label class="col-form-label" style="color:red;">※提醒：【備註】欄位的內容將會呈現於客戶服務報告書中，以利補充說明客戶聯繫事項、維修備註。</label>
 							</div>
+							<label class="col-lg-2 col-form-label">建立日期</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_CreatedDate" name="tbx_CreatedDate" class="form-control" placeholder="建立日期" value="@ViewBag.CreatedDate" readonly>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label"></label>
+							<div class="col-lg-4"></div>
 							<label class="col-lg-2 col-form-label">派單人員</label>
 							<div class="col-lg-4">
 								<label class="col-form-label">@ViewBag.CreatedUserName</label>

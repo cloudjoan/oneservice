@@ -45,6 +45,7 @@ namespace OneService.Models
         /// 延遲結案原因
         /// </summary>
         public string? CDelayReason { get; set; }
+        public DateTime? CScheduleDate { get; set; }
         /// <summary>
         /// 第一階(大類)
         /// </summary>

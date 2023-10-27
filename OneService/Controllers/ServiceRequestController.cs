@@ -1760,6 +1760,7 @@ namespace OneService.Controllers
                     ViewBag.cIsInternalWork = "N";
                     ViewBag.pStatus = "E0001";                          //新建
                     ViewBag.CreatedUserName = "";
+                    ViewBag.cScheduleDate = "";
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -1899,7 +1900,8 @@ namespace OneService.Controllers
                     ViewBag.cIsSecondFix = beanM.CIsSecondFix;
                     ViewBag.cIsInternalWork = beanM.CIsInternalWork;
                     ViewBag.pStatus = beanM.CStatus;
-                    ViewBag.CreatedUserName = beanM.CreatedUserName;
+                    ViewBag.CreatedUserName = beanM.CreatedUserName;                    
+                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -2123,6 +2125,7 @@ namespace OneService.Controllers
                     ViewBag.cIsSecondFix = "";     //請選擇
                     ViewBag.cIsInternalWork = "N";
                     ViewBag.CreatedUserName = "";
+                    ViewBag.cScheduleDate = "";
                 }
                 #endregion
             }
@@ -2204,6 +2207,7 @@ namespace OneService.Controllers
             string OldCTechManagerId = string.Empty;
             string OldCPerCallSlaresp = string.Empty;
             string OldCPerCallSlasrv = string.Empty;
+            string OldCScheduleDate = string.Empty;
 
             string OldCFaultGroup = string.Empty;
             string OldCFaultGroup1 = string.Empty;
@@ -2253,6 +2257,7 @@ namespace OneService.Controllers
             string CRepairPhone = formCollection["tbx_cRepairPhone"].FirstOrDefault();
             string CRepairMobile = formCollection["tbx_cRepairMobile"].FirstOrDefault();
             string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
+            string CScheduleDate = formCollection["tbx_cScheduleDate"].FirstOrDefault();
             string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CSqpersonId = formCollection["hid_cSQPersonID"].FirstOrDefault();
@@ -2264,7 +2269,7 @@ namespace OneService.Controllers
             string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();
             string CTechManagerId = formCollection["hid_cTechManagerID"].FirstOrDefault();
             string CPerCallSlaresp = formCollection["ddl_cPerCallSLARESP"].FirstOrDefault();
-            string CPerCallSlasrv = formCollection["ddl_cPerCallSLASRV"].FirstOrDefault();
+            string CPerCallSlasrv = formCollection["ddl_cPerCallSLASRV"].FirstOrDefault();            
 
             string CFaultGroup = formCollection["hid_cFaultGroup"].FirstOrDefault();            
             string CFaultState = formCollection["hid_cFaultState"].FirstOrDefault();            
@@ -2343,7 +2348,12 @@ namespace OneService.Controllers
                     beanM.CPerCallSlaresp = CPerCallSlaresp;
                     beanM.CPerCallSlasrv = CPerCallSlasrv;
                     beanM.CSystemGuid = Guid.NewGuid();
-                    beanM.CIsAppclose = "";                    
+                    beanM.CIsAppclose = "";
+
+                    if (!string.IsNullOrEmpty(CScheduleDate))
+                    {
+                        beanM.CScheduleDate = Convert.ToDateTime(CScheduleDate);
+                    }
 
                     beanM.CreatedDate = DateTime.Now;
                     beanM.CreatedUserName = ViewBag.empEngName;
@@ -2549,6 +2559,9 @@ namespace OneService.Controllers
                     OldCDelayReason = beanNowM.CDelayReason;
                     tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
 
+                    OldCScheduleDate = beanNowM.CScheduleDate == null ? "" : Convert.ToDateTime(beanNowM.CScheduleDate).ToString("yyyy-MM-dd");
+                    tLog += CMF.getNewAndOldLog("預排日期", OldCScheduleDate, CScheduleDate);
+
                     OldCRemark = beanNowM.CRemark;
                     tLog += CMF.getNewAndOldLog("備註", OldCRemark, CRemark);
 
@@ -2676,7 +2689,7 @@ namespace OneService.Controllers
                     beanNowM.CSrpathWay = CSrpathWay;
                     beanNowM.CSrprocessWay = CSrprocessWay;
                     beanNowM.CSrrepairLevel = CSrrepairLevel;
-                    beanNowM.CDelayReason = CDelayReason;
+                    beanNowM.CDelayReason = CDelayReason;                    
                     beanNowM.CRemark = CRemark;
                     beanNowM.CIsSecondFix = CIsSecondFix;
                     beanNowM.CIsInternalWork = CIsInternalWork;
@@ -2697,6 +2710,11 @@ namespace OneService.Controllers
                     beanNowM.CPerCallSlaresp = CPerCallSlaresp;
                     beanNowM.CPerCallSlasrv = CPerCallSlasrv;
                     beanNowM.CSystemGuid = Guid.NewGuid();
+
+                    if (!string.IsNullOrEmpty(CScheduleDate))
+                    {
+                        beanNowM.CScheduleDate = Convert.ToDateTime(CScheduleDate);
+                    }
 
                     #region 客戶故障狀況分類
                     beanNowM.CFaultGroup = string.IsNullOrEmpty(CFaultGroup) ? "" : CFaultGroup.TrimEnd(';');
@@ -4322,6 +4340,7 @@ namespace OneService.Controllers
                     ViewBag.cShipmentNo = beanM.CShipmentNo;
                     ViewBag.pStatus = "E0001";
                     ViewBag.CreatedUserName = "";
+                    ViewBag.cScheduleDate = "";
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -4399,6 +4418,7 @@ namespace OneService.Controllers
                     ViewBag.cShipmentNo = beanM.CShipmentNo;
                     ViewBag.pStatus = beanM.CStatus;
                     ViewBag.CreatedUserName = beanM.CreatedUserName;
+                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -4472,6 +4492,7 @@ namespace OneService.Controllers
                     ViewBag.cSalesNo = "";          //空值
                     ViewBag.cShipmentNo = "";       //空值
                     ViewBag.CreatedUserName = "";
+                    ViewBag.cScheduleDate = "";
                 }
                 #endregion
             }
@@ -4538,7 +4559,8 @@ namespace OneService.Controllers
             string OldCSalesName = string.Empty;
             string OldCSalesId = string.Empty;
             string OldCSecretaryName = string.Empty;
-            string OldCSecretaryId = string.Empty;                     
+            string OldCSecretaryId = string.Empty;
+            string OldCScheduleDate = string.Empty;
 
             string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
             string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
@@ -4553,6 +4575,7 @@ namespace OneService.Controllers
             string CSalesNo = formCollection["tbx_cSalesNo"].FirstOrDefault();
             string CShipmentNo = formCollection["tbx_cShipmentNo"].FirstOrDefault();
             string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
+            string CScheduleDate = formCollection["tbx_cScheduleDate"].FirstOrDefault();
             string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
 
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
@@ -4608,7 +4631,12 @@ namespace OneService.Controllers
                     beanM.CShipmentNo = CShipmentNo;
                     beanM.CDelayReason = CDelayReason;
                     beanM.CRemark = CRemark;
-                    
+
+                    if (!string.IsNullOrEmpty(CScheduleDate))
+                    {
+                        beanM.CScheduleDate = Convert.ToDateTime(CScheduleDate);
+                    }
+
                     beanM.CTeamId = CTeamId;
                     beanM.CMainEngineerName = CMainEngineerName;
                     beanM.CMainEngineerId = CMainEngineerId;
@@ -4847,6 +4875,9 @@ namespace OneService.Controllers
                     OldCDelayReason = beanNowM.CDelayReason;
                     tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
 
+                    OldCScheduleDate = beanNowM.CScheduleDate == null ? "" : Convert.ToDateTime(beanNowM.CScheduleDate).ToString("yyyy-MM-dd");
+                    tLog += CMF.getNewAndOldLog("預排日期", OldCScheduleDate, CScheduleDate);
+
                     OldCRemark = beanNowM.CRemark;
                     tLog += CMF.getNewAndOldLog("備註", OldCRemark, CRemark);
 
@@ -4891,7 +4922,12 @@ namespace OneService.Controllers
                     beanNowM.CShipmentNo = CShipmentNo;
                     beanNowM.CDelayReason = CDelayReason;
                     beanNowM.CRemark = CRemark;
-                    
+
+                    if (!string.IsNullOrEmpty(CScheduleDate))
+                    {
+                        beanNowM.CScheduleDate = Convert.ToDateTime(CScheduleDate);
+                    }
+
                     beanNowM.CTeamId = CTeamId;
                     beanNowM.CMainEngineerName = CMainEngineerName;
                     beanNowM.CMainEngineerId = CMainEngineerId;
@@ -5281,6 +5317,7 @@ namespace OneService.Controllers
                     ViewBag.cContractID = beanM.CContractId;
                     ViewBag.pStatus = "E0001";
                     ViewBag.CreatedUserName = "";
+                    ViewBag.cScheduleDate = "";
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -5349,6 +5386,7 @@ namespace OneService.Controllers
                     ViewBag.cContractID = beanM.CContractId;
                     ViewBag.pStatus = beanM.CStatus;
                     ViewBag.CreatedUserName = beanM.CreatedUserName;
+                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -5407,6 +5445,7 @@ namespace OneService.Controllers
                     ViewBag.cRemark = "";           //空值
                     ViewBag.cContractID = "";       //空值
                     ViewBag.CreatedUserName = "";
+                    ViewBag.cScheduleDate = "";
                 }
                 #endregion
             }
@@ -5472,6 +5511,7 @@ namespace OneService.Controllers
             string OldCSalesId = string.Empty;
             string OldCSecretaryName = string.Empty;
             string OldCSecretaryId = string.Empty;
+            string OldCScheduleDate = string.Empty;
 
             string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
             string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
@@ -5484,6 +5524,7 @@ namespace OneService.Controllers
             string CSrtypeThr = formCollection["ddl_cSRTypeThr"].FirstOrDefault();
             string CContractId = formCollection["tbx_cContractID"].FirstOrDefault();            
             string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
+            string CScheduleDate = formCollection["tbx_cScheduleDate"].FirstOrDefault();
             string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
 
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
@@ -5537,6 +5578,11 @@ namespace OneService.Controllers
                     beanM.CContractId = CContractId;                    
                     beanM.CDelayReason = CDelayReason;
                     beanM.CRemark = CRemark;
+
+                    if (!string.IsNullOrEmpty(CScheduleDate))
+                    {
+                        beanM.CScheduleDate = Convert.ToDateTime(CScheduleDate);
+                    }
 
                     beanM.CTeamId = CTeamId;
                     beanM.CMainEngineerName = CMainEngineerName;
@@ -5690,6 +5736,9 @@ namespace OneService.Controllers
                     OldCDelayReason = beanNowM.CDelayReason;
                     tLog += CMF.getNewAndOldLog("延遲結案原因", OldCDelayReason, CDelayReason);
 
+                    OldCScheduleDate = beanNowM.CScheduleDate == null ? "" : Convert.ToDateTime(beanNowM.CScheduleDate).ToString("yyyy-MM-dd");
+                    tLog += CMF.getNewAndOldLog("預排日期", OldCScheduleDate, CScheduleDate);
+
                     OldCRemark = beanNowM.CRemark;
                     tLog += CMF.getNewAndOldLog("備註", OldCRemark, CRemark);
 
@@ -5731,6 +5780,11 @@ namespace OneService.Controllers
                     beanNowM.CContractId = CContractId;                    
                     beanNowM.CDelayReason = CDelayReason;
                     beanNowM.CRemark = CRemark;
+
+                    if (!string.IsNullOrEmpty(CScheduleDate))
+                    {
+                        beanNowM.CScheduleDate = Convert.ToDateTime(CScheduleDate);
+                    }
 
                     beanNowM.CTeamId = CTeamId;
                     beanNowM.CMainEngineerName = CMainEngineerName;

@@ -1075,7 +1075,7 @@ namespace OneService.Models
                     .HasComment("客戶名稱");
 
                 entity.Property(e => e.CDelayReason)
-                    .HasMaxLength(255)
+                    .HasMaxLength(1000)
                     .HasColumnName("cDelayReason")
                     .HasComment("延遲結案原因");
 
@@ -1240,6 +1240,10 @@ namespace OneService.Models
                     .HasMaxLength(30)
                     .HasColumnName("cSalesNo")
                     .HasComment("銷售訂單號");
+
+                entity.Property(e => e.CScheduleDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cScheduleDate");
 
                 entity.Property(e => e.CSecretaryId)
                     .HasMaxLength(20)
@@ -1562,7 +1566,7 @@ namespace OneService.Models
                     .HasColumnName("cCustomerName");
 
                 entity.Property(e => e.CDelayReason)
-                    .HasMaxLength(255)
+                    .HasMaxLength(1000)
                     .HasColumnName("cDelayReason");
 
                 entity.Property(e => e.CDesc)
@@ -1570,7 +1574,7 @@ namespace OneService.Models
                     .HasColumnName("cDesc");
 
                 entity.Property(e => e.CDescR)
-                    .HasMaxLength(2048)
+                    .HasMaxLength(4000)
                     .HasColumnName("cDesc_R");
 
                 entity.Property(e => e.CEngineerId)
