@@ -806,9 +806,10 @@
 					else
 					{
 						var Today = new Date();
-						var NowDay = Today.getFullYear() + "-" + (Today.getMonth() + 1) + "-" + Today.getDate();
+						var NowDay = new Date(Today.getFullYear() + "-" + (Today.getMonth() + 1) + "-" + Today.getDate());
+						var NowScheduleDate = new Date(tbx_cScheduleDate.val());
 
-						if (tbx_cScheduleDate.val() < NowDay) {
+						if (NowScheduleDate < NowDay) {
 							Msg += "【預排日期】不能小於系統日期！\n";							
 						}
 					}
