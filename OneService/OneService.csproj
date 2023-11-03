@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\js\jquery-ui-1.12.1.custom\**" />
+    <Compile Remove="wwwroot\js\jquery-ui-1.13.2.custom\**" />
+    <Content Remove="wwwroot\js\jquery-ui-1.12.1.custom\**" />
+    <Content Remove="wwwroot\js\jquery-ui-1.13.2.custom\**" />
+    <EmbeddedResource Remove="wwwroot\js\jquery-ui-1.12.1.custom\**" />
+    <EmbeddedResource Remove="wwwroot\js\jquery-ui-1.13.2.custom\**" />
+    <None Remove="wwwroot\js\jquery-ui-1.12.1.custom\**" />
+    <None Remove="wwwroot\js\jquery-ui-1.13.2.custom\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="6.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.10">
@@ -32,6 +43,12 @@
     <Folder Include="wwwroot\js\plugins\datetimepicker\" />
     <Folder Include="wwwroot\js\plugins\chosen\" />
     <Folder Include="wwwroot\upload\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\js\jquery-ui-1.13.2\external\jquery\jquery.js" />
+    <None Include="wwwroot\js\jquery-ui-1.13.2\jquery-ui.js" />
+    <None Include="wwwroot\js\jquery-ui-1.13.2\jquery-ui.min.js" />
   </ItemGroup>
 
 </Project>
