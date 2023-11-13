@@ -150,7 +150,7 @@ namespace OneService.Models
                     .HasColumnName("cSLASRV");
 
                 entity.Property(e => e.CSubContractId)
-                    .HasMaxLength(10)
+                    .HasMaxLength(50)
                     .HasColumnName("cSubContractID");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
