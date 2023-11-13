@@ -986,6 +986,7 @@ namespace OneService.Controllers
             string tCreatedDate = string.Empty;         //派單日期
             string tModifiedDate = string.Empty;        //最後編輯日期
             string tSRProcessWay = string.Empty;        //處理方式
+            string tScheduleDate = string.Empty;        //預期日期
 
             List<TbOneSrdetailSerialFeedback> tListSerialFeedback = new List<TbOneSrdetailSerialFeedback>();     //記錄SerialFeedbacks(服務明細-序號回報檔)清單
             List<string> tListAssAndTech = new List<string>();                                              //記錄所有協助工程師和所有技術主管的ERPID
@@ -1379,13 +1380,14 @@ namespace OneService.Controllers
                 tCreatedUserName = string.IsNullOrEmpty(dr["CreatedUserName"].ToString()) ? "" : dr["CreatedUserName"].ToString();
                 tCreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
+                tScheduleDate = string.IsNullOrEmpty(dr["cScheduleDate"].ToString()) ? "" : Convert.ToDateTime(dr["cScheduleDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
 
                 if (dr["cSRID"].ToString().Substring(0, 2) == "61") //一般服務才顯示
                 {
                     tSRProcessWay = CMF.TransSysParameterByList(tSRProcessWay_List, dr["cSRProcessWay"].ToString());
                 }
 
-                string[] QueryInfo = new string[21];                
+                string[] QueryInfo = new string[22];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
                 QueryInfo[1] = tSRIDUrl;                       //服務案件URL
@@ -1408,6 +1410,7 @@ namespace OneService.Controllers
                 QueryInfo[18] = tSTATUSDESC;                   //狀態
                 QueryInfo[19] = dr["cContractID"].ToString();    //合約文件編號
                 QueryInfo[20] = tSRProcessWay;                 //處理方式
+                QueryInfo[21] = tScheduleDate;                 //預排日期
 
                 QueryToList.Add(QueryInfo);
             }
