@@ -258,7 +258,7 @@ namespace OneService.Controllers
 
         #region 服務總表查詢結果
         /// <summary>
-        /// 個人客戶設定作業查詢結果
+        /// 服務總表查詢結果
         /// </summary>   
         /// <param name="StartCreatedDate">建立日期(起)</param>
         /// <param name="EndCreatedDate">建立日期(迄)</param>
@@ -297,6 +297,8 @@ namespace OneService.Controllers
             StringBuilder tSQL = new StringBuilder();
 
             bool tIsFormal = false;
+
+            string tLog = string.Empty;
             string tTop = string.Empty;                 //是否有輸入說明，若有就要限制前1,000筆
             string ttWhere = string.Empty;
             string ttStrItem = string.Empty;
@@ -346,6 +348,40 @@ namespace OneService.Controllers
             UrlFront = tONEURLName + "/files/";
 
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
+
+            #region log記錄        
+            tLog += CMF.getPersonalInfoLog("建立日期(起)", StartCreatedDate);
+            tLog += CMF.getPersonalInfoLog("建立日期(迄)", EndCreatedDate);
+            tLog += CMF.getPersonalInfoLog("完成時間(起)", StartFinishTime);
+            tLog += CMF.getPersonalInfoLog("完成時間(迄)", EndFinishTime);
+            tLog += CMF.getPersonalInfoLog("SRID", SRID);
+            tLog += CMF.getPersonalInfoLog("說明", cDesc);
+            tLog += CMF.getPersonalInfoLog("客戶代號", CustomerID);
+            tLog += CMF.getPersonalInfoLog("報修人", RepairName);
+            tLog += CMF.getPersonalInfoLog("報修人地址", RepairAddress);
+            tLog += CMF.getPersonalInfoLog("序號", SerialID);
+            tLog += CMF.getPersonalInfoLog("機器型號", PID);
+            tLog += CMF.getPersonalInfoLog("服務團隊(新)", TeamID);
+            tLog += CMF.getPersonalInfoLog("服務團隊(舊)", TeamOldID);
+            tLog += CMF.getPersonalInfoLog("狀態", Status);
+            tLog += CMF.getPersonalInfoLog("服務類型", SRType);
+            tLog += CMF.getPersonalInfoLog("工程師ERPID", EngineerID);
+            tLog += CMF.getPersonalInfoLog("合約編號", ContractID);
+            tLog += CMF.getPersonalInfoLog("銷售單號", SO);
+            tLog += CMF.getPersonalInfoLog("XCHP", XCHP);
+            tLog += CMF.getPersonalInfoLog("HPCT", HPCT);
+            tLog += CMF.getPersonalInfoLog("更換零件料號ID", MaterialID);
+            tLog += CMF.getPersonalInfoLog("更換零件料號說明", MaterialName);
+            tLog += CMF.getPersonalInfoLog("OLDCT", OLDCT);
+            tLog += CMF.getPersonalInfoLog("NEWCT", NEWCT);
+            tLog += CMF.getPersonalInfoLog("報修類別-大類", cSRTypeOne);
+            tLog += CMF.getPersonalInfoLog("報修類別-中類", cSRTypeSec);
+            tLog += CMF.getPersonalInfoLog("報修類別-小類", cSRTypeThr);
+            tLog += CMF.getPersonalInfoLog("是否二修", cIsSecondFix);
+            tLog = "服務總表查詢作業_查詢條件如下：" + Environment.NewLine + tLog;
+
+            CMF.writeToLog("", "SRReport_Query", tLog, ViewBag.empEngName);
+            #endregion
 
             #region 建立日期
             if (!string.IsNullOrEmpty(StartCreatedDate))
@@ -960,8 +996,9 @@ namespace OneService.Controllers
             DataTable dt = null;
             DataTable dtProgress = null;
 
-            StringBuilder tSQL = new StringBuilder();            
+            StringBuilder tSQL = new StringBuilder();
 
+            string tLog = string.Empty;
             string tTop = string.Empty;                 //是否有輸入說明，若有就要限制前1,000筆
             string ttWhere = string.Empty;
             string ttWhere2 = string.Empty;
@@ -988,6 +1025,9 @@ namespace OneService.Controllers
             string tSRProcessWay = string.Empty;        //處理方式
             string tScheduleDate = string.Empty;        //預期日期
 
+            getLoginAccount();
+            getEmployeeInfo();
+
             List<TbOneSrdetailSerialFeedback> tListSerialFeedback = new List<TbOneSrdetailSerialFeedback>();     //記錄SerialFeedbacks(服務明細-序號回報檔)清單
             List<string> tListAssAndTech = new List<string>();                                              //記錄所有協助工程師和所有技術主管的ERPID
             Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();                      //記錄所有協助工程師和所有技術主管的<ERPID,中、英文姓名>
@@ -997,6 +1037,36 @@ namespace OneService.Controllers
             List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
             List<TbOneSysParameter> tSRProcessWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPROCESS");
             List<SelectListItem> ListStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, cCompanyID);
+
+            #region log記錄
+            tLog += CMF.getPersonalInfoLog("服務案件種類", cSRCaseType);
+            tLog += CMF.getPersonalInfoLog("狀態", cStatus);
+            tLog += CMF.getPersonalInfoLog("派單起始日期", cStartCreatedDate);
+            tLog += CMF.getPersonalInfoLog("派單結束日期", cEndCreatedDate);
+            tLog += CMF.getPersonalInfoLog("客戶代號", cCustomerID);
+            tLog += CMF.getPersonalInfoLog("客戶名稱", cCustomerName);
+            tLog += CMF.getPersonalInfoLog("SRID", cSRID);
+            tLog += CMF.getPersonalInfoLog("說明", cDesc);
+            tLog += CMF.getPersonalInfoLog("是否為二修", cIsSecondFix);
+            tLog += CMF.getPersonalInfoLog("派單人員", CreatedUserName);
+            tLog += CMF.getPersonalInfoLog("報修人姓名", cRepairName);
+            tLog += CMF.getPersonalInfoLog("聯絡人姓名", cContactName);
+            tLog += CMF.getPersonalInfoLog("報修管道", cSRPathWay);
+            tLog += CMF.getPersonalInfoLog("工程師ERPID", cAssEngineerID);
+            tLog += CMF.getPersonalInfoLog("技術主管ERPID", cTechManagerID);
+            tLog += CMF.getPersonalInfoLog("服務團隊", cTeamID);
+            tLog += CMF.getPersonalInfoLog("合約文件編號", cContractID);
+            tLog += CMF.getPersonalInfoLog("未指派主要工程師", cNoAssignMainEngineer);
+            tLog += CMF.getPersonalInfoLog("報修類別-大類", cSRTypeOne);
+            tLog += CMF.getPersonalInfoLog("報修類別-中類", cSRTypeSec);
+            tLog += CMF.getPersonalInfoLog("報修類別-小類", cSRTypeThr);
+            tLog += CMF.getPersonalInfoLog("報修/裝機序號", cSerialID);
+            tLog += CMF.getPersonalInfoLog("報修機器型號/裝機料號說明", cMaterialName);
+            tLog += CMF.getPersonalInfoLog("報修Product Number/裝機料號", cProductNumber);
+            tLog = "服務進度查詢作業_查詢條件如下：" + Environment.NewLine + tLog;
+
+            CMF.writeToLog("", "QuerySRProgress_Query", tLog, ViewBag.empEngName);
+            #endregion
 
             #region 服務案件種類
             if (!string.IsNullOrEmpty(cSRCaseType))

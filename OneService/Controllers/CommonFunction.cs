@@ -5223,6 +5223,28 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得個資相關log紀錄(傳入欄位名稱和值)
+        /// <summary>
+        /// 取得個資相關log紀錄(傳入欄位名稱和值)
+        /// </summary>
+        /// <param name="tFieldName">欄位名稱</param>        
+        /// <param name="tValue">值</param>
+        /// <returns></returns>
+        public string getPersonalInfoLog(string tFieldName, string tValue)
+        {
+            string tLog = string.Empty;
+
+            tValue = string.IsNullOrEmpty(tValue) ? "" : tValue;            
+
+            if (tValue != "")
+            {
+                tLog = tFieldName + "_值【 " + tValue + "】" + Environment.NewLine;
+            }
+
+            return tLog;
+        }
+        #endregion
+
         #region log紀錄(新、舊值對照)
         /// <summary>
         /// log紀錄(新、舊值對照)
