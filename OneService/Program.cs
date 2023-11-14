@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Session;
 using System.DirectoryServices.Protocols;
 using System.Net;
@@ -48,6 +49,14 @@ builder.Services.AddSession(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+//不限制Form submit的資料量
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueCountLimit = int.MaxValue;
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = long.MaxValue;
+});
 
 var app = builder.Build();
 
