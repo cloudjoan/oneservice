@@ -4592,7 +4592,7 @@ namespace OneService.Controllers
         /// 儲存裝機服務
         /// </summary>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost]        
         public IActionResult SaveInstallSR(IFormCollection formCollection)
         {
             getLoginAccount();

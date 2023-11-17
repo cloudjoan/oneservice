@@ -161,7 +161,7 @@
 						</a>
 					</div>
 				</div>
-				<div class="ibox-content">
+				<div class="ibox-content" style="overflow: scroll;">
 					<!--登人者姓名-->
 					<input type="hidden" id="hid_cLoginUser_Name" name="hid_cLoginUser_Name" value="@ViewBag.cLoginUser_Name">
 					<!--登人者帳號-->
@@ -272,19 +272,19 @@
 									}									
 
 									count++;
-									<tr id='trManager@(count)'>
-										<td>@CheckInfo[0]</td>
-										<td>@CheckInfo[1]</td>
-										<td>@CheckInfo[2]</td>
-										<td>@Html.Raw(CheckInfo[3])</td>
-										<td>@CheckInfo[4]</td>
-										<td>@CheckInfo[5]</td>
-										<td>@Html.Raw(CheckInfo[6])</td>
-										<td>@CheckInfo[8]</td>
-										<td>@Html.Raw(CheckInfo[9])</td>
-										<td>@CheckInfo[14]</td>
-										<td>
-											@{
+										<tr id='trManager@(count)'>
+											<td>@CheckInfo[0]</td>
+											<td>@CheckInfo[1]</td>
+											<td>@CheckInfo[2]</td>
+											<td>@Html.Raw(CheckInfo[3])</td>
+											<td>@CheckInfo[4]</td>
+											<td>@CheckInfo[5]</td>
+											<td>@Html.Raw(CheckInfo[6])</td>
+											<td>@CheckInfo[8]</td>
+											<td>@Html.Raw(CheckInfo[9])</td>
+											<td>@CheckInfo[14]</td>
+											<td>
+												@{
 												string tTypeName = string.Empty;
 												string tClass = string.Empty;
 
@@ -351,25 +351,25 @@
 
 												if (CheckInfo[0].Substring(0,2) == "61")
 												{
-													<button class='@tClass' type="button" onclick="window.open('@Url.Action("GenerallySR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
-														@tTypeName
-													</button>
+															<button class='@tClass' type="button" onclick="window.open('@Url.Action("GenerallySR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
+																@tTypeName
+															</button>
 												}
 												else if (CheckInfo[0].Substring(0, 2) == "63")
 												{
-													<button class='@tClass' type="button" onclick="window.open('@Url.Action("InstallSR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
-														@tTypeName
-													</button>
+															<button class='@tClass' type="button" onclick="window.open('@Url.Action("InstallSR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
+																@tTypeName
+															</button>
 												}
 												else if (CheckInfo[0].Substring(0, 2) == "65")
 												{
-													<button class='@tClass' type="button" onclick="window.open('@Url.Action("MaintainSR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
-														@tTypeName
-													</button>
+															<button class='@tClass' type="button" onclick="window.open('@Url.Action("MaintainSR", "ServiceRequest", new { SRID = CheckInfo[0] })'); DelDetailItem('trManager@(count)');">
+																@tTypeName
+															</button>
 												}
-											}											
-										</td>
-									</tr>
+												}											
+											</td>
+										</tr>
 								}
 							}
 						}

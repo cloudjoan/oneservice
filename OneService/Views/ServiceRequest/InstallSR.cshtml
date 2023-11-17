@@ -2883,7 +2883,7 @@
 				</div>
 				<div class="ibox-content">
 					@model OneService.Controllers.ServiceRequestController.ViewModel_Install //載入StatusViewModel
-					<form id="form1" name="form" action='@Url.Action("SaveInstallSR", "ServiceRequest")' method="post">
+					<form id="form1" name="form" action='@Url.Action("SaveInstallSR", "ServiceRequest")' method="post" >
 						<!--目前tr的筆數-->
 						<input type="hidden" name="hid_trContactNo" value="@ViewBag.trContactNo">
 						<input type="hidden" name="hid_trMaterialNo" value="@ViewBag.trMaterialNo">						
