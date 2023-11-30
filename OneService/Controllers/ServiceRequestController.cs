@@ -979,6 +979,7 @@ namespace OneService.Controllers
         /// <param name="cTeamID">服務團隊</param>
         /// <param name="cContractID">合約文件編號</param>
         /// <param name="cNoAssignMainEngineer">未指派主要工程師</param>
+        /// <param name="cSRProcessWay">處理方式</param>
         /// <param name="cSRTypeOne">報修類別-大類</param>
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
@@ -988,8 +989,8 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
                                                  string cCustomerID, string cCustomerName, string cSRID, string cDesc, string cIsSecondFix, string CreatedUserName, string cRepairName, string cContactName, string cSRPathWay,
-                                                 string cAssEngineerID, string cTechManagerID, string cTeamID, string cContractID, string cNoAssignMainEngineer, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr,
-                                                 string cSerialID, string cMaterialName, string cProductNumber)
+                                                 string cAssEngineerID, string cTechManagerID, string cTeamID, string cContractID, string cNoAssignMainEngineer, string cSRProcessWay, string cSRTypeOne, string cSRTypeSec,
+                                                 string cSRTypeThr, string cSerialID, string cMaterialName, string cProductNumber)
         {            
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
@@ -1057,6 +1058,7 @@ namespace OneService.Controllers
             tLog += CMF.getPersonalInfoLog("服務團隊", cTeamID);
             tLog += CMF.getPersonalInfoLog("合約文件編號", cContractID);
             tLog += CMF.getPersonalInfoLog("未指派主要工程師", cNoAssignMainEngineer);
+            tLog += CMF.getPersonalInfoLog("處理方式", cSRProcessWay);
             tLog += CMF.getPersonalInfoLog("報修類別-大類", cSRTypeOne);
             tLog += CMF.getPersonalInfoLog("報修類別-中類", cSRTypeSec);
             tLog += CMF.getPersonalInfoLog("報修類別-小類", cSRTypeThr);
@@ -1331,6 +1333,13 @@ namespace OneService.Controllers
             if (!string.IsNullOrEmpty(cNoAssignMainEngineer))
             {                
                 ttWhere += "AND M.cMainEngineerID = '' " + Environment.NewLine;
+            }
+            #endregion
+
+            #region 處理方式
+            if (!string.IsNullOrEmpty(cSRProcessWay))
+            {
+                ttWhere += "AND M.cSRProcessWay = '" + cSRProcessWay.Trim() + "' " + Environment.NewLine;
             }
             #endregion
 
@@ -10184,6 +10193,11 @@ namespace OneService.Controllers
             #region 是否為二修
             public string ddl_cIsSecondFix { get; set; }
             public List<SelectListItem> ListIsSecondFix = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "ISSECONDFIX", true);
+            #endregion
+
+            #region 處理方式
+            public string ddl_cSRProcessWay { get; set; }
+            public List<SelectListItem> ListSRProcessWay = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPROCESS", true);
             #endregion
         }
         #endregion

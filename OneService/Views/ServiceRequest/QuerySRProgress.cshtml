@@ -718,6 +718,7 @@
 			var cTeamID = $("#hid_cTeamID").val();							//服務團隊
 			var tbx_cContractID = $('#tbx_cContractID');					//合約文件編號	
 			var hid_cNoAssignMainEngineer = $("#hid_cNoAssignMainEngineer");	//未指派主要工程師
+			var ddl_cSRProcessWay = $('#ddl_cSRProcessWay');					//處理方式	
 
 			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');						//報修類別-大類
 			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');						//報修類別-中類
@@ -729,7 +730,7 @@
 
 			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
 				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_cDesc.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && tbx_cContactName.val() == "" && SRPathWay == "" &&
-				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && hid_cNoAssignMainEngineer.val() == "" && 
+				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && hid_cNoAssignMainEngineer.val() == "" && ddl_cSRProcessWay.val() == "" &&
 				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
@@ -753,7 +754,7 @@
 			else {
 				searchQuerySRProgress(SRCaseType, Status, tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
 									  tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_cDesc.val(), ddl_cIsSecondFix.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), tbx_cContactName.val(), SRPathWay,
-									  hid_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID, tbx_cContractID.val(), hid_cNoAssignMainEngineer.val(),
+									  hid_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID, tbx_cContractID.val(), hid_cNoAssignMainEngineer.val(), ddl_cSRProcessWay.val(),
 									  ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
 									  tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
 			}
@@ -763,7 +764,7 @@
 
 		//查詢結果
 		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID, cCustomerName, cSRID, cDesc, cIsSecondFix, CreatedUserName, cRepairName, cContactName, cSRPathWay,
-			cAssEngineerID, cTechManagerID, cTeamID, cContractID, cNoAssignMainEngineer, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
+			cAssEngineerID, cTechManagerID, cTeamID, cContractID, cNoAssignMainEngineer, cSRProcessWay, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
 			
 			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
 			$("#dataDiv").html('');
@@ -792,6 +793,7 @@
 					cTeamID: cTeamID,
 					cContractID: cContractID,
 					cNoAssignMainEngineer: cNoAssignMainEngineer,
+					cSRProcessWay: cSRProcessWay,
 					cSRTypeOne: cSRTypeOne,
 					cSRTypeSec: cSRTypeSec,
 					cSRTypeThr: cSRTypeThr,
@@ -835,6 +837,7 @@
 			$('#tbx_cSerialID').val("");
 			$('#tbx_cMaterialName').val("");
 			$('#tbx_cProductNumber').val("");
+			$('#ddl_cSRProcessWay').val("");
 
 			$("#ddl_cSRCaseType").val("").trigger('chosen:updated');	//服務案件種類
 			$("#ddl_cStatus").val("").trigger('chosen:updated');	//狀態
@@ -882,6 +885,7 @@
 			var cTeamID = $("#hid_cTeamID").val();							//服務團隊
 			var tbx_cContractID = $('#tbx_cContractID');					//合約文件編號		
 			var hid_cNoAssignMainEngineer = $("#hid_cNoAssignMainEngineer");	//未指派主要工程師
+			var ddl_cSRProcessWay = $('#ddl_cSRProcessWay');					//處理方式	
 
 			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');						//報修類別-大類
 			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');						//報修類別-中類
@@ -893,7 +897,7 @@
 
 			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
 				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_cDesc.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && tbx_cContactName.val() == "" && SRPathWay == "" &&
-				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && hid_cNoAssignMainEngineer.val() == "" && 
+				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && hid_cNoAssignMainEngineer.val() == "" && ddl_cSRProcessWay.val() == "" &&
 				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
@@ -1001,6 +1005,11 @@
 				if (hid_cNoAssignMainEngineer.val() != "")
 				{
 					SRFilter += "hid_cNoAssignMainEngineer" + SRSplitValue + hid_cNoAssignMainEngineer.val() + SRSplitText;
+				}
+
+				if (ddl_cSRProcessWay.val() != "")
+				{
+					SRFilter += "ddl_cSRProcessWay" + SRSplitValue + ddl_cSRProcessWay.val() + SRSplitText;
 				}
 
 				if (ddl_cSRTypeOne.val() != "")
@@ -1291,6 +1300,11 @@
 				}, 300);				
 			}
 
+			if (FieldName == "ddl_cSRProcessWay") //處理方式
+			{
+				$("#ddl_cSRProcessWay").val(FieldValue);
+			}
+
 			if (FieldName == "ddl_cSRTypeOne") //報修類別-大類
 			{
 				$("#ddl_cSRTypeOne").val(FieldValue);
@@ -1521,6 +1535,12 @@
 								<input type="hidden" id="hid_cNoAssignMainEngineer" name="hid_cNoAssignMainEngineer">
 							</label>
 						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label">處理方式</label>
+							<div class="col-lg-4">								
+								<select asp-for="ddl_cSRProcessWay" asp-items="Model.ListSRProcessWay" class="form-control"></select>
+							</div>
+						</div>
 						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">報修/裝機序號</label>
 							<div class="col-lg-4">
@@ -1594,27 +1614,27 @@
 								{
 									foreach (string[] QueryInfo in ViewBag.QueryToListBean)
 									{
-										<tr>
-											<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
-											<td>@Html.Raw(QueryInfo[2])</td>
-											<td>@Html.Raw(QueryInfo[3])</td>						
-											<td>@Html.Raw(QueryInfo[4])</td>
-											<td>@Html.Raw(QueryInfo[5])</td>
-											<td>@Html.Raw(QueryInfo[6])</td>
-											<td>@Html.Raw(QueryInfo[21])</td>
-											<td>@Html.Raw(QueryInfo[7])</td>
-											<td>@Html.Raw(QueryInfo[8])</td>
-											<td>@Html.Raw(QueryInfo[9])</td>
-											<td>@Html.Raw(QueryInfo[10])</td>
-											<td>@Html.Raw(QueryInfo[12])</td>
-											<td>@Html.Raw(QueryInfo[13])</td>
-											<td>@Html.Raw(QueryInfo[19])</td>
-											<td>@Html.Raw(QueryInfo[20])</td>
-											<td>@Html.Raw(QueryInfo[15])</td>
-											<td>@Html.Raw(QueryInfo[16])</td>
-											<td>@Html.Raw(QueryInfo[17])</td>
-											<td>@Html.Raw(QueryInfo[18])</td>
-										</tr>
+											<tr>
+												<td><a href="@QueryInfo[1]" target="_blank">@QueryInfo[0]</a></td>
+												<td>@Html.Raw(QueryInfo[2])</td>
+												<td>@Html.Raw(QueryInfo[3])</td>						
+												<td>@Html.Raw(QueryInfo[4])</td>
+												<td>@Html.Raw(QueryInfo[5])</td>
+												<td>@Html.Raw(QueryInfo[6])</td>
+												<td>@Html.Raw(QueryInfo[21])</td>
+												<td>@Html.Raw(QueryInfo[7])</td>
+												<td>@Html.Raw(QueryInfo[8])</td>
+												<td>@Html.Raw(QueryInfo[9])</td>
+												<td>@Html.Raw(QueryInfo[10])</td>
+												<td>@Html.Raw(QueryInfo[12])</td>
+												<td>@Html.Raw(QueryInfo[13])</td>
+												<td>@Html.Raw(QueryInfo[19])</td>
+												<td>@Html.Raw(QueryInfo[20])</td>
+												<td>@Html.Raw(QueryInfo[15])</td>
+												<td>@Html.Raw(QueryInfo[16])</td>
+												<td>@Html.Raw(QueryInfo[17])</td>
+												<td>@Html.Raw(QueryInfo[18])</td>
+											</tr>
 									}
 								}
 							}
