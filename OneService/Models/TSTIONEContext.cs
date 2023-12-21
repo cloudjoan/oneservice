@@ -1074,6 +1074,10 @@ namespace OneService.Models
                     .HasColumnName("cCustomerName")
                     .HasComment("客戶名稱");
 
+                entity.Property(e => e.CCustomerUnitType)
+                    .HasMaxLength(3)
+                    .HasColumnName("cCustomerUnitType");
+
                 entity.Property(e => e.CDelayReason)
                     .HasMaxLength(1000)
                     .HasColumnName("cDelayReason")

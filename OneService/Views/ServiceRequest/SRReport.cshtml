@@ -45,7 +45,7 @@
 									return data;
 								}
 							}
-							else if (column === 37) //去除連結的部份
+							else if (column === 38) //去除連結的部份
 							{
 								var TempData = data.replace(/<br\s*\/?>/ig, "|");
 								var AryData = TempData.split("|");
@@ -76,11 +76,11 @@
 									}
 								}
 							}
-							else if (column === 2 || column === 14 || column === 21 || column === 26 || column === 27 || column === 28) //將換行符號<br>換成excel可以識別的\n
+							else if (column === 2 || column === 15 || column === 22 || column === 27 || column === 28 || column === 29) //將換行符號<br>換成excel可以識別的\n
 							{
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 							}
-							else if (column === 11 || column === 12) 
+							else if (column === 12 || column === 13) 
 							{							
 								if (data.substr(0, 1) == "0")  //若電話或手機，第一碼為0開頭時，前面要多加'，0才不會消失
 								{
@@ -113,7 +113,7 @@
 						text: '匯出Excel',
 						sheetName: '服務總表',
 						exportOptions: {
-							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57] //要顯示的欄位
+							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							addCustomNumberFormat(xlsx, '0');		//自定義格式為【0】
@@ -121,8 +121,8 @@
 							formatTargetColumn(xlsx, 'A');
 							formatTargetColumn(xlsx, 'B');
 							formatTargetColumn(xlsx, 'C');
-							formatTargetColumn(xlsx, 'L');
 							formatTargetColumn(xlsx, 'M');
+							formatTargetColumn(xlsx, 'N');
 						}
 					}),
 				],
@@ -720,40 +720,41 @@
 			$("#waitingImg").show();
 
 			var tMsg = "";
-			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');		//建立日期(起)
-			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');			//建立日期(迄)
-			var tbx_cStartFinishTime = $('#tbx_cStartFinishTime');		//完成時間(起)
-			var tbx_cEndFinishTime = $('#tbx_cEndFinishTime');			//完成時間(迄)
-			var tbx_QuerySRID = $("#tbx_QuerySRID");					//SRID
-			var tbx_cDesc = $('#tbx_cDesc');							//說明
-			var tbx_QueryCustomerID = $("#tbx_QueryCustomerID");			//客戶代號
-			var tbx_QueryRepairName = $("#tbx_QueryRepairName");			//報修人
-			var tbx_QueryRepairAddress = $("#tbx_QueryRepairAddress");	//報修人地址			
-			var tbx_QuerySerialID = $("#tbx_QuerySerialID");				//序號
-			var tbx_QueryPID = $("#tbx_QueryPID");						//機器型號
-			var TeamID = $("#hid_cTeamID").val();						//服務團隊(新)
-			var TeamOldID = $("#ddl_TeamOldID").val().join();			//服務團隊(舊)
-			var Status = $("#ddl_Status").val().join();				//狀態
-			var SRType = $("#ddl_SRType").val().join();				//服務案件種類
-			var hid_cAssEngineerID = $('#hid_cAssEngineerID');			//工程師ERPID
-			var tbx_QueryContractID = $("#tbx_QueryContractID");			//合約編號
-			var tbx_QuerySO = $("#tbx_QuerySO");						//銷售單號
-			var tbx_QueryXCHP = $("#tbx_QueryXCHP");					//XCHP
-			var tbx_QueryHPCT = $("#tbx_QueryHPCT");					//HPCT
-			var tbx_QueryMaterialID = $("#tbx_QueryMaterialID");			//更換零件料號ID
-			var tbx_QueryMaterialName = $("#tbx_QueryMaterialName");		//更換零件料號說明
-			var tbx_QueryOLDCT = $("#tbx_QueryOLDCT");					//OLDCT
-			var tbx_QueryNEWCT = $("#tbx_QueryNEWCT");					//NEWCT
-			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');					//報修類別-大類
-			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');					//報修類別-中類
-			var ddl_cSRTypeThr = $('#ddl_cSRTypeThr');					//報修類別-小類
-			var ddl_cIsSecondFix = $("#ddl_cIsSecondFix");				//是否二修
+			var tbx_cStartCreatedDate = $('#tbx_cStartCreatedDate');					//建立日期(起)
+			var tbx_cEndCreatedDate = $('#tbx_cEndCreatedDate');						//建立日期(迄)
+			var tbx_cStartFinishTime = $('#tbx_cStartFinishTime');					//完成時間(起)
+			var tbx_cEndFinishTime = $('#tbx_cEndFinishTime');						//完成時間(迄)
+			var tbx_QuerySRID = $("#tbx_QuerySRID");								//SRID
+			var tbx_cDesc = $('#tbx_cDesc');										//說明
+			var tbx_QueryCustomerID = $("#tbx_QueryCustomerID");						//客戶代號
+			var tbx_QueryRepairName = $("#tbx_QueryRepairName");						//報修人
+			var tbx_QueryRepairAddress = $("#tbx_QueryRepairAddress");				//報修人地址			
+			var tbx_QuerySerialID = $("#tbx_QuerySerialID");							//序號
+			var tbx_QueryPID = $("#tbx_QueryPID");									//機器型號
+			var TeamID = $("#hid_cTeamID").val();									//服務團隊(新)
+			var TeamOldID = $("#ddl_TeamOldID").val().join();						//服務團隊(舊)
+			var Status = $("#ddl_Status").val().join();							//狀態
+			var SRType = $("#ddl_SRType").val().join();							//服務案件種類
+			var hid_cAssEngineerID = $('#hid_cAssEngineerID');						//工程師ERPID
+			var tbx_QueryContractID = $("#tbx_QueryContractID");						//合約編號
+			var tbx_QuerySO = $("#tbx_QuerySO");									//銷售單號
+			var tbx_QueryXCHP = $("#tbx_QueryXCHP");								//XCHP
+			var tbx_QueryHPCT = $("#tbx_QueryHPCT");								//HPCT
+			var tbx_QueryMaterialID = $("#tbx_QueryMaterialID");						//更換零件料號ID
+			var tbx_QueryMaterialName = $("#tbx_QueryMaterialName");					//更換零件料號說明
+			var tbx_QueryOLDCT = $("#tbx_QueryOLDCT");								//OLDCT
+			var tbx_QueryNEWCT = $("#tbx_QueryNEWCT");								//NEWCT
+			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');								//報修類別-大類
+			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');								//報修類別-中類
+			var ddl_cSRTypeThr = $('#ddl_cSRTypeThr');								//報修類別-小類
+			var ddl_cIsSecondFix = $("#ddl_cIsSecondFix");							//是否二修
+			var cCustomerUnitType = $("#ddl_cCustomerUnitType").val().join();		//客戶單位類別
 
 			if (tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" && tbx_cStartFinishTime.val() == "" && tbx_cEndFinishTime.val() == "" && 
 			    tbx_QuerySRID.val() == "" && tbx_cDesc.val() == "" && tbx_QueryCustomerID.val() == "" && tbx_QueryRepairName.val() == "" && tbx_QueryRepairAddress.val() == "" &&
 				tbx_QuerySerialID.val() == "" && tbx_QueryPID.val() == "" && TeamID == "" && TeamOldID == "" && Status == "" && SRType == "" && hid_cAssEngineerID.val() == "" &&
 				tbx_QueryContractID.val() == "" && tbx_QuerySO.val() == "" && tbx_QueryXCHP.val() == "" && tbx_QueryHPCT.val() == "" &&
-				tbx_QueryMaterialID.val() == "" && tbx_QueryMaterialName.val() == "" && tbx_QueryOLDCT.val() == "" && tbx_QueryNEWCT.val() == "" && ddl_cSRTypeOne.val() == "" && ddl_cIsSecondFix.val() == "" &&
+				tbx_QueryMaterialID.val() == "" && tbx_QueryMaterialName.val() == "" && tbx_QueryOLDCT.val() == "" && tbx_QueryNEWCT.val() == "" && ddl_cSRTypeOne.val() == "" && ddl_cIsSecondFix.val() == "" && cCustomerUnitType == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
 				tMsg += "請至少輸入一項查詢條件！\n";
@@ -785,7 +786,7 @@
 					tbx_QuerySRID.val(), tbx_cDesc.val(), tbx_QueryCustomerID.val(), tbx_QueryRepairName.val(), tbx_QueryRepairAddress.val(),
 					tbx_QuerySerialID.val(), tbx_QueryPID.val(), TeamID, TeamOldID, Status, SRType, hid_cAssEngineerID.val(), tbx_QueryContractID.val(), tbx_QuerySO.val(),
 					tbx_QueryXCHP.val(), tbx_QueryHPCT.val(), tbx_QueryMaterialID.val(), tbx_QueryMaterialName.val(), tbx_QueryOLDCT.val(), tbx_QueryNEWCT.val(),
-					ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(), ddl_cIsSecondFix.val());
+					ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(), ddl_cIsSecondFix.val(), cCustomerUnitType);
 			}
 
 			return true;
@@ -793,7 +794,7 @@
 
 		//查詢結果
 		function searchSRReport(StartCreatedDate, EndCreatedDate, StartFinishTime, EndFinishTime, SRID, cDesc, CustomerID, RepairName, RepairAddress,
-			SerialID, PID, TeamID, TeamOldID, Status, SRType, EngineerID, ContractID, SO, XCHP, HPCT, MaterialID, MaterialName, OLDCT, NEWCT, cSRTypeOne, cSRTypeSec, cSRTypeThr, cIsSecondFix) {
+			SerialID, PID, TeamID, TeamOldID, Status, SRType, EngineerID, ContractID, SO, XCHP, HPCT, MaterialID, MaterialName, OLDCT, NEWCT, cSRTypeOne, cSRTypeSec, cSRTypeThr, cIsSecondFix, cCustomerUnitType) {
 			$("#dataDiv").html('');
 			$.ajax({
 				url: '@Url.Action("SRReportResult", "ServiceRequest")',
@@ -827,7 +828,8 @@
 					cSRTypeOne: cSRTypeOne,
 					cSRTypeSec: cSRTypeSec,
 					cSRTypeThr: cSRTypeThr,
-					cIsSecondFix: cIsSecondFix
+					cIsSecondFix: cIsSecondFix,
+					cCustomerUnitType: cCustomerUnitType
 				},
 				success: function (result) {
 				},
@@ -865,6 +867,7 @@
 			$("#ddl_TeamOldID").val("").trigger('chosen:updated');
 			$("#ddl_Status").val("").trigger('chosen:updated');
 			$("#ddl_SRType").val("").trigger('chosen:updated');
+			$("#ddl_cCustomerUnitType").val("").trigger('chosen:updated');
 			$('#ddl_cSRTypeOne').val("");
 			$('#ddl_cSRTypeSec').empty(); //清空下拉選項
 			$('#ddl_cSRTypeThr').empty(); //清空下拉選項
@@ -952,6 +955,10 @@
 							<div class="col-lg-4">
 								<input type="text" id="tbx_QueryCustomerID" name="tbx_QueryCustomerID" class="form-control CustName" placeholder="請輸入客戶統編或名稱關鍵字">
 								<label id="lbl_QueryCustomerID" class="col-form-label" style="color:blue;"></label>
+							</div>
+							<label class="col-lg-2 col-form-label">客戶單位類別</label>
+							<div class="col-lg-4">
+								@Html.DropDownList("ddl_cCustomerUnitType", (IEnumerable<SelectListItem>)ViewBag.ddl_cCustomerUnitType, new { @class = "form-control chosen-select", @multiple = "true", @data_placeholder = "請選擇客戶單位類別" })
 							</div>
 						</div>
 						<div class="form-group row">
@@ -1099,6 +1106,7 @@
 								<th>狀態</th>
 								<th>客戶ID</th>
 								<th>客戶名稱</th>
+								<th>客戶單位類別</th>
 								<th>報修人姓名</th>
 								<th>報修人地址</th>
 								<th>報修人電話</th>
@@ -1177,6 +1185,7 @@
 											<td>@Html.Raw(QueryInfo[7])</td>
 											<td>@Html.Raw(QueryInfo[8])</td>
 											<td>@Html.Raw(QueryInfo[9])</td>
+											<td>@Html.Raw(QueryInfo[60])</td>
 											<td>@Html.Raw(QueryInfo[10])</td>
 											<td>@Html.Raw(QueryInfo[11])</td>
 											<td>@Html.Raw(QueryInfo[12])</td>

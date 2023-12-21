@@ -40,7 +40,7 @@
 								return data;
 							}
 						}	
-						else if (column === 37) //去除連結的部份
+						else if (column === 38) //去除連結的部份
 						{
 							var TempData = data.replace(/<br\s*\/?>/ig, "|");
 							var AryData = TempData.split("|");
@@ -71,11 +71,11 @@
 								}
 							}
 						}
-						else if (column === 2 || column === 14 || column === 21 || column === 26 || column === 27 || column === 28) //將換行符號<br>換成excel可以識別的\n
+						else if (column === 2 || column === 15 || column === 22 || column === 27 || column === 28 || column === 29) //將換行符號<br>換成excel可以識別的\n
 						{
 							return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 						}
-						else if (column === 11 || column === 12) 
+						else if (column === 12 || column === 13) 
 						{							
 							if (data.substr(0, 1) == "0")  //若電話或手機，第一碼為0開頭時，前面要多加'，0才不會消失
 							{
@@ -108,7 +108,7 @@
 					text: '匯出Excel',
 					sheetName: '服務總表',
 					exportOptions: {
-						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57] //要顯示的欄位
+						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						addCustomNumberFormat(xlsx, '0');		//自定義格式為【0】
@@ -116,8 +116,8 @@
 						formatTargetColumn(xlsx, 'A');
 						formatTargetColumn(xlsx, 'B');
 						formatTargetColumn(xlsx, 'C');
-						formatTargetColumn(xlsx, 'L');
 						formatTargetColumn(xlsx, 'M');
+						formatTargetColumn(xlsx, 'N');
 
 						SaveQueryLog("SRReport_ExportExcel"); //記錄登入人員匯出Excel的時間點Log
 					}
@@ -189,6 +189,7 @@
 			<th>狀態</th>
 			<th>客戶ID</th>
 			<th>客戶名稱</th>
+			<th>客戶單位類別</th>
 			<th>報修人姓名</th>
 			<th>報修人地址</th>
 			<th>報修人電話</th>
@@ -267,6 +268,7 @@
 							<td>@Html.Raw(QueryInfo[7])</td>
 							<td>@Html.Raw(QueryInfo[8])</td>
 							<td>@Html.Raw(QueryInfo[9])</td>
+							<td>@Html.Raw(QueryInfo[60])</td>
 							<td>@Html.Raw(QueryInfo[10])</td>
 							<td>@Html.Raw(QueryInfo[11])</td>
 							<td>@Html.Raw(QueryInfo[12])</td>

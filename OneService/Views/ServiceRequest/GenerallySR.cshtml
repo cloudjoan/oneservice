@@ -4554,9 +4554,9 @@
 							<div class="col-lg-4">								
 								<select asp-for="ddl_cMAServiceType" asp-items="Model.ListMAServiceType" class="form-control"></select>
 							</div>
-							<label class="col-lg-2 col-form-label">建立日期</label>
-							<div class="col-lg-4">
-							<input type="text" id="tbx_CreatedDate" name="tbx_CreatedDate" class="form-control" placeholder="建立日期" value="@ViewBag.CreatedDate" readonly>
+							<label class="col-lg-2 col-form-label">*是否為內部作業</label>
+							<div class="col-lg-4">								
+								<select asp-for="ddl_cIsInternalWork" asp-items="Model.ListIsInternalWork" class="form-control"></select>
 							</div>
 						</div>
 						<div class="form-group row">
@@ -4567,9 +4567,9 @@
 								@Html.DropDownList("ddl_cSRTypeThr", (IEnumerable<SelectListItem>)ViewBag.SRTypeThrList, new { @class = "form-control" })		
 								<label class="col-form-label">(狀態選擇【完修】時，報修類別為必填)</label>
 							</div>	
-							<label class="col-lg-2 col-form-label">*是否為內部作業</label>
+							<label class="col-lg-2 col-form-label">客戶單位類別</label>
 							<div class="col-lg-4">								
-								<select asp-for="ddl_cIsInternalWork" asp-items="Model.ListIsInternalWork" class="form-control"></select>
+								<select asp-for="ddl_cCustomerUnitType" asp-items="Model.ListCustomerUnitType" class="form-control"></select>
 							</div>
 						</div>
 						<div class="form-group row">
@@ -4609,6 +4609,14 @@
 								<textarea rows="3" class="form-control" placeholder="備註" id="tbx_cRemark" name="tbx_cRemark" title="@ViewBag.cRemark">@ViewBag.cRemark</textarea>
 								<label class="col-form-label" style="color:red;">※提醒：【備註】欄位的內容將會呈現於客戶服務報告書中，以利補充說明客戶聯繫事項、維修備註。</label>
 							</div>							
+							<label class="col-lg-2 col-form-label">建立日期</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_CreatedDate" name="tbx_CreatedDate" class="form-control" placeholder="建立日期" value="@ViewBag.CreatedDate" readonly>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label class="col-lg-2 col-form-label"></label>
+							<div class="col-lg-4"></div>	
 							<label class="col-lg-2 col-form-label">派單人員</label>
 							<div class="col-lg-4">
 								<label class="col-form-label">@ViewBag.CreatedUserName</label>

@@ -231,6 +231,11 @@ namespace OneService.Controllers
             ViewBag.ddl_Status = ListStatus;
             #endregion
 
+            #region 客戶單位類別
+            List<SelectListItem> ListCustomerUnitType = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRCUSTOMERUNITTYPE", false);
+            ViewBag.ddl_cCustomerUnitType = ListCustomerUnitType;
+            #endregion
+
             #region 報修類別
             //大類
             var SRTypeOneList = CMF.findFirstKINDList();
@@ -288,11 +293,12 @@ namespace OneService.Controllers
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
         /// <param name="cIsSecondFix">是否二修</param>
+        /// <param name="cCustomerUnitType">客戶單位類別</param>
         /// <returns></returns>
         public IActionResult SRReportResult(string StartCreatedDate, string EndCreatedDate, string StartFinishTime, string EndFinishTime, string SRID, string cDesc,
                                           string CustomerID, string RepairName, string RepairAddress, string SerialID, string PID, string TeamID, string TeamOldID,
                                           string Status, string SRType, string EngineerID, string ContractID, string SO, string XCHP, string HPCT, 
-                                          string MaterialID, string MaterialName, string OLDCT, string NEWCT, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr, string cIsSecondFix)
+                                          string MaterialID, string MaterialName, string OLDCT, string NEWCT, string cSRTypeOne, string cSRTypeSec, string cSRTypeThr, string cIsSecondFix, string cCustomerUnitType)
         {
             StringBuilder tSQL = new StringBuilder();
 
@@ -323,6 +329,7 @@ namespace OneService.Controllers
             string cIsShowLink = string.Empty;
             string UrlFront = string.Empty;
             string cContactInfo = string.Empty;
+            string cCustomerUnitTypeName = string.Empty;
             string fPID = string.Empty;
             string fPN = string.Empty;
             string fSerialID = string.Empty;
@@ -378,6 +385,7 @@ namespace OneService.Controllers
             tLog += CMF.getPersonalInfoLog("報修類別-中類", cSRTypeSec);
             tLog += CMF.getPersonalInfoLog("報修類別-小類", cSRTypeThr);
             tLog += CMF.getPersonalInfoLog("是否二修", cIsSecondFix);
+            tLog += CMF.getPersonalInfoLog("客戶單位類別", cCustomerUnitType);
             tLog = "服務總表查詢作業_查詢條件如下：" + Environment.NewLine + tLog;
 
             CMF.writeToLog("", "SRReport_Query", tLog, ViewBag.empEngName);
@@ -664,6 +672,26 @@ namespace OneService.Controllers
             }
             #endregion
 
+            #region 客戶單位類別
+            if (!string.IsNullOrEmpty(cCustomerUnitType))
+            {
+                ttStrItem = "";
+                string[] tAryCustomerUnitType = cCustomerUnitType.TrimEnd(',').Split(',');
+
+                foreach (string tCustomerUnitType in tAryCustomerUnitType)
+                {
+                    ttStrItem += "N'" + tCustomerUnitType + "',";
+                }
+
+                ttStrItem = ttStrItem.TrimEnd(',');
+
+                if (ttStrItem != "")
+                {
+                    ttWhere += "AND cCustomerUnitType IN (" + ttStrItem + ") " + Environment.NewLine;
+                }
+            }
+            #endregion
+
             #region 組待查詢清單
 
             #region SQL語法
@@ -675,6 +703,7 @@ namespace OneService.Controllers
             DataTable dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");
 
             var tSRTeam_List = CMF.findSRTeamIDList("ALL", false);
+            List<TbOneSysParameter> tCustomerUnitTyp_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", "T012", "SRCUSTOMERUNITTYPE");
 
             #region 取得所有SRID
             List<string> tListSRID = new List<string>();
@@ -698,7 +727,7 @@ namespace OneService.Controllers
 
             foreach (DataRow dr in dt.Rows)
             {
-                string[] QueryInfo = new string[60];
+                string[] QueryInfo = new string[61];
 
                 CreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd");
                 tSRIDUrl = CMF.findSRIDUrl(dr["cSRID"].ToString());
@@ -733,6 +762,7 @@ namespace OneService.Controllers
                 cWTYEDATE = Convert.ToDateTime(dr["cWTYEDATE"].ToString()) == Convert.ToDateTime("1900-01-01") ? "" : Convert.ToDateTime(dr["cWTYEDATE"].ToString()).ToString("yyyy-MM-dd");
 
                 cContactInfo = CMF.TransSRDetailContactInfo(tListContact, dr["cSRID"].ToString());
+                cCustomerUnitTypeName = CMF.TransSysParameterByList(tCustomerUnitTyp_List, dr["cCustomerUnitType"].ToString());
 
                 if (dr["cSRID"].ToString().Substring(0, 2) == "63")
                 {
@@ -757,6 +787,7 @@ namespace OneService.Controllers
                 QueryInfo[7] = dr["cStatus"].ToString();            //狀態
                 QueryInfo[8] = dr["cCustomerID"].ToString();        //客戶ID
                 QueryInfo[9] = dr["cCustomerName"].ToString();      //客戶名稱
+                QueryInfo[60] = cCustomerUnitTypeName;            //客戶單位類別
                 QueryInfo[10] = dr["cRepairName"].ToString();       //報修人姓名
                 QueryInfo[11] = dr["cRepairAddress"].ToString();    //報修人地址
                 QueryInfo[12] = dr["cRepairPhone"].ToString();      //報修人電話
@@ -767,7 +798,7 @@ namespace OneService.Controllers
                 QueryInfo[17] = dr["cMAServiceType"].ToString();    //維護服務種類
                 QueryInfo[18] = dr["cSRTypeOneNote"].ToString();    //報修大類
                 QueryInfo[19] = dr["cSRTypeSecNote"].ToString();    //報修中類
-                QueryInfo[20] = dr["cSRTypeThrNote"].ToString();    //報修小類
+                QueryInfo[20] = dr["cSRTypeThrNote"].ToString();    //報修小類                
                 QueryInfo[21] = tSRTeam;                          //服務團隊
                 QueryInfo[22] = dr["cSQPersonName"].ToString();     //SQ人員
                 QueryInfo[23] = dr["cIsSecondFix"].ToString();      //是否為二修
@@ -980,6 +1011,7 @@ namespace OneService.Controllers
         /// <param name="cContractID">合約文件編號</param>
         /// <param name="cNoAssignMainEngineer">未指派主要工程師</param>
         /// <param name="cSRProcessWay">處理方式</param>
+        /// <param name="cCustomerUnitType">客戶單位類別</param>
         /// <param name="cSRTypeOne">報修類別-大類</param>
         /// <param name="cSRTypeSec">報修類別-中類</param>
         /// <param name="cSRTypeThr">報修類別-小類</param>
@@ -989,8 +1021,8 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
                                                  string cCustomerID, string cCustomerName, string cSRID, string cDesc, string cIsSecondFix, string CreatedUserName, string cRepairName, string cContactName, string cSRPathWay,
-                                                 string cAssEngineerID, string cTechManagerID, string cTeamID, string cContractID, string cNoAssignMainEngineer, string cSRProcessWay, string cSRTypeOne, string cSRTypeSec,
-                                                 string cSRTypeThr, string cSerialID, string cMaterialName, string cProductNumber)
+                                                 string cAssEngineerID, string cTechManagerID, string cTeamID, string cContractID, string cNoAssignMainEngineer, string cSRProcessWay, string cCustomerUnitType,
+                                                 string cSRTypeOne, string cSRTypeSec, string cSRTypeThr, string cSerialID, string cMaterialName, string cProductNumber)
         {            
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
 
@@ -1024,6 +1056,7 @@ namespace OneService.Controllers
             string tCreatedDate = string.Empty;         //派單日期
             string tModifiedDate = string.Empty;        //最後編輯日期
             string tSRProcessWay = string.Empty;        //處理方式
+            string tCustomerUnitType = string.Empty;    //客戶單位類別
             string tScheduleDate = string.Empty;        //預期日期
 
             getLoginAccount();
@@ -1037,6 +1070,7 @@ namespace OneService.Controllers
             var tSRContact_List = CMF.findSRDetailContactList();            
             List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
             List<TbOneSysParameter> tSRProcessWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPROCESS");
+            List<TbOneSysParameter> tCustomerUnitTyp_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRCUSTOMERUNITTYPE");
             List<SelectListItem> ListStatus = CMF.findSRStatus(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, cCompanyID);
 
             #region log記錄
@@ -1059,6 +1093,7 @@ namespace OneService.Controllers
             tLog += CMF.getPersonalInfoLog("合約文件編號", cContractID);
             tLog += CMF.getPersonalInfoLog("未指派主要工程師", cNoAssignMainEngineer);
             tLog += CMF.getPersonalInfoLog("處理方式", cSRProcessWay);
+            tLog += CMF.getPersonalInfoLog("客戶單位類別", cCustomerUnitType);
             tLog += CMF.getPersonalInfoLog("報修類別-大類", cSRTypeOne);
             tLog += CMF.getPersonalInfoLog("報修類別-中類", cSRTypeSec);
             tLog += CMF.getPersonalInfoLog("報修類別-小類", cSRTypeThr);
@@ -1343,6 +1378,13 @@ namespace OneService.Controllers
             }
             #endregion
 
+            #region 客戶單位類別
+            if (!string.IsNullOrEmpty(cCustomerUnitType))
+            {
+                ttWhere += "AND M.cCustomerUnitType = '" + cCustomerUnitType.Trim() + "' " + Environment.NewLine;
+            }
+            #endregion
+
             #region 將ttWhere複製到ttWhere2，要給裝機join用
             if (ttWhere != "")
             {
@@ -1460,13 +1502,14 @@ namespace OneService.Controllers
                 tCreatedDate = string.IsNullOrEmpty(dr["CreatedDate"].ToString()) ? "" : Convert.ToDateTime(dr["CreatedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tScheduleDate = string.IsNullOrEmpty(dr["cScheduleDate"].ToString()) ? "" : Convert.ToDateTime(dr["cScheduleDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
+                tCustomerUnitType = CMF.TransSysParameterByList(tCustomerUnitTyp_List, dr["cCustomerUnitType"].ToString());
 
                 if (dr["cSRID"].ToString().Substring(0, 2) == "61") //一般服務才顯示
                 {
                     tSRProcessWay = CMF.TransSysParameterByList(tSRProcessWay_List, dr["cSRProcessWay"].ToString());
                 }
 
-                string[] QueryInfo = new string[22];                
+                string[] QueryInfo = new string[23];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
                 QueryInfo[1] = tSRIDUrl;                       //服務案件URL
@@ -1490,6 +1533,7 @@ namespace OneService.Controllers
                 QueryInfo[19] = dr["cContractID"].ToString();    //合約文件編號
                 QueryInfo[20] = tSRProcessWay;                 //處理方式
                 QueryInfo[21] = tScheduleDate;                 //預排日期
+                QueryInfo[22] = tCustomerUnitType;             //客戶單位類別
 
                 QueryToList.Add(QueryInfo);
             }
@@ -1838,11 +1882,12 @@ namespace OneService.Controllers
                     ViewBag.cSRRepairLevel = "Z03";                     //三級(一般叫修)
                     ViewBag.cDelayReason = "";
                     ViewBag.cRemark = "";
+                    ViewBag.cCustomerUnitType = "";
                     ViewBag.cIsSecondFix = "";
                     ViewBag.cIsInternalWork = "N";
                     ViewBag.pStatus = "E0001";                          //新建
                     ViewBag.CreatedUserName = "";
-                    ViewBag.cScheduleDate = "";
+                    ViewBag.cScheduleDate = "";                    
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -1975,15 +2020,16 @@ namespace OneService.Controllers
                     ViewBag.cAttachement = beanM.CAttachement;
                     ViewBag.cSRPathWay = beanM.CSrpathWay;
                     ViewBag.cMAServiceType = beanM.CMaserviceType;
-                    ViewBag.cSRProcessWay = beanM.CSrprocessWay;
+                    ViewBag.cSRProcessWay = beanM.CSrprocessWay;                    
                     ViewBag.cSRRepairLevel = beanM.CSrrepairLevel;
                     ViewBag.cDelayReason = beanM.CDelayReason;
                     ViewBag.cRemark = beanM.CRemark;
+                    ViewBag.cCustomerUnitType = beanM.CCustomerUnitType;
                     ViewBag.cIsSecondFix = beanM.CIsSecondFix;
                     ViewBag.cIsInternalWork = beanM.CIsInternalWork;
                     ViewBag.pStatus = beanM.CStatus;
                     ViewBag.CreatedUserName = beanM.CreatedUserName;                    
-                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");
+                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");                    
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -2204,23 +2250,25 @@ namespace OneService.Controllers
                     ViewBag.cSRRepairLevel = "Z03"; //三級(一般叫修)
                     ViewBag.cDelayReason = "";      //空值
                     ViewBag.cRemark = "";          //空值
+                    ViewBag.cCustomerUnitType = ""; //請選擇
                     ViewBag.cIsSecondFix = "";     //請選擇
                     ViewBag.cIsInternalWork = "N";
                     ViewBag.CreatedUserName = "";
-                    ViewBag.cScheduleDate = "";
+                    ViewBag.cScheduleDate = "";                    
                 }
                 #endregion
             }
 
             #region 指派Option值
-            model.ddl_cStatus = ViewBag.pStatus;                //設定狀態
-            model.ddl_cSRPathWay = ViewBag.cSRPathWay;          //設定報修管道
-            model.ddl_cMAServiceType = ViewBag.cMAServiceType;   //設定維護服務種類
-            model.ddl_cSRProcessWay = ViewBag.cSRProcessWay;    //設定處理方式
-            model.ddl_cSRRepairLevel = ViewBag.cSRRepairLevel;  //設定故障報修等級
-            model.ddl_cIsSecondFix = ViewBag.cIsSecondFix;      //是否為二修
-            model.ddl_cCustomerType = ViewBag.cCustomerType;    //客戶類型(P.個人 C.法人)
-            model.ddl_cIsInternalWork = ViewBag.cIsInternalWork; //是否為內部作業
+            model.ddl_cStatus = ViewBag.pStatus;                    //設定狀態
+            model.ddl_cSRPathWay = ViewBag.cSRPathWay;              //設定報修管道
+            model.ddl_cMAServiceType = ViewBag.cMAServiceType;      //設定維護服務種類
+            model.ddl_cSRProcessWay = ViewBag.cSRProcessWay;        //設定處理方式
+            model.ddl_cSRRepairLevel = ViewBag.cSRRepairLevel;      //設定故障報修等級
+            model.ddl_cIsSecondFix = ViewBag.cIsSecondFix;          //是否為二修
+            model.ddl_cCustomerType = ViewBag.cCustomerType;        //客戶類型(P.個人 C.法人)
+            model.ddl_cIsInternalWork = ViewBag.cIsInternalWork;     //是否為內部作業
+            model.ddl_cCustomerUnitType = ViewBag.cCustomerUnitType; //客戶單位類別
             #endregion
 
             ViewBag.SRTypeOneList = SRTypeOneList;
@@ -2271,6 +2319,7 @@ namespace OneService.Controllers
             string OldCSrrepairLevel = string.Empty;
             string OldCDelayReason = string.Empty;
             string OldCRemark = string.Empty;
+            string OldCCustomerUnitType = string.Empty;
             string OldCIsSecondFix = string.Empty;
             string OldCIsInternalWork = string.Empty;
             string OldCRepairName = string.Empty;
@@ -2289,7 +2338,7 @@ namespace OneService.Controllers
             string OldCTechManagerId = string.Empty;
             string OldCPerCallSlaresp = string.Empty;
             string OldCPerCallSlasrv = string.Empty;
-            string OldCScheduleDate = string.Empty;
+            string OldCScheduleDate = string.Empty;            
 
             string OldCFaultGroup = string.Empty;
             string OldCFaultGroup1 = string.Empty;
@@ -2341,6 +2390,7 @@ namespace OneService.Controllers
             string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
             string CScheduleDate = formCollection["tbx_cScheduleDate"].FirstOrDefault();
             string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
+            string CCustomerUnitType = formCollection["ddl_cCustomerUnitType"].FirstOrDefault();
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CSqpersonId = formCollection["hid_cSQPersonID"].FirstOrDefault();
             string CSqpersonName = formCollection["tbx_cSQPersonName"].FirstOrDefault();
@@ -2351,7 +2401,7 @@ namespace OneService.Controllers
             string CAssEngineerId = formCollection["hid_cAssEngineerID"].FirstOrDefault();
             string CTechManagerId = formCollection["hid_cTechManagerID"].FirstOrDefault();
             string CPerCallSlaresp = formCollection["ddl_cPerCallSLARESP"].FirstOrDefault();
-            string CPerCallSlasrv = formCollection["ddl_cPerCallSLASRV"].FirstOrDefault();            
+            string CPerCallSlasrv = formCollection["ddl_cPerCallSLASRV"].FirstOrDefault();                
 
             string CFaultGroup = formCollection["hid_cFaultGroup"].FirstOrDefault();            
             string CFaultState = formCollection["hid_cFaultState"].FirstOrDefault();            
@@ -2396,7 +2446,7 @@ namespace OneService.Controllers
 
                     //主表資料
                     beanM.CSrid = pSRID;
-                    beanM.CStatus = "E0005";    //新增時先預設為L3.處理中
+                    beanM.CStatus = "E0005";    //新增時先預設為L1.處理中
                     beanM.CCustomerName = CCustomerName;
                     beanM.CCustomerId = CCustomerId;                    
                     beanM.CDesc = CDesc;
@@ -2411,6 +2461,7 @@ namespace OneService.Controllers
                     beanM.CSrrepairLevel = CSrrepairLevel;
                     beanM.CDelayReason = CDelayReason;
                     beanM.CRemark = CRemark;
+                    beanM.CCustomerUnitType = CCustomerUnitType;
                     beanM.CIsSecondFix = CIsSecondFix;
                     beanM.CIsInternalWork = CIsInternalWork;
                     beanM.CRepairName = CRepairName;
@@ -2428,7 +2479,7 @@ namespace OneService.Controllers
                     beanM.CAssEngineerId = CAssEngineerId;
                     beanM.CTechManagerId = CTechManagerId;
                     beanM.CPerCallSlaresp = CPerCallSlaresp;
-                    beanM.CPerCallSlasrv = CPerCallSlasrv;
+                    beanM.CPerCallSlasrv = CPerCallSlasrv;                    
                     beanM.CSystemGuid = Guid.NewGuid();
                     beanM.CIsAppclose = "";
 
@@ -2586,7 +2637,7 @@ namespace OneService.Controllers
                         beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
                         beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
                         beanIN.IV_SRID = pSRID;
-                        beanIN.IV_STATUS = "E0005|ADD"; //新建但狀態是L3處理中
+                        beanIN.IV_STATUS = "E0005|ADD"; //新建但狀態是L1處理中
                         beanIN.IV_APIURLName = tAPIURLName;
 
                         CMF.GetAPI_SRSTATUS_Update(beanIN);
@@ -2647,6 +2698,9 @@ namespace OneService.Controllers
                     OldCRemark = beanNowM.CRemark;
                     tLog += CMF.getNewAndOldLog("備註", OldCRemark, CRemark);
 
+                    OldCCustomerUnitType = beanNowM.CCustomerUnitType;
+                    tLog += CMF.getNewAndOldLog("客戶單位類別", OldCCustomerUnitType, CCustomerUnitType);
+
                     OldCIsSecondFix = beanNowM.CIsSecondFix;
                     tLog += CMF.getNewAndOldLog("是否為二修", OldCIsSecondFix, CIsSecondFix);
 
@@ -2699,7 +2753,7 @@ namespace OneService.Controllers
                     tLog += CMF.getNewAndOldLog("SLA回應條件(單筆per call)", OldCPerCallSlaresp, CPerCallSlaresp);
 
                     OldCPerCallSlasrv = beanNowM.CPerCallSlasrv;
-                    tLog += CMF.getNewAndOldLog("SLA服務條件(單筆per call)", OldCPerCallSlasrv, CPerCallSlasrv);
+                    tLog += CMF.getNewAndOldLog("SLA服務條件(單筆per call)", OldCPerCallSlasrv, CPerCallSlasrv);                   
 
                     #region 客戶故障狀況分類
                     OldCFaultGroup = string.IsNullOrEmpty(beanNowM.CFaultGroup) ? "" : beanNowM.CFaultGroup;
@@ -2773,6 +2827,7 @@ namespace OneService.Controllers
                     beanNowM.CSrrepairLevel = CSrrepairLevel;
                     beanNowM.CDelayReason = CDelayReason;                    
                     beanNowM.CRemark = CRemark;
+                    beanNowM.CCustomerUnitType = CCustomerUnitType;
                     beanNowM.CIsSecondFix = CIsSecondFix;
                     beanNowM.CIsInternalWork = CIsInternalWork;
                     beanNowM.CRepairName = CRepairName;
@@ -2790,7 +2845,7 @@ namespace OneService.Controllers
                     beanNowM.CAssEngineerId = CAssEngineerId;
                     beanNowM.CTechManagerId = CTechManagerId;
                     beanNowM.CPerCallSlaresp = CPerCallSlaresp;
-                    beanNowM.CPerCallSlasrv = CPerCallSlasrv;
+                    beanNowM.CPerCallSlasrv = CPerCallSlasrv;                    
                     beanNowM.CSystemGuid = Guid.NewGuid();
 
                     if (!string.IsNullOrEmpty(CScheduleDate))
@@ -4418,11 +4473,12 @@ namespace OneService.Controllers
                     ViewBag.cAttachementStockNo = "";
                     ViewBag.cDelayReason = "";
                     ViewBag.cRemark = "";
+                    ViewBag.cCustomerUnitType = "";
                     ViewBag.cSalesNo = beanM.CSalesNo;
                     ViewBag.cShipmentNo = beanM.CShipmentNo;
                     ViewBag.pStatus = "E0001";
                     ViewBag.CreatedUserName = "";
-                    ViewBag.cScheduleDate = "";
+                    ViewBag.cScheduleDate = "";                    
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -4496,11 +4552,12 @@ namespace OneService.Controllers
                     ViewBag.cAttachementStockNo = beanM.CAttachementStockNo;
                     ViewBag.cDelayReason = beanM.CDelayReason;
                     ViewBag.cRemark = beanM.CRemark;
+                    ViewBag.cCustomerUnitType = beanM.CCustomerUnitType;
                     ViewBag.cSalesNo = beanM.CSalesNo;
                     ViewBag.cShipmentNo = beanM.CShipmentNo;
                     ViewBag.pStatus = beanM.CStatus;
                     ViewBag.CreatedUserName = beanM.CreatedUserName;
-                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");
+                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");                    
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -4571,17 +4628,19 @@ namespace OneService.Controllers
                     ViewBag.pStatus = "E0001";      //新建
                     ViewBag.cDelayReason = "";      //空值
                     ViewBag.cRemark = "";          //空值
+                    ViewBag.cCustomerUnitType = ""; //請選擇
                     ViewBag.cSalesNo = "";          //空值
                     ViewBag.cShipmentNo = "";       //空值
                     ViewBag.CreatedUserName = "";
-                    ViewBag.cScheduleDate = "";
+                    ViewBag.cScheduleDate = "";                    
                 }
                 #endregion
             }
 
             #region 指派Option值
-            model.ddl_cStatus = ViewBag.pStatus;                //設定狀態            
-            model.ddl_cCustomerType = ViewBag.cCustomerType;     //客戶類型(P.個人 C.法人)
+            model.ddl_cStatus = ViewBag.pStatus;                    //設定狀態            
+            model.ddl_cCustomerType = ViewBag.cCustomerType;        //客戶類型(P.個人 C.法人)
+            model.ddl_cCustomerUnitType = ViewBag.cCustomerUnitType; //客戶單位類別
             #endregion
 
             ViewBag.SRTypeOneList = SRTypeOneList;
@@ -4634,6 +4693,7 @@ namespace OneService.Controllers
             string OldCShipmentNo = string.Empty;
             string OldCDelayReason = string.Empty;
             string OldCRemark = string.Empty;
+            string OldCCustomerUnitType = string.Empty;
             string OldCTeamId = string.Empty;
             string OldCMainEngineerName = string.Empty;
             string OldCMainEngineerId = string.Empty;
@@ -4642,7 +4702,7 @@ namespace OneService.Controllers
             string OldCSalesId = string.Empty;
             string OldCSecretaryName = string.Empty;
             string OldCSecretaryId = string.Empty;
-            string OldCScheduleDate = string.Empty;
+            string OldCScheduleDate = string.Empty;            
 
             string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
             string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
@@ -4659,6 +4719,7 @@ namespace OneService.Controllers
             string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
             string CScheduleDate = formCollection["tbx_cScheduleDate"].FirstOrDefault();
             string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
+            string CCustomerUnitType = formCollection["ddl_cCustomerUnitType"].FirstOrDefault();
 
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CMainEngineerName = formCollection["tbx_cMainEngineerName"].FirstOrDefault();
@@ -4713,6 +4774,7 @@ namespace OneService.Controllers
                     beanM.CShipmentNo = CShipmentNo;
                     beanM.CDelayReason = CDelayReason;
                     beanM.CRemark = CRemark;
+                    beanM.CCustomerUnitType = CCustomerUnitType;
 
                     if (!string.IsNullOrEmpty(CScheduleDate))
                     {
@@ -4741,7 +4803,7 @@ namespace OneService.Controllers
                     beanM.CRepairEmail = "";
                     beanM.CMaserviceType = "";
                     beanM.CSrpathWay = "";
-                    beanM.CSrprocessWay = "";
+                    beanM.CSrprocessWay = "";                    
                     beanM.CSrrepairLevel = "";
                     beanM.CIsSecondFix = "";
                     beanM.CTechManagerId = "";
@@ -4749,7 +4811,7 @@ namespace OneService.Controllers
                     beanM.CSqpersonName = "";
                     beanM.CIsAppclose = "";
                     beanM.CPerCallSlaresp = "";
-                    beanM.CPerCallSlasrv = "";
+                    beanM.CPerCallSlasrv = "";                    
                     #endregion
 
                     dbOne.TbOneSrmains.Add(beanM);
@@ -4963,6 +5025,9 @@ namespace OneService.Controllers
                     OldCRemark = beanNowM.CRemark;
                     tLog += CMF.getNewAndOldLog("備註", OldCRemark, CRemark);
 
+                    OldCCustomerUnitType = beanNowM.CCustomerUnitType;
+                    tLog += CMF.getNewAndOldLog("客戶單位類別", OldCCustomerUnitType, CCustomerUnitType);
+
                     OldCTeamId = beanNowM.CTeamId;
                     tLog += CMF.getNewAndOldLog("服務團隊", OldCTeamId, CTeamId);
 
@@ -5004,6 +5069,7 @@ namespace OneService.Controllers
                     beanNowM.CShipmentNo = CShipmentNo;
                     beanNowM.CDelayReason = CDelayReason;
                     beanNowM.CRemark = CRemark;
+                    beanNowM.CCustomerUnitType = CCustomerUnitType;
 
                     if (!string.IsNullOrEmpty(CScheduleDate))
                     {
@@ -5396,10 +5462,11 @@ namespace OneService.Controllers
                     ViewBag.cAttachement = "";                    
                     ViewBag.cDelayReason = "";
                     ViewBag.cRemark = "";
+                    ViewBag.cCustomerUnitType = "";
                     ViewBag.cContractID = beanM.CContractId;
                     ViewBag.pStatus = "E0001";
                     ViewBag.CreatedUserName = "";
-                    ViewBag.cScheduleDate = "";
+                    ViewBag.cScheduleDate = "";                    
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -5465,10 +5532,11 @@ namespace OneService.Controllers
                     ViewBag.cAttachement = beanM.CAttachement;                    
                     ViewBag.cDelayReason = beanM.CDelayReason;
                     ViewBag.cRemark = beanM.CRemark;
+                    ViewBag.cCustomerUnitType = beanM.CCustomerUnitType;
                     ViewBag.cContractID = beanM.CContractId;
                     ViewBag.pStatus = beanM.CStatus;
                     ViewBag.CreatedUserName = beanM.CreatedUserName;
-                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");
+                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");                    
 
                     ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
@@ -5525,16 +5593,18 @@ namespace OneService.Controllers
                     ViewBag.pStatus = "E0001";      //新建
                     ViewBag.cDelayReason = "";      //空值
                     ViewBag.cRemark = "";           //空值
+                    ViewBag.cCustomerUnitType = ""; //請選擇
                     ViewBag.cContractID = "";       //空值
                     ViewBag.CreatedUserName = "";
-                    ViewBag.cScheduleDate = "";
+                    ViewBag.cScheduleDate = "";                    
                 }
                 #endregion
             }
 
             #region 指派Option值
-            model.ddl_cStatus = ViewBag.pStatus;                //設定狀態            
-            model.ddl_cCustomerType = ViewBag.cCustomerType;     //客戶類型(P.個人 C.法人)
+            model.ddl_cStatus = ViewBag.pStatus;                    //設定狀態            
+            model.ddl_cCustomerType = ViewBag.cCustomerType;         //客戶類型(P.個人 C.法人)
+            model.ddl_cCustomerUnitType = ViewBag.cCustomerUnitType;  //客戶單位類別
             #endregion
 
             ViewBag.SRTypeOneList = SRTypeOneList;
@@ -5585,6 +5655,7 @@ namespace OneService.Controllers
             string OldCContractId = string.Empty;            
             string OldCDelayReason = string.Empty;
             string OldCRemark = string.Empty;
+            string OldCCustomerUnitType = string.Empty;
             string OldCTeamId = string.Empty;
             string OldCMainEngineerName = string.Empty;
             string OldCMainEngineerId = string.Empty;
@@ -5593,7 +5664,7 @@ namespace OneService.Controllers
             string OldCSalesId = string.Empty;
             string OldCSecretaryName = string.Empty;
             string OldCSecretaryId = string.Empty;
-            string OldCScheduleDate = string.Empty;
+            string OldCScheduleDate = string.Empty;            
 
             string CStatus = formCollection["ddl_cStatus"].FirstOrDefault();
             string CCustomerName = formCollection["tbx_cCustomerName"].FirstOrDefault();
@@ -5608,6 +5679,7 @@ namespace OneService.Controllers
             string CDelayReason = formCollection["tbx_cDelayReason"].FirstOrDefault();
             string CScheduleDate = formCollection["tbx_cScheduleDate"].FirstOrDefault();
             string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
+            string CCustomerUnitType = formCollection["ddl_cCustomerUnitType"].FirstOrDefault();
 
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
             string CMainEngineerName = formCollection["tbx_cMainEngineerName"].FirstOrDefault();
@@ -5660,6 +5732,7 @@ namespace OneService.Controllers
                     beanM.CContractId = CContractId;                    
                     beanM.CDelayReason = CDelayReason;
                     beanM.CRemark = CRemark;
+                    beanM.CCustomerUnitType = CCustomerUnitType;
 
                     if (!string.IsNullOrEmpty(CScheduleDate))
                     {
@@ -5698,7 +5771,7 @@ namespace OneService.Controllers
                     beanM.CSalesNo = "";
                     beanM.CShipmentNo = "";
                     beanM.CPerCallSlaresp = "";
-                    beanM.CPerCallSlasrv = "";
+                    beanM.CPerCallSlasrv = "";                    
                     #endregion
 
                     dbOne.TbOneSrmains.Add(beanM);
@@ -5824,6 +5897,9 @@ namespace OneService.Controllers
                     OldCRemark = beanNowM.CRemark;
                     tLog += CMF.getNewAndOldLog("備註", OldCRemark, CRemark);
 
+                    OldCCustomerUnitType = beanNowM.CCustomerUnitType;
+                    tLog += CMF.getNewAndOldLog("客戶單位類別", OldCCustomerUnitType, CCustomerUnitType);
+
                     OldCTeamId = beanNowM.CTeamId;
                     tLog += CMF.getNewAndOldLog("服務團隊", OldCTeamId, CTeamId);
 
@@ -5862,6 +5938,7 @@ namespace OneService.Controllers
                     beanNowM.CContractId = CContractId;                    
                     beanNowM.CDelayReason = CDelayReason;
                     beanNowM.CRemark = CRemark;
+                    beanNowM.CCustomerUnitType = CCustomerUnitType;
 
                     if (!string.IsNullOrEmpty(CScheduleDate))
                     {
@@ -10012,7 +10089,7 @@ namespace OneService.Controllers
             //    new SelectListItem { Value = "E0002", Text = "L2處理中" },
             //    new SelectListItem { Value = "E0003", Text = "報價中" },
             //    new SelectListItem { Value = "E0004", Text = "3rd Party處理中" },
-            //    new SelectListItem { Value = "E0005", Text = "L3處理中" },
+            //    new SelectListItem { Value = "E0005", Text = "L1處理中" },
             //    new SelectListItem { Value = "E0006", Text = "完修" },
             //    new SelectListItem { Value = "E0012", Text = "HPGCSN 申請" },
             //    new SelectListItem { Value = "E0013", Text = "HPGCSN 完成" },
@@ -10046,6 +10123,11 @@ namespace OneService.Controllers
             #region 是否為內部作業
             public string ddl_cIsInternalWork { get; set; }
             public List<SelectListItem> ListIsInternalWork = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "ISINTERNALWORK", false);
+            #endregion
+
+            #region 客戶單位類別
+            public string ddl_cCustomerUnitType { get; set; }
+            public List<SelectListItem> ListCustomerUnitType = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRCUSTOMERUNITTYPE", true);
             #endregion
 
             #region 是否為二修
@@ -10092,6 +10174,11 @@ namespace OneService.Controllers
             public string ddl_cCustomerType { get; set; }
             public List<SelectListItem> ListCustomerType = findCustomerTypeList();
             #endregion
+
+            #region 客戶單位類別
+            public string ddl_cCustomerUnitType { get; set; }
+            public List<SelectListItem> ListCustomerUnitType = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRCUSTOMERUNITTYPE", true);
+            #endregion
         }
         #endregion
 
@@ -10120,6 +10207,11 @@ namespace OneService.Controllers
             #region 客戶類型
             public string ddl_cCustomerType { get; set; }
             public List<SelectListItem> ListCustomerType = findCustomerTypeList();
+            #endregion
+
+            #region 客戶單位類別
+            public string ddl_cCustomerUnitType { get; set; }
+            public List<SelectListItem> ListCustomerUnitType = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRCUSTOMERUNITTYPE", true);
             #endregion
         }
         #endregion
@@ -10199,6 +10291,11 @@ namespace OneService.Controllers
             public string ddl_cSRProcessWay { get; set; }
             public List<SelectListItem> ListSRProcessWay = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPROCESS", true);
             #endregion
+
+            #region 客戶單位類別
+            public string ddl_cCustomerUnitType { get; set; }
+            public List<SelectListItem> ListCustomerUnitType = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRCUSTOMERUNITTYPE", true);
+            #endregion
         }
         #endregion
 
@@ -10211,7 +10308,7 @@ namespace OneService.Controllers
             #region 是否為二修
             public string ddl_cIsSecondFix { get; set; }
             public List<SelectListItem> ListIsSecondFix = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "ISSECONDFIX", true);
-            #endregion
+            #endregion          
         }
         #endregion
 

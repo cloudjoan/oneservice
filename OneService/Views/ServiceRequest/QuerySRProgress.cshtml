@@ -63,7 +63,7 @@
 					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
 					"search": " 關鍵字篩選"
 				},
-				order: [[16, 'desc']], //畫面排序才有用
+				order: [[17, 'desc']], //畫面排序才有用
 				pageLength: 25,
 				responsive: true,				
 				dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
@@ -74,7 +74,7 @@
 						text: '匯出Excel',
 						sheetName: '服務進度查詢作業',
 						exportOptions: {
-							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18] //要顯示的欄位
+							columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] //要顯示的欄位
 						},
 						customize: function (xlsx) {
 							addCustomNumberFormat(xlsx, '0');
@@ -97,6 +97,7 @@
 							formatTargetColumn(xlsx, 'Q');
 							formatTargetColumn(xlsx, 'R');
 							formatTargetColumn(xlsx, 'S');
+							formatTargetColumn(xlsx, 'T');
 						}
 					}),
 				],
@@ -718,7 +719,8 @@
 			var cTeamID = $("#hid_cTeamID").val();							//服務團隊
 			var tbx_cContractID = $('#tbx_cContractID');					//合約文件編號	
 			var hid_cNoAssignMainEngineer = $("#hid_cNoAssignMainEngineer");	//未指派主要工程師
-			var ddl_cSRProcessWay = $('#ddl_cSRProcessWay');					//處理方式	
+			var ddl_cSRProcessWay = $('#ddl_cSRProcessWay');					//處理方式
+			var ddl_cCustomerUnitType = $('#ddl_cCustomerUnitType');			//客戶單位類別
 
 			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');						//報修類別-大類
 			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');						//報修類別-中類
@@ -730,7 +732,7 @@
 
 			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
 				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_cDesc.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && tbx_cContactName.val() == "" && SRPathWay == "" &&
-				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && hid_cNoAssignMainEngineer.val() == "" && ddl_cSRProcessWay.val() == "" &&
+				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && hid_cNoAssignMainEngineer.val() == "" && ddl_cSRProcessWay.val() == "" && ddl_cCustomerUnitType.val() == "" && 
 				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
@@ -754,7 +756,7 @@
 			else {
 				searchQuerySRProgress(SRCaseType, Status, tbx_cStartCreatedDate.val(), tbx_cEndCreatedDate.val(), tbx_cCustomerID.val(),
 									  tbx_cCustomerName.val(), tbx_cSRID.val(), tbx_cDesc.val(), ddl_cIsSecondFix.val(), tbx_CreatedUserName.val(), tbx_cRepairName.val(), tbx_cContactName.val(), SRPathWay,
-									  hid_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID, tbx_cContractID.val(), hid_cNoAssignMainEngineer.val(), ddl_cSRProcessWay.val(),
+									  hid_cAssEngineerID.val(), tbx_cTechManagerID.val(), cTeamID, tbx_cContractID.val(), hid_cNoAssignMainEngineer.val(), ddl_cSRProcessWay.val(), ddl_cCustomerUnitType.val(),
 									  ddl_cSRTypeOne.val(), ddl_cSRTypeSec.val(), ddl_cSRTypeThr.val(),
 									  tbx_cSerialID.val(), tbx_cMaterialName.val(), tbx_cProductNumber.val());
 			}
@@ -764,7 +766,7 @@
 
 		//查詢結果
 		function searchQuerySRProgress(cSRCaseType, cStatus, cStartCreatedDate, cEndCreatedDate, cCustomerID, cCustomerName, cSRID, cDesc, cIsSecondFix, CreatedUserName, cRepairName, cContactName, cSRPathWay,
-			cAssEngineerID, cTechManagerID, cTeamID, cContractID, cNoAssignMainEngineer, cSRProcessWay, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
+			cAssEngineerID, cTechManagerID, cTeamID, cContractID, cNoAssignMainEngineer, cSRProcessWay, cCustomerUnitType, cSRTypeOne, cSRTypeSec, cSRTypeThr, cSerialID, cMaterialName, cProductNumber) {
 			
 			var cCompanyID = $("#hid_cLoginUser_BUKRS").val(); //公司別
 			$("#dataDiv").html('');
@@ -794,6 +796,7 @@
 					cContractID: cContractID,
 					cNoAssignMainEngineer: cNoAssignMainEngineer,
 					cSRProcessWay: cSRProcessWay,
+					cCustomerUnitType: cCustomerUnitType,
 					cSRTypeOne: cSRTypeOne,
 					cSRTypeSec: cSRTypeSec,
 					cSRTypeThr: cSRTypeThr,
@@ -838,6 +841,7 @@
 			$('#tbx_cMaterialName').val("");
 			$('#tbx_cProductNumber').val("");
 			$('#ddl_cSRProcessWay').val("");
+			$('#ddl_cCustomerUnitType').val("");
 
 			$("#ddl_cSRCaseType").val("").trigger('chosen:updated');	//服務案件種類
 			$("#ddl_cStatus").val("").trigger('chosen:updated');	//狀態
@@ -886,6 +890,7 @@
 			var tbx_cContractID = $('#tbx_cContractID');					//合約文件編號		
 			var hid_cNoAssignMainEngineer = $("#hid_cNoAssignMainEngineer");	//未指派主要工程師
 			var ddl_cSRProcessWay = $('#ddl_cSRProcessWay');					//處理方式	
+			var ddl_cCustomerUnitType = $('#ddl_cCustomerUnitType');			//客戶單位類別
 
 			var ddl_cSRTypeOne = $('#ddl_cSRTypeOne');						//報修類別-大類
 			var ddl_cSRTypeSec = $('#ddl_cSRTypeSec');						//報修類別-中類
@@ -897,7 +902,7 @@
 
 			if (SRCaseType == "" && Status == "" && tbx_cStartCreatedDate.val() == "" && tbx_cEndCreatedDate.val() == "" &&
 				tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && tbx_cSRID.val() == "" && tbx_cDesc.val() == "" && ddl_cIsSecondFix.val() == "" && tbx_CreatedUserName.val() == "" && tbx_cRepairName.val() == "" && tbx_cContactName.val() == "" && SRPathWay == "" &&
-				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && hid_cNoAssignMainEngineer.val() == "" && ddl_cSRProcessWay.val() == "" &&
+				hid_cAssEngineerID.val() == "" && tbx_cTechManagerID.val() == "" && cTeamID == "" && tbx_cContractID.val() == "" && hid_cNoAssignMainEngineer.val() == "" && ddl_cSRProcessWay.val() == "" && ddl_cCustomerUnitType.val() == "" &&
 				ddl_cSRTypeOne.val() == "" && tbx_cSerialID.val() == "" && tbx_cMaterialName.val() == "" && tbx_cProductNumber.val() == "" &&
 				(ddl_cSRTypeSec.val() == null || ddl_cSRTypeSec.val() == "") && 
 				(ddl_cSRTypeThr.val() == null || ddl_cSRTypeThr.val() == "")) {
@@ -1010,6 +1015,11 @@
 				if (ddl_cSRProcessWay.val() != "")
 				{
 					SRFilter += "ddl_cSRProcessWay" + SRSplitValue + ddl_cSRProcessWay.val() + SRSplitText;
+				}
+
+				if (ddl_cCustomerUnitType.val() != "")
+				{
+					SRFilter += "ddl_cCustomerUnitType" + SRSplitValue + ddl_cCustomerUnitType.val() + SRSplitText;
 				}
 
 				if (ddl_cSRTypeOne.val() != "")
@@ -1305,6 +1315,11 @@
 				$("#ddl_cSRProcessWay").val(FieldValue);
 			}
 
+			if (FieldName == "ddl_cCustomerUnitType") //客戶單位類別
+			{
+				$("#ddl_cCustomerUnitType").val(FieldValue);
+			}
+
 			if (FieldName == "ddl_cSRTypeOne") //報修類別-大類
 			{
 				$("#ddl_cSRTypeOne").val(FieldValue);
@@ -1540,6 +1555,10 @@
 							<div class="col-lg-4">								
 								<select asp-for="ddl_cSRProcessWay" asp-items="Model.ListSRProcessWay" class="form-control"></select>
 							</div>
+							<label class="col-lg-2 col-form-label">客戶單位類別</label>
+							<div class="col-lg-4">								
+								<select asp-for="ddl_cCustomerUnitType" asp-items="Model.ListCustomerUnitType" class="form-control"></select>
+							</div>
 						</div>
 						<div class="form-group row">							
 							<label class="col-lg-2 col-form-label">報修/裝機序號</label>
@@ -1602,6 +1621,7 @@
 								<th>協助工程師</th>
 								<th>合約文件編號</th>
 								<th>處理方式</th>
+								<th>客戶單位類別</th>
 								<th>派單人員</th>
 								<th>派單日期</th>
 								<th>最後編輯日期</th>
@@ -1630,6 +1650,7 @@
 												<td>@Html.Raw(QueryInfo[13])</td>
 												<td>@Html.Raw(QueryInfo[19])</td>
 												<td>@Html.Raw(QueryInfo[20])</td>
+												<td>@Html.Raw(QueryInfo[22])</td>
 												<td>@Html.Raw(QueryInfo[15])</td>
 												<td>@Html.Raw(QueryInfo[16])</td>
 												<td>@Html.Raw(QueryInfo[17])</td>

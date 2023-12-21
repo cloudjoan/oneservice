@@ -210,6 +210,7 @@ namespace OneService.Models
         public string? CPerCallSlaresp { get; set; }
         public string? CPerCallSlasrv { get; set; }
         public string? CRemark { get; set; }
+        public string? CCustomerUnitType { get; set; }
         /// <summary>
         /// 系統目前GUID
         /// </summary>
