@@ -25,6 +25,7 @@ namespace OneService.Models
         public string? CTeamId { get; set; }
         public string CSqpersonName { get; set; } = null!;
         public string CDelayReason { get; set; } = null!;
+        public string CCustomerUnitType { get; set; } = null!;
         public string CSrprocessWay { get; set; } = null!;
         public string CMaserviceType { get; set; } = null!;
         public string CSrtypeOne { get; set; } = null!;

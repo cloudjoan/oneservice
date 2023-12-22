@@ -1569,6 +1569,10 @@ namespace OneService.Models
                     .HasMaxLength(40)
                     .HasColumnName("cCustomerName");
 
+                entity.Property(e => e.CCustomerUnitType)
+                    .HasMaxLength(3)
+                    .HasColumnName("cCustomerUnitType");
+
                 entity.Property(e => e.CDelayReason)
                     .HasMaxLength(1000)
                     .HasColumnName("cDelayReason");

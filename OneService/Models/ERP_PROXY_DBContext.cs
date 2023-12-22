@@ -328,6 +328,8 @@ namespace OneService.Models
             {
                 entity.ToTable("F4501");
 
+                entity.HasIndex(e => new { e.No, e.CrmOppNo }, "NonClusteredIndex-20231222-120620");
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
                     .HasComment("項次(系統自動產生)");
@@ -840,7 +842,7 @@ namespace OneService.Models
 
                 entity.ToTable("SO");
 
-                entity.HasIndex(e => new { e.Bstnk, e.Status }, "NonClusteredIndex-20220826-192157");
+                entity.HasIndex(e => new { e.Bstnk, e.Status, e.Matnr }, "NonClusteredIndex-20220826-192157");
 
                 entity.Property(e => e.Auart)
                     .HasMaxLength(4)
