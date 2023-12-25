@@ -5046,11 +5046,11 @@ namespace OneService.Controllers
                     OldCSalesId = beanNowM.CSalesId;
                     tLog += CMF.getNewAndOldLog("業務人員ERPID", OldCSalesId, CSalesId);
 
-                    OldCSalesName = beanNowM.CSalesName;
-                    tLog += CMF.getNewAndOldLog("業務祕書", OldCSalesName, CSalesName);
+                    OldCSecretaryName = beanNowM.CSecretaryName;
+                    tLog += CMF.getNewAndOldLog("業務祕書", OldCSecretaryName, CSecretaryName);
 
-                    OldCSalesId = beanNowM.CSalesId;
-                    tLog += CMF.getNewAndOldLog("業務祕書ERPID", OldCSalesId, CSalesId);
+                    OldCSecretaryId = beanNowM.CSecretaryId;
+                    tLog += CMF.getNewAndOldLog("業務祕書ERPID", OldCSecretaryId, CSecretaryId);
 
                     #endregion
 
@@ -5918,11 +5918,11 @@ namespace OneService.Controllers
                     OldCSalesId = beanNowM.CSalesId;
                     tLog += CMF.getNewAndOldLog("業務人員ERPID", OldCSalesId, CSalesId);
 
-                    OldCSalesName = beanNowM.CSalesName;
-                    tLog += CMF.getNewAndOldLog("業務祕書", OldCSalesName, CSalesName);
+                    OldCSecretaryName = beanNowM.CSecretaryName;
+                    tLog += CMF.getNewAndOldLog("業務祕書", OldCSecretaryName, CSecretaryName);
 
-                    OldCSalesId = beanNowM.CSalesId;
-                    tLog += CMF.getNewAndOldLog("業務祕書ERPID", OldCSalesId, CSalesId);
+                    OldCSecretaryId = beanNowM.CSecretaryId;
+                    tLog += CMF.getNewAndOldLog("業務祕書ERPID", OldCSecretaryId, CSecretaryId);
                     #endregion
 
                     //主表資料
