@@ -1,0 +1,452 @@
+﻿@{
+    Layout = null;
+}
+
+<script>
+    $(function () {
+        if ('@ViewBag.pIsEdit' == "True") {
+            $("#Tbody_Prize").sortable({
+                update: function (event, ui) {
+                    SortTable();
+                }
+            });
+        }        
+    });
+
+    $(document).ready(function () {
+        dropzoneInit('@Url.Action("AjaxFileUpload", "Ajax")');
+        generatorFileDiv("@Url.Action("GetFileData", "Ajax")");
+
+        if ('@ViewBag.pIsEdit' == "False") {
+            
+            setTimeout(function () {
+                CancelEdit();
+            }, 300);
+        }
+    });
+
+    function SortTable() {
+        // 順序顯示重新塞值
+        $("#Tbody_Prize tr").each(function (i) {
+            $(this).find("td:first-child").text(i + 1);
+        });
+    }
+
+    //初始化dropzone
+    function dropzoneInit(uploadUrl) {
+        $.each($(".dropzone"), function () {
+            try {
+                var zone = $(this);
+
+                $(this).dropzone({
+                    url: uploadUrl,
+                    method: 'post',
+                    dictDefaultMessage: "把檔案拉進來或點我選檔案",
+                    accept: function (file, done) {
+                        console.log($(zone).data("namerule"));
+                        if ($(zone).data("namerule") != null) {
+                            //檔名規則檢核
+                            //file.name  上傳檔案的檔名（含副檔名）
+                            var namerule = $(zone).data("namerule");
+                            var pArray = namerule.split(",");
+                            var tIsExits = false; //檔案是否合法
+
+                            pArray.forEach(function (element) {
+                                if (file.name.indexOf(element) != -1) {
+                                    tIsExits = true;
+                                }
+                            });
+
+                        } else {
+                            done();
+                        }
+                    },
+                    acceptedFiles: ".jpg,.png,.jpge,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt,.ppt,.pptx,.zip,.rar,.7z,.csv,.mht",
+                    createImageThumbnails: false,
+                    init: function () {
+                        this.on('addedfile', function (file) {
+                            var hidFiles = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')));
+
+                            if (hidFiles.val().length > 0) {
+                                alert('每筆獎品只能上傳一張照片，請確認');
+                                this.removeFile(file);
+                            }
+                        });
+
+                        this.on("success", function (result) {
+                            var obj = $.parseJSON(result.xhr.responseText);
+                            
+                            var doc = "<div class=\"file-box\" id='" + obj.id + "'>";
+                            doc += "<div class=\"file\">";
+                            doc += "<a href='" + fileUrl + obj.fileName + "'" + ((".jpg .jpeg .png .bmp .gif".indexOf(obj.fileExt) != -1) ? "" : "download='" + obj.fileOrgName + "'") + " target='_blank'>";
+                            doc += "<span class=\"corner\"></span>";
+
+                            // 附件縮圖區塊
+                            if (".jpg .jpeg .png .bmp .gif".indexOf(obj.fileExt) != -1) {
+                                doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"" + fileUrl + obj.fileName + "\"></div>";
+                            } else {
+                               doc += "<div class=\"icon\"><i class=\"fa fa-file\"></i></div>";
+                            }
+
+                            if ($(zone).data("type") == null) {
+                                doc += "<div class=\"file-name\">" + obj.fileOrgName;
+                                doc += "<a href=\"javascript:delFile('" + obj.id + "', 'hid_file' + '" + zone.prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+                                doc += " </div></div>";
+
+                                var hidFiles = $("#hid_file" + zone.prop("id"))
+                                var fileZoneObj = $("#file" + zone.prop("id"))
+                                fileZoneObj.append(doc);
+
+                                var hidFiles = $("#hid_file" + zone.prop("id"))
+                                hidFiles.val(hidFiles.val() + obj.id + ",");
+                                console.log("1: " + hidFiles.val());
+
+                            } else if ($(zone).data("type") == "type2") { //動態產生上傳區塊使用
+                                doc += "<div class=\"file-name\">" + obj.fileOrgName;
+                                doc += "<a href=\"javascript:delFile('" + obj.id + "', '" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')) + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+                                doc += " </div></div>";
+
+                                var fileZoneObj = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
+                                fileZoneObj.append(doc);
+
+                                var hidFiles = $("#" + zone.prop("id").substr(0, zone.prop("id").lastIndexOf('zone')) + 'hid_file' + zone.prop("id").substr(zone.prop("id").lastIndexOf('zone')))
+                                hidFiles.val(hidFiles.val() + obj.Id + ",");
+                                console.log("2: " + hidFiles.val());
+                            }
+                        });
+
+                        this.on("complete", function (file) {
+                            this.removeFile(file);
+                        });
+
+                    }
+                })
+            } catch (e) {
+                console.log(e);
+            }
+        })
+    }
+
+    //產生檔案區塊
+    function generatorFileDiv(functionUrl) {
+        $.each($(".fileids"), function (i, hidFiles) {
+            if ($(hidFiles).val().length > 1) {
+                var fileZoneObj = $("#" + $(hidFiles).prop("id").replace("hid_", ""));
+                var fileids = $(hidFiles).val().split(",");
+                for (var i in fileids) {
+                    $.ajax({
+                        url: functionUrl,
+                        type: 'post',
+                        dataType: 'json',
+                        data: { fileId: fileids[i] },
+                        success: function (result) {
+                            var doc = "<div class=\"file-box\" id='" + result.id + "'>";
+                            doc += "<div class=\"file\">";
+                            doc += "<a href='" + fileUrl + result.fileName + "' " + ((".jpg .jpeg .png .bmp .gif".indexOf(result.fileExt) != -1) ? "" : "download='" + result.fileOrgName + "'") + " target='_blank'>";
+                            doc += "<span class=\"corner\"></span>";
+                            if (".jpg .jpeg .png .bmp .gif".indexOf(result.fileExt) != -1) {
+                                doc += " <div class=\"image\"><img alt=\"\" class=\"img-responsive\" src=\"http://" + window.location.host + "/files/" + result.fileName + "\"></div>";
+                            } else {
+                                doc += "<div class=\"icon\"><i class=\"fa fa-file\"></i></div>";
+                            }
+
+                            doc += "<div class=\"file-name\">" + result.fileOrgName;
+                            doc += "<a href=\"javascript:delFile('" + result.id + "', '" + $(hidFiles).prop("id") + "')\" class='btn btn-xs btn-danger btn-del'>刪除</a></div></a>";
+                            doc += " </div></div>";
+                            fileZoneObj.append(doc);
+                            console.log(result.fileOrgName);
+                        }
+                    })
+                    console.log(fileids[i]);
+                }
+            }
+        })
+    }
+
+    //取消編輯
+    function CancelEdit() {
+        $(".btn-del").hide();
+
+        $("#Tbl_Prize").find("td input").each(function () {
+            $(this).prop("readonly", true);
+        });
+        $("#Tbl_Prize").find("td select").each(function () {
+            $(this).prop("disabled", true);
+        });
+        $("#Tbl_Prize").find("td textarea").each(function () {
+            $(this).prop("disabled", true);
+        });
+        $("#Tbl_Prize").find("td div input").each(function () {
+            $(this).prop("disabled", true);
+        });
+    }
+
+    function AddRow() 
+    {
+        $("#DataTables_Empty").remove();            // 刪除查無資料的row
+        var rowCount = $('#Tbl_Prize tr').length;   // 目前表格的行數
+
+        var dropzoneId = "zone_" + rowCount;
+        var filezoneId = "filezone_" + rowCount;
+        var hid_filezoneId = "hid_filezone_" + rowCount;
+
+        var SortNo = "<td align='center'>" + rowCount + "</td>";
+        var txtPrizeName = "<td><input type='hidden' name='hid_PrizeID' value='0'><input type='text' class='form-control' id='txtPrizeName' name='txtPrizeName' value='' placeholder='獎品名稱' required></td>";
+        var txtPrizePrice = "<td><input type='text' class='form-control' id='txtPrizePrice' name='txtPrizePrice' value='' placeholder='金額' required></td>";
+        var txtPrizeAmount = "<td><input type='text' class='form-control' id='txtPrizeAmount' name='txtPrizeAmount' value='' placeholder='數量' required></td>";
+        var attach = "<td>" +
+            "<div class='dropzone' id='" + dropzoneId + "' style='width: 200px; min-height: 100px !important; padding: 0px; display: block !important;'>" +
+            "<div class='fallback'><input name='file' type='file' multiple /></div></div>" +
+            "<div class='attachment' id='" + filezoneId + "'></div>" +
+            "<input type='hidden' class='fileids' name='hid_filezone' id='" + hid_filezoneId + "' value='' />" +
+            "</td>";
+        var chkMark = "<td align='center'><div class='form-check'><input type='checkbox' class='form-check-input checksboxs' name='chkOverAYear' style='zoom: 1.5; width:50%;' onclick='ChangeMarkValue(this);'><input type='hidden' name='hid_OverAYear' value='N'></div></td>";
+        var btnDetail = "<td><button class='btn btn-dark btn-sm' type='button' onclick='GetWinningList(this);' style='margin: 2px;'><i class='fa fa-info-circle' > </i></button></td > ";
+        var btnDel = "<td><button class='btn btn-danger btn-sm' type='button' onclick='DeletePrize(this);' style='margin: 2px;'><i class='fa fa-trash'></i></button></td>";
+        
+        var tAlltd = "<tr style='word-break: keep-all; white-space: nowrap;'>" + SortNo + txtPrizeName + txtPrizePrice + txtPrizeAmount + attach + chkMark + btnDetail + btnDel + "</tr>";
+
+        $('#Tbl_Prize').append(tAlltd);        
+
+        $('#Tbl_Prize tr:last td:eq(1) input[type="text"]').focus();
+
+        dropzoneInit('@Url.Action("AjaxFileUpload", "Ajax")');
+    }
+
+    function ConfirmSavePrize() {
+        var reValue = false;
+        
+        if ($("#hid_DrawName").val() == "") {
+            alert('請輸入活動名稱');
+        } 
+        else if ($("#DataTables_Empty").length > 0) 
+        { alert('請新增至少一筆獎品'); }
+        else { reValue = confirm('是否確定儲存?'); }
+
+        return reValue;
+    }
+
+    function DeletePrize(obj) 
+    {
+        var PrizeID = $(obj).parent().parent().find('input[name="hid_PrizeID"]').val();
+        if (confirm('是否確定刪除?')) {
+            if (PrizeID == "0") 
+            {$(obj).parents('tr').remove(); }
+            else 
+            { 
+                $(obj).parent().find('button').css({ "display": "none" });
+                $.ajax({
+                    url: '@Url.Action("DeletePrize", "LuckyDraw")',
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        PrizeID: PrizeID
+                    },
+                    success: function (result) {
+                        if (result > 0) {
+                            alert("刪除成功");
+                            $(obj).parent().parent().remove();
+                            SortTable();
+                        }
+                        else {
+                            alert("刪除失敗");
+                        }
+                    },
+                    error: function (jqXHR, exception) {
+                        ajaxErrorFunc(jqXHR, exception, "DeletePrize(obj)");
+                    },
+                });
+            }
+        }
+    }
+
+    function ChangeMarkValue(obj) {
+        var isChecked = $(obj).is(':checked');
+        if (isChecked) {
+            $(obj).parent().parent().find('input[name="hid_OverAYear"]').val("Y");            
+        } else {
+            $(obj).parent().parent().find('input[name="hid_OverAYear"]').val("N");
+        }
+    }
+
+    // 顯示中獎名單
+    function GetWinningList(obj) {
+        var PrizeID = $(obj).parent().parent().find('input[name="hid_PrizeID"]').val();
+        var PrizeName = $(obj).parent().parent().find('input[name="txtPrizeName"]').val();
+        $('#dialog_WinningList').modal('show');
+        $.ajax({
+            url: '@Url.Action("GetWinningList", "LuckyDraw")',
+            type: 'post',
+            dataType: 'json',
+            data: {
+                PrizeID: PrizeID
+            },
+            success: function (result) {
+                var ALLList = ""
+                var WinningList = "";
+
+                $('#PrizeTitle').text(PrizeName);
+
+                $.each(result, function (i, bean) {
+                    if (bean != null) {
+                        WinningList += '<tr>'
+                            + "<td>" + bean.userName + "</td>"
+                            + "<td>" + bean.insertTime + "</td>"
+                            + "</tr>";
+                    }
+                });
+
+                if (WinningList == "") {
+                    WinningList = '<tr>'
+                        + "<td align='center' colspan='2'>查無資料</td>"
+                        + "</tr>";
+                }
+
+                ALLList = "<div class='col-lg-12'>"
+                    + "	<div class='ibox'>"
+                    + "		<div class='ibox-title'>"
+                    + "			<h5>中獎名單</h5>"
+                    + "          <div class='ibox-tools'><a class='collapse-linkZ'><i class='fa fa-chevron-up'></i></a></div>"
+                    + "      </div>"
+                    + "      <div class='ibox-content'>"
+                    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
+                    + "				<thead><tr>"
+                    + "				<th>員工姓名</th>"
+                    + "				<th>中獎時間</th>"
+                    + "				</tr></thead><tbody>"
+                    + WinningList
+                    + "</tbody></table></div></div></div>";
+
+                $("#Div_WinningList").html(ALLList);
+            }
+        });
+    }
+</script>
+
+<form name="form" asp-controller="LuckyDraw" asp-action="SavePrize" method="post" enctype="multipart/form-data">
+    <input type="hidden" id="hid_DrawID" name="hid_DrawID" value="@ViewBag.DrawID2">
+    <input type="hidden" id="hid_DrawName" name="hid_DrawName" value="@ViewBag.DrawName">
+    <input type="hidden" id="hid_DrawYear" name="hid_DrawYear" value="@ViewBag.DrawYear2">
+    <table id="Tbl_Prize" class="table table-striple table-bordered table-hover dataTables-example">
+        <thead>
+            <tr style="word-break: keep-all; white-space: nowrap;">
+                <th width="50px" align="center">
+                    @if (ViewBag.pIsEdit == true)
+                    {
+                        <button class="btn btn-success" type="button" onclick="AddRow();"><i class="fa fa-plus"></i></button>
+                    }順序
+                </th>
+                <th>獎品名稱</th>
+                <th width="100px">金額</th>
+                <th width="80px">數量</th>
+                <th width="150px">照片</th>
+                <th width="80px">年資滿一年</th>
+                <th width="70px">中獎明細</th>
+                @if (ViewBag.pIsEdit == true)
+                {
+                    <th width="30px">刪除</th>
+                }
+            </tr>
+        </thead>
+        <tbody id="Tbody_Prize">
+            @if (Enumerable.Any(ViewBag.PrizeList))
+            {
+                foreach (var Prize in ViewBag.PrizeList)
+                {
+                    <tr style="word-break: keep-all; white-space: nowrap;">
+                        <td align="center">@Prize.SortNo</td>
+                        <td>
+                            <input type="hidden" name="hid_PrizeID" value="@Prize.PrizeId">
+                            <input type="text" class="form-control" id="txtPrizeName" name="txtPrizeName" value="@Prize.PrizeName" placeholder="獎品名稱" required>
+                        </td>
+                        <td><input type="text" class="form-control" id="txtPrizePrice" name="txtPrizePrice" value="@Prize.PrizePrice" placeholder="金額" required></td>
+                        <td><input type="text" class="form-control" id="txtPrizeAmount" name="txtPrizeAmount" value="@Prize.PrizeAmount" placeholder="數量" required></td>
+                        <td>
+                            @if (ViewBag.pIsEdit == true)
+                            {
+                                <div class="dropzone" id="zone_@Prize.SortNo" style="width: 200px; min-height: 100px !important; padding: 0px;">
+                                    <div class="fallback file-box">
+                                        <input name="file" type="file" />
+                                    </div>
+                                </div>
+                            }
+                            <div class="attachment" id="filezone_@Prize.SortNo"></div>
+                            <input type="hidden" class="fileids" name="hid_filezone" id="hid_filezone_@Prize.SortNo" value="@Prize.PrizePic" />
+                        </td>
+                        <td align="center">
+                            <div class="form-check">
+                                @{
+                                    string value = "N";
+                                    if (Prize.OverAyearMark == true)
+                                    {
+                                                                            <input type="checkbox" class="form-check-input checksboxs" name="chkOverAYear" style="zoom: 1.5; width:50%;" checked onclick="ChangeMarkValue(this);">
+                                        value = "Y";
+                                    }
+                                    else
+                                    {
+                                                                        <input type="checkbox" class="form-check-input checksboxs" name="chkOverAYear" style="zoom: 1.5; width:50%;" onclick="ChangeMarkValue(this);">
+                                        value = "N";
+                                    }
+                                                <input type="hidden" name="hid_OverAYear" value="@value">
+                                }
+                                
+                                
+                            </div>
+                            @* <div class="col-lg-2 i-checks">
+                                <input id="chkOverAYear_@Prize.SortNo" name="chkOverAYear" type="checkbox">
+                                <input type="hidden" id="hid_OverAYear_@Prize.SortNo" name="hid_OverAYear">
+                            </div> *@
+                            @* <input type="checkbox" />  *@
+                        </td>
+                        <td>
+                            <button class="btn btn-dark btn-sm" type="button" onclick="GetWinningList(this);" style="margin: 2px;">
+                                <i class="fa fa-info-circle"></i>
+                            </button>
+                        </td>
+                        @if (ViewBag.pIsEdit == true)
+                        {
+                            <td>
+                                <button class="btn btn-danger btn-sm" type="button" onclick="DeletePrize(this);" style="margin: 2px;">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </td>
+                        }
+                    </tr>
+                }
+            }
+            else
+            {
+                string colspan = "7";
+
+                if (ViewBag.pIsEdit == true)
+                {colspan = "8";}
+                
+                <tr style="word-break: keep-all; white-space: nowrap;" id='DataTables_Empty'>
+                    <td colspan="@colspan" align="center">查無資料</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (ViewBag.pIsEdit == true)
+    {
+        <div id="div_submit" style="text-align: right; margin-right: 10px; margin-bottom: 10px;">
+            <input type="submit" value="儲存" class="btn btn-success btn-lg" onclick="if (!ConfirmSavePrize()){event.returnValue=false;return false;}" />
+        </div>
+    }
+</form>
+
+<!--中獎名單彈出視窗-->
+<div class="modal fade" id="dialog_WinningList" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">                
+                <label class="col-form-label" style="font-size:medium"><i class="fa fa-gift"></i> <span id="PrizeTitle"></span></label>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="Div_WinningList" style="overflow: scroll;">
+            </div>
+        </div>
+    </div>
+</div>

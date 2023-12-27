@@ -1,0 +1,257 @@
+﻿@{
+    ViewData["Title"] = "抽獎獎項查詢/維護頁面";
+    Layout = "~/Views/Shared/_LayoutLuckyDraw.cshtml";
+}
+
+@section js_section {
+	<script>
+        $(function () {
+            Query();            
+        });
+
+        function DrawYearCH() 
+        {
+            $('#txtDrawName').val("");
+            $('#ddlDrawName').empty(); //先清空下拉選單選項，才不會一直append
+            $.ajax({
+                url: '@Url.Action("DrawYearCH", "LuckyDraw")',
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    Draw_Year: $('#ddlDrawYear').val()
+                },
+                success: function (result) {
+                     $.each(result, function (index, obj) {
+                         if (obj != null) {
+                             $("#ddlDrawName").append(
+                                $('<option></option>').val(obj.value).html(obj.text)
+                             );
+                         } else {
+                            $("#ddlDrawName").append(
+                                $('<option></option>').val('0').html('請選擇')
+                            );
+                             alert('該年度尚未新增抽獎活動，請確認年度條件');
+                             Query();
+                        }
+
+                     });
+                },
+                complete: function (result) {
+                }
+            });
+
+            $('#hid_DrawYear').val($('#ddlDrawYear').val());
+            $('#hid_DrawID').val($('#ddlDrawName').val());
+            $('#hid_DrawName').val($('#txtDrawName').val());
+
+            Query();
+        }
+
+        function DrawNameCH() 
+        {                    
+            $('#txtDrawName').val("");
+            if ($("#ddlDrawName").val() != "0") 
+            {
+                $('#txtDrawName').val($("#ddlDrawName option:selected").text());       
+            }
+            
+            $('#hid_DrawID').val($('#ddlDrawName').val());
+            $('#hid_DrawName').val($('#txtDrawName').val());
+
+            Query();
+        }
+
+        function DownloadPrizeSample(filePath) {
+            var link = document.createElement('a');
+            link.href = filePath;
+            link.download = "抽獎獎項(匯入範本).xlsx";
+            link.target = "_blank";
+            link.click();
+        }
+
+        //檢查上傳Excel檔案路徑是否有填寫
+        function checkEmpty() {
+            var reValue = false;
+            var strFileName = $("#postedFile").val();
+
+            if (strFileName == "") {
+                alert('請先選擇欲上傳的檔案！');
+            }
+            else {
+                reValue = confirm('是否確定繼續上傳?');
+            }
+
+            return reValue;
+        }
+
+        function Query() 
+        {
+            $("#dataDiv").html('');
+            $("#waitingImg").show();
+            $.ajax({
+                url: '@Url.Action("QueryLuckyDrawPrizeResult", "LuckyDraw")',
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    DrawID: $('#ddlDrawName').val(),
+                    DrawName: $('#txtDrawName').val(),
+                    DrawYear: $('#ddlDrawYear').val()
+                },
+                success: function (result) {
+                },
+                complete: function (result) {
+                    $("#dataDiv").html(result.responseText);
+                    $("#waitingImg").hide();
+                    // dropzoneInit('@Url.Action("AjaxFileUpload", "Ajax")');
+                }
+            });
+        }        
+
+        function DrawName() 
+        {
+            $('#hid_DrawName').val($('#txtDrawName').val());
+        }
+    </script>
+}
+
+@section breadcrumb_section{
+	<div class="col-lg-10">
+		<h2>抽獎獎品查詢/維護</h2>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="#">抽獎管理</a>
+			</li>
+			<li class="breadcrumb-item active">
+				<strong>抽獎獎品查詢/維護</strong>
+			</li>
+		</ol>
+	</div>
+}
+
+<div class="col-lg-12">
+    <div class="ibox ">
+        <div class="ibox-title">
+            <h5>抽獎獎品查詢/維護作業</h5>
+            <div class="ibox-tools">
+                <a class="collapse-link">
+                    <i class="fa fa-chevron-up"></i>
+                </a>
+            </div>
+        </div>
+        <div class="ibox-content">
+            <form name="form" asp-controller="LuckyDraw" asp-action="ImportExcel" method="post" enctype="multipart/form-data">
+                @if (ViewBag.pIsEdit == true)
+                {
+                    <div class="form-group row">
+                        <div class="col-lg-12" id="div_excelFile">
+                            <input type="file" id="postedFile" name="postedFile" />
+                            <input type="submit" value="匯入Excel" class="btn btn-success btn-lg" onclick="if (!checkEmpty()){event.returnValue=false;return false;}" />
+                            <button id="btn_download_prize" class="btn btn-primary" type="button" onclick="DownloadPrizeSample('@ViewBag.DownloadURL');" style="margin-left: 10px;">
+                                <i class="fa fa-download" aria-hidden="true" style="font-size: 16px;"></i>
+                                <span style="font-weight: bold; margin: 2px;">獎品項目的範本下載</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <!--顯示匯入成功或失敗訊息-->
+                        <label class="col-lg-12 col-form-label" style="font-size:larger;color:blue;" id="lbl_Message">@Html.Raw(ViewBag.Message)</label>
+                    </div>
+                }
+
+                <div class="form-group row">
+                    <label class="col-lg-2 col-form-label">年度</label>
+                    <select id="ddlDrawYear" name="ddlDrawYear" class="col-lg-5 form-control" style="height:35px;" onchange="DrawYearCH();">
+                        @for (int i = 2023; i <= DateTime.Now.Year + 3; i++)
+                        {
+                            if (ViewBag.DrawYear == i.ToString())
+                            {
+                                <option value='@i' selected="selected">@i 年</option>
+                            }
+                            else
+                            {
+                                <option value='@i'>@i 年</option>
+                            }
+                            
+                            
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-lg-2 col-form-label">活動</label>
+                    <select id="ddlDrawName" name="ddlDrawName" class="col-lg-5 form-control" style="height:35px;" onchange="DrawNameCH();">
+                        @foreach (var bean in ViewBag.DrawNameList)
+                        {
+                            if (ViewBag.DrawID == int.Parse(bean.Value))
+                            {
+                                <option value='@bean.Value' selected="selected">@bean.Text</option>
+                            }
+                            else
+                            {
+                                <option value='@bean.Value'>@bean.Text</option>
+                            }
+                        }
+                    </select>
+                    @if (ViewBag.pIsEdit == true)
+                    {
+                        <input type="text" class="col-lg-5 form-control" id="txtDrawName" name="txtDrawName" value="@ViewBag.DrawName" placeholder="請輸入活動名稱" onblur="DrawName();" required>
+                    }                    
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="form-group row">
+                    <button class="btn btn-success btn-lg" id="btnQuery" type="button" onclick="if (!Query()) { return false; }"><i class="fa fa-search"></i> 查 詢 </button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <img id="waitingImg" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-12">
+    <div class="ibox ">
+        <div class="ibox-title">
+            <h5>抽獎獎品查詢/維護清單</h5>                        
+            <div class="ibox-tools">              
+                <a class="collapse-link">
+                    <i class="fa fa-chevron-up"></i>
+                </a>
+            </div>
+        </div>
+        <div class="ibox-content" id="dataDiv" style="overflow: scroll">
+            <form name="form" asp-controller="LuckyDraw" asp-action="SavePrize" method="post" enctype="multipart/form-data">
+                <input type="hidden" id="hid_DrawID" name="hid_DrawID" value="0">
+                <input type="hidden" id="hid_DrawName" name="hid_DrawName" value="">
+                <input type="hidden" id="hid_DrawYear" name="hid_DrawYear" value="@ViewBag.DrawYear">
+                <table id="Tbl_Prize" class="table table-striple table-bordered table-hover dataTables-example">
+                    <thead>
+                        <tr style="word-break: keep-all; white-space: nowrap;">
+                            <th width="50px" align="center">
+                                @if (ViewBag.pIsEdit == true)
+                                {
+                                    <button class="btn btn-success" type="button" onclick="AddRow();"><i class="fa fa-plus"></i></button>
+                                }順序
+                            </th>
+                            <th>獎品名稱</th>
+                            <th width="100px">金額</th>
+                            <th width="80px">數量</th>
+                            <th width="150px">照片</th>
+                            <th width="80px">年資滿一年</th>
+                            <th width="70px">中獎明細</th>
+                        </tr>
+                    </thead>
+                    <tbody id="Tbody_Prize">
+                    </tbody>
+                </table>
+                @if (ViewBag.pIsEdit == true)
+                {
+                    <div id="div_submit" style="text-align: right; margin-right: 10px; margin-bottom: 10px;">
+                        <input type="submit" value="儲存" class="btn btn-success btn-lg" onclick="" />
+                    </div>
+                }         
+                
+            </form>
+        </div>
+    </div>
+</div>

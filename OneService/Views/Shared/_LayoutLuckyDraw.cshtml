@@ -1,0 +1,406 @@
+﻿@using OneService.Utils
+
+<!DOCTYPE html
+@{
+	//根據時間顯示不同問候及icon
+	var greeting = "";
+	var greetingIcon = "";
+	@*var empName = HttpContextAccessor.HttpContext.Session.GetString(SessionKey.USER_NAME);*@
+	if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 05:00:00}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-bed'></i>";
+		greeting = "晚安！";
+	}
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 11:00:00}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-sun-o'></i>";
+		greeting = "早安！";
+	}
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 17:30:00}", DateTime.Now)))
+	{
+		//greetingIcon = "<i class='fa fa-line-chart'></i>";
+		greetingIcon = "<i class='fa fa-coffee'></i>";
+		greeting = "午安！";
+	}
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 23:00:00}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-moon-o'></i>";
+		greeting = "晚安！";
+	}
+	@*時間如果寫24:00:00會錯誤，因為跟00:00:00重疊*@
+	else if (DateTime.Now < Convert.ToDateTime(string.Format("{0:yyyy-MM-dd 23:59:59}", DateTime.Now)))
+	{
+		greetingIcon = "<i class='fa fa-bed'></i>";
+		greeting = "晚安！";
+	}
+}>
+
+<html>
+<head>
+	<meta name="viewport" content="width=device-width" />
+	<title>@ViewData["Title"]</title>
+
+	<link href="~/css/bootstrap.css" rel="stylesheet">
+	<link href="~/font-awesome/css/font-awesome.css" rel="stylesheet">
+	<link href="~/css/plugins/iCheck/custom.css" rel="stylesheet">
+	<link href="~/css/animate.css" rel="stylesheet">
+	<link href="~/css/style.css" rel="stylesheet">
+
+	<link href="~/css/plugins/datapicker/datepicker3.css" rel="stylesheet">
+
+	<link href="~/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+
+	<link href="~/css/plugins/dropzone/basic.css" rel="stylesheet" />
+	<link href="~/css/plugins/dropzone/dropzone.css" rel="stylesheet" />
+
+	<link href="~/js/jquery-ui-1.13.2/jquery-ui.css" rel="stylesheet">
+	<link href="~/js/jquery-ui-1.13.2/jquery-ui.theme.css" rel="stylesheet">
+
+	<link href="~/css/plugins/chosen/bootstrap-chosen.css" rel="stylesheet">
+	<link href="~/css/plugins/chosen/chosen.css" rel="stylesheet">
+
+	<link rel="Stylesheet" href="~/css/plugins/datetimepicker/bootstrap-datetimepicker.css" />
+
+	<style>
+		.hiddenWidget {
+			display: none;
+		}
+	</style>
+</head>
+<body>
+
+	<div id="wrapper">
+
+		<nav class="navbar-default navbar-static-side" role="navigation">
+			<div class="sidebar-collapse">
+				<ul class="nav metismenu" id="side-menu">
+					<li>
+						<a class="dropdown profile-element" ref="@Url.Action("Dashboard", "Home")" style="padding: 0px;">
+							<img src="~/img/tsti_OneServicelogo.png" style="width: 100%;" />
+						</a>
+					</li>
+					<li class="nav-header" style="display:none">
+						<div class="dropdown profile-element">
+
+							<a data-toggle="dropdown" class="dropdown-toggle" href="#">
+
+								<span class="clear">
+									<span class="block m-t-xs">
+										<strong class="font-bold">OneService</strong>
+									</span>
+									<!--<span class="text-muted text-xs block"> <b class="caret"></b></span>-->
+								</span>
+							</a>
+							<!--                         <ul class="dropdown-menu animated fadeInRight m-t-xs">
+								<li><a class="dropdown-item" href="profile.html">Profile</a></li>
+								<li><a class="dropdown-item" href="contacts.html">Contacts</a></li>
+								<li><a class="dropdown-item" href="mailbox.html">Mailbox</a></li>
+								<li class="dropdown-divider"></li>
+								<li><a class="dropdown-item" href="login.html">Logout</a></li>
+							</ul> -->
+						</div>
+						<div class="logo-element">
+							TSTi
+						</div>
+					</li>
+					<!--                 <li> -->
+					<!--                     <a href="index.html"><i class="fa fa-th-large"></i> <span class="nav-label">Dashboards</span> <span class="fa arrow"></span></a> -->
+					<!--                     <ul class="nav nav-second-level collapse"> -->
+					<!--                         <li><a href="index.html">Dashboard v.1</a></li> -->
+					<!--                         <li><a href="dashboard_2.html">Dashboard v.2</a></li> -->
+					<!--                         <li><a href="dashboard_3.html">Dashboard v.3</a></li> -->
+					<!--                         <li><a href="dashboard_4_1.html">Dashboard v.4</a></li> -->
+					<!--                         <li><a href="dashboard_5.html">Dashboard v.5 </a></li> -->
+					<!--                     </ul> -->
+					<!--                 </li> -->
+					@*<li>
+					<a href='@Url.Action("Cust", "Home")'><i class="fa fa-list"></i> <span class="nav-label">資料儲存與列表</span></a>
+					</li>
+					<li>
+					<a href='@Url.Action("Index","Home")'><i class="fa fa-pencil"></i> <span class="nav-label">空白區域</span></a>
+					</li>
+					<li>
+					<a href='@Url.Action("Demo1", "Home")'><i class="fa fa-list-alt"></i> <span class="nav-label">表單元件</span>  </a>
+					</li>
+					<li>
+					<a href='@Url.Action("Demo2", "Home")'><i class="fa fa-cubes"></i> <span class="nav-label">按鈕元件</span>  </a>
+					</li>*@
+					<li class="active">
+						<a href="index.html"><i class="fa fa-gift"></i> <span class="nav-label">抽獎管理</span> <span class="fa arrow"></span></a>
+						<ul class="nav nav-second-level">
+							<li><a href="@Url.Action("LuckyDrawPrize", "LuckyDraw")"><i class="fa fa-gift"></i> 抽獎獎品查詢/維護</a></li>
+						</ul>
+					</li>
+				</ul>
+
+			</div>
+		</nav>
+
+		<div id="page-wrapper" class="gray-bg">
+			<div class="row border-bottom">
+				<nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+					<div class="navbar-header">
+						<a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+						<form role="search" class="navbar-form-custom" action="search_results.html">
+							<div class="form-group">
+								<input type="text" placeholder="" class="form-control" name="top-search" id="top-search">
+							</div>
+						</form>
+					</div>
+					<ul class="nav navbar-top-links navbar-right">
+						<label style="margin-top: auto; margin-bottom: auto; margin-right: 15px; font-size: 20px; font-family: 'Microsoft JhengHei';">@Html.Raw(greetingIcon)&nbsp;&nbsp;@greeting <a href="javascript:logout()">  登 出</a></label>
+
+						@*<img src="~/img/logo.gif" />*@
+						<!--
+							<li>
+								<span class="m-r-sm text-muted welcome-message">Welcome .</span>
+							</li>
+
+							<li>
+								<a href="login.html">
+									<i class="fa fa-sign-out"></i> Log out
+								</a>
+							</li>
+						-->
+					</ul>
+
+				</nav>
+			</div>
+			<div class="row wrapper border-bottom white-bg page-heading">
+				@RenderSection("breadcrumb_section", required: false)
+
+				<div class="col-lg-2">
+				</div>
+			</div>
+
+			<!-- 內容區 -->
+			<div class="wrapper wrapper-content animated fadeInRight">
+				@RenderBody()
+			</div>
+			<!-- 內容區 end -->
+			<div class="footer">
+				<div class="float-right">
+					<strong>Create by</strong> Leon  2022
+				</div>
+				<div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!--Bulletin Dialog-->
+	<div class="modal fade" id="bulletinDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="dialogTitle">Title</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="dialogContent">
+				</div>
+				<div class="modal-footer">
+					<button id="Button2" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">關閉</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--ShowCloseDialog-->
+	<div class="modal fade" id="ShowCloseDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="ShowClosedialogTitle">提醒</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="ShowClosedialogContent">
+				</div>
+				<div class="modal-footer">
+					<button id="BtnClose" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">關閉</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--ShowConfirmDialog-->
+	<div class="modal fade" id="ShowConfirmDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="ShowConfirmdialogTitle">確認</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="ShowConfirmdialogContent">
+				</div>
+				<div class="modal-footer">
+					<button id="BtnCancel" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">取消</button>
+					<button id="BtnSave" type="button" class="btn btn-lg btn-primary" data-dismiss="modal">確認</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--ShowComponentsChangeDialog-->
+	<div class="modal fade" id="ShowComponentsChangeDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="ShowComponentsChangedialogTitle">零件更換</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="ShowComponentsChangedialogContent">
+				</div>
+				<div class="modal-footer">
+					<button id="BtnClose" type="button" class="btn btn-lg btn-dark" data-dismiss="modal">關閉</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--更改歷史記錄彈出視窗-->
+	<div class="modal fade" id="dialog_ShowHistoryLog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg" role="document" style="max-width:80%">
+			<div class="modal-content">
+				<div class="modal-header">
+					<label class="col-form-label"><i class="fa fa-users"></i> 更改歷程記錄</label>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+				</div>
+				<hr style="border: 1px solid lightgray; width: 98%;" />
+				<div class="modal-body" id="tb_ShowHistoryLog" style="overflow: scroll;">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Mainly scripts -->
+	<script src="~/js/jquery-3.7.1.min.js"></script>
+	<script src="~/js/jquery-migrate-3.4.0.js"></script>
+	<script src="~/js/popper.min.js"></script>
+	<script src="~/js/bootstrap.js"></script>
+	<script src="~/js/plugins/metisMenu/jquery.metisMenu.js"></script>
+	<script src="~/js/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+	<script src="~/js/jquery-ui-1.13.2/jquery-ui.min.js"></script>
+
+	<!-- Custom and plugin javascript -->
+	<script src="~/js/inspinia.js"></script>
+	<script src="~/js/plugins/pace/pace.min.js"></script>
+
+	<!-- Data picker -->
+	<script src="~/js/plugins/datapicker/bootstrap-datepicker.js"></script>
+
+	<!-- Date range picker -->
+	<script src="~/js/plugins/daterangepicker/daterangepicker.js"></script>
+
+	<!-- datatable -->
+	<script src="~/js/plugins/dataTables/datatables.min.js"></script>
+	<script src="~/js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
+
+	<script src="~/js/plugins/jquery.koala.js"></script>
+
+	<!-- dropzone -->
+	<script src="~/js/plugins/dropzone/dropzone.js?2020071502"></script>
+	<script src="~/js/numeral.js"></script>
+
+	<!-- Chosen -->
+	<script src="~/js/plugins/chosen/chosen.jquery.js"></script>
+
+	<!--datetimepicker設定參考網址 https://www.bootcss.com/p/bootstrap-datetimepicker/-->
+	<script type="text/javascript" src="~/js/plugins/datetimepicker/bootstrap-datetimepicker.js"></script>
+
+	<!-- iCheck -->
+	<script src="~/js/plugins/iCheck/icheck.min.js"></script>
+	<script src="~/js/common-function.js?2023101202"></script>
+	<script>
+		$(document).ready(function () {
+
+			dropzoneInit("@Url.Action("AjaxFileUpload", "Ajax")");
+			generatorFileDiv("@Url.Action("GetFileData", "Ajax")");
+
+			$('.i-checks').iCheck({
+				checkboxClass: 'icheckbox_square-green',
+				radioClass: 'iradio_square-green',
+			});
+
+			$('.calendar').datepicker({
+				todayBtn: "linked",
+				keyboardNavigation: false,
+				forceParse: false,
+				calendarWeeks: false,
+				autoclose: true,
+				format: "yyyy-mm-dd"
+			});
+
+			$('.datetimepicker').datetimepicker({
+				minView: "day", //只顯示到每日的整點
+				format: "yyyy-mm-dd hh:ii",
+				autoclose: true, //當選擇一個日期之後是否立即關閉此日期時間選擇器。
+				todayBtn: "linked", //如果此值為true或"linked"，則在日期時間選擇器組件的底部顯示一個today按鈕用以選擇當前日期。如果是true，today按鈕僅僅將視圖轉到當天的日期，如果是linked，當天日期將會被選中。
+				todayHighlight: true, //如果為true，閃亮當前日期。
+			});
+
+			$('#table1').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				order: [[0, "desc"]],
+				dom: '<"html5buttons"B>lTfgitp',
+				buttons: [
+					{ extend: 'excel', title: 'ExampleFile', text: '匯出Excel' }
+				]
+
+			});
+
+			$('.tableQeryStyle').DataTable({
+				language: {
+					"lengthMenu": "每頁顯示筆數 _MENU_ ",
+					"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
+					"search": " 關鍵字篩選"
+				},
+				pageLength: 25,
+				responsive: true,
+				//order:[[ 0, "desc" ]],
+				dom: '<"html5buttons"B>lTfgitp',
+				buttons: [
+					{ extend: 'excel', title: 'ExampleFile', text: '匯出Excel' }
+				]
+
+			});
+
+			$('.chosen-select').chosen({ width: "100%" });
+
+		});
+
+		function showDialog(title, message) {
+			$("#dialogTitle").html(title);
+			$("#dialogContent").html(message);
+			$("#bulletinDialog").modal("show");
+		}
+
+		function logout() {
+			if (confirm("確定登出?")) {
+				window.location.href = "@Url.Action("Logout", "Home")";
+			}
+		}
+
+
+	</script>
+	@RenderSection("js_section", required: false)
+</body>
+</html>
