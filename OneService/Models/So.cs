@@ -190,11 +190,6 @@ namespace OneService.Models
         public decimal? Vvr01 { get; set; }
         public decimal? Vvc01 { get; set; }
         public decimal? PurchaseAmount { get; set; }
-        public string? PurchaseWaers { get; set; }
         public decimal? InvoiceQuantity { get; set; }
-        public string? IndustryApply { get; set; }
-        public string? ReceiverName2 { get; set; }
-        public string? ReceiverName3 { get; set; }
-        public string? ReceiverName4 { get; set; }
     }
 }

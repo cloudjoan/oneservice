@@ -1,4 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿#region 修改歷程記錄
+/* 2023/12/27:elvis:建良決議 => L2處理中跟現行一樣，維持不變，客戶狀況故障分類，原本必填改成非必填
+ * 
+ * 
+ */
+#endregion
+
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -1786,8 +1793,11 @@ namespace OneService.Controllers
                 //取得登入人員所負責的服務團隊
                 List<string> tSRTeamList = CMF.findSRTeamMappingList(ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO);
 
+                //取得登入人員所負責的技術支援升級團隊
+                List<string> tSRTechTeamList = CMF.findSRTechTeamMappingList(ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO);
+
                 //取得登入人員所有要負責的SRID                
-                List<string[]> SRIDToDoList = CMF.findSRIDList(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode, pIsManager, ViewBag.cLoginUser_ERPID, tSRTeamList);
+                List<string[]> SRIDToDoList = CMF.findSRIDList(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode, pIsManager, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, tSRTeamList, tSRTechTeamList);
 
                 ViewBag.SRIDToDoList = SRIDToDoList;
                 #endregion
@@ -1850,6 +1860,10 @@ namespace OneService.Controllers
 
             #region 取得服務團隊清單
             var SRTeamIDList = CMF.findSRTeamIDList("ALL", true);
+            #endregion
+
+            #region 取得技術支援升級團隊清單
+            var SRTechTeamIDList = CMF.findSRTechTeamIDList(pCompanyCode, true);
             #endregion
 
             #region SLA回應條件(單筆per call)
@@ -1962,6 +1976,7 @@ namespace OneService.Controllers
 
                     #region 服務團隊
                     ViewBag.cTeamID = beanM.CTeamId;
+                    ViewBag.cTechTeamID = beanM.CTechTeamId;
                     ViewBag.cMainEngineerID = beanM.CMainEngineerId;
                     ViewBag.cMainEngineerName = beanM.CMainEngineerName;
                     ViewBag.cSQPersonID = beanM.CSqpersonId;
@@ -2190,6 +2205,7 @@ namespace OneService.Controllers
 
                     #region 服務團隊
                     ViewBag.cTeamID = beanM.CTeamId;
+                    ViewBag.cTechTeamID = beanM.CTechTeamId;
                     ViewBag.cMainEngineerID = beanM.CMainEngineerId;
                     ViewBag.cMainEngineerName = beanM.CMainEngineerName;
                     ViewBag.cSQPersonID = beanM.CSqpersonId;
@@ -2275,6 +2291,7 @@ namespace OneService.Controllers
             ViewBag.SRTypeSecList = SRTypeSecList;
             ViewBag.SRTypeThrList = SRTypeThrList;            
             ViewBag.SRTeamIDList = SRTeamIDList;
+            ViewBag.SRTechTeamIDList = SRTechTeamIDList;
 
             ViewBag.pOperationID = pOperationID_GenerallySR;
             ViewBag.pIsCanEditSR = pIsCanEditSR.ToString();  //登入者是否可以編輯服務案件
@@ -2328,6 +2345,7 @@ namespace OneService.Controllers
             string OldCRepairMobile = string.Empty;
             string OldCRepairEmail = string.Empty;
             string OldCTeamId = string.Empty;
+            string OldCTechTeamId = string.Empty;
             string OldCSqpersonId = string.Empty;
             string OldCSqpersonName = string.Empty;
             string OldCSalesName = string.Empty;
@@ -2392,6 +2410,7 @@ namespace OneService.Controllers
             string CRemark = formCollection["tbx_cRemark"].FirstOrDefault();
             string CCustomerUnitType = formCollection["ddl_cCustomerUnitType"].FirstOrDefault();
             string CTeamId = formCollection["hid_cTeamID"].FirstOrDefault();
+            string CTechTeamId = formCollection["hid_cTechTeamID"].FirstOrDefault();
             string CSqpersonId = formCollection["hid_cSQPersonID"].FirstOrDefault();
             string CSqpersonName = formCollection["tbx_cSQPersonName"].FirstOrDefault();
             string CSalesName = formCollection["tbx_cSalesName"].FirstOrDefault();
@@ -2470,6 +2489,7 @@ namespace OneService.Controllers
                     beanM.CRepairMobile = CRepairMobile;
                     beanM.CRepairEmail = CRepairEmail;                    
                     beanM.CTeamId = CTeamId;
+                    beanM.CTechTeamId = CTechTeamId;
                     beanM.CSqpersonId = CSqpersonId;
                     beanM.CSqpersonName = CSqpersonName;
                     beanM.CSalesName = CSalesName;
@@ -2725,6 +2745,9 @@ namespace OneService.Controllers
                     OldCTeamId = beanNowM.CTeamId;
                     tLog += CMF.getNewAndOldLog("服務團隊", OldCTeamId, CTeamId);
 
+                    OldCTechTeamId = beanNowM.CTechTeamId;
+                    tLog += CMF.getNewAndOldLog("技術支援升級團隊", OldCTechTeamId, CTechTeamId);
+
                     OldCSqpersonId = beanNowM.CSqpersonId;
                     tLog += CMF.getNewAndOldLog("SQ人員ID", OldCSqpersonId, CSqpersonId);
 
@@ -2836,6 +2859,7 @@ namespace OneService.Controllers
                     beanNowM.CRepairMobile = CRepairMobile;
                     beanNowM.CRepairEmail = CRepairEmail;                    
                     beanNowM.CTeamId = CTeamId;
+                    beanNowM.CTechTeamId = CTechTeamId;
                     beanNowM.CSqpersonId = CSqpersonId;
                     beanNowM.CSqpersonName = CSqpersonName;
                     beanNowM.CSalesName = CSalesName;
@@ -3627,6 +3651,8 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region -----↓↓↓↓↓服務團隊 ↓↓↓↓↓----- 
+
         #region 儲存常用服務團隊
         /// <summary>
         /// 儲存常用服務團隊
@@ -3890,6 +3916,181 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #endregion -----↑↑↑↑↑服務團隊 ↑↑↑↑↑-----  
+
+        #region -----↓↓↓↓↓技術支援升級團隊 ↓↓↓↓↓-----
+
+        #region 修改技術支援升級團隊
+        /// <summary>
+        /// 修改技術支援升級團隊
+        /// </summary>
+        /// <param name="cTechTeamID">目前的技術支援升級團隊的ID(;號隔開)</param>
+        /// <param name="cTechTeamAcc">欲修改的技術支援升級團隊ERPID</param>
+        /// <returns></returns>
+        public IActionResult SavepjTechTeam(string cTechTeamID, string cTechTeamAcc)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = string.Empty;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(cTechTeamID))
+                {
+                    var oldTechTeamAcc = cTechTeamID;
+
+                    if (oldTechTeamAcc.Contains(cTechTeamAcc))
+                    {
+                        reValue = "Error：技術支援升級團隊已存在，請重新輸入！";
+                    }
+                    else
+                    {
+                        reValue = oldTechTeamAcc + ";" + cTechTeamAcc;
+
+                        #region 紀錄修改log
+                        TbOneLog logBean = new TbOneLog
+                        {
+                            CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
+                            EventName = "SavepjTechTeam",
+                            Log = "修改技術支援升級團隊_舊值: " + oldTechTeamAcc + "; 新值: " + reValue,
+                            CreatedUserName = ViewBag.empEngName,
+                            CreatedDate = DateTime.Now
+                        };
+
+                        dbOne.TbOneLogs.Add(logBean);
+                        dbOne.SaveChanges();
+                        #endregion
+                    }
+                }
+                else
+                {
+                    reValue = cTechTeamAcc;
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("SavepjTechTeam Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #region 取得技術支援升級團隊
+        /// <summary>
+        /// 取得技術支援升級團隊
+        /// </summary>
+        /// <param name="cTechTeamID">技術支援升級團隊的ID(;號隔開)</param>
+        /// <returns></returns>
+        public IActionResult GetpjTechTeam(string cTechTeamID)
+        {
+            List<SRTeamInfo> liSRTechTeamInfo = new List<SRTeamInfo>();
+
+            string tEmpName = string.Empty;     //技術支援升級團隊姓名(中文姓名+英文姓名)            
+            string tDeptID = string.Empty;      //對應該部門ID
+            string tDeptName = string.Empty;    //對應該部門名稱
+
+            if (!string.IsNullOrEmpty(cTechTeamID))
+            {
+                List<string> liAssAcc = cTechTeamID.Split(';').ToList();
+                int pmId = 0;
+                foreach (var AssAcc in liAssAcc)
+                {
+                    tEmpName = "";
+                    tDeptID = "";
+                    tDeptName = "";
+
+                    pmId++;
+                    if (string.IsNullOrEmpty(AssAcc)) continue;
+
+                    var qPms = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamNewId).Where(x => x.Disabled == 0 && x.CTeamOldId == AssAcc);
+                    foreach (var qPm in qPms)
+                    {
+                        tEmpName = qPm.CTeamOldId + " " + qPm.CTeamOldName; //因為是同一個服務團隊，所以只取一個就行了
+                        tDeptID += qPm.CTeamNewId + "</br>";
+                        tDeptName += qPm.CTeamNewName + "</br>";
+                    }
+
+                    //若是舊的技術支援升級團隊，至少塞技術支援升級團隊的ID
+                    if (tEmpName == "")
+                    {
+                        tEmpName = AssAcc;
+                    }
+
+                    SRTeamInfo pmBean = new SRTeamInfo(pmId, AssAcc, tEmpName, tDeptID, tDeptName);
+                    liSRTechTeamInfo.Add(pmBean);
+                }
+            }
+
+            return Json(liSRTechTeamInfo);
+        }
+        #endregion
+
+        #region 刪除技術支援升級團隊
+        /// <summary>
+        /// 刪除技術支援升級團隊
+        /// </summary>
+        /// <param name="cTechTeamID">目前的技術支援升級團隊的ID(;號隔開)</param>
+        /// <param name="cTechTeamAcc">欲刪除的技術支援升級團隊ERPID</param>
+        /// <returns></returns>
+        public IActionResult DeletepjTechTeam(string cTechTeamID, string cTechTeamAcc)
+        {
+            getLoginAccount();
+            getEmployeeInfo();
+
+            string reValue = cTechTeamID;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(cTechTeamID))
+                {
+                    #region 刪除技術支援升級團隊，並回傳最新的技術支援升級團隊
+                    var oldPMAcc = cTechTeamID;
+
+                    List<string> liPmAcc = cTechTeamID.Split(';').ToList();
+                    List<string> liPmAccNew = new List<string>();
+
+                    foreach (string tValue in liPmAcc)
+                    {
+                        if (tValue.ToLower() != cTechTeamAcc.ToLower())
+                        {
+                            liPmAccNew.Add(tValue);
+                        }
+                    }
+
+                    reValue = string.Join(";", liPmAccNew);
+                    #endregion
+
+                    #region 紀錄刪除log
+                    TbOneLog logBean = new TbOneLog
+                    {
+                        CSrid = string.IsNullOrEmpty(ViewBag.cSRID) ? "" : ViewBag.cSRID,
+                        EventName = "DeletepjTechTeam",
+                        Log = "刪除技術支援升級團隊_舊值: " + cTechTeamID + "; 新值: " + reValue,
+                        CreatedUserName = ViewBag.empEngName,
+                        CreatedDate = DateTime.Now
+                    };
+
+                    dbOne.TbOneLogs.Add(logBean);
+                    dbOne.SaveChanges();
+                    #endregion
+                }
+            }
+            catch (Exception e)
+            {
+                return Json("DeletepjTechTeam Error：" + e.Message);
+            }
+
+            return Json(reValue);
+        }
+        #endregion
+
+        #endregion -----↑↑↑↑↑技術支援升級團隊 ↑↑↑↑↑-----  
+
+
+        #region -----↓↓↓↓↓常用工程師 ↓↓↓↓↓----- 
+
         #region 儲存常用工程師
         /// <summary>
         /// 儲存常用工程師
@@ -4148,6 +4349,11 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #endregion -----↑↑↑↑↑常用工程師 ↑↑↑↑↑----- 
+
+
+        #region -----↓↓↓↓↓技術主管 ↓↓↓↓↓----- 
+
         #region 修改技術主管
         /// <summary>
         /// 修改技術主管
@@ -4308,6 +4514,8 @@ namespace OneService.Controllers
             return Json(reValue);
         }
         #endregion
+
+        #endregion -----↑↑↑↑↑技術主管 ↑↑↑↑↑----- 
 
         #region 刪除聯絡人
         /// <summary>
@@ -8781,12 +8989,15 @@ namespace OneService.Controllers
             //pLoginAccount = @"etatung\Boyen.Chen";      //陳建良(主管)
             //pLoginAccount = @"etatung\Aniki.Huang";     //黃志豪(主管)
             //pLoginAccount = @"etatung\jack.hung";       //洪佑典(主管)
+            //pLoginAccount = @"etatung\Leo.Lee";         //李家豪(主管)
             //pLoginAccount = @"etatung\Allen.Tang";      //湯文華(業務主管)
             //pLoginAccount = @"etatung\Sam.Lee";         //李思霖(業務)
             //pLoginAccount = @"etatung\Julia.Hsu";       //徐瑄辰(祕書)
-            //pLoginAccount = @"etatung\Steve.Guo";       //郭翔元         
+            //pLoginAccount = @"etatung\Kongo.tsai";       //蔡怡德        
             //pLoginAccount = @"etatung\Wenjui.Chan";     //詹文瑞        
             //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
+            //pLoginAccount = @"etatung\Cara.Tien";       //田巧如    
+            //pLoginAccount = @"etatung\kenny.wu";        //巫永昌 
             #endregion
 
             pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用

@@ -40,10 +40,10 @@
 								data = data.replace(translate_re, translator);
 
 							//將換行符號<br>換成excel可以識別的\n
-							if (column === 3 || column === 6 || column === 8) {
+							if (column === 3 || column === 6 || column === 8 || column === 9 || column === 10) {
 								return data.replace(/<br\s*\/?>/ig, "\n"); //匯出需要在每筆紀錄前，多換一行
 							}
-							else if (column === 10) {
+							else if (column === 12) {
 								return data.split("</button>")[0].split(">").pop(); //pop()代表取最後一個
                             }
 							else return data;
@@ -81,6 +81,8 @@
 							formatTargetColumn(xlsx, 'I');
 							formatTargetColumn(xlsx, 'J');
 							formatTargetColumn(xlsx, 'K');
+							formatTargetColumn(xlsx, 'L');
+							formatTargetColumn(xlsx, 'M');
 
 							SaveQueryLog("ToDoList_ExportExcel"); //記錄登入人員匯出Excel的時間點Log
 						}
@@ -98,8 +100,10 @@
 					{ "width": "120px", "targets": 6 },   //報修類別
 					{ "width": "32px", "targets": 7 },   //主要工程師
 					{ "width": "32px", "targets": 8 },   //協助工程師
-					{ "width": "60px", "targets": 9 },   //最後編輯日期
-					{ "width": "70px", "targets": 10 },  //狀態
+					{ "width": "32px", "targets": 9 },   //技術主管
+					{ "width": "60px", "targets": 10 },   //技術支援升級團隊
+					{ "width": "60px", "targets": 11 },   //最後編輯日期
+					{ "width": "70px", "targets": 12 },  //狀態
 				],
 			});
 
@@ -212,7 +216,9 @@
 								<th>報修管道</th>
 								<th>報修類別</th>
 								<th>主要工程師</th>
-								<th>協助工程師</th>
+								<th>協助工程師</th>								
+								<th>技術主管</th>
+								<th>技術支援升級團隊</th>
 								<th>最後編輯日期</th>
 								<th>狀態</th>
 							</tr>
@@ -238,36 +244,60 @@
 											continue;
 										}
 
-										if (CheckInfo[10] != "")
+										if (ViewBag.pIsManager) //若是主管時
 										{
-											if (CheckInfo[15] == "E0007") //若狀態【E0007.技術支援升級】
+											if (CheckInfo[15] == "E0002") //若狀態為【E0002.L2處理中】
 											{
-												if (CheckInfo[10].IndexOf(tERPID) == -1) //【不為技術主管】才跳過
-												{
-													continue;
-												}
+												//不跳過
 											}
-											else
+											else if (CheckInfo[15] == "E0007") //若狀態為【E0007.技術支援升級】
 											{
-												if (CheckInfo[10].IndexOf(tERPID) >= 0) //【為技術主管但非E0007(技術支援升級)】才跳過
+												if (CheckInfo[10] != "") //判斷是否有指派技術主管
 												{
-													if (CheckInfo[7] != tERPID) //非【主要工程師】才跳過
+													if (CheckInfo[10].IndexOf(tERPID) == -1) //【不為技術主管】才跳過
 													{
 														continue;
 													}
 												}
-											}											
-										}
-
-										if (ViewBag.pIsManager) //若是主管時
-										{
-											if (CheckInfo[15] != "E0007") //若狀態非【E0007.技術支援升級】
+												else
+												{
+													if (CheckInfo[17] == "N")//【不為技術支援升級團隊人員】才跳過
+													{
+														continue;
+													}
+												}
+											}
+											else
 											{
 												if (tERPID != CheckInfo[7]) //非【主要工程師】才跳過
 												{
 													continue;
 												}
 											}
+										}
+										else //非主管
+										{
+											if (CheckInfo[15] == "E0002") //若狀態為【E0002.L2處理中】才跳過
+											{
+												continue;
+											}
+											else if (CheckInfo[15] == "E0007") //若狀態為【E0007.技術支援升級】
+											{
+												if (CheckInfo[10] != "") //判斷是否有指派技術主管
+												{
+													if (CheckInfo[10].IndexOf(tERPID) == -1) //【不為技術主管】才跳過
+													{
+														continue;
+													}
+												}
+												else
+												{
+													if (CheckInfo[17] == "N") //【不為技術支援升級團隊人員】才跳過
+													{
+														continue;
+													}
+												}
+											}											
 										}
 									}									
 
@@ -282,6 +312,8 @@
 											<td>@Html.Raw(CheckInfo[6])</td>
 											<td>@CheckInfo[8]</td>
 											<td>@Html.Raw(CheckInfo[9])</td>
+											<td>@Html.Raw(CheckInfo[11])</td>
+											<td>@Html.Raw(CheckInfo[16])</td>											
 											<td>@CheckInfo[14]</td>
 											<td>
 												@{

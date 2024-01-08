@@ -22,7 +22,7 @@ namespace OneService.Models
         /// </summary>
         public string Knb1Bukrs { get; set; } = null!;
         /// <summary>
-        /// 聯絡人類別(0:發票,1:驗收,2:收貨,3:存出保證金經辦,4:客戶建檔聯絡人,5.OneService建立)
+        /// 聯絡人類別(0:發票,1:驗收,2:收貨,3:存出保證金經辦,4:客戶建檔聯絡人)
         /// </summary>
         public string ContactType { get; set; } = null!;
         /// <summary>
@@ -45,9 +45,6 @@ namespace OneService.Models
         /// 聯絡人電話
         /// </summary>
         public string? ContactPhone { get; set; }
-        /// <summary>
-        /// 聯絡人手機
-        /// </summary>
         public string? ContactMobile { get; set; }
         public Guid? ContactStore { get; set; }
         /// <summary>

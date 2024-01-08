@@ -37,9 +37,6 @@ namespace OneService.Models
         /// 是否啟用
         /// </summary>
         public bool IsEnabled { get; set; }
-        /// <summary>
-        /// 預設提醒
-        /// </summary>
         public string? BulletinRemind { get; set; }
     }
 }

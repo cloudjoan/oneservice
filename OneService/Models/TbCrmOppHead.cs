@@ -82,9 +82,5 @@ namespace OneService.Models
         public string? SalesGroup { get; set; }
         public string? IndustryApply { get; set; }
         public string? ProStage { get; set; }
-        public string? CancelReason { get; set; }
-        public string? ChangeTime { get; set; }
-        public string? ContractType { get; set; }
-        public string? TechCheckStatus { get; set; }
     }
 }

@@ -67,15 +67,18 @@ namespace OneService.Controllers
         /// <param name="cCompanyID">公司別</param>
         /// <param name="IsManager">true.管理員 false.非管理員</param>
         /// <param name="tERPID">登入人員ERPID</param>
-        /// <param name="tTeamList">可觀看服務團隊清單</param>        
+        /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
+        /// <param name="tDeptID">登入人員部門ID</param>
+        /// <param name="tTeamList">可觀看服務團隊清單</param>
+        /// <param name="tTechTeamList">可觀看技術支援升級團隊清單</param>
         /// <returns></returns>
         public List<string[]> findSRIDList(string cOperationID_GenerallySR, string cOperationID_InstallSR, string cOperationID_MaintainSR, 
-                                         string cCompanyID, bool IsManager, string tERPID, List<string> tTeamList)
+                                         string cCompanyID, bool IsManager, string tERPID, string tCostCenterID, string tDeptID, List<string> tTeamList, List<string> tTechTeamList)
         {            
 
             List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
 
-            SRIDUserToList = getSRIDToDoList(cOperationID_GenerallySR, cOperationID_InstallSR, cOperationID_MaintainSR, cCompanyID, IsManager, tERPID, tTeamList);
+            SRIDUserToList = getSRIDToDoList(cOperationID_GenerallySR, cOperationID_InstallSR, cOperationID_MaintainSR, cCompanyID, IsManager, tERPID, tCostCenterID, tDeptID, tTeamList, tTechTeamList);
 
             return SRIDUserToList;
         }
@@ -91,10 +94,13 @@ namespace OneService.Controllers
         /// <param name="cCompanyID">公司別</param>
         /// <param name="IsManager">true.管理員 false.非管理員</param>
         /// <param name="tERPID">登入人員ERPID</param>
+        /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
+        /// <param name="tDeptID">登入人員部門ID</param>
         /// <param name="tTeamList">可觀看服務團隊清單</param>
+        /// <param name="tTechTeamList">可觀看技術支援升級團隊清單</param>
         /// <returns></returns>
         private List<string[]> getSRIDToDoList(string cOperationID_GenerallySR, string cOperationID_InstallSR, string cOperationID_MaintainSR, 
-                                             string cCompanyID, bool IsManager, string tERPID, List<string> tTeamList)
+                                             string cCompanyID, bool IsManager, string tERPID, string tCostCenterID, string tDeptID, List<string> tTeamList, List<string> tTechTeamList)
         {
             List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
 
@@ -109,18 +115,22 @@ namespace OneService.Controllers
             string tSalesID = string.Empty;             //業務人員ERPID
             string tSecretaryID = string.Empty;         //業務祕書ERPID
             string tModifiedDate = string.Empty;        //修改日期
+            string tSRTechTeam = string.Empty;          //技術支援升級團隊
+            string tIsSRTechTeam = "N";                //判斷是否為技術支援升級團隊人員(Y.是 N.否)
 
             List<string> tListAssAndTech = new List<string>();                          //記錄所有協助工程師和所有技術主管的ERPID
             Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();  //記錄所有協助工程師和所有技術主管的<ERPID,中、英文姓名>
 
             var tSRContact_List = findSRDetailContactList();
+            var tSRTechTeam_List = findSRTechTeamIDList(cCompanyID, false);           
 
             List<TbOneSrmain> beans = new List<TbOneSrmain>();
-            List<TbOneSysParameter> tSRPathWay_List = findSysParameterALLDescription(cOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
+            List<TbOneSysParameter> tSRPathWay_List = findSysParameterALLDescription(cOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");            
 
             if (IsManager)
             {
                 string tWhere = TrnasTeamListToWhere(tTeamList);
+                tWhere += TrnasTechTeamListToWhere(tTechTeamList);
 
                 string tSQL = @"select * from TB_ONE_SRMain
                                    where 
@@ -166,9 +176,11 @@ namespace OneService.Controllers
                     tSalesID = dr["cSalesID"].ToString();
                     tSecretaryID = dr["cSecretaryID"].ToString();
                     tModifiedDate = dr["ModifiedDate"].ToString() != "" ? Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss") : "";
+                    tSRTechTeam = TransSRTeam(tSRTechTeam_List, dr["cTechTeamID"].ToString());
+                    tIsSRTechTeam = checkIsSRTechTeam(dr["cTechTeamID"].ToString(), tCostCenterID, tDeptID);
 
                     #region 組待處理服務
-                    string[] ProcessInfo = new string[16];
+                    string[] ProcessInfo = new string[18];
 
                     ProcessInfo[0] = dr["cSRID"].ToString();             //SRID
                     ProcessInfo[1] = dr["cCustomerName"].ToString();      //客戶
@@ -185,7 +197,9 @@ namespace OneService.Controllers
                     ProcessInfo[12] = tSalesID;                         //業務人員ERPID
                     ProcessInfo[13] = tSecretaryID;                     //業務祕書ERPID
                     ProcessInfo[14] = tModifiedDate;                    //最後編輯日期
-                    ProcessInfo[15] = dr["cStatus"].ToString();           //狀態                    
+                    ProcessInfo[15] = dr["cStatus"].ToString();           //狀態
+                    ProcessInfo[16] = tSRTechTeam;                      //技術支援升級團隊                    
+                    ProcessInfo[17] = tIsSRTechTeam;                    //是否為技術支援升級團隊人員(Y.是 N.否)
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -193,9 +207,20 @@ namespace OneService.Controllers
             }
             else
             {
-                beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006" && x.CStatus != "E0010" && x.CStatus != "E0017") && 
-                                                    (x.CMainEngineerId == tERPID || x.CSalesId == tERPID || x.CSecretaryId == tERPID || x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID))
-                                              ).ToList();
+                if (tTechTeamList.Count > 0)
+                {
+                    beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006" && x.CStatus != "E0010" && x.CStatus != "E0017") &&
+                                                        (x.CMainEngineerId == tERPID || x.CSalesId == tERPID || x.CSecretaryId == tERPID ||
+                                                         x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID) || tTechTeamList.Contains(x.CTechTeamId))
+                                                  ).ToList();
+                }
+                else
+                {
+                    beans = dbOne.TbOneSrmains.Where(x => (x.CStatus != "E0015" && x.CStatus != "E0006" && x.CStatus != "E0010" && x.CStatus != "E0017") &&
+                                                       (x.CMainEngineerId == tERPID || x.CSalesId == tERPID || x.CSecretaryId == tERPID ||
+                                                        x.CTechManagerId.Contains(tERPID) || x.CAssEngineerId.Contains(tERPID))
+                                                 ).ToList();
+                }
 
                 #region 先取得所有協助工程師和技術主管的ERPID
                 foreach (var bean in beans)
@@ -227,9 +252,11 @@ namespace OneService.Controllers
                     tSalesID = string.IsNullOrEmpty(bean.CSalesId) ? "" : bean.CSalesId;
                     tSecretaryID = string.IsNullOrEmpty(bean.CSecretaryId) ? "" : bean.CSecretaryId;
                     tModifiedDate = bean.ModifiedDate == null ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
+                    tSRTechTeam = TransSRTeam(tSRTechTeam_List, bean.CTechTeamId);
+                    tIsSRTechTeam = checkIsSRTechTeam(bean.CTechTeamId, tCostCenterID, tDeptID);
 
                     #region 組待處理服務
-                    string[] ProcessInfo = new string[16];
+                    string[] ProcessInfo = new string[18];
 
                     ProcessInfo[0] = bean.CSrid;            //SRID
                     ProcessInfo[1] = bean.CCustomerName;     //客戶
@@ -246,7 +273,9 @@ namespace OneService.Controllers
                     ProcessInfo[12] = tSalesID;            //業務人員ERPID
                     ProcessInfo[13] = tSecretaryID;        //業務祕書ERPID
                     ProcessInfo[14] = tModifiedDate;       //最後編輯日期
-                    ProcessInfo[15] = bean.CStatus;         //狀態                    
+                    ProcessInfo[15] = bean.CStatus;         //狀態
+                    ProcessInfo[16] = tSRTechTeam;         //技術支援升級團隊
+                    ProcessInfo[17] = tIsSRTechTeam;       //是否為技術支援升級團隊人員(Y.是 N.否)
 
                     SRIDUserToList.Add(ProcessInfo);
                     #endregion
@@ -288,6 +317,37 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 將技術支援升級團隊清單轉成where條件
+        private string TrnasTechTeamListToWhere(List<string> tTeamList)
+        {
+            string reValue = string.Empty;
+
+            int count = tTeamList.Count;
+            int i = 0;
+
+            foreach (var tTeam in tTeamList)
+            {
+                if (i == count - 1)
+                {
+                    reValue += "cTechTeamID like '%" + tTeam + "%'";
+                }
+                else
+                {
+                    reValue += "cTechTeamID like '%" + tTeam + "%' or ";
+                }
+
+                i++;
+            }
+
+            if (reValue != "")
+            {
+                reValue = " or (" + reValue + ")";
+            }
+
+            return reValue;
+        }
+        #endregion
+
         #region 取得登入人員所負責的服務團隊
         /// <summary>
         /// 取得登入人員所負責的服務團隊
@@ -299,7 +359,7 @@ namespace OneService.Controllers
         {
             List<string> tList = new List<string>();
 
-            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID));
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && !x.CTeamOldId.Contains("SRV.124") && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID));
 
             foreach (var beansItem in beans)
             {
@@ -310,6 +370,61 @@ namespace OneService.Controllers
             }
 
             return tList;
+        }
+        #endregion
+
+        #region 取得登入人員所負責的技術支援升級團隊
+        /// <summary>
+        /// 取得登入人員所負責的技術支援升級團隊
+        /// </summary>
+        /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
+        /// <param name="tDeptID">登入人員部門ID</param>
+        /// <returns></returns>
+        public List<string> findSRTechTeamMappingList(string tCostCenterID, string tDeptID)
+        {
+            List<string> tList = new List<string>();
+
+            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && x.CTeamOldId.Contains("SRV.124") && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID));
+
+            foreach (var beansItem in beans)
+            {
+                if (!tList.Contains(beansItem.CTeamOldId))
+                {
+                    tList.Add(beansItem.CTeamOldId);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
+        #region 判斷登入者是否為技術支援升級團隊人員(Y.是 N.否)
+        /// <summary>
+        /// 判斷登入者是否為技術支援升級團隊人員(Y.是 N.否)
+        /// </summary>
+        /// <param name="tTechTeamID">技術支援升級團隊ID</param>
+        /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
+        /// <param name="tDeptID">登入人員部門ID</param>
+        /// <returns></returns>
+        public string checkIsSRTechTeam(string tTechTeamID, string tCostCenterID, string tDeptID)
+        {
+            string reValue = "N";
+
+            if (!string.IsNullOrEmpty(tTechTeamID))
+            {
+                List<string> tList = new List<string>();
+
+                tList = tTechTeamID.Split(';').ToList();
+
+                var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && tList.Contains(x.CTeamOldId) && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID)).ToList();
+
+                if (beans.Count > 0)
+                {
+                    reValue = "Y";
+                }
+            }
+
+            return reValue;
         }
         #endregion
 
@@ -717,6 +832,48 @@ namespace OneService.Controllers
         }
         #endregion
 
+        #region 取得技術支援升級團隊清單
+        /// <summary>
+        /// 取得服務團隊清單
+        /// </summary>
+        /// <param name="pCompanyCode">公司別(T012、T016、C069、T022)</param>
+        /// <param name="cEmptyOption">是否要產生「請選擇」選項(True.要 false.不要)</param>        
+        /// <returns></returns>
+        public List<SelectListItem> findSRTechTeamIDList(string pCompanyCode, bool cEmptyOption)
+        {
+            List<string> tTempList = new List<string>();
+
+            string tKEY = string.Empty;
+            string tNAME = string.Empty;
+            string tSRVID = string.Empty;
+
+            List<TbOneSrteamMapping> TeamList = new List<TbOneSrteamMapping>();
+
+            tSRVID = "SRV." + pCompanyCode.Substring(2, 2) + "4";
+            TeamList = dbOne.TbOneSrteamMappings.OrderBy(x => x.CTeamOldId).Where(x => x.Disabled == 0 && (x.CTeamOldId.Contains(tSRVID))).ToList();
+
+            var tList = new List<SelectListItem>();
+
+            if (cEmptyOption)
+            {
+                tList.Add(new SelectListItem { Text = "請選擇", Value = "" });
+            }
+
+            foreach (var bean in TeamList)
+            {
+                if (!tTempList.Contains(bean.CTeamOldId))
+                {
+                    tNAME = bean.CTeamOldId + "_" + bean.CTeamOldName;
+
+                    tList.Add(new SelectListItem { Text = tNAME, Value = bean.CTeamOldId });
+                    tTempList.Add(bean.CTeamOldId);
+                }
+            }
+
+            return tList;
+        }
+        #endregion
+
         #region 取得服務團隊清單(舊組織)
         /// <summary>
         /// 取得服務團隊清單(舊組織)
@@ -801,23 +958,27 @@ namespace OneService.Controllers
         public string TransSRTeam(List<SelectListItem> tList, string tValue)
         {
             string reValue = string.Empty;
-            string[] tAryValue = tValue.Split(';');
 
-            foreach(string tStr in tAryValue)
+            if (!string.IsNullOrEmpty(tValue))
             {
-                foreach (var bean in tList)
+                string[] tAryValue = tValue.Split(';');
+
+                foreach (string tStr in tAryValue)
                 {
-                    if (bean.Value == tStr)
+                    foreach (var bean in tList)
                     {
-                        reValue += bean.Text + "<br/>";
-                        break;
+                        if (bean.Value == tStr)
+                        {
+                            reValue += bean.Text + "<br/>";
+                            break;
+                        }
                     }
                 }
-            }            
+            }
 
             return reValue;
         }
-        #endregion
+        #endregion       
 
         #region 取得呼叫SAPERP參數是正式區或測試區(true.正式區 false.測試區)
         /// <summary>
@@ -3956,11 +4117,20 @@ namespace OneService.Controllers
 
                 if (!reValue)
                 {
-                    if (beanM.CStatus == "E0007") //技術支援升級(技術主管可編輯)
+                    if (beanM.CStatus == "E0007") //技術支援升級(技術主管/技術支援升級團隊可編輯)
                     {
-                        if (beanM.CTechManagerId != null)
+                        if (!string.IsNullOrEmpty(beanM.CTechManagerId))
                         {
                             if (beanM.CTechManagerId.Contains(tLoginERPID))
+                            {
+                                reValue = true;
+                            }
+                        }
+                        else
+                        {
+                            string tIsSRTechTeam = checkIsSRTechTeam(beanM.CTechTeamId, tCostCenterID, tDeptID);
+
+                            if (tIsSRTechTeam == "Y")
                             {
                                 reValue = true;
                             }
@@ -4480,6 +4650,9 @@ namespace OneService.Controllers
         public string findSRTeamIDandName(string cTeamID)
         {
             string reValue = string.Empty;
+            string reName = string.Empty;
+
+            List<string> tList = new List<string>();
 
             string[] AryTeamID = cTeamID.TrimEnd(';').Split(';');
 
@@ -4487,7 +4660,13 @@ namespace OneService.Controllers
 
             foreach (var bean in beans)
             {
-                reValue += bean.CTeamOldId + "_" + bean.CTeamOldName + ";";
+                reName = bean.CTeamOldId + "_" + bean.CTeamOldName + ";";
+
+                if (!tList.Contains(reName))
+                {
+                    reValue += reName;
+                    tList.Add(reName);
+                }
             }
 
             reValue = reValue.TrimEnd(';');

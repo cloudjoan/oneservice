@@ -112,12 +112,12 @@ function delFile(fileId, fileZoneObjId) {
 Dropzone.autoDiscover = false;
 
 //正式區
-var prdReportUrl = "https://oneservice.etatung.com/files/";
-var fileUrl = prdReportUrl;
+//var prdReportUrl = "https://oneservice.etatung.com/files/";
+//var fileUrl = prdReportUrl;
 
 //測試區
-//var qasReportUrl = "http://tsticrmmbgw.etatung.com:8082/CSreport/";
-//var fileUrl = qasReportUrl;
+var qasReportUrl = "http://tsticrmmbgw.etatung.com:8082/CSreport/";
+var fileUrl = qasReportUrl;
 
 //初始化dropzone
 function dropzoneInit(uploadUrl) {
