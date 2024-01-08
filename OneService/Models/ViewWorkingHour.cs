@@ -15,8 +15,8 @@ namespace OneService.Models
         public string? ActTypeName { get; set; }
         public string? UserErpId { get; set; }
         public string? UserName { get; set; }
-        public string? FinishTime { get; set; }
-        public int? Labor { get; set; }
+        public DateTime? FinishTime { get; set; }
+        public decimal? Labor { get; set; }
         public string SourceFrom { get; set; } = null!;
     }
 }

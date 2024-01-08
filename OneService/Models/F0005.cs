@@ -11,6 +11,9 @@ namespace OneService.Models
         public string Codet { get; set; } = null!;
         public string Codets { get; set; } = null!;
         public string? Dsc1 { get; set; }
+        /// <summary>
+        /// 天數
+        /// </summary>
         public string? Dsc2 { get; set; }
         public string? Rmk { get; set; }
         public int? Coso { get; set; }

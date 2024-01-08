@@ -38,7 +38,7 @@ namespace OneService.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=172.31.7.119;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin");
+                optionsBuilder.UseSqlServer("Server=172.31.7.40;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin");
             }
         }
 
@@ -49,6 +49,8 @@ namespace OneService.Models
                 entity.HasKey(e => e.ContactId);
 
                 entity.ToTable("CUSTOMER_Contact");
+
+                entity.HasIndex(e => new { e.Kna1Kunnr, e.Knb1Bukrs }, "NonClusteredIndex-20221004-134356");
 
                 entity.Property(e => e.ContactId)
                     .HasColumnName("ContactID")
@@ -76,7 +78,9 @@ namespace OneService.Models
                     .HasMaxLength(200)
                     .HasComment("聯絡人Email");
 
-                entity.Property(e => e.ContactMobile).HasMaxLength(50);
+                entity.Property(e => e.ContactMobile)
+                    .HasMaxLength(50)
+                    .HasComment("聯絡人手機");
 
                 entity.Property(e => e.ContactName)
                     .HasMaxLength(40)
@@ -94,7 +98,7 @@ namespace OneService.Models
                     .HasMaxLength(1)
                     .IsUnicode(false)
                     .IsFixedLength()
-                    .HasComment("聯絡人類別(0:發票,1:驗收,2:收貨,3:存出保證金經辦,4:客戶建檔聯絡人)");
+                    .HasComment("聯絡人類別(0:發票,1:驗收,2:收貨,3:存出保證金經辦,4:客戶建檔聯絡人,5.OneService建立)");
 
                 entity.Property(e => e.IsMain).HasComment("是否為對帳窗口");
 
@@ -223,7 +227,8 @@ namespace OneService.Models
 
                 entity.Property(e => e.Dsc2)
                     .HasMaxLength(80)
-                    .HasColumnName("DSC2");
+                    .HasColumnName("DSC2")
+                    .HasComment("天數");
 
                 entity.Property(e => e.Id)
                     .ValueGeneratedOnAdd()
@@ -268,6 +273,8 @@ namespace OneService.Models
                 entity.HasKey(e => new { e.CompanyId, e.InternalNo });
 
                 entity.ToTable("F4301CODetail");
+
+                entity.HasIndex(e => new { e.InternalNo, e.Applicant, e.OldInternalNo }, "NonClusteredIndex-20230110-140821");
 
                 entity.Property(e => e.CompanyId)
                     .HasMaxLength(10)
@@ -320,6 +327,8 @@ namespace OneService.Models
             modelBuilder.Entity<F4501>(entity =>
             {
                 entity.ToTable("F4501");
+
+                entity.HasIndex(e => new { e.No, e.CrmOppNo }, "NonClusteredIndex-20231222-120620");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
@@ -833,6 +842,8 @@ namespace OneService.Models
 
                 entity.ToTable("SO");
 
+                entity.HasIndex(e => new { e.Bstnk, e.Status, e.Matnr }, "NonClusteredIndex-20220826-192157");
+
                 entity.Property(e => e.Auart)
                     .HasMaxLength(4)
                     .HasColumnName("AUART")
@@ -920,6 +931,10 @@ namespace OneService.Models
                     .HasMaxLength(12)
                     .HasColumnName("ERNAM")
                     .HasComment("建立者");
+
+                entity.Property(e => e.IndustryApply)
+                    .HasMaxLength(100)
+                    .HasColumnName("INDUSTRY_APPLY");
 
                 entity.Property(e => e.InvoiceQuantity).HasColumnType("decimal(15, 3)");
 
@@ -1023,6 +1038,16 @@ namespace OneService.Models
 
                 entity.Property(e => e.PurchaseAmount).HasColumnType("decimal(18, 2)");
 
+                entity.Property(e => e.PurchaseWaers)
+                    .HasMaxLength(5)
+                    .HasColumnName("PurchaseWAERS");
+
+                entity.Property(e => e.ReceiverName2).HasMaxLength(500);
+
+                entity.Property(e => e.ReceiverName3).HasMaxLength(500);
+
+                entity.Property(e => e.ReceiverName4).HasMaxLength(500);
+
                 entity.Property(e => e.Spart)
                     .HasMaxLength(2)
                     .HasColumnName("SPART")
@@ -1102,6 +1127,8 @@ namespace OneService.Models
                 entity.HasKey(e => e.IvSerial);
 
                 entity.ToTable("STOCKALL");
+
+                entity.HasIndex(e => new { e.VendoromSdate, e.VendoromEdate, e.OmSdate, e.OmEdate, e.ExSdate, e.ExEdate, e.TmSdate, e.TmEdate }, "NonClusteredIndex-20220901-160826");
 
                 entity.Property(e => e.IvSerial)
                     .HasMaxLength(40)
@@ -1242,15 +1269,32 @@ namespace OneService.Models
 
                 entity.HasComment("商機表頭檔");
 
+                entity.HasIndex(e => new { e.CrmOppNo, e.CreateAccount }, "NonClusteredIndex-20220901-123346");
+
                 entity.Property(e => e.Id)
                     .HasColumnType("numeric(18, 0)")
                     .ValueGeneratedOnAdd()
                     .HasColumnName("ID");
 
+                entity.Property(e => e.CancelReason)
+                    .HasMaxLength(120)
+                    .IsUnicode(false)
+                    .HasColumnName("CANCEL_REASON");
+
+                entity.Property(e => e.ChangeTime)
+                    .HasMaxLength(22)
+                    .IsUnicode(false)
+                    .HasColumnName("CHANGE_TIME");
+
                 entity.Property(e => e.CompName)
                     .HasMaxLength(200)
                     .HasColumnName("COMP_NAME")
                     .HasComment("客戶名稱");
+
+                entity.Property(e => e.ContractType)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("CONTRACT_TYPE");
 
                 entity.Property(e => e.CreateAccount)
                     .HasMaxLength(15)
@@ -1362,6 +1406,11 @@ namespace OneService.Models
                     .HasMaxLength(20)
                     .HasColumnName("STATUS")
                     .HasComment("狀態");
+
+                entity.Property(e => e.TechCheckStatus)
+                    .HasMaxLength(2)
+                    .HasColumnName("TechCheck_Status")
+                    .HasDefaultValueSql("('0')");
             });
 
             modelBuilder.Entity<TbMailContent>(entity =>
@@ -1385,6 +1434,8 @@ namespace OneService.Models
                 entity.ToTable("TB_SR_REPORT");
 
                 entity.HasComment("服務請求總表");
+
+                entity.HasIndex(e => new { e.ObjectId, e.Customerid, e.Contactid, e.Sn, e.Csrid }, "NonClusteredIndex-20221024-102229");
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
