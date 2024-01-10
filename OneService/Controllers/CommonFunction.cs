@@ -66,6 +66,7 @@ namespace OneService.Controllers
         /// <param name="cOperationID_MaintainSR">程式作業編號檔系統ID(定維)</param>
         /// <param name="cCompanyID">公司別</param>
         /// <param name="IsManager">true.管理員 false.非管理員</param>
+        /// <param name="IsCSManager">登入者是否為客服主管(true.是 false.否)</param>
         /// <param name="tERPID">登入人員ERPID</param>
         /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
         /// <param name="tDeptID">登入人員部門ID</param>
@@ -73,12 +74,12 @@ namespace OneService.Controllers
         /// <param name="tTechTeamList">可觀看技術支援升級團隊清單</param>
         /// <returns></returns>
         public List<string[]> findSRIDList(string cOperationID_GenerallySR, string cOperationID_InstallSR, string cOperationID_MaintainSR, 
-                                         string cCompanyID, bool IsManager, string tERPID, string tCostCenterID, string tDeptID, List<string> tTeamList, List<string> tTechTeamList)
+                                         string cCompanyID, bool IsManager, bool IsCSManager, string tERPID, string tCostCenterID, string tDeptID, List<string> tTeamList, List<string> tTechTeamList)
         {            
 
             List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
 
-            SRIDUserToList = getSRIDToDoList(cOperationID_GenerallySR, cOperationID_InstallSR, cOperationID_MaintainSR, cCompanyID, IsManager, tERPID, tCostCenterID, tDeptID, tTeamList, tTechTeamList);
+            SRIDUserToList = getSRIDToDoList(cOperationID_GenerallySR, cOperationID_InstallSR, cOperationID_MaintainSR, cCompanyID, IsManager, IsCSManager, tERPID, tCostCenterID, tDeptID, tTeamList, tTechTeamList);
 
             return SRIDUserToList;
         }
@@ -93,6 +94,7 @@ namespace OneService.Controllers
         /// <param name="cOperationID_MaintainSR">程式作業編號檔系統ID(定維)</param>
         /// <param name="cCompanyID">公司別</param>
         /// <param name="IsManager">true.管理員 false.非管理員</param>
+        /// <param name="IsCSManager">登入者是否為客服主管(true.是 false.否)</param>
         /// <param name="tERPID">登入人員ERPID</param>
         /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
         /// <param name="tDeptID">登入人員部門ID</param>
@@ -100,7 +102,7 @@ namespace OneService.Controllers
         /// <param name="tTechTeamList">可觀看技術支援升級團隊清單</param>
         /// <returns></returns>
         private List<string[]> getSRIDToDoList(string cOperationID_GenerallySR, string cOperationID_InstallSR, string cOperationID_MaintainSR, 
-                                             string cCompanyID, bool IsManager, string tERPID, string tCostCenterID, string tDeptID, List<string> tTeamList, List<string> tTechTeamList)
+                                             string cCompanyID, bool IsManager, bool IsCSManager, string tERPID, string tCostCenterID, string tDeptID, List<string> tTeamList, List<string> tTechTeamList)
         {
             List<string[]> SRIDUserToList = new List<string[]>();   //組SRID清單
 
@@ -177,7 +179,7 @@ namespace OneService.Controllers
                     tSecretaryID = dr["cSecretaryID"].ToString();
                     tModifiedDate = dr["ModifiedDate"].ToString() != "" ? Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss") : "";
                     tSRTechTeam = TransSRTeam(tSRTechTeam_List, dr["cTechTeamID"].ToString());
-                    tIsSRTechTeam = checkIsSRTechTeam(dr["cTechTeamID"].ToString(), tCostCenterID, tDeptID);
+                    tIsSRTechTeam = checkIsSRTechTeam(dr["cTechTeamID"].ToString(), tCostCenterID, tDeptID, IsCSManager);
 
                     #region 組待處理服務
                     string[] ProcessInfo = new string[18];
@@ -253,7 +255,7 @@ namespace OneService.Controllers
                     tSecretaryID = string.IsNullOrEmpty(bean.CSecretaryId) ? "" : bean.CSecretaryId;
                     tModifiedDate = bean.ModifiedDate == null ? "" : Convert.ToDateTime(bean.ModifiedDate).ToString("yyyy-MM-dd HH:mm:ss");
                     tSRTechTeam = TransSRTeam(tSRTechTeam_List, bean.CTechTeamId);
-                    tIsSRTechTeam = checkIsSRTechTeam(bean.CTechTeamId, tCostCenterID, tDeptID);
+                    tIsSRTechTeam = checkIsSRTechTeam(bean.CTechTeamId, tCostCenterID, tDeptID, IsCSManager);
 
                     #region 組待處理服務
                     string[] ProcessInfo = new string[18];
@@ -379,12 +381,22 @@ namespace OneService.Controllers
         /// </summary>
         /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
         /// <param name="tDeptID">登入人員部門ID</param>
+        /// <param name="tIsCSManager">登入者是否為客服主管(true.是 false.否)</param>
         /// <returns></returns>
-        public List<string> findSRTechTeamMappingList(string tCostCenterID, string tDeptID)
+        public List<string> findSRTechTeamMappingList(string tCostCenterID, string tDeptID, bool tIsCSManager)
         {
             List<string> tList = new List<string>();
 
-            var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && x.CTeamOldId.Contains("SRV.124") && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID));
+            List<TbOneSrteamMapping> beans = new List<TbOneSrteamMapping>();
+
+            if (tIsCSManager) //若為客服主管也要看得到
+            {
+                beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && x.CTeamOldId.Contains("SRV.124")).ToList();
+            }
+            else
+            {
+                beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && x.CTeamOldId.Contains("SRV.124") && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID)).ToList();               
+            }
 
             foreach (var beansItem in beans)
             {
@@ -405,22 +417,30 @@ namespace OneService.Controllers
         /// <param name="tTechTeamID">技術支援升級團隊ID</param>
         /// <param name="tCostCenterID">登入人員部門成本中心ID</param>
         /// <param name="tDeptID">登入人員部門ID</param>
+        /// <param name="tIsCSManager">登入者是否為客服主管(true.是 false.否)</param>
         /// <returns></returns>
-        public string checkIsSRTechTeam(string tTechTeamID, string tCostCenterID, string tDeptID)
+        public string checkIsSRTechTeam(string tTechTeamID, string tCostCenterID, string tDeptID, bool tIsCSManager)
         {
             string reValue = "N";
 
-            if (!string.IsNullOrEmpty(tTechTeamID))
+            if (tIsCSManager)
             {
-                List<string> tList = new List<string>();
-
-                tList = tTechTeamID.Split(';').ToList();
-
-                var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && tList.Contains(x.CTeamOldId) && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID)).ToList();
-
-                if (beans.Count > 0)
+                reValue = "Y";
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(tTechTeamID))
                 {
-                    reValue = "Y";
+                    List<string> tList = new List<string>();
+
+                    tList = tTechTeamID.Split(';').ToList();
+
+                    var beans = dbOne.TbOneSrteamMappings.Where(x => x.Disabled == 0 && tList.Contains(x.CTeamOldId) && (x.CTeamNewId == tCostCenterID || x.CTeamNewId == tDeptID)).ToList();
+
+                    if (beans.Count > 0)
+                    {
+                        reValue = "Y";
+                    }
                 }
             }
 
@@ -4015,10 +4035,11 @@ namespace OneService.Controllers
         /// <param name="tCostCenterID">登入者成本中心ID</param>
         /// <param name="tDeptID">部門ID</param>
         /// <param name="tIsMIS">登入者是否為MIS</param>
+        /// <param name="pIsCSManager">登入者是否為客服主管</param>
         /// <param name="tIsCS">登入者是否為客服人員</param>
         /// <param name="tIsSpareManager">登入者是否為備品管理員或檢測員</param>
         /// <returns></returns>
-        public bool checkIsCanEditSR(string tSRID, string tLoginERPID, string tCostCenterID, string tDeptID, bool tIsMIS, bool tIsCS, bool tIsSpareManager)
+        public bool checkIsCanEditSR(string tSRID, string tLoginERPID, string tCostCenterID, string tDeptID, bool tIsMIS, bool pIsCSManager, bool tIsCS, bool tIsSpareManager)
         {
             bool reValue = false;
             bool IsSRTeamManager = false;
@@ -4128,7 +4149,7 @@ namespace OneService.Controllers
                         }
                         else
                         {
-                            string tIsSRTechTeam = checkIsSRTechTeam(beanM.CTechTeamId, tCostCenterID, tDeptID);
+                            string tIsSRTechTeam = checkIsSRTechTeam(beanM.CTechTeamId, tCostCenterID, tDeptID, pIsCSManager);
 
                             if (tIsSRTechTeam == "Y")
                             {

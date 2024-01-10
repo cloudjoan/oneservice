@@ -1794,10 +1794,10 @@ namespace OneService.Controllers
                 List<string> tSRTeamList = CMF.findSRTeamMappingList(ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO);
 
                 //取得登入人員所負責的技術支援升級團隊
-                List<string> tSRTechTeamList = CMF.findSRTechTeamMappingList(ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO);
+                List<string> tSRTechTeamList = CMF.findSRTechTeamMappingList(ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsCSManager);
 
                 //取得登入人員所有要負責的SRID                
-                List<string[]> SRIDToDoList = CMF.findSRIDList(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode, pIsManager, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, tSRTeamList, tSRTechTeamList);
+                List<string[]> SRIDToDoList = CMF.findSRIDList(pOperationID_GenerallySR, pOperationID_InstallSR, pOperationID_MaintainSR, pCompanyCode, pIsManager, pIsCSManager, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, tSRTeamList, tSRTechTeamList);
 
                 ViewBag.SRIDToDoList = SRIDToDoList;
                 #endregion
@@ -2024,7 +2024,7 @@ namespace OneService.Controllers
                     ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                     //判斷登入者是否可以編輯服務案件                
-                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
+                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsCS, pIsSpareManager);
 
                     #region 報修資訊
                     ViewBag.cSRID = beanM.CSrid;
@@ -4748,7 +4748,7 @@ namespace OneService.Controllers
                     ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                     //判斷登入者是否可以編輯服務案件                
-                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
+                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsCS, pIsSpareManager);
 
                     #region 裝機資訊
                     ViewBag.cSRID = beanM.CSrid;
@@ -5729,7 +5729,7 @@ namespace OneService.Controllers
                     ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                     //判斷登入者是否可以編輯服務案件
-                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCS, pIsSpareManager);
+                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsCS, pIsSpareManager);
 
                     #region 定維資訊
                     ViewBag.cSRID = beanM.CSrid;
