@@ -7,7 +7,7 @@ namespace OneService.Models
     {
         public int PrizeId { get; set; }
         public int? DrawId { get; set; }
-        public int? SortNo { get; set; }
+        public int SortNo { get; set; }
         public string? PrizeName { get; set; }
         public string? PrizePic { get; set; }
         public int? PrizeAmount { get; set; }
@@ -19,5 +19,6 @@ namespace OneService.Models
         public string? ModifyUser { get; set; }
         public string? ModifyTime { get; set; }
         public bool DisabledMark { get; set; }
+        public string? PrizeMemo { get; set; }
     }
 }

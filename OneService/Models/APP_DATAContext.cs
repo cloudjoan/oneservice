@@ -104,8 +104,12 @@ namespace OneService.Models
 
                 entity.Property(e => e.PrizeAmount).HasColumnName("Prize_Amount");
 
+                entity.Property(e => e.PrizeMemo)
+                    .HasMaxLength(200)
+                    .HasColumnName("Prize_Memo");
+
                 entity.Property(e => e.PrizeName)
-                    .HasMaxLength(50)
+                    .HasMaxLength(300)
                     .HasColumnName("Prize_Name");
 
                 entity.Property(e => e.PrizePic)
@@ -128,6 +132,10 @@ namespace OneService.Models
 
                 entity.Property(e => e.DisabledMark).HasColumnName("Disabled_Mark");
 
+                entity.Property(e => e.DonateMark).HasColumnName("Donate_Mark");
+
+                entity.Property(e => e.DrawId).HasColumnName("Draw_ID");
+
                 entity.Property(e => e.InsertTime)
                     .HasMaxLength(22)
                     .HasColumnName("Insert_Time");
@@ -145,6 +153,12 @@ namespace OneService.Models
                     .HasColumnName("Modify_User");
 
                 entity.Property(e => e.PrizeId).HasColumnName("Prize_ID");
+
+                entity.Property(e => e.RedeemMark).HasColumnName("Redeem_Mark");
+
+                entity.Property(e => e.RedeemTime)
+                    .HasMaxLength(22)
+                    .HasColumnName("Redeem_Time");
 
                 entity.Property(e => e.UserErpid)
                     .HasMaxLength(20)

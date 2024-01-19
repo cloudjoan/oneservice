@@ -14,5 +14,9 @@ namespace OneService.Models
         public string? ModifyUser { get; set; }
         public string? ModifyTime { get; set; }
         public bool DisabledMark { get; set; }
+        public bool RedeemMark { get; set; }
+        public string? RedeemTime { get; set; }
+        public int? DrawId { get; set; }
+        public bool DonateMark { get; set; }
     }
 }
