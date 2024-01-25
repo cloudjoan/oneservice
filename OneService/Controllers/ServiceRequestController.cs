@@ -1065,6 +1065,7 @@ namespace OneService.Controllers
             string tSRProcessWay = string.Empty;        //處理方式
             string tCustomerUnitType = string.Empty;    //客戶單位類別
             string tScheduleDate = string.Empty;        //預期日期
+            string tIsSecondFix = string.Empty;         //是否為二修
 
             getLoginAccount();
             getEmployeeInfo();
@@ -1510,13 +1511,14 @@ namespace OneService.Controllers
                 tModifiedDate = string.IsNullOrEmpty(dr["ModifiedDate"].ToString()) ? "" : Convert.ToDateTime(dr["ModifiedDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tScheduleDate = string.IsNullOrEmpty(dr["cScheduleDate"].ToString()) ? "" : Convert.ToDateTime(dr["cScheduleDate"].ToString()).ToString("yyyy-MM-dd HH:mm:ss");
                 tCustomerUnitType = CMF.TransSysParameterByList(tCustomerUnitTyp_List, dr["cCustomerUnitType"].ToString());
+                tIsSecondFix = dr["cIsSecondFix"].ToString() == "Y" ? "Y" : "N";
 
                 if (dr["cSRID"].ToString().Substring(0, 2) == "61") //一般服務才顯示
                 {
                     tSRProcessWay = CMF.TransSysParameterByList(tSRProcessWay_List, dr["cSRProcessWay"].ToString());
                 }
 
-                string[] QueryInfo = new string[23];                
+                string[] QueryInfo = new string[24];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
                 QueryInfo[1] = tSRIDUrl;                       //服務案件URL
@@ -1541,6 +1543,7 @@ namespace OneService.Controllers
                 QueryInfo[20] = tSRProcessWay;                 //處理方式
                 QueryInfo[21] = tScheduleDate;                 //預排日期
                 QueryInfo[22] = tCustomerUnitType;             //客戶單位類別
+                QueryInfo[23] = tIsSecondFix;                  //是否為二修
 
                 QueryToList.Add(QueryInfo);
             }
