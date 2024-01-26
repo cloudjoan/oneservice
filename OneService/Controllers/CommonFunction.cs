@@ -2064,14 +2064,25 @@ namespace OneService.Controllers
 
             try
             {
-                #region 取得該SRID是否有存在APP_INSTALL
-                //var beanAPP = dbEIP.TbServicesAppInstalls.FirstOrDefault(x => x.Srid == beanIN.IV_SRID);
-                var beanAPP = dbEIP.TbServicesAppInstalltemps.FirstOrDefault(x => x.Srid == beanIN.IV_SRID);
-
-                if (beanAPP != null)
+                #region 取得該SRID是否有存在APP_INSTALL                
+                if (beanIN.IV_APIURLName.IndexOf("api-qas") >= 0)
                 {
-                    cID = beanAPP.Id.ToString();
+                    var beanAPP = dbEIP.TbServicesAppInstalltemps.FirstOrDefault(x => x.Srid == beanIN.IV_SRID);
+
+                    if (beanAPP != null)
+                    {
+                        cID = beanAPP.Id.ToString();
+                    }
                 }
+                else
+                {
+                    var beanAPP = dbEIP.TbServicesAppInstalls.FirstOrDefault(x => x.Srid == beanIN.IV_SRID);
+
+                    if (beanAPP != null)
+                    {
+                        cID = beanAPP.Id.ToString();
+                    }
+                }                
                 #endregion
 
                 string tURL = beanIN.IV_APIURLName + "/API/API_CURRENTINSTALLINFO_UPDATE";
