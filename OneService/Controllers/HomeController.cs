@@ -13,7 +13,9 @@ namespace OneService.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+		TSTIONEContext oneDB = new TSTIONEContext();
+
+		public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
         }
@@ -85,6 +87,9 @@ namespace OneService.Controllers
                 HttpContext.Session.SetString(SessionKey.DEPT_NAME, empBean.DeptName);
                 HttpContext.Session.SetString(SessionKey.LOGIN_MESSAGE, "");
 
+                //寫入Log
+                saveLog("LOGIN", formCollection["account"] + " 登入成功！");
+
                 return RedirectToAction("ToDoList", "ServiceRequest");
             }
             else
@@ -92,7 +97,10 @@ namespace OneService.Controllers
                 HttpContext.Session.SetString(SessionKey.LOGIN_STATUS, "false");
                 HttpContext.Session.SetString(SessionKey.LOGIN_MESSAGE, "帳號或密碼錯誤？");
 
-                return RedirectToAction("Login");
+				//寫入Log
+				saveLog("LOGIN", formCollection["account"] + " 登入失敗！");
+
+				return RedirectToAction("Login");
             }
 
         }
@@ -114,6 +122,27 @@ namespace OneService.Controllers
             {
                 return false;
             }
+        }
+
+        public void saveLog(string eventName, string log)
+        {
+            try {
+				var remoteIpAddress = HttpContext.Connection.RemoteIpAddress;
+				var remoteIpAddressString = remoteIpAddress.ToString();
+
+				TbOneLog bean = new TbOneLog();
+				bean.CSrid = "";
+				bean.EventName = eventName;
+				bean.Log = log + " IP_" + remoteIpAddressString;
+				bean.CreatedDate = DateTime.Now;
+				oneDB.TbOneLogs.Add(bean);
+				oneDB.SaveChanges();
+			}
+			catch(Exception ex)
+            {
+
+            }
+
         }
 
 
