@@ -178,11 +178,42 @@
 			$(disabledClassName).removeClass("active");
 			$("#" + targetId).val($(obj).val());
 			$(obj).addClass("active");
+			
+			console.log($(obj).val());
 
 			//預估工時
 			var startTime = new Date($("#tbx_StartDate").val() + ' ' + $("#hid_StartTime").val());
 			var endTime = new Date($("#tbx_EndDate").val() + ' ' + $("#hid_EndTime").val());
 			$("#lb_CalLabor").html("預估工時(分)：" + (endTime - startTime)/(1000*60) );
+		}
+
+		function ActiveTimeBtn(disabledClassName, obj) {
+			$(disabledClassName).removeClass("active");
+			$(obj).addClass("active");
+
+
+			//如果沒起始工時的話，就統一用8:30算？
+			ActiveBtn('hid_StartTime', '.startTime', $('#start_0830'));
+
+			//用8:30起始時間，加上obj的小時值後，設定結束時間
+			var  _startTime = new Date($("#tbx_StartDate").val());
+
+			//結束時間是 _startTime 加上obj的小時
+			console.log($(obj).val());
+			var endTime = new Date(_startTime.getTime() + $(obj).val() * 60 * 60 * 1000);
+
+			//取結束時間的小時和分鐘
+			var endTimeStr = endTime.toTimeString().split(' ')[0].split(':')[0] + endTime.toTimeString().split(' ')[0].split(':')[1];
+			console.log(endTimeStr);
+
+			//結束時間
+			ActiveBtn('hid_EndTime', '.endTime', $('#end_' + endTimeStr));
+			
+
+			//預估工時
+			var startTime = new Date($("#tbx_StartDate").val() + ' ' + $("#hid_StartTime").val());
+			var endTime = new Date($("#tbx_EndDate").val() + ' ' + $("#hid_EndTime").val());
+			$("#lb_CalLabor").html("預估工時(分)：" + (endTime - startTime) / (1000 * 60));
 		}
 
 		function checkForm() {
@@ -303,6 +334,17 @@
 								<textarea rows="3" id="tbx_WhDescript" name="tbx_WhDescript" class="form-control" placeholder="工作說明" required></textarea>
 							</div>
 						</div>
+
+					<div class="form-group row">
+						<label class="col-lg-2 col-form-label"> 工時選擇：</label>
+						<div class="col-lg-10">
+							@for (var i = 0.5; i <= 12; i+=0.5)
+							{
+								<button type="button" class="btn btn-outline btn-lg btn-warning totalTime" style="margin:2px" value="@(i)" onclick="ActiveTimeBtn('.totalTime', this)">@(i)</button>
+							}
+						</div>
+					</div>
+
 						
 						<div class="form-group row btn-group" role="group">
 							<label class="col-lg-2 col-form-label">時間起：</label>
@@ -312,7 +354,7 @@
 							<div class="col-lg-8">
 								@while (dt <= Convert.ToDateTime("2022-01-01 23:45"))
 								{
-								<button type="button" class="btn btn-outline btn-lg btn-primary startTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt))" onclick="ActiveBtn('hid_StartTime', '.startTime', this)">@(string.Format("{0:HH:mm}", dt))</button>
+								<button type="button" id="start_@(string.Format("{0:HHmm}", dt))" class="btn btn-outline btn-lg btn-primary startTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt))" onclick="ActiveBtn('hid_StartTime', '.startTime', this)">@(string.Format("{0:HH:mm}", dt))</button>
 									dt = dt.AddMinutes(30);
 								}
 							<input type="hidden" id="hid_StartTime" name="hid_startTime" />
@@ -326,7 +368,7 @@
 						<div class="col-lg-8">
 							@while (dt2 <= Convert.ToDateTime("2022-01-01 23:45"))
 							{
-								<button type="button" class="btn btn-outline btn-lg btn-success endTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt2))" onclick="ActiveBtn('hid_EndTime', '.endTime', this)">@(string.Format("{0:HH:mm}", dt2))</button>
+								<button type="button" id="end_@(string.Format("{0:HHmm}", dt2))" class="btn btn-outline btn-lg btn-success endTime" style="margin:2px" value="@(string.Format("{0:HH:mm}", dt2))" onclick="ActiveBtn('hid_EndTime', '.endTime', this)">@(string.Format("{0:HH:mm}", dt2))</button>
 								dt2 = dt2.AddMinutes(30);
 							}
 							<input type="hidden" id="hid_EndTime" name="hid_EndTime" />
