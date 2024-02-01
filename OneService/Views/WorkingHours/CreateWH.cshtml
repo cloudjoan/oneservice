@@ -179,41 +179,33 @@
 			$("#" + targetId).val($(obj).val());
 			$(obj).addClass("active");
 			
-			console.log($(obj).val());
 
 			//預估工時
 			var startTime = new Date($("#tbx_StartDate").val() + ' ' + $("#hid_StartTime").val());
 			var endTime = new Date($("#tbx_EndDate").val() + ' ' + $("#hid_EndTime").val());
 			$("#lb_CalLabor").html("預估工時(分)：" + (endTime - startTime)/(1000*60) );
+
 		}
 
-		function ActiveTimeBtn(disabledClassName, obj) {
-			$(disabledClassName).removeClass("active");
-			$(obj).addClass("active");
+		function ActiveTimeBtn(obj) {
 
+			if ($('#hid_StartTime').val() == '') {
+				//如果沒起始工時的話，就統一用8:30算？
+				ActiveBtn('hid_StartTime', '.startTime', $('#start_0830'));
+			}
 
-			//如果沒起始工時的話，就統一用8:30算？
-			ActiveBtn('hid_StartTime', '.startTime', $('#start_0830'));
-
-			//用8:30起始時間，加上obj的小時值後，設定結束時間
-			var  _startTime = new Date($("#tbx_StartDate").val());
+			//起始時間，加上obj的小時值後，設定結束時間
+			var _startTime = new Date($("#tbx_StartDate").val() + ' ' + $("#hid_StartTime").val());
 
 			//結束時間是 _startTime 加上obj的小時
-			console.log($(obj).val());
 			var endTime = new Date(_startTime.getTime() + $(obj).val() * 60 * 60 * 1000);
 
 			//取結束時間的小時和分鐘
 			var endTimeStr = endTime.toTimeString().split(' ')[0].split(':')[0] + endTime.toTimeString().split(' ')[0].split(':')[1];
-			console.log(endTimeStr);
 
 			//結束時間
 			ActiveBtn('hid_EndTime', '.endTime', $('#end_' + endTimeStr));
-			
 
-			//預估工時
-			var startTime = new Date($("#tbx_StartDate").val() + ' ' + $("#hid_StartTime").val());
-			var endTime = new Date($("#tbx_EndDate").val() + ' ' + $("#hid_EndTime").val());
-			$("#lb_CalLabor").html("預估工時(分)：" + (endTime - startTime) / (1000 * 60));
 		}
 
 		function checkForm() {
@@ -336,11 +328,11 @@
 						</div>
 
 					<div class="form-group row">
-						<label class="col-lg-2 col-form-label"> 工時選擇：</label>
+						<label class="col-lg-2 col-form-label"> 工時快速選擇：</label>
 						<div class="col-lg-10">
-							@for (var i = 0.5; i <= 12; i+=0.5)
+							@for (var i = 1; i <= 12; i += 1)
 							{
-								<button type="button" class="btn btn-outline btn-lg btn-warning totalTime" style="margin:2px" value="@(i)" onclick="ActiveTimeBtn('.totalTime', this)">@(i)</button>
+								<button type="button" class="btn btn-outline btn-lg btn-warning totalTime" style="margin:2px" value="@(i)" onclick="ActiveTimeBtn(this)">@(i)</button>
 							}
 						</div>
 					</div>
