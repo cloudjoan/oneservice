@@ -1422,10 +1422,15 @@
                 }				
 			})	
 			
-			if (tCount == 0)
+			//edit by elvis 2024/02/15 Start
+			if (ddl_cStatus.val() == "E0006") //選完修才卡控
 			{
-				Msg += "請至少新增一筆【產品序號資訊】明細！\n";
+				if (tCount == 0)
+				{
+					Msg += "請至少新增一筆【產品序號資訊】明細！\n";
+				}
 			}
+			//edit by elvis 2024/02/15 End
 
 			return Msg;
 		}
