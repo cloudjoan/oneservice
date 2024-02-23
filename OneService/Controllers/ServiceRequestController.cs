@@ -964,6 +964,11 @@ namespace OneService.Controllers
             ViewBag.ddl_cStatus = ListStatus;
             #endregion
 
+            #region 維護服務種類
+            var ListMAServiceType = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRMATYPE", false);
+            ViewBag.ddl_cMAServiceType = ListMAServiceType;
+            #endregion
+
             #region 報修管道
             var ListSRPathWay = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRPATH", false);
             ViewBag.ddl_cSRPathWay = ListSRPathWay;
@@ -1011,6 +1016,7 @@ namespace OneService.Controllers
         /// <param name="CreatedUserName">派單人員</param>
         /// <param name="cRepairName">報修人姓名</param>
         /// <param name="cContactName">聯絡人姓名</param>
+        /// <param name="cMAServiceType">維護服務種類</param>
         /// <param name="cSRPathWay">報修管道</param>      
         /// <param name="cAssEngineerID">工程師ERPID</param>
         /// <param name="cTechManagerID">技術主管ERPID</param>
@@ -1027,7 +1033,7 @@ namespace OneService.Controllers
         /// <param name="cProductNumber">報修Product Number/裝機料號</param>
         /// <returns></returns>
         public IActionResult QuerySRProgressResult(string cCompanyID, string cSRCaseType, string cStatus, string cStartCreatedDate, string cEndCreatedDate,
-                                                 string cCustomerID, string cCustomerName, string cSRID, string cDesc, string cIsSecondFix, string CreatedUserName, string cRepairName, string cContactName, string cSRPathWay,
+                                                 string cCustomerID, string cCustomerName, string cSRID, string cDesc, string cIsSecondFix, string CreatedUserName, string cRepairName, string cContactName, string cMAServiceType, string cSRPathWay,
                                                  string cAssEngineerID, string cTechManagerID, string cTeamID, string cContractID, string cNoAssignMainEngineer, string cSRProcessWay, string cCustomerUnitType,
                                                  string cSRTypeOne, string cSRTypeSec, string cSRTypeThr, string cSerialID, string cMaterialName, string cProductNumber)
         {            
@@ -1050,6 +1056,7 @@ namespace OneService.Controllers
             string tTempERPID = string.Empty;            
             string tSRIDUrl = string.Empty;             //服務案件URL
             string tSRContactName = string.Empty;       //客戶聯絡人
+            string tMAServiceTypeNote = string.Empty;   //維護服務種類
             string tSRPathWayNote = string.Empty;       //報修管道
             string tSTATUSDESC = string.Empty;          //狀態
             string tSRType = string.Empty;              //報修類別
@@ -1075,7 +1082,8 @@ namespace OneService.Controllers
             Dictionary<string, string> tDicAssAndTech = new Dictionary<string, string>();                      //記錄所有協助工程師和所有技術主管的<ERPID,中、英文姓名>
 
             var tSRTeam_List = CMF.findSRTeamIDList("ALL", false);
-            var tSRContact_List = CMF.findSRDetailContactList();            
+            var tSRContact_List = CMF.findSRDetailContactList();
+            List<TbOneSysParameter> tMAServiceType_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRMATYPE");
             List<TbOneSysParameter> tSRPathWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPATH");
             List<TbOneSysParameter> tSRProcessWay_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRPROCESS");
             List<TbOneSysParameter> tCustomerUnitTyp_List = CMF.findSysParameterALLDescription(pOperationID_GenerallySR, "OTHER", cCompanyID, "SRCUSTOMERUNITTYPE");
@@ -1094,6 +1102,7 @@ namespace OneService.Controllers
             tLog += CMF.getPersonalInfoLog("派單人員", CreatedUserName);
             tLog += CMF.getPersonalInfoLog("報修人姓名", cRepairName);
             tLog += CMF.getPersonalInfoLog("聯絡人姓名", cContactName);
+            tLog += CMF.getPersonalInfoLog("維護服務種類", cMAServiceType);
             tLog += CMF.getPersonalInfoLog("報修管道", cSRPathWay);
             tLog += CMF.getPersonalInfoLog("工程師ERPID", cAssEngineerID);
             tLog += CMF.getPersonalInfoLog("技術主管ERPID", cTechManagerID);
@@ -1252,6 +1261,26 @@ namespace OneService.Controllers
                 ttWhere += "AND (C.cContactName LIKE N'%" + cContactName.Trim() + "%' AND C.disabled = 0) " + Environment.NewLine;
             }
             #endregion
+
+            #region 維護服務種類
+            if (!string.IsNullOrEmpty(cMAServiceType))
+            {
+                ttStrItem = "";
+                string[] tArySRPathWay = cMAServiceType.TrimEnd(',').Split(',');
+
+                foreach (string tSRPathWay in tArySRPathWay)
+                {
+                    ttStrItem += "N'" + tSRPathWay + "',";
+                }
+
+                ttStrItem = ttStrItem.TrimEnd(',');
+
+                if (ttStrItem != "")
+                {
+                    ttWhere += "AND M.cMAServiceType IN (" + ttStrItem + ") " + Environment.NewLine;
+                }
+            }
+            #endregion 
 
             #region 報修管道
             if (!string.IsNullOrEmpty(cSRPathWay))
@@ -1497,6 +1526,7 @@ namespace OneService.Controllers
             {
                 tSRIDUrl = CMF.findSRIDUrl(dr["cSRID"].ToString());
                 tSRContactName = CMF.TransSRDetailContactName(tSRContact_List, dr["cSRID"].ToString());
+                tMAServiceTypeNote = CMF.TransSysParameterByList(tMAServiceType_List, dr["cMAServiceType"].ToString());
                 tSRPathWayNote = CMF.TransSysParameterByList(tSRPathWay_List, dr["cSRPathWay"].ToString());
                 tSTATUSDESC = CMF.TransSRSTATUS(ListStatus, dr["cStatus"].ToString());
                 tSRTeam = CMF.TransSRTeam(tSRTeam_List, dr["cTeamID"].ToString());
@@ -1518,7 +1548,7 @@ namespace OneService.Controllers
                     tSRProcessWay = CMF.TransSysParameterByList(tSRProcessWay_List, dr["cSRProcessWay"].ToString());
                 }
 
-                string[] QueryInfo = new string[24];                
+                string[] QueryInfo = new string[25];                
 
                 QueryInfo[0] = dr["cSRID"].ToString();          //SRID
                 QueryInfo[1] = tSRIDUrl;                       //服務案件URL
@@ -1544,6 +1574,7 @@ namespace OneService.Controllers
                 QueryInfo[21] = tScheduleDate;                 //預排日期
                 QueryInfo[22] = tCustomerUnitType;             //客戶單位類別
                 QueryInfo[23] = tIsSecondFix;                  //是否為二修
+                QueryInfo[24] = tMAServiceTypeNote;            //維護服務種類
 
                 QueryToList.Add(QueryInfo);
             }
@@ -10510,6 +10541,7 @@ namespace OneService.Controllers
             public string ddl_cCustomerUnitType { get; set; }
             public List<SelectListItem> ListCustomerUnitType = findSysParameterList(pOperationID_GenerallySR, "OTHER", pCompanyCode, "SRCUSTOMERUNITTYPE", true);
             #endregion
+           
         }
         #endregion
 

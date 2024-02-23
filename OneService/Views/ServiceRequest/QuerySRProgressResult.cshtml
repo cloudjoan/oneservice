@@ -58,7 +58,7 @@
 				"info": "顯示第 _START_ 到 _END_ 筆，全部共 _TOTAL_ 筆",
 				"search": " 關鍵字篩選"
 			},
-			order: [[18, 'desc']], //畫面排序才有用
+			order: [[19, 'desc']], //畫面排序才有用
 			pageLength: 25,
 			responsive: true,			
 			dom: '<"top"i><"wrapper"Blfrtip>', //Blfrtip =>可顯示筆數
@@ -69,7 +69,7 @@
 					text: '匯出Excel',
 					sheetName: '服務進度查詢作業',
 					exportOptions: {
-						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] //要顯示的欄位
+						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21] //要顯示的欄位
 					},
 					customize: function (xlsx) {
 						addCustomNumberFormat(xlsx, '0');
@@ -94,6 +94,7 @@
 						formatTargetColumn(xlsx, 'S');
 						formatTargetColumn(xlsx, 'T');
 						formatTargetColumn(xlsx, 'U');
+						formatTargetColumn(xlsx, 'V');
 						
 						SaveQueryLog("QuerySRProgress_ExportExcel"); //記錄登入人員匯出Excel的時間點Log
 					}
@@ -155,6 +156,7 @@
 			<th>處理方式</th>
 			<th>客戶單位類別</th>
 			<th>是否為二修</th>
+			<th>維護服務種類</th>
 			<th>派單人員</th>
 			<th>派單日期</th>
 			<th>最後編輯日期</th>
@@ -185,6 +187,7 @@
 							<td>@Html.Raw(QueryInfo[20])</td>
 						    <td>@Html.Raw(QueryInfo[22])</td>
 							<td>@Html.Raw(QueryInfo[23])</td>
+							<td>@Html.Raw(QueryInfo[24])</td>
 							<td>@Html.Raw(QueryInfo[15])</td>
 							<td>@Html.Raw(QueryInfo[16])</td>
 							<td>@Html.Raw(QueryInfo[17])</td>
