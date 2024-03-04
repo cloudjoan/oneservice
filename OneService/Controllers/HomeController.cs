@@ -75,11 +75,17 @@ namespace OneService.Controllers
         {
             if (IsAuthenticated(formCollection["account"], formCollection["password"]))
             {
+
                 MCSWorkflowContext eipDB = new MCSWorkflowContext();
                 var empBean = eipDB.ViewEmpInfoWithoutLeaves.FirstOrDefault(x => x.Account.ToUpper() == @"etatung\" + formCollection["account"]);
-                
-                //登入後，寫入人員相關資訊到Session
-                HttpContext.Session.SetString(SessionKey.LOGIN_STATUS, "true");
+
+
+				//模擬帳號
+				//empBean = eipDB.ViewEmpInfoWithoutLeaves.FirstOrDefault(x => x.Account.ToUpper() == @"etatung\Louis.Wu");
+
+
+				//登入後，寫入人員相關資訊到Session
+				HttpContext.Session.SetString(SessionKey.LOGIN_STATUS, "true");
                 HttpContext.Session.SetString(SessionKey.USER_ACCOUNT, @"etatung\" + formCollection["account"]);
                 HttpContext.Session.SetString(SessionKey.USER_ERP_ID, empBean.ErpId);
                 HttpContext.Session.SetString(SessionKey.USER_NAME, empBean.EmpName);
@@ -104,6 +110,23 @@ namespace OneService.Controllers
             }
 
         }
+
+        //SAML登入
+        public IActionResult SAMLLogin()
+        {
+			//if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != null && HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == "true")
+   //         {
+			//	return RedirectToAction("ToDoList", "ServiceRequest");
+			//}
+			//else
+   //         {
+			//	ViewBag.errorMsg = HttpContext.Session.GetString(SessionKey.LOGIN_MESSAGE);
+			//	return View();
+			//}
+
+            return View();
+
+		}
 
         //AD帳密驗證
         public static bool IsAuthenticated(string username, string pwd)
