@@ -179,7 +179,7 @@ namespace OneService.Models
                     .HasColumnName("cSubContractID");
 
                 entity.Property(e => e.CSubNotes)
-                    .HasMaxLength(255)
+                    .HasMaxLength(1000)
                     .HasColumnName("cSubNotes");
 
                 entity.Property(e => e.CSubSupplierId)
@@ -210,11 +210,11 @@ namespace OneService.Models
                     .HasColumnName("cContractID");
 
                 entity.Property(e => e.CBillCycle)
-                    .HasMaxLength(512)
+                    .HasMaxLength(1000)
                     .HasColumnName("cBillCycle");
 
                 entity.Property(e => e.CBillNotes)
-                    .HasMaxLength(512)
+                    .HasMaxLength(1000)
                     .HasColumnName("cBillNotes");
 
                 entity.Property(e => e.CContactEmail)
@@ -263,7 +263,7 @@ namespace OneService.Models
                     .HasColumnName("cMAAddress");
 
                 entity.Property(e => e.CMacycle)
-                    .HasMaxLength(512)
+                    .HasMaxLength(1000)
                     .HasColumnName("cMACycle");
 
                 entity.Property(e => e.CManotes)

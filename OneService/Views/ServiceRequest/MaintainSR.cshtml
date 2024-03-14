@@ -604,8 +604,8 @@
 			var hid_cTeamID = $("#hid_cTeamID");					//服務團隊
 			var tbx_cMainEngineerName = $("#tbx_cMainEngineerName");	//主要工程師
 			var hid_cMainEngineerID = $("#hid_cMainEngineerID");		//主要工程師ERPID		
-			var tbx_cSalesName = $("#tbx_cSalesName");				//業務人員
-			var hid_cSalesID = $("#hid_cSalesID");					//業務人員ERPID
+			var tbx_cSalesName = $("#tbx_cSalesName");				//維護業務人員
+			var hid_cSalesID = $("#hid_cSalesID");					//維護業務人員ERPID
 			var tbx_cSecretaryName = $("#tbx_cSecretaryName");		//業務祕書
 			var hid_cSecretaryID = $("#hid_cSecretaryID");			//業務祕書ERPID
 
@@ -670,11 +670,11 @@
 			}	
 			
 			if (tbx_cSalesName.val() == "") {
-				Msg += "【業務人員】不得為空！\n";
+				Msg += "【維護業務人員】不得為空！\n";
 			}
 
 			if (hid_cSalesID.val() == "") {
-				Msg += "您未下拉選取【業務人員】，請輸入關鍵字後再重新選取！\n";
+				Msg += "您未下拉選取【維護業務人員】，請輸入關鍵字後再重新選取！\n";
 			}
 
 			if (tbx_cSecretaryName.val() == "") {
@@ -688,7 +688,7 @@
 			//提交前【主要工程師姓名和ERPID】是否不一致
 			Msg += checkPersonIsMatch("M");
 
-			//提交前【業務人員姓名和ERPID】是否不一致
+			//提交前【維護業務人員姓名和ERPID】是否不一致
 			Msg += checkPersonIsMatch("S");
 
 			//提交前【業務祕書姓名和ERPID】是否不一致
@@ -739,7 +739,7 @@
 		}
 
 		//提交前【姓名和ERPID】是否不一致
-		//tType：M.主要工程師 S.業務人員 ASS.祕書人員
+		//tType：M.主要工程師 S.維護業務人員 ASS.祕書人員
 		function checkPersonIsMatch(tType)
 		{
 			var Msg = "";
@@ -748,8 +748,8 @@
 
 			var tbx_cMainEngineerName = $("#tbx_cMainEngineerName");	//主要工程師
 			var hid_cMainEngineerID = $("#hid_cMainEngineerID");		//主要工程師ERPID		
-			var tbx_cSalesName = $("#tbx_cSalesName");				//業務人員
-			var hid_cSalesID = $("#hid_cSalesID");					//業務人員ERPID
+			var tbx_cSalesName = $("#tbx_cSalesName");				//維護業務人員
+			var hid_cSalesID = $("#hid_cSalesID");					//維護業務人員ERPID
 			var tbx_cSecretaryName = $("#tbx_cSecretaryName");		//業務祕書
 			var hid_cSecretaryID = $("#hid_cSecretaryID");			//業務祕書ERPID
 
@@ -758,7 +758,7 @@
 				cERPID = hid_cMainEngineerID.val();
 				cEName = tbx_cMainEngineerName.val();
 			}
-			else if (tType == "S") //業務人員
+			else if (tType == "S") //維護業務人員
 			{
 				cERPID = hid_cSalesID.val();
 				cEName = tbx_cSalesName.val();
@@ -1375,11 +1375,11 @@
 		}
 		//-----↓↓↓↓↓客戶聯絡人 ↓↓↓↓↓-----
 
-		//Ajax用合約文件編號查詢業務人員和祕書
+		//Ajax用合約文件編號查詢維護業務人員和祕書
 		function onblur_tbx_cContractID() {
 			var tbx_cContractID = $("#tbx_cContractID");			//合約文件編號
-			var tbx_cSalesName = $("#tbx_cSalesName");				//業務人員
-			var hid_cSalesID = $("#hid_cSalesID");					//業務人員ERPID
+			var tbx_cSalesName = $("#tbx_cSalesName");				//維護業務人員
+			var hid_cSalesID = $("#hid_cSalesID");					//維護業務人員ERPID
 			var tbx_cSecretaryName = $("#tbx_cSecretaryName");		//業務祕書
 			var hid_cSecretaryID = $("#hid_cSecretaryID");			//業務祕書ERPID
 
@@ -2833,7 +2833,7 @@
 										</div>										
 									</div>
 									<div class="form-group row">
-										<label class="col-lg-2 col-form-label">*業務人員</label>
+										<label class="col-lg-2 col-form-label">*維護業務人員</label>
 										<div class="col-lg-4">
 											<input type="text" id="tbx_cSalesName" name="tbx_cSalesName" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋" value="@ViewBag.cSalesName">
 											<input type="hidden" id="hid_cSalesID" name="hid_cSalesID" value="@ViewBag.cSalesID" />

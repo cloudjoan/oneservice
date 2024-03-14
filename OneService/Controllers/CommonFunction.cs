@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿#region 修改歷程記錄
+/* 
+ * 2024/03/14:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
+ */
+#endregion
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OneService.Models;
 using System.Data;
@@ -2952,6 +2958,39 @@ namespace OneService.Controllers
 
         #region -----↓↓↓↓↓批次上傳定維派工作業 ↓↓↓↓↓-----
 
+        #region 刪除批次定維派工的明細內容By文件編號
+        /// <summary>
+        /// 刪除批次定維派工的明細內容By文件編號
+        /// </summary>
+        /// <param name="cContractID">文件編號</param>
+        /// <param name="pLoginName">異動人員姓名(中文+英文)</param>
+        /// <returns></returns>
+        public int DeleteBatchMaintainByContractID(string cContractID, string pLoginName)
+        {
+            int result = 0;
+
+            try
+            {
+                var beans = dbOne.TbOneSrbatchMaintainRecords.Where(x => x.CDisabled == 0 && x.CContractId == cContractID);
+                foreach (var bean in beans)
+                {
+                    bean.CDisabled = 1;
+                    bean.ModifiedDate = DateTime.Now;
+                    bean.ModifiedUserName = pLoginName;
+                }
+
+                result = dbOne.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                string returnMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "【DeleteBatchMaintainByContractID】異動失敗！原因：" + ex.Message;
+                writeToLog(cContractID, "DeleteBatchMaintainByContractID", returnMsg, pLoginName);
+            }
+
+            return result;
+        }
+        #endregion
+
         #region 新增/更新批次上傳定維派工紀錄主檔
         /// <summary>
         /// 新增/更新批次上傳定維派工紀錄主檔
@@ -2981,53 +3020,83 @@ namespace OneService.Controllers
             {
                 if (cContractID != "")
                 {
-                    var beanM = dbOne.TbOneSrbatchMaintainRecords.FirstOrDefault(x => x.CDisabled == 0 && x.CContractId == cContractID &&
-                                                                                x.CBukrs == cBUKRS && x.CCustomerId == cCustomerID &&
-                                                                                x.CContactStoreName == cContactStoreName && x.CContactName == cContactName);
+                    //edit by elvis 2024/03/14 Start
+                    #region 註解
+                    //var beanM = dbOne.TbOneSrbatchMaintainRecords.FirstOrDefault(x => x.CDisabled == 0 && x.CContractId == cContractID &&
+                    //                                                            x.CBukrs == cBUKRS && x.CCustomerId == cCustomerID &&
+                    //                                                            x.CContactStoreName == cContactStoreName && x.CContactName == cContactName);
 
-                    if (beanM != null)
-                    {
-                        #region 更新
-                        beanM.CContactAddress = cContactAddress;
-                        beanM.CContactPhone = cContactPhone;
-                        beanM.CContactMobile = cContactMobile;
-                        beanM.CContactEmail = cContactEmail;
-                        beanM.CMainEngineerId = cMainEngineerID;
-                        beanM.CMainEngineerName = cMainEngineerName;
-                        beanM.CMacycle = cMACycle;
+                    //if (beanM != null)
+                    //{
+                    //    #region 更新
+                    //    beanM.CContactAddress = cContactAddress;
+                    //    beanM.CContactPhone = cContactPhone;
+                    //    beanM.CContactMobile = cContactMobile;
+                    //    beanM.CContactEmail = cContactEmail;
+                    //    beanM.CMainEngineerId = cMainEngineerID;
+                    //    beanM.CMainEngineerName = cMainEngineerName;
+                    //    beanM.CMacycle = cMACycle;
 
-                        beanM.ModifiedDate = DateTime.Now;
-                        beanM.ModifiedUserName = pLoginName;
-                        #endregion
-                    }
-                    else
-                    {
-                        #region 新增
-                        TbOneSrbatchMaintainRecord BMain = new TbOneSrbatchMaintainRecord();
+                    //    beanM.ModifiedDate = DateTime.Now;
+                    //    beanM.ModifiedUserName = pLoginName;
+                    //    #endregion
+                    //}
+                    //else
+                    //{
+                    //    #region 新增
+                    //    TbOneSrbatchMaintainRecord BMain = new TbOneSrbatchMaintainRecord();
 
-                        BMain.CContractId = cContractID;
-                        BMain.CBukrs = cBUKRS;
-                        BMain.CCustomerId = cCustomerID;
-                        BMain.CCustomerName = cCustomerName;
-                        BMain.CContactStoreName = cContactStoreName;
-                        BMain.CContactName = cContactName;
-                        BMain.CContactAddress = cContactAddress;
-                        BMain.CContactPhone = cContactPhone;
-                        BMain.CContactMobile = cContactMobile;
-                        BMain.CContactEmail = cContactEmail;
-                        BMain.CMainEngineerId = cMainEngineerID;
-                        BMain.CMainEngineerName = cMainEngineerName;
-                        BMain.CMacycle = cMACycle;
+                    //    BMain.CContractId = cContractID;
+                    //    BMain.CBukrs = cBUKRS;
+                    //    BMain.CCustomerId = cCustomerID;
+                    //    BMain.CCustomerName = cCustomerName;
+                    //    BMain.CContactStoreName = cContactStoreName;
+                    //    BMain.CContactName = cContactName;
+                    //    BMain.CContactAddress = cContactAddress;
+                    //    BMain.CContactPhone = cContactPhone;
+                    //    BMain.CContactMobile = cContactMobile;
+                    //    BMain.CContactEmail = cContactEmail;
+                    //    BMain.CMainEngineerId = cMainEngineerID;
+                    //    BMain.CMainEngineerName = cMainEngineerName;
+                    //    BMain.CMacycle = cMACycle;
 
-                        BMain.CDisabled = 0;
-                        BMain.CreatedDate = DateTime.Now;
-                        BMain.CreatedUserName = pLoginName;
+                    //    BMain.CDisabled = 0;
+                    //    BMain.CreatedDate = DateTime.Now;
+                    //    BMain.CreatedUserName = pLoginName;
 
-                        dbOne.TbOneSrbatchMaintainRecords.Add(BMain);
-                        #endregion
-                    }
+                    //    dbOne.TbOneSrbatchMaintainRecords.Add(BMain);
+                    //    #endregion
+                    //}
+
+                    //result = dbOne.SaveChanges();
+                    #endregion
+
+                    #region 新增
+                    TbOneSrbatchMaintainRecord BMain = new TbOneSrbatchMaintainRecord();
+
+                    BMain.CContractId = cContractID;
+                    BMain.CBukrs = cBUKRS;
+                    BMain.CCustomerId = cCustomerID;
+                    BMain.CCustomerName = cCustomerName;
+                    BMain.CContactStoreName = cContactStoreName;
+                    BMain.CContactName = cContactName;
+                    BMain.CContactAddress = cContactAddress;
+                    BMain.CContactPhone = cContactPhone;
+                    BMain.CContactMobile = cContactMobile;
+                    BMain.CContactEmail = cContactEmail;
+                    BMain.CMainEngineerId = cMainEngineerID;
+                    BMain.CMainEngineerName = cMainEngineerName;
+                    BMain.CMacycle = cMACycle;
+
+                    BMain.CDisabled = 0;
+                    BMain.CreatedDate = DateTime.Now;
+                    BMain.CreatedUserName = pLoginName;
+
+                    dbOne.TbOneSrbatchMaintainRecords.Add(BMain);
+                    #endregion
 
                     result = dbOne.SaveChanges();
+                    //edit by elvis 2024/03/14 End
                 }
             }
             catch(Exception ex)

@@ -1,7 +1,7 @@
 ﻿#region 修改歷程記錄
 /* 
  * 2024/02/15:elvis:修正一般服務，在完修的時候才需要卡控序號有沒有輸入
- * 
+ * 2024/03/14:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
  */
 #endregion
 
@@ -6155,10 +6155,10 @@ namespace OneService.Controllers
                     tLog += CMF.getNewAndOldLog("協助工程師ERPID", OldCAssEngineerId, CAssEngineerId);
 
                     OldCSalesName = beanNowM.CSalesName;
-                    tLog += CMF.getNewAndOldLog("業務人員", OldCSalesName, CSalesName);
+                    tLog += CMF.getNewAndOldLog("維護業務人員", OldCSalesName, CSalesName);
 
                     OldCSalesId = beanNowM.CSalesId;
-                    tLog += CMF.getNewAndOldLog("業務人員ERPID", OldCSalesId, CSalesId);
+                    tLog += CMF.getNewAndOldLog("維護業務人員ERPID", OldCSalesId, CSalesId);
 
                     OldCSecretaryName = beanNowM.CSecretaryName;
                     tLog += CMF.getNewAndOldLog("業務祕書", OldCSecretaryName, CSecretaryName);
@@ -8563,74 +8563,85 @@ namespace OneService.Controllers
                     #region 寫入DataTable到主檔資料庫  
                     if (dtM.Rows.Count > 0 && tErrorMsg == "")
                     {
-                        foreach (DataRow dr in dtM.Rows)
+                        //edit by elvis 2024/03/14 Start
+                        int resultDel = CMF.DeleteBatchMaintainByContractID(cContractID, ViewBag.empEngName); //先刪除該文件編號
+                        //edit by elvis 2024/03/14 End
+
+                        if (resultDel > 0)
                         {
-                            try
-                            {                               
-                                strItem = dr[0].ToString().Trim();
-                                cContractID = dr[1].ToString().Trim();
-                                cBUKRS = dr[2].ToString().Trim();
-                                cCustomerID = dr[3].ToString().Trim();
-                                cCustomerName = CMF.findCustomerName(cCustomerID);
-                                cContactStoreName = dr[5].ToString().Trim();
-                                cContactName = dr[6].ToString().Trim();
-                                cContactAddress = dr[7].ToString().Trim();
-                                cContactPhone = dr[8].ToString().Trim();
-                                cContactMobile = dr[9].ToString().Trim();
-                                cContactEmail = dr[10].ToString().Trim();
-                                cMainEngineerID = dr[11].ToString().Trim();
-                                cMainEngineerName = dr[12].ToString().Trim();
-                                cMACycle = dr[13].ToString().Trim().TrimEnd('_');
-
-                                #region 新增/更新批次上傳定維派工紀錄主檔
-                                int result = CMF.ChangeTB_ONE_SRBatchMaintainRecord(cContractID, cBUKRS, cCustomerID, cCustomerName, cContactStoreName,
-                                                                                   cContactName, cContactAddress, cContactPhone, cContactMobile, cContactEmail,
-                                                                                   cMainEngineerID, cMainEngineerName, cMACycle, ViewBag.empEngName);
-                                if (result <= 0)
-                                {
-                                    pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "回寫批次上傳定維派工紀錄檔失敗" + Environment.NewLine;
-                                    CMF.writeToLog(cContractID, "ImportBatchMaintainExcel", pMsg, ViewBag.empEngName);
-                                }
-                                #endregion
-
-                                #region 更新回客戶聯絡人主檔(沒有重覆才要新增)
-                                bool tIsExits = CMF.CheckContactsIsDouble("", cBUKRS, cCustomerID, cContactName, "");
-
-                                if (!tIsExits)
-                                {
-                                    try
-                                    {                                        
-                                        cContactCity = cContactAddress.Substring(0, 3);
-                                        cContactAddress = cContactAddress.Substring(3, cContactAddress.Length - 3);
-
-                                        CONTACTCREATE_INPUT beanIN = new CONTACTCREATE_INPUT();
-                                        beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
-                                        beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
-                                        beanIN.IV_CONTRACTID = cContractID;
-                                        beanIN.IV_CUSTOMEID = cCustomerID;
-                                        beanIN.IV_CONTACTNAME = cContactName;
-                                        beanIN.IV_CONTACTCITY = cContactCity;
-                                        beanIN.IV_CONTACTADDRESS = cContactAddress;
-                                        beanIN.IV_CONTACTTEL = cContactPhone;
-                                        beanIN.IV_CONTACTMOBILE = cContactMobile;
-                                        beanIN.IV_CONTACTEMAIL = cContactEmail;
-                                        beanIN.IV_ISDELETE = "N";
-                                        beanIN.IV_APIURLName = tAPIURLName;
-
-                                        CMF.GetAPI_CONTACT_UPDATE(beanIN);
-                                    }
-                                    catch(Exception ex)
-                                    {
-                                        //若有錯誤就不要塞
-                                    }
-                                }
-                                #endregion
-                            }
-                            catch (Exception e)
+                            foreach (DataRow dr in dtM.Rows)
                             {
-                                tErrorMsg += "項次【" + strItem + "】，產生定維服務失敗！原因：" + e.Message + "</br>";                                
-                                continue;
+                                try
+                                {
+                                    strItem = dr[0].ToString().Trim();
+                                    cContractID = dr[1].ToString().Trim();
+                                    cBUKRS = dr[2].ToString().Trim();
+                                    cCustomerID = dr[3].ToString().Trim();
+                                    cCustomerName = CMF.findCustomerName(cCustomerID);
+                                    cContactStoreName = dr[5].ToString().Trim();
+                                    cContactName = dr[6].ToString().Trim();
+                                    cContactAddress = dr[7].ToString().Trim();
+                                    cContactPhone = dr[8].ToString().Trim();
+                                    cContactMobile = dr[9].ToString().Trim();
+                                    cContactEmail = dr[10].ToString().Trim();
+                                    cMainEngineerID = dr[11].ToString().Trim();
+                                    cMainEngineerName = dr[12].ToString().Trim();
+                                    cMACycle = dr[13].ToString().Trim().TrimEnd('_');
+
+                                    #region 新增/更新批次上傳定維派工紀錄主檔
+                                    int result = CMF.ChangeTB_ONE_SRBatchMaintainRecord(cContractID, cBUKRS, cCustomerID, cCustomerName, cContactStoreName,
+                                                                                       cContactName, cContactAddress, cContactPhone, cContactMobile, cContactEmail,
+                                                                                       cMainEngineerID, cMainEngineerName, cMACycle, ViewBag.empEngName);
+                                    if (result <= 0)
+                                    {
+                                        pMsg = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "回寫批次上傳定維派工紀錄檔失敗" + Environment.NewLine;
+                                        CMF.writeToLog(cContractID, "ImportBatchMaintainExcel", pMsg, ViewBag.empEngName);
+                                    }
+                                    #endregion
+
+                                    #region 更新回客戶聯絡人主檔(沒有重覆才要新增)
+                                    bool tIsExits = CMF.CheckContactsIsDouble("", cBUKRS, cCustomerID, cContactName, "");
+
+                                    if (!tIsExits)
+                                    {
+                                        try
+                                        {
+                                            cContactCity = cContactAddress.Substring(0, 3);
+                                            cContactAddress = cContactAddress.Substring(3, cContactAddress.Length - 3);
+
+                                            CONTACTCREATE_INPUT beanIN = new CONTACTCREATE_INPUT();
+                                            beanIN.IV_LOGINEMPNO = ViewBag.cLoginUser_ERPID;
+                                            beanIN.IV_LOGINEMPNAME = ViewBag.empEngName;
+                                            beanIN.IV_CONTRACTID = cContractID;
+                                            beanIN.IV_CUSTOMEID = cCustomerID;
+                                            beanIN.IV_CONTACTNAME = cContactName;
+                                            beanIN.IV_CONTACTCITY = cContactCity;
+                                            beanIN.IV_CONTACTADDRESS = cContactAddress;
+                                            beanIN.IV_CONTACTTEL = cContactPhone;
+                                            beanIN.IV_CONTACTMOBILE = cContactMobile;
+                                            beanIN.IV_CONTACTEMAIL = cContactEmail;
+                                            beanIN.IV_ISDELETE = "N";
+                                            beanIN.IV_APIURLName = tAPIURLName;
+
+                                            CMF.GetAPI_CONTACT_UPDATE(beanIN);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            //若有錯誤就不要塞
+                                        }
+                                    }
+                                    #endregion
+                                }
+                                catch (Exception e)
+                                {
+                                    tErrorMsg += "項次【" + strItem + "】，產生定維服務失敗！原因：" + e.Message + "</br>";
+                                    continue;
+                                }
                             }
+                        }
+                        else
+                        {
+                            ViewBag.Message = "匯入失敗！</br>" + tErrorMsg;
                         }
                     }                    
                     #endregion
@@ -8641,8 +8652,8 @@ namespace OneService.Controllers
                     ViewBag.Message = "匯入成功！";
                 }
                 else
-                {
-                    ViewBag.Message = "匯入失敗！</br>" + tErrorMsg;
+                {                    
+                    ViewBag.Message = "匯入失敗！</br>因批次刪除失敗！";
                 }
             }
             catch (Exception ex)

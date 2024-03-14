@@ -227,7 +227,7 @@ namespace OneService.Models
                 entity.Property(e => e.COperationId).HasColumnName("cOperationID");
 
                 entity.Property(e => e.CValue)
-                    .HasMaxLength(50)
+                    .HasMaxLength(255)
                     .HasColumnName("cValue");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
