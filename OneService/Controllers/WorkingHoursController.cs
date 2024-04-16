@@ -351,7 +351,7 @@ namespace OneService.Controllers
                         prBean.CrmOppNo = OppNoFormat(oppNo);
                         prBean.BundleMs = bundleMs;
                         prBean.BundleTask = !string.IsNullOrEmpty(bundleTask) ? bundleTask : "";
-                        prBean.Implementers = impBy;
+                        //prBean.Implementers = impBy;
                         prBean.ImplementersCount = Convert.ToInt32(ImplementersCount);
                         prBean.Attendees = Attendees;   //edit by elvis 2022/07/18
                         prBean.Place = place;
@@ -431,7 +431,7 @@ namespace OneService.Controllers
             var _startDate = Convert.ToDateTime(startDate);
             var _endDate = Convert.ToDateTime(endDate);
 
-            foreach (var bean in beans)
+			foreach (var bean in beans)
             {
                 if (!string.IsNullOrEmpty(bean.EstimatedDate))
                 {
