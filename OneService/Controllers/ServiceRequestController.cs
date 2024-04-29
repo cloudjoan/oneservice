@@ -2,6 +2,7 @@
 /* 
  * 2024/02/15:elvis:修正一般服務，在完修的時候才需要卡控序號有沒有輸入
  * 2024/03/14:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
+ * 2024/04/29:elvis:調整 1.一般服務在狀態選擇完修時，處理方式為必填 2.一般/裝機/定維的接單時間要改成「回應時間」
  */
 #endregion
 
@@ -814,7 +815,7 @@ namespace OneService.Controllers
                 QueryInfo[26] = fPID;                             //報修機器型號/裝機料號說明
                 QueryInfo[27] = fPN;                              //報修Product Number/裝機物料代號
                 QueryInfo[28] = fSerialID;                        //報修/裝機序號
-                QueryInfo[29] = cReceiveTime;                     //接單時間
+                QueryInfo[29] = cReceiveTime;                     //回應時間
                 QueryInfo[30] = cStartTime;                       //出發時間
                 QueryInfo[31] = cArriveTime;                      //到場時間
                 QueryInfo[32] = cFinishTime;                      //完成時間
@@ -3498,7 +3499,7 @@ namespace OneService.Controllers
         /// <param name="cEngineerID">服務工程師ERPID</param>
         /// <param name="cEngineerName">服務工程師姓名</param>
         /// <param name="cStartTime">出發時間</param>
-        /// <param name="cReceiveTime">接單時間</param>
+        /// <param name="cReceiveTime">回應時間</param>
         /// <param name="cArriveTime">到場時間</param>
         /// <param name="cFinishTime">完成時間</param>
         /// <param name="cDesc">處理紀錄</param>
