@@ -20,7 +20,7 @@ dotnet ef dbcontext scaffold "Server=172.31.7.40;Database=ERP_PROXY_DB;User=sa;P
 dotnet ef dbcontext scaffold "Server=172.31.7.119;Database=ERP_PROXY_DB;User=sa;Password=Eip@dmin" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_CRM_OPP_HEAD -t MATERIAL -t VIEW_CUSTOMER_2 -t CUSTOMER_Contact -t PostalaAddressAndCode -t STOCKALL -t VIEW_MATERIAL_ByComp -t F4501 -t F0005 -t TB_MAIL_CONTENT -t PERSONAL_Contact -t VIEW_CUSTOMERANDPERSONAL  -t TB_SR_REPORT -t CUSTOMER_ContactStore -t SO -t F4301CODetail -f
 
 #EIP
-dotnet ef dbcontext scaffold "Server=172.31.7.26;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -t VIEW_EMP_INFO -t VIEW_EMP_INFO_WITHOUT_LEAVE -t VIEW_DEPT_MGR -t TB_SERVICES_APP_INSTALL -t TB_SERVICES_APP_INSTALLTEMP -f
+dotnet ef dbcontext scaffold "Server=172.31.7.26;Database=MCSWorkflow;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t Person -t Department -t VIEW_EMP_INFO -t VIEW_EMP_INFO_WITHOUT_LEAVE -t VIEW_DEPT_MGR -t TB_SERVICES_APP_INSTALL -t TB_SERVICES_APP_INSTALLTEMP -t 人事詳細資料view -f
 
 #APP_DATA
 dotnet ef dbcontext scaffold "Server=172.31.7.26;Database=APP_DATA;User=eip;Password=70771557" Microsoft.EntityFrameworkCore.SqlServer -o Models -t TB_LUCKYDRAW -t TB_LUCKYDRAW_PRIZE -t TB_LUCKYDRAW_PRIZEWINNING -f
