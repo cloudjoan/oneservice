@@ -3915,9 +3915,9 @@ namespace OneService.Controllers
 
             if (bean != null)
             {
-                OMpostseriesname = bean.Ompostseriesname;
+                OMpostseriesname = string.IsNullOrEmpty(bean.Ompostseriesname) ? "" : bean.Ompostseriesname.Trim();
 
-                if (OMpostseriesname.IndexOf("業務") != -1)
+                if (OMpostseriesname == "業務")
                 {
                     reValue = true;
                 }
