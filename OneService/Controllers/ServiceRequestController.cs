@@ -8662,7 +8662,7 @@ namespace OneService.Controllers
                 }
                 else
                 {                    
-                    ViewBag.Message = "匯入失敗！</br>因批次刪除失敗！";
+                    ViewBag.Message = "匯入失敗！</br>原因：" + tErrorMsg;
                 }
             }
             catch (Exception ex)

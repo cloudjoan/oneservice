@@ -2970,6 +2970,7 @@ namespace OneService.Controllers
         public int DeleteBatchMaintainByContractID(string cContractID, string pLoginName)
         {
             int result = 0;
+            int tCount = 0;
 
             try
             {
@@ -2979,9 +2980,15 @@ namespace OneService.Controllers
                     bean.CDisabled = 1;
                     bean.ModifiedDate = DateTime.Now;
                     bean.ModifiedUserName = pLoginName;
+                    tCount++;
                 }
 
                 result = dbOne.SaveChanges();
+
+                if (tCount == 0) //代表是新的文件編號
+                { 
+                    result = 1;
+                }
             }
             catch (Exception ex)
             {
