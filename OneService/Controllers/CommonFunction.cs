@@ -3930,8 +3930,8 @@ namespace OneService.Controllers
                 }
             }
 
-            //return reValue;
-            return false;
+            return reValue;
+            //return false;
         }
         #endregion
         //edit by elvis 2024/05/30 End

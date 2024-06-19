@@ -201,7 +201,8 @@ namespace OneService.Models
 
             modelBuilder.Entity<TbOneContractMain>(entity =>
             {
-                entity.HasKey(e => e.CContractId);
+                entity.HasKey(e => e.CContractId)
+                    .HasName("PK_TB_ONE_ContractMain_1");
 
                 entity.ToTable("TB_ONE_ContractMain");
 
