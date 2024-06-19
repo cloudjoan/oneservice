@@ -1,7 +1,7 @@
 ﻿#region 修改歷程記錄
 /* 
  * 2024/03/14:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
- * 2024/05/30:elvis:新增加，若性質屬【業務】時，則暫將左邊的「服務進度查詢」和「服務總表」Menu隱藏
+ * 2024/06/19:elvis:新增加，若性質屬【業務】時，則暫將左邊的「服務進度查詢」和「服務總表」Menu隱藏
  */
 #endregion
 
@@ -3906,7 +3906,7 @@ namespace OneService.Controllers
         }
         #endregion
 
-        //edit by elvis 2024/05/30 Start
+        //edit by elvis 2024/06/19 Start
         #region 判斷登入者的性質是否為【業務】
         /// <summary>
         /// 判斷登入者的性質是否為【業務】
@@ -3934,7 +3934,7 @@ namespace OneService.Controllers
             //return false;
         }
         #endregion
-        //edit by elvis 2024/05/30 End
+        //edit by elvis 2024/06/19 End
 
         #region 判斷登入者是否為批次上傳裝機備料服務通知單、合約書文件人員
         /// <summary>

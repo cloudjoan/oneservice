@@ -3,7 +3,7 @@
  * 2024/02/15:elvis:修正一般服務，在完修的時候才需要卡控序號有沒有輸入
  * 2024/03/14:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
  * 2024/04/29:elvis:調整 1.一般服務在狀態選擇完修時，處理方式為必填 2.一般/裝機/定維的接單時間要改成「回應時間」
- * 2024/05/30:elvis:新增加，若性質屬【業務】時，則暫將左邊的「服務進度查詢」和「服務總表」Menu隱藏
+ * 2024/06/19:elvis:新增加，若性質屬【業務】時，則暫將左邊的「服務進度查詢」和「服務總表」Menu隱藏
  */
 #endregion
 
@@ -119,12 +119,12 @@ namespace OneService.Controllers
         /// </summary>
         bool pIsCanEditSR = false;
 
-        //edit by elvis 2024/05/30 Start
+        //edit by elvis 2024/06/19 Start
         /// <summary>
         /// 登入者的性質是否為【業務】
         /// </summary>
         bool pIsRoleSales = false;
-        //edit by elvis 2024/05/30 End
+        //edit by elvis 2024/06/19 End
 
         /// <summary>
         /// 服務ID
@@ -9064,7 +9064,7 @@ namespace OneService.Controllers
             pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
             pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
             pIsExeMaintainPerson = CMF.getIsExeMaintainPerson(pLoginAccount, pOperationID_QueryBatchMaintain);
-            pIsRoleSales = CMF.getIsRoleSales(pLoginAccount); //edit by elvis 2024/05/30
+            pIsRoleSales = CMF.getIsRoleSales(pLoginAccount); //edit by elvis 2024/06/19
 
 
             ViewBag.pIsMIS = pIsMIS;
@@ -9074,7 +9074,7 @@ namespace OneService.Controllers
             ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
             ViewBag.pIsExePerson = pIsExePerson;
             ViewBag.pIsExeMaintainPerson = pIsExeMaintainPerson;
-            ViewBag.pIsRoleSales = pIsRoleSales; //edit by elvis 2024/05/30
+            ViewBag.pIsRoleSales = pIsRoleSales; //edit by elvis 2024/06/19
             #endregion
         }
         #endregion
