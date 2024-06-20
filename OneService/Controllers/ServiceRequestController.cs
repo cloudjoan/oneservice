@@ -1,9 +1,9 @@
 ﻿#region 修改歷程記錄
 /* 
- * 2024/02/15:elvis:修正一般服務，在完修的時候才需要卡控序號有沒有輸入
- * 2024/03/14:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
+ * 2024/02/15:elvis:修正一般服務，在完修的時候才需要卡控序號有沒有輸入 
  * 2024/04/29:elvis:調整 1.一般服務在狀態選擇完修時，處理方式為必填 2.一般/裝機/定維的接單時間要改成「回應時間」
  * 2024/06/19:elvis:新增加，若性質屬【業務】時，則暫將左邊的「服務進度查詢」和「服務總表」Menu隱藏
+ * 2024/06/20:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
  */
 #endregion
 
@@ -8572,9 +8572,9 @@ namespace OneService.Controllers
                     #region 寫入DataTable到主檔資料庫  
                     if (dtM.Rows.Count > 0 && tErrorMsg == "")
                     {
-                        //edit by elvis 2024/03/14 Start
+                        //edit by elvis 2024/06/20 Start
                         int resultDel = CMF.DeleteBatchMaintainByContractID(cContractID, ViewBag.empEngName); //先刪除該文件編號
-                        //edit by elvis 2024/03/14 End
+                        //edit by elvis 2024/06/20 End
 
                         if (resultDel > 0)
                         {
