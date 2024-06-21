@@ -4,6 +4,7 @@
  * 2024/04/29:elvis:調整 1.一般服務在狀態選擇完修時，處理方式為必填 2.一般/裝機/定維的接單時間要改成「回應時間」
  * 2024/06/19:elvis:新增加，若性質屬【業務】時，則暫將左邊的「服務進度查詢」和「服務總表」Menu隱藏
  * 2024/06/20:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
+ * 2024/06/21:elvis:調整批次派工Excel表格中的「指派主要工程師ERPID*」欄位更改為「非必填」
  */
 #endregion
 
@@ -7875,6 +7876,7 @@ namespace OneService.Controllers
             string cSecretaryID = string.Empty;
             string cMainEngineerID = string.Empty;
             string cSerialID = string.Empty;
+            string cNotes = string.Empty; //edit by elvis 2024/06/21
 
             Dictionary<string, DataTable> DicM = new Dictionary<string, DataTable>();
             Dictionary<string, DataTable> DicD = new Dictionary<string, DataTable>();
@@ -7970,6 +7972,7 @@ namespace OneService.Controllers
                                 cSecretaryID = dr[12].ToString().Trim();
                                 cMainEngineerID = dr[13].ToString().Trim();
                                 cSerialID = dr[14].ToString().Trim();
+                                cNotes = dr[15].ToString().Trim(); //edit by elvis 2024/06/21
 
                                 #region Empty欄位檢查
                                 AryValue = CMF.ValidationImportExcelField(cCustomerID, "客戶代號", strItem);
@@ -8064,13 +8067,17 @@ namespace OneService.Controllers
                                     tIsOK = false;
                                 }
 
-                                AryValue = CMF.ValidationImportExcelField(cMainEngineerID, "指派主要工程師ERPID", strItem);
+                                //edit by elvis 2024/06/21 Start
+                                #region 註解
+                                //AryValue = CMF.ValidationImportExcelField(cMainEngineerID, "指派主要工程師ERPID", strItem);
 
-                                if (AryValue[0] == "N")
-                                {
-                                    tErrorMsg += AryValue[1];
-                                    tIsOK = false;
-                                }
+                                //if (AryValue[0] == "N")
+                                //{
+                                //    tErrorMsg += AryValue[1];
+                                //    tIsOK = false;
+                                //}
+                                #endregion
+                                //edit by elvis 2024/06/21 End
                                 #endregion
 
                                 #region 呼叫建立ONE SERVICE報修SR（裝機服務）接口
@@ -8091,10 +8098,22 @@ namespace OneService.Controllers
                                     beanIN.IV_SALESEMPNO = cSalesID;
                                     beanIN.IV_SECRETARYEMPNO = cSecretaryID;
                                     beanIN.IV_DESC = tNote;
-                                    beanIN.IV_LTXT = tNote;
+
+                                    //edit by elvis 2024/06/21 Start
+                                    //beanIN.IV_LTXT = tNote;
+                                    if (!string.IsNullOrEmpty(cNotes))
+                                    {
+                                        beanIN.IV_LTXT = cNotes;
+                                    }
+                                    else
+                                    {
+                                        beanIN.IV_LTXT = tNote;
+                                    }
+                                    //edit by elvis 2024/06/21 End
+                                    
                                     beanIN.IV_SRTEAM = cTeamID;
                                     beanIN.IV_EMPNO = cMainEngineerID;
-                                    beanIN.IV_APIURLName = tAPIURLName;
+                                    beanIN.IV_APIURLName = tAPIURLName;                                    
                                     #endregion
 
                                     #region 取得聯絡人清單
@@ -8164,16 +8183,17 @@ namespace OneService.Controllers
                                         BInsM.CContactMobile = cContactMobile;
                                         BInsM.CContactEmail = cContactEmail;
                                         BInsM.CMainEngineerId = cMainEngineerID;
-                                        BInsM.CMainEngineerName = CMF.findEmployeeName(cMainEngineerID);
-                                        BInsM.CSalesId = cSalesID;
+                                        BInsM.CMainEngineerName = string.IsNullOrEmpty(cMainEngineerID) ? "" : CMF.findEmployeeName(cMainEngineerID); //edit by elvis 2024/06/21
+										BInsM.CSalesId = cSalesID;
                                         BInsM.CSalesName = CMF.findEmployeeName(cSalesID);
                                         BInsM.CSecretaryId = cSecretaryID;
                                         BInsM.CSecretaryName = CMF.findEmployeeName(cSecretaryID);
                                         BInsM.CSalesNo = cSalesNo;
                                         BInsM.CShipmentNo = cShipmentNo;
                                         BInsM.CSerialId = cSerialID;
+                                        BInsM.CNotes = cNotes; //edit by elvis 2024/06/21
 
-                                        BInsM.CreatedDate = DateTime.Now;
+										BInsM.CreatedDate = DateTime.Now;
                                         BInsM.CreatedUserName = ViewBag.empEngName;
 
                                         dbOne.TbOneSrbatchInstallRecords.Add(BInsM);
@@ -8308,7 +8328,7 @@ namespace OneService.Controllers
 
             foreach (var bean in beans)
             {
-                string[] QueryInfo = new string[19];
+                string[] QueryInfo = new string[20];
 
                 tUrl = "../ServiceRequest/InstallSR?SRID=" + bean.CSrid;
 
@@ -8331,8 +8351,9 @@ namespace OneService.Controllers
                 QueryInfo[16] = bean.CMainEngineerId;    //指派主要工程師ERPID
                 QueryInfo[17] = bean.CMainEngineerName;  //指派主要工程師姓名
                 QueryInfo[18] = bean.CSerialId;         //序號      
+				QueryInfo[19] = bean.CNotes;            //詳細描述  edit by elvis 2024/06/21    
 
-                QueryToList.Add(QueryInfo);
+				QueryToList.Add(QueryInfo);
             }
 
             ViewBag.QueryToListBean = QueryToList;

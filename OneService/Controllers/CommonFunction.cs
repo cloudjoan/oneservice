@@ -2011,7 +2011,14 @@ namespace OneService.Controllers
                 parameters.Add("IV_DESC", beanIN.IV_DESC);
                 parameters.Add("IV_LTXT", beanIN.IV_LTXT);
                 parameters.Add("IV_SRTEAM", beanIN.IV_SRTEAM);
-                parameters.Add("IV_EMPNO", beanIN.IV_EMPNO);
+
+                //edit by elvis 2024/06/21 Start
+                //parameters.Add("IV_EMPNO", beanIN.IV_EMPNO);
+                if (!string.IsNullOrEmpty(beanIN.IV_EMPNO))
+                {
+                    parameters.Add("IV_EMPNO", beanIN.IV_EMPNO);
+                }
+                //edit by elvis 2024/06/21 End
 
                 if (tListCON.Count > 0)
                 {

@@ -425,6 +425,10 @@ namespace OneService.Models
                     .HasMaxLength(40)
                     .HasColumnName("cMainEngineerName");
 
+                entity.Property(e => e.CNotes)
+                    .HasMaxLength(2000)
+                    .HasColumnName("cNotes");
+
                 entity.Property(e => e.CSalesId)
                     .HasMaxLength(20)
                     .HasColumnName("cSalesID");
@@ -1230,6 +1234,10 @@ namespace OneService.Models
                     .HasMaxLength(50)
                     .HasColumnName("cRepairPhone")
                     .HasComment("客戶報修人電話");
+
+                entity.Property(e => e.CResponseDate)
+                    .HasColumnType("datetime")
+                    .HasColumnName("cResponseDate");
 
                 entity.Property(e => e.CSalesId)
                     .HasMaxLength(20)

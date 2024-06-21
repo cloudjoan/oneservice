@@ -24,6 +24,7 @@ namespace OneService.Models
         public string? CSalesNo { get; set; }
         public string? CShipmentNo { get; set; }
         public string? CSerialId { get; set; }
+        public string? CNotes { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedUserName { get; set; }
     }
