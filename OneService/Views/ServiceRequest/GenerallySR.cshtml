@@ -63,6 +63,7 @@
 			getpjAssEngineer();			//取得協助工程師	
 			getpjTechManager();			//取得技術主管	
 			getSRDetail_Warranty();		//取得保固SLA明細Table(非新建或駁回狀態)
+			IsShowbtn_Response();		//判斷是否要顯示【確認回應客戶】按鈕
 		});		
 
 		//初始頁面
@@ -710,7 +711,7 @@
 						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
                             + "				<thead><tr>"                                
                             + "				<th>服務工程師</th>"
-                            + "				<th>回應時間</th>"
+                            + "				<th>接單時間</th>"
                             + "				<th>出發時間</th>"
                             + "				<th>到場時間</th>"
                             + "				<th>完成時間</th>"  
@@ -833,6 +834,58 @@
 				}
 			})
 		}		
+
+		//判斷是否要顯示【確認回應客戶】按鈕
+		function IsShowbtn_Response()
+		{
+			var cSRID = $("input[name='hid_cSRID']").val();
+
+			$.ajax({
+				url: '@Url.Action("AjaxcheckIsSRMainResponse", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				async: false,
+				data: {
+					cSRID: cSRID
+				},
+				success: function (result) {
+					if (result) { 
+						$("#btn_Response").hide(); //存在就要隱藏
+					}
+					else
+					{
+						$("#btn_Response").show(); //不存在就要顯示
+					}
+				}
+			})
+		}
+
+		//按下確認回應客戶
+		function onclickResponse()
+		{
+			var cSRID = $("input[name='hid_cSRID']").val();
+
+			$.ajax({
+				url: '@Url.Action("AjaxUpdateSRMainResponse", "ServiceRequest")',
+				type: 'post',
+				dataType: 'json',
+				async: false,
+				data: { 
+					cSRID: cSRID 					
+				},
+				success: function (result) {
+					if (result.indexOf("Error") >= 0) {
+						alert("更新失敗！" + result);
+						$("#btn_Response").show();
+					}
+					else {
+						alert("更新成功！");						
+						$("#btn_Response").hide();
+						$("#tbx_ResponseDate").val(result);
+					}
+				}
+			})
+		}
 
 		//按下編輯事件
 		function EditSRID()
@@ -1534,7 +1587,7 @@
 				var objEngineerName = tds.eq(1).children().eq(0);		//服務工程師/技術主管姓名				
 				var objEngineerID = tds.eq(1).children().eq(1);		//服務工程師/技術主管ID
 				var objDisabled = tds.eq(1).children().eq(2);			//是否停用(0.啟用 1.停用)
-				var objReceiveTime = tds.eq(2).children();				//回應時間
+				var objReceiveTime = tds.eq(2).children();				//接單時間
 				var objStartTime = tds.eq(3).children();				//出發時間
 				var objArriveTime = tds.eq(4).children();				//到場時間
 				var objFinishTime = tds.eq(5).children();				//完成時間
@@ -1556,7 +1609,7 @@
 						}
 
 						if (objReceiveTime.val() == "") {
-							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【回應時間】不得為空！\n";
+							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【接單時間】不得為空！\n";
 							tIsError = true;
 						}
 
@@ -4270,9 +4323,9 @@
 			return reValue;
 		}
 
-		//組回應時間
+		//組接單時間
 		function SetReceiveTime() {
-			var reValue = "<td><input type='text' name='tbx_REcReceiveTime' id='tbx_REcReceiveTime" + trRecordNoCount + "' class='form-control datetimepicker' style='width:150px;' placeholder='回應時間' onchange='TransTimeSpan(this);'></td>";
+			var reValue = "<td><input type='text' name='tbx_REcReceiveTime' id='tbx_REcReceiveTime" + trRecordNoCount + "' class='form-control datetimepicker' style='width:150px;' placeholder='接單時間' onchange='TransTimeSpan(this);'></td>";
 			return reValue;
 		}	
 
@@ -4473,7 +4526,7 @@
 		function TransTimeSpan(obj)
 		{			
 			var Msg = "";
-			var ReceiveTime =	$(obj).parent().parent().find('input[name="tbx_REcReceiveTime"]');	//回應時間
+			var ReceiveTime =	$(obj).parent().parent().find('input[name="tbx_REcReceiveTime"]');	//接單時間
 			var StartTime =	$(obj).parent().parent().find('input[name="tbx_REcStartTime"]');	//出發時間
 			var ArriveTime =	$(obj).parent().parent().find('input[name="tbx_REcArriveTime"]');	//到場時間
 			var FinishTime =	$(obj).parent().parent().find('input[name="tbx_REcFinishTime"]');	//完成時間
@@ -4482,7 +4535,7 @@
 			if (ReceiveTime.val() != "" && StartTime.val() != "")
 			{
 				if (Date.parse(ReceiveTime.val()) > Date.parse(StartTime.val())) {
-					Msg += '【回應時間】不能大於【出發時間】！\n';
+					Msg += '【接單時間】不能大於【出發時間】！\n';
 				}
 			}
 
@@ -4734,27 +4787,31 @@
 							if (ViewBag.cSRID != "")
 							{
 								var srid = ViewBag.cSRID; 
-																	<div class="form-group row">
-																		<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
-																			<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
-																		</button>
-																		<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
-																		&nbsp;&nbsp;&nbsp;&nbsp;
-																		<button id="btn_submitUP" class="btn btn-primary btn-lg" type="button" onclick="ShowSRConfirmDialogMsg('確認', '您是否確認提交？');">
-																			<i class="fa fa-arrow-circle-up" style="font-size:large"> 提 交</i>
-																		</button>
-																		<img id="waitingImgUP" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
-																		&nbsp;&nbsp;&nbsp;&nbsp;
-																		<button id="btn_CopySRID" class="btn btn-success btn-lg" type="button" onclick="window.open('@Url.Action("GenerallySR", "ServiceRequest", new { CopySRID = srid })','_blank');">
-																			<i class="fa fa-files-o" style="font-size:large"> 複 製</i>
-																		</button>										
-																		&nbsp;&nbsp;&nbsp;&nbsp;
-																		<button id="btn_ShowHistoryLog" class="btn btn-warning btn-lg" type="button">
-																			<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
-																		</button>
-																		&nbsp;&nbsp;&nbsp;&nbsp;
-																		<a class="btn btn-danger btn-lg" href="@Url.Action("DownloadDeliveryInfo", "ServiceRequest", new { cSRID = srid })"><i class="fa fa-file-excel-o" style="font-size:large"> 產生快遞單 </i></a>
-																	</div>
+								<div class="form-group row">
+									<button id="btn_Edit" class="btn btn-info btn-lg" type="button" onclick="EditSRID();">
+										<i class="fa fa-pencil" style="font-size:large"> 編 輯</i>
+									</button>
+									<img id="waitingImgEdit" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="btn_submitUP" class="btn btn-primary btn-lg" type="button" onclick="ShowSRConfirmDialogMsg('確認', '您是否確認提交？');">
+										<i class="fa fa-arrow-circle-up" style="font-size:large"> 提 交</i>
+									</button>
+									<img id="waitingImgUP" class="waitingImg" src="~/images/ajax-loading_16.gif" style="display:none; margin:0px 10px" alt="">
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="btn_CopySRID" class="btn btn-success btn-lg" type="button" onclick="window.open('@Url.Action("GenerallySR", "ServiceRequest", new { CopySRID = srid })','_blank');">
+										<i class="fa fa-files-o" style="font-size:large"> 複 製</i>
+									</button>										
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="btn_ShowHistoryLog" class="btn btn-warning btn-lg" type="button">
+										<i class="fa fa-search" style="font-size:large">更改歷史記錄</i>
+									</button>
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<a class="btn btn-danger btn-lg" href="@Url.Action("DownloadDeliveryInfo", "ServiceRequest", new { cSRID = srid })"><i class="fa fa-file-excel-o" style="font-size:large"> 產生快遞單 </i></a>
+									&nbsp;&nbsp;&nbsp;&nbsp;
+									<button id="btn_Response" class="btn btn-success btn-lg" type="button" onclick="onclickResponse();">
+										<i class="fa fa-check-square-o" style="font-size:large">確認回應客戶</i>
+									</button>
+								</div>
 							}
 						}
 
@@ -4913,12 +4970,14 @@
 							</div>
 						</div>
 						<div class="form-group row">
-							<label class="col-lg-2 col-form-label"></label>
-							<div class="col-lg-4"></div>	
 							<label class="col-lg-2 col-form-label">派單人員</label>
 							<div class="col-lg-4">
 								<label class="col-form-label">@ViewBag.CreatedUserName</label>
 							</div>
+							<label class="col-lg-2 col-form-label">回應客戶時間</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_ResponseDate" name="tbx_ResponseDate" class="form-control" placeholder="回應客戶時間" value="@ViewBag.ResponseDate" readonly>
+							</div>							
 						</div>
 
 						<!--L2客戶故障狀況分類資訊-->
@@ -5569,7 +5628,7 @@
 																												<tr>														
 																													<th>項次</th>
 																													<th>*服務工程師/技術主管</th>
-																													<th>*回應時間</th>
+																													<th>*接單時間</th>
 																													<th>*出發時間</th>
 																													<th>*到場時間</th>
 																													<th>*完成時間</th>
@@ -5594,7 +5653,7 @@
 																												<tr>														
 																													<th>項次</th>
 																													<th>*服務工程師/技術主管</th>
-																													<th>*回應時間</th>
+																													<th>*接單時間</th>
 																													<th>*出發時間</th>
 																													<th>*到場時間</th>
 																													<th>*完成時間</th>
@@ -5627,7 +5686,7 @@
 																																																<input type='hidden' name='hid_REcDisabled' @("id=hid_REcDisabled" + count) value=@bean.Disabled>
 																																															</td>
 																																															<td>
-																																																<input type='text' name='tbx_REcReceiveTime' @("id=tbx_REcReceiveTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='回應時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CReceiveTime))" title="@(TransDateFormat_min(bean.CReceiveTime))">
+																																																<input type='text' name='tbx_REcReceiveTime' @("id=tbx_REcReceiveTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='接單時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CReceiveTime))" title="@(TransDateFormat_min(bean.CReceiveTime))">
 																																															</td>
 																																															<td>
 																																																<input type='text' name='tbx_REcStartTime' @("id=tbx_REcStartTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='出發時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CStartTime))" title="@(TransDateFormat_min(bean.CStartTime))">
@@ -5670,7 +5729,7 @@
 																																																	<input type='hidden' name='hid_REcDisabled' @("id=hid_REcDisabled" + count) value=@bean.Disabled>
 																																																</td>
 																																																<td>
-																																																	<input type='text' name='tbx_REcReceiveTime' @("id=tbx_REcReceiveTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='回應時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CReceiveTime))" title="@(TransDateFormat_min(bean.CReceiveTime))">
+																																																	<input type='text' name='tbx_REcReceiveTime' @("id=tbx_REcReceiveTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='接單時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CReceiveTime))" title="@(TransDateFormat_min(bean.CReceiveTime))">
 																																																</td>
 																																																<td>
 																																																	<input type='text' name='tbx_REcStartTime' @("id=tbx_REcStartTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='出發時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CStartTime))" title="@(TransDateFormat_min(bean.CStartTime))">
@@ -6194,9 +6253,9 @@
 						</div>						
 					</div>
 					<div class="form-group row">
-						<label class="col-lg-2 col-form-label">回應時間*</label>
+						<label class="col-lg-2 col-form-label">接單時間*</label>
 						<div class="col-lg-4" style="padding: 0px;">
-							<input id="tbx_pjRecordReceiveTime" type="text" class="form-control datetimepicker" placeholder="請選擇回應時間" style="padding-left: 15px;">	
+							<input id="tbx_pjRecordReceiveTime" type="text" class="form-control datetimepicker" placeholder="請選擇接單時間" style="padding-left: 15px;">	
 							
 						</div>
 						<label class="col-lg-2 col-form-label">出發時間*</label>

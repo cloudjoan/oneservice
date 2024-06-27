@@ -5,6 +5,7 @@
  * 2024/06/19:elvis:新增加，若性質屬【業務】時，則暫將左邊的「服務進度查詢」和「服務總表」Menu隱藏
  * 2024/06/20:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
  * 2024/06/21:elvis:調整批次派工Excel表格中的「指派主要工程師ERPID*」欄位更改為「非必填」
+ * 2024/06/27:elvis:調整1.一般/裝機/定維的回應時間要再改回「接單時間」 2.新增「確認回應客戶」按鈕並回寫回應時間
  */
 #endregion
 
@@ -824,7 +825,7 @@ namespace OneService.Controllers
                 QueryInfo[26] = fPID;                             //報修機器型號/裝機料號說明
                 QueryInfo[27] = fPN;                              //報修Product Number/裝機物料代號
                 QueryInfo[28] = fSerialID;                        //報修/裝機序號
-                QueryInfo[29] = cReceiveTime;                     //回應時間
+                QueryInfo[29] = cReceiveTime;                     //接單時間
                 QueryInfo[30] = cStartTime;                       //出發時間
                 QueryInfo[31] = cArriveTime;                      //到場時間
                 QueryInfo[32] = cFinishTime;                      //完成時間
@@ -1945,9 +1946,10 @@ namespace OneService.Controllers
                     ViewBag.cIsInternalWork = "N";
                     ViewBag.pStatus = "E0001";                          //新建
                     ViewBag.CreatedUserName = "";
-                    ViewBag.cScheduleDate = "";                    
+                    ViewBag.cScheduleDate = "";
+					ViewBag.ResponseDate = "";
 
-                    ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+					ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
 
                     #region 報修類別
@@ -2088,9 +2090,11 @@ namespace OneService.Controllers
                     ViewBag.cIsInternalWork = beanM.CIsInternalWork;
                     ViewBag.pStatus = beanM.CStatus;
                     ViewBag.CreatedUserName = beanM.CreatedUserName;                    
-                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");                    
+                    ViewBag.cScheduleDate = beanM.CScheduleDate == null ? "" : Convert.ToDateTime(beanM.CScheduleDate).ToString("yyyy-MM-dd");
+					ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
+					ViewBag.ResponseDate = beanM.CResponseDate == null ? "" : Convert.ToDateTime(beanM.CResponseDate).ToString("yyyy-MM-dd HH:mm");
 
-                    ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
+					ViewBag.cCustomerType = beanM.CCustomerId.Substring(0, 1) == "P" ? "P" : "C";
                     #endregion
 
                     #region 報修類別
@@ -2268,12 +2272,10 @@ namespace OneService.Controllers
                     #region SLA服務條件(單筆per call)
                     SLASRVList.Where(q => q.Value == beanM.CPerCallSlasrv).First().Selected = true;
                     ViewBag.SLASRVList = SLASRVList;
-                    #endregion   
+                    #endregion 
 
-                    ViewBag.CreatedDate = Convert.ToDateTime(beanM.CreatedDate).ToString("yyyy-MM-dd HH:mm");
-
-                    #region 取得客戶聯絡人資訊(明細)
-                    var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
+					#region 取得客戶聯絡人資訊(明細)
+					var beansContact = dbOne.TbOneSrdetailContacts.Where(x => x.Disabled == 0 && x.CSrid == pSRID);
 
                     ViewBag.Detailbean_Contact = beansContact;
                     ViewBag.trContactNo = beansContact.Count();
@@ -2314,8 +2316,10 @@ namespace OneService.Controllers
                     ViewBag.cIsSecondFix = "";     //請選擇
                     ViewBag.cIsInternalWork = "N";
                     ViewBag.CreatedUserName = "";
-                    ViewBag.cScheduleDate = "";                    
-                }
+                    ViewBag.cScheduleDate = "";
+                    ViewBag.CreatedDate = "";
+					ViewBag.ResponseDate = "";
+				}
                 #endregion
             }
 
@@ -3508,7 +3512,7 @@ namespace OneService.Controllers
         /// <param name="cEngineerID">服務工程師ERPID</param>
         /// <param name="cEngineerName">服務工程師姓名</param>
         /// <param name="cStartTime">出發時間</param>
-        /// <param name="cReceiveTime">回應時間</param>
+        /// <param name="cReceiveTime">接單時間</param>
         /// <param name="cArriveTime">到場時間</param>
         /// <param name="cFinishTime">完成時間</param>
         /// <param name="cDesc">處理紀錄</param>
@@ -3693,17 +3697,74 @@ namespace OneService.Controllers
             ViewBag.SRTypeThrList = tList;
             return Json(tList);
         }
-        #endregion
+		#endregion
 
-        #region -----↓↓↓↓↓服務團隊 ↓↓↓↓↓----- 
+		#region Ajax判斷SRMain主檔的回應時間是否已存在(true.存在 false.不存在)
+		public IActionResult AjaxcheckIsSRMainResponse(string cSRID)
+		{
+            bool reValue = false;
 
-        #region 儲存常用服務團隊
-        /// <summary>
-        /// 儲存常用服務團隊
-        /// </summary>
-        /// <param name="cTeamID">目前的服務團隊ID(;號隔開)</param>        
-        /// <returns></returns>
-        public IActionResult savepjPersonallyTeam(string cTeamID)
+			reValue = CMF.checkIsSRMainResponse(cSRID);
+
+			return Json(reValue);
+		}
+		#endregion
+
+
+		#region Ajax更新回應時間
+		public IActionResult AjaxUpdateSRMainResponse(string cSRID)
+        {
+			string reValue = string.Empty;          
+
+			getLoginAccount();
+			getEmployeeInfo();
+
+			try
+			{
+                #region 更新回應時間                
+				var bean = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == cSRID);
+
+				if (bean != null)
+				{
+                    bean.CResponseDate = DateTime.Now;
+					bean.ModifiedDate = DateTime.Now;
+					bean.ModifiedUserName = ViewBag.empEngName;
+
+					int result = dbOne.SaveChanges();
+                    if (result <= 0)
+                    {
+                        reValue = "Error：更新失敗！";
+						CMF.writeToLog(cSRID, "SRRESPONSETIME_UPDATE_API", reValue, ViewBag.empEngName);
+					}
+                    else
+                    {
+                        reValue = Convert.ToDateTime(bean.CResponseDate).ToString("yyyy-MM-dd HH:mm");
+						CMF.writeToLog(cSRID, "SRRESPONSETIME_UPDATE_API", "更新成功！", ViewBag.empEngName);
+					}
+				}
+                #endregion               				
+			}
+			catch (Exception e)
+			{
+				reValue = "Error：" + e.Message;
+
+				CMF.writeToLog(cSRID, "SRRESPONSETIME_UPDATE_API", reValue, ViewBag.empEngName);
+				return Json("SRRESPONSETIME_UPDATE_API " + reValue);
+			}
+
+			return Json(reValue);
+		}
+		#endregion
+
+		#region -----↓↓↓↓↓服務團隊 ↓↓↓↓↓----- 
+
+		#region 儲存常用服務團隊
+		/// <summary>
+		/// 儲存常用服務團隊
+		/// </summary>
+		/// <param name="cTeamID">目前的服務團隊ID(;號隔開)</param>        
+		/// <returns></returns>
+		public IActionResult savepjPersonallyTeam(string cTeamID)
         {
             getLoginAccount();
             getEmployeeInfo();

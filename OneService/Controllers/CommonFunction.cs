@@ -1903,14 +1903,35 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion
+		#endregion
 
-        #region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口
-        /// <summary>
-        /// call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口
-        /// </summary>
-        /// <param name="beanIN"></param>
-        public SRMain_SRSTATUS_OUTPUT GetAPI_SRSTATUS_Update(SRMain_SRSTATUS_INPUT beanIN)
+		#region 判斷SRMain主檔的回應時間是否已存在(true.存在 false.不存在)
+		/// <summary>
+		/// 判斷SRMain主檔的回應時間是否已存在(true.存在 false.不存在)
+		/// </summary>
+		/// <param name="cSRID">SRID</param>		
+		/// <returns></returns>
+		public bool checkIsSRMainResponse(string cSRID)
+		{
+            bool reValue = false;
+
+			var bean = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == cSRID && x.CResponseDate != null);
+
+			if (bean != null)
+			{
+                reValue = true;
+			}
+
+			return reValue;
+		}
+		#endregion
+
+		#region call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口
+		/// <summary>
+		/// call ONE SERVICE 服務案件(一般/裝機/定維)狀態更新接口
+		/// </summary>
+		/// <param name="beanIN"></param>
+		public SRMain_SRSTATUS_OUTPUT GetAPI_SRSTATUS_Update(SRMain_SRSTATUS_INPUT beanIN)
         {
             SRMain_SRSTATUS_OUTPUT OUTBean = new SRMain_SRSTATUS_OUTPUT();
 
@@ -5884,7 +5905,9 @@ namespace OneService.Controllers
                 }
             }
 
-            NameValueCollection postParams = HttpUtility.ParseQueryString(string.Empty);
+			sender = "Tsti_OneService@etatung.com|OneService"; //寄件者改用OneService取代
+
+			NameValueCollection postParams = HttpUtility.ParseQueryString(string.Empty);
             postParams.Add("eventName", eventName);
             postParams.Add("sender", sender);
             postParams.Add("recipients", recipients);

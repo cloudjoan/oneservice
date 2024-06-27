@@ -499,7 +499,7 @@
 						    + "			<table class='table table-striple table-bordered table-hover dataTables-example'>"
                             + "				<thead><tr>"                                
                             + "				<th>服務工程師</th>"
-                            + "				<th>回應時間</th>"
+                            + "				<th>接單時間</th>"
                             + "				<th>出發時間</th>"
                             + "				<th>到場時間</th>"
                             + "				<th>完成時間</th>"  
@@ -867,7 +867,7 @@
 				var objEngineerName = tds.eq(1).children().eq(0);		//服務工程師			
 				var objEngineerID = tds.eq(1).children().eq(1);		//服務工程師
 				var objDisabled = tds.eq(1).children().eq(2);			//是否停用(0.啟用 1.停用)
-				var objReceiveTime = tds.eq(2).children();				//回應時間
+				var objReceiveTime = tds.eq(2).children();				//接單時間
 				var objStartTime = tds.eq(3).children();				//出發時間
 				var objArriveTime = tds.eq(4).children();				//到場時間
 				var objFinishTime = tds.eq(5).children();				//完成時間
@@ -889,7 +889,7 @@
 						}
 
 						if (objReceiveTime.val() == "") {
-							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【回應時間】不得為空！\n";
+							Msg += "明細【處理與工時紀錄】「項次：" + objRowNumber.html() + "」的【接單時間】不得為空！\n";
 							tIsError = true;
 						}
 
@@ -2265,9 +2265,9 @@
 			return reValue;
 		}
 
-		//組回應時間
+		//組接單時間
 		function SetReceiveTime() {
-			var reValue = "<td><input type='text' name='tbx_REcReceiveTime' id='tbx_REcReceiveTime" + trRecordNoCount + "' class='form-control datetimepicker' style='width:150px;' placeholder='回應時間' onchange='TransTimeSpan(this);'></td>";
+			var reValue = "<td><input type='text' name='tbx_REcReceiveTime' id='tbx_REcReceiveTime" + trRecordNoCount + "' class='form-control datetimepicker' style='width:150px;' placeholder='接單時間' onchange='TransTimeSpan(this);'></td>";
 			return reValue;
 		}	
 
@@ -2450,7 +2450,7 @@
 		function TransTimeSpan(obj)
 		{			
 			var Msg = "";
-			var ReceiveTime =	$(obj).parent().parent().find('input[name="tbx_REcReceiveTime"]');	//回應時間
+			var ReceiveTime =	$(obj).parent().parent().find('input[name="tbx_REcReceiveTime"]');	//接單時間
 			var StartTime =	$(obj).parent().parent().find('input[name="tbx_REcStartTime"]');	//出發時間
 			var ArriveTime =	$(obj).parent().parent().find('input[name="tbx_REcArriveTime"]');	//到場時間
 			var FinishTime =	$(obj).parent().parent().find('input[name="tbx_REcFinishTime"]');	//完成時間
@@ -2459,7 +2459,7 @@
 			if (ReceiveTime.val() != "" && StartTime.val() != "")
 			{
 				if (Date.parse(ReceiveTime.val()) > Date.parse(StartTime.val())) {
-					Msg += '【回應時間】不能大於【出發時間】！\n';
+					Msg += '【接單時間】不能大於【出發時間】！\n';
 				}
 			}
 
@@ -2875,7 +2875,7 @@
 																		<tr>														
 																			<th>項次</th>
 																			<th>*服務工程師</th>
-																			<th>*回應時間</th>
+																			<th>*接單時間</th>
 																			<th>*出發時間</th>
 																			<th>*到場時間</th>
 																			<th>*完成時間</th>
@@ -2900,7 +2900,7 @@
 																		<tr>														
 																			<th>項次</th>
 																			<th>*服務工程師</th>
-																			<th>*回應時間</th>
+																			<th>*接單時間</th>
 																			<th>*出發時間</th>
 																			<th>*到場時間</th>
 																			<th>*完成時間</th>
@@ -2933,7 +2933,7 @@
 																													<input type='hidden' name='hid_REcDisabled' @("id=hid_REcDisabled" + count) value=@bean.Disabled>
 																												</td>
 																												<td>
-																													<input type='text' name='tbx_REcReceiveTime' @("id=tbx_REcReceiveTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='回應時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CReceiveTime))" title="@(TransDateFormat_min(bean.CReceiveTime))">
+																													<input type='text' name='tbx_REcReceiveTime' @("id=tbx_REcReceiveTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='接單時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CReceiveTime))" title="@(TransDateFormat_min(bean.CReceiveTime))">
 																												</td>
 																												<td>
 																													<input type='text' name='tbx_REcStartTime' @("id=tbx_REcStartTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='出發時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CStartTime))" title="@(TransDateFormat_min(bean.CStartTime))">
@@ -2976,7 +2976,7 @@
 																													<input type='hidden' name='hid_REcDisabled' @("id=hid_REcDisabled" + count) value=@bean.Disabled>
 																												</td>
 																												<td>
-																													<input type='text' name='tbx_REcReceiveTime' @("id=tbx_REcReceiveTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='回應時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CReceiveTime))" title="@(TransDateFormat_min(bean.CReceiveTime))">
+																													<input type='text' name='tbx_REcReceiveTime' @("id=tbx_REcReceiveTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='接單時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CReceiveTime))" title="@(TransDateFormat_min(bean.CReceiveTime))">
 																												</td>
 																												<td>
 																													<input type='text' name='tbx_REcStartTime' @("id=tbx_REcStartTime" + count) class='form-control datetimepicker' style='width:150px;' placeholder='出發時間' onchange="TransTimeSpan(this);" value="@(TransDateFormat_min(bean.CStartTime))" title="@(TransDateFormat_min(bean.CStartTime))">
@@ -3300,9 +3300,9 @@
 						</div>						
 					</div>
 					<div class="form-group row">
-						<label class="col-lg-2 col-form-label">回應時間*</label>
+						<label class="col-lg-2 col-form-label">接單時間*</label>
 						<div class="col-lg-4" style="padding: 0px;">
-							<input id="tbx_pjRecordReceiveTime" type="text" class="form-control datetimepicker" placeholder="請選擇回應時間" style="padding-left: 15px;">	
+							<input id="tbx_pjRecordReceiveTime" type="text" class="form-control datetimepicker" placeholder="請選擇接單時間" style="padding-left: 15px;">	
 							
 						</div>
 						<label class="col-lg-2 col-form-label">出發時間*</label>
