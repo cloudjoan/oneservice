@@ -6,6 +6,7 @@
  * 2024/06/20:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
  * 2024/06/21:elvis:調整批次派工Excel表格中的「指派主要工程師ERPID*」欄位更改為「非必填」
  * 2024/06/27:elvis:調整1.一般/裝機/定維的回應時間要再改回「接單時間」 2.新增「確認回應客戶」按鈕並回寫回應時間
+ * 2024/07/04:elvis:調整批次派工Excel表格中若有傳入「詳細描述」欄位，則以傳入的為主，反之則為系統預設值
  */
 #endregion
 
@@ -7937,9 +7938,9 @@ namespace OneService.Controllers
             string cSecretaryID = string.Empty;
             string cMainEngineerID = string.Empty;
             string cSerialID = string.Empty;
-            string cNotes = string.Empty; //edit by elvis 2024/06/21
+            string cNotes = string.Empty; //edit by elvis 2024/07/04
 
-            Dictionary<string, DataTable> DicM = new Dictionary<string, DataTable>();
+			Dictionary<string, DataTable> DicM = new Dictionary<string, DataTable>();
             Dictionary<string, DataTable> DicD = new Dictionary<string, DataTable>();
             DataTable dtM = new DataTable();
             DataTable dtD = new DataTable();
@@ -8033,10 +8034,10 @@ namespace OneService.Controllers
                                 cSecretaryID = dr[12].ToString().Trim();
                                 cMainEngineerID = dr[13].ToString().Trim();
                                 cSerialID = dr[14].ToString().Trim();
-                                cNotes = dr[15].ToString().Trim(); //edit by elvis 2024/06/21
+                                cNotes = dr[15].ToString().Trim(); //edit by elvis 2024/07/04
 
-                                #region Empty欄位檢查
-                                AryValue = CMF.ValidationImportExcelField(cCustomerID, "客戶代號", strItem);
+								#region Empty欄位檢查
+								AryValue = CMF.ValidationImportExcelField(cCustomerID, "客戶代號", strItem);
 
                                 if (AryValue[0] == "N")
                                 {
@@ -8160,7 +8161,7 @@ namespace OneService.Controllers
                                     beanIN.IV_SECRETARYEMPNO = cSecretaryID;
                                     beanIN.IV_DESC = tNote;
 
-                                    //edit by elvis 2024/06/21 Start
+                                    //edit by elvis 2024/07/04 Start
                                     //beanIN.IV_LTXT = tNote;
                                     if (!string.IsNullOrEmpty(cNotes))
                                     {
@@ -8170,7 +8171,7 @@ namespace OneService.Controllers
                                     {
                                         beanIN.IV_LTXT = tNote;
                                     }
-                                    //edit by elvis 2024/06/21 End
+                                    //edit by elvis 2024/07/04 End
                                     
                                     beanIN.IV_SRTEAM = cTeamID;
                                     beanIN.IV_EMPNO = cMainEngineerID;
@@ -8252,7 +8253,7 @@ namespace OneService.Controllers
                                         BInsM.CSalesNo = cSalesNo;
                                         BInsM.CShipmentNo = cShipmentNo;
                                         BInsM.CSerialId = cSerialID;
-                                        BInsM.CNotes = cNotes; //edit by elvis 2024/06/21
+                                        BInsM.CNotes = cNotes; //edit by elvis 2024/07/04
 
 										BInsM.CreatedDate = DateTime.Now;
                                         BInsM.CreatedUserName = ViewBag.empEngName;
@@ -8412,7 +8413,7 @@ namespace OneService.Controllers
                 QueryInfo[16] = bean.CMainEngineerId;    //指派主要工程師ERPID
                 QueryInfo[17] = bean.CMainEngineerName;  //指派主要工程師姓名
                 QueryInfo[18] = bean.CSerialId;         //序號      
-				QueryInfo[19] = bean.CNotes;            //詳細描述  edit by elvis 2024/06/21    
+				QueryInfo[19] = bean.CNotes;            //詳細描述  edit by elvis 2024/07/04    
 
 				QueryToList.Add(QueryInfo);
             }
