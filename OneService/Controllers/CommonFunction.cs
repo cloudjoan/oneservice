@@ -2,6 +2,7 @@
 /* 
  * 2024/03/14:elvis:調整，原邏輯：若不存在則新增，反之則更新；新邏輯：一律先刪除(上註記符號)，再重新新增，以批次上傳的excel內容為主
  * 2024/06/19:elvis:新增加，若性質屬【業務】時，則暫將左邊的「服務進度查詢」和「服務總表」Menu隱藏
+ * 2024/07/04:elvis:新增加中心單位管理者權限
  */
 #endregion
 
@@ -4173,37 +4174,41 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion
+		#endregion
 
-        #region 判斷登入者是否可以編輯服務案件
-        /// <summary>
-        /// 判斷登入者是否可以編輯服務案件
-        /// </summary>
-        /// <param name="tSRID">SRID</param>
-        /// <param name="tLoginERPID">登入者ERPID</param>
-        /// <param name="tCostCenterID">登入者成本中心ID</param>
-        /// <param name="tDeptID">部門ID</param>
-        /// <param name="tIsMIS">登入者是否為MIS</param>
-        /// <param name="pIsCSManager">登入者是否為客服主管</param>
-        /// <param name="tIsCS">登入者是否為客服人員</param>
-        /// <param name="tIsSpareManager">登入者是否為備品管理員或檢測員</param>
-        /// <returns></returns>
-        public bool checkIsCanEditSR(string tSRID, string tLoginERPID, string tCostCenterID, string tDeptID, bool tIsMIS, bool pIsCSManager, bool tIsCS, bool tIsSpareManager)
+		#region 判斷登入者是否可以編輯服務案件
+		/// <summary>
+		/// 判斷登入者是否可以編輯服務案件
+		/// </summary>
+		/// <param name="tSRID">SRID</param>
+		/// <param name="tLoginERPID">登入者ERPID</param>
+		/// <param name="tCostCenterID">登入者成本中心ID</param>
+		/// <param name="tDeptID">部門ID</param>
+		/// <param name="tIsMIS">登入者是否為MIS</param>
+		/// <param name="pIsCSManager">登入者是否為客服主管</param>
+		/// <param name="tIsCS">登入者是否為客服人員</param>
+		/// <param name="tIsSpareManager">登入者是否為備品管理員或檢測員</param>
+		/// <param name="tContractCenterID">中心單位ID(若為中心單位合約管理員就會有值，ex.12G3)</param>
+		/// <returns></returns>
+		public bool checkIsCanEditSR(string tSRID, string tLoginERPID, string tCostCenterID, string tDeptID, bool tIsMIS, bool pIsCSManager, bool tIsCS, bool tIsSpareManager, List<string> tContractCenterID)
         {
             bool reValue = false;
             bool IsSRTeamManager = false;
+			bool IsSRCenterManager = false; //edit by elvis 2024/07/04
 
-            //服務團隊主管、主要工程師、協助工程師、技術主管
-            var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == tSRID);
+			//服務團隊主管、主要工程師、協助工程師、技術主管
+			var beanM = dbOne.TbOneSrmains.FirstOrDefault(x => x.CSrid == tSRID);
 
             if (beanM != null)
             {
-                if (beanM.CStatus == "E0006" || beanM.CStatus == "E0015") //完修或取消不可編輯
-                {
-                    IsSRTeamManager = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //判斷登入人是否為該服務團隊的主管
+				IsSRCenterManager = checkIsSRTeamMappingCenterManager(beanM.CTeamId, tContractCenterID); //判斷是否為中心單位管理者 edit by elvis 2024/07/04
 
-                    if (tIsMIS || tIsCS || tIsSpareManager || IsSRTeamManager) //MIS or 客服人員 or 備品管理員 or 檢測員 or 服務團隊的主管都可編輯
-                    {
+				if (beanM.CStatus == "E0006" || beanM.CStatus == "E0015") //完修或取消不可編輯
+                {
+                    IsSRTeamManager = checkIsSRTeamMappingManager(tLoginERPID, beanM.CTeamId); //判斷登入人是否為該服務團隊的主管					
+
+					if (tIsMIS || tIsCS || tIsSpareManager || IsSRTeamManager || IsSRCenterManager) //MIS or 客服人員 or 備品管理員 or 檢測員 or 服務團隊的主管 or 中心單位管理者 都可編輯
+					{
                         return true;
                     }
                     else
@@ -4212,8 +4217,8 @@ namespace OneService.Controllers
                     }
                 }
 
-                if (tIsMIS || tIsCS) //MIS or 客服人員都可編輯
-                {
+                if (tIsMIS || tIsCS || IsSRCenterManager) //MIS or 客服人員 or 中心單位管理者 都可編輯
+				{
                     reValue = true;
                 }
                 else

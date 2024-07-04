@@ -7,6 +7,7 @@
  * 2024/06/21:elvis:調整批次派工Excel表格中的「指派主要工程師ERPID*」欄位更改為「非必填」
  * 2024/06/27:elvis:調整1.一般/裝機/定維的回應時間要再改回「接單時間」 2.新增「確認回應客戶」按鈕並回寫回應時間
  * 2024/07/04:elvis:調整批次派工Excel表格中若有傳入「詳細描述」欄位，則以傳入的為主，反之則為系統預設值
+ * 2024/07/04:elvis:新增加中心單位管理者權限
  */
 #endregion
 
@@ -149,10 +150,17 @@ namespace OneService.Controllers
         /// </summary>
         string pBatchUploadTypeNote = string.Empty;
 
-        /// <summary>
-        /// 程式作業編號檔系統ID(ALL，固定的GUID)
-        /// </summary>
-        string pSysOperationID = "F8EFC55F-FA77-4731-BB45-2F2147244A2D";
+        //edit by elvis 2024/07/04 Start
+		/// <summary>
+		/// 取得登入者若為中心單位合約管理員，該中心單位ID(true.是 false.否)
+		/// </summary>
+		List<string> pContractCenterID = new List<string>();
+		//edit by elvis 2024/07/04 End
+
+		/// <summary>
+		/// 程式作業編號檔系統ID(ALL，固定的GUID)
+		/// </summary>
+		string pSysOperationID = "F8EFC55F-FA77-4731-BB45-2F2147244A2D";
 
         /// <summary>
         /// 程式作業編號檔系統ID(一般服務)
@@ -2071,10 +2079,10 @@ namespace OneService.Controllers
                     ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                     //判斷登入者是否可以編輯服務案件                
-                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsCS, pIsSpareManager);
+                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsCS, pIsSpareManager, ViewBag.pContractCenterID); //edit by elvis 2024/07/04
 
-                    #region 報修資訊
-                    ViewBag.cSRID = beanM.CSrid;
+					#region 報修資訊
+					ViewBag.cSRID = beanM.CSrid;
                     ViewBag.cCustomerID = beanM.CCustomerId;
                     ViewBag.cCustomerName = beanM.CCustomerName;
                     ViewBag.cDesc = beanM.CDesc;
@@ -4854,10 +4862,10 @@ namespace OneService.Controllers
                     ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                     //判斷登入者是否可以編輯服務案件                
-                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsCS, pIsSpareManager);
+                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsCS, pIsSpareManager, ViewBag.pContractCenterID); //edit by elvis 2024/07/04
 
-                    #region 裝機資訊
-                    ViewBag.cSRID = beanM.CSrid;
+					#region 裝機資訊
+					ViewBag.cSRID = beanM.CSrid;
                     ViewBag.cCustomerID = beanM.CCustomerId;
                     ViewBag.cCustomerName = beanM.CCustomerName;
                     ViewBag.cDesc = beanM.CDesc;
@@ -5835,10 +5843,10 @@ namespace OneService.Controllers
                     ViewBag.pGUID = beanM.CSystemGuid.ToString();
 
                     //判斷登入者是否可以編輯服務案件
-                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsCS, pIsSpareManager);
+                    pIsCanEditSR = CMF.checkIsCanEditSR(beanM.CSrid, ViewBag.cLoginUser_ERPID, ViewBag.cLoginUser_CostCenterID, ViewBag.cLoginUser_DepartmentNO, pIsMIS, pIsCSManager, pIsCS, pIsSpareManager, ViewBag.pContractCenterID); //edit by elvis 2024/07/04
 
-                    #region 定維資訊
-                    ViewBag.cSRID = beanM.CSrid;
+					#region 定維資訊
+					ViewBag.cSRID = beanM.CSrid;
                     ViewBag.cCustomerID = beanM.CCustomerId;
                     ViewBag.cCustomerName = beanM.CCustomerName;
                     ViewBag.cDesc = beanM.CDesc;
@@ -9121,23 +9129,24 @@ namespace OneService.Controllers
         /// </summary>
         public void getLoginAccount()
         {
-            #region 測試用            
-            //pLoginAccount = @"etatung\Allen.Chen";      //陳勁嘉(主管)
-            //pLoginAccount = @"etatung\Boyen.Chen";      //陳建良(主管)
-            //pLoginAccount = @"etatung\Aniki.Huang";     //黃志豪(主管)
-            //pLoginAccount = @"etatung\jack.hung";       //洪佑典(主管)
-            //pLoginAccount = @"etatung\Leo.Lee";         //李家豪(主管)
-            //pLoginAccount = @"etatung\Allen.Tang";      //湯文華(業務主管)
-            //pLoginAccount = @"etatung\Sam.Lee";         //李思霖(業務)
-            //pLoginAccount = @"etatung\Julia.Hsu";       //徐瑄辰(祕書)
-            //pLoginAccount = @"etatung\Kongo.tsai";       //蔡怡德        
-            //pLoginAccount = @"etatung\Wenjui.Chan";     //詹文瑞        
-            //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
-            //pLoginAccount = @"etatung\Cara.Tien";       //田巧如    
-            //pLoginAccount = @"etatung\kenny.wu";        //巫永昌 
-            #endregion
+			#region 測試用            
+			//pLoginAccount = @"etatung\Allen.Chen";      //陳勁嘉(主管)
+			//pLoginAccount = @"etatung\Boyen.Chen";      //陳建良(主管)
+			//pLoginAccount = @"etatung\Aniki.Huang";     //黃志豪(主管)
+			//pLoginAccount = @"etatung\jack.hung";       //洪佑典(主管)
+			//pLoginAccount = @"etatung\Leo.Lee";         //李家豪(主管)
+			//pLoginAccount = @"etatung\Allen.Tang";      //湯文華(業務主管)
+			//pLoginAccount = @"etatung\Sam.Lee";         //李思霖(業務)
+			//pLoginAccount = @"etatung\Julia.Hsu";       //徐瑄辰(祕書)
+			//pLoginAccount = @"etatung\Kongo.tsai";       //蔡怡德        
+			//pLoginAccount = @"etatung\Wenjui.Chan";     //詹文瑞        
+			//pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
+			//pLoginAccount = @"etatung\Cara.Tien";       //田巧如    
+			//pLoginAccount = @"etatung\kenny.wu";        //巫永昌 
+			//pLoginAccount = @"etatung\Annie.Chuang";        //莊薈鈺 (中心單位管理者)
+			#endregion
 
-            pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
+			pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
 
             #region One Service相關帳號
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
@@ -9148,18 +9157,19 @@ namespace OneService.Controllers
             pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
             pIsExeMaintainPerson = CMF.getIsExeMaintainPerson(pLoginAccount, pOperationID_QueryBatchMaintain);
             pIsRoleSales = CMF.getIsRoleSales(pLoginAccount); //edit by elvis 2024/06/19
+			pContractCenterID = CMF.getContractCenterID(pLoginAccount, pSysOperationID, "T012"); //edit by elvis 2024/07/04
 
-
-            ViewBag.pIsMIS = pIsMIS;
+			ViewBag.pIsMIS = pIsMIS;
             ViewBag.pIsCSManager = pIsCSManager;
             ViewBag.pIsCS = pIsCS;            
             ViewBag.pIsSpareManager = pIsSpareManager;
             ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
             ViewBag.pIsExePerson = pIsExePerson;
             ViewBag.pIsExeMaintainPerson = pIsExeMaintainPerson;
-            ViewBag.pIsRoleSales = pIsRoleSales; //edit by elvis 2024/06/19
-            #endregion
-        }
+            ViewBag.pIsRoleSales = pIsRoleSales;           //edit by elvis 2024/06/19
+			ViewBag.pContractCenterID = pContractCenterID;  //edit by elvis 2024/07/04
+			#endregion
+		}
         #endregion
 
         #region 取得人員相關資料
