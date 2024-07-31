@@ -669,6 +669,7 @@
 			var tbx_cSoSales = $('#tbx_cSoSales');						//業務員ERPID
 			var tbx_cMASales = $('#tbx_cMASales');						//維護業務員ERPID			
 			var hid_cAssEngineerID = $('#hid_cAssEngineerID');			//主要工程師ERPID
+			var tbx_cDesc = $('#tbx_cDesc');							//訂單說明
 			var tbx_cStartDate = $('#tbx_cStartDate');					//合約期間(起)
 			var tbx_cEndDate = $('#tbx_cEndDate');						//合約期間(迄)
 			var hid_cAssignMainEngineer = $("#hid_cAssignMainEngineer");	//未指派主要工程師
@@ -676,7 +677,7 @@
 			var cTeamID = $("#hid_cTeamID").val();						//服務團隊
 
 			if (tbx_cContractID.val() == "" && tbx_cCustomerID.val() == "" && tbx_cCustomerName.val() == "" && 
-			    tbx_cSoSales.val() == "" && tbx_cMASales.val() == "" && hid_cAssEngineerID.val() == "" &&
+			    tbx_cSoSales.val() == "" && tbx_cMASales.val() == "" && hid_cAssEngineerID.val() == "" && tbx_cDesc.val() == "" &&
 				tbx_cStartDate.val() == "" && tbx_cEndDate.val() == "" && hid_cAssignMainEngineer.val() == "" && hid_cUploadObjID.val() == "" && cTeamID == "") 
 			{
 
@@ -698,7 +699,7 @@
 			}
 			else {
 				searchQuery(ddl_cIsSubContract.val(), tbx_cContractID.val(), tbx_cCustomerID.val(), tbx_cCustomerName.val(),
-					tbx_cSoSales.val(), tbx_cMASales.val(), hid_cAssEngineerID.val(),
+					tbx_cSoSales.val(), tbx_cMASales.val(), hid_cAssEngineerID.val(), tbx_cDesc.val(),
 					tbx_cStartDate.val(), tbx_cEndDate.val(), hid_cAssignMainEngineer.val(), hid_cUploadObjID.val(), cTeamID);
 			}
 
@@ -706,7 +707,7 @@
 		}
 
 		//查詢結果
-		function searchQuery(cIsSubContract, cContractID, cCustomerID, cCustomerName, cSoSales, cMASales, cMainEngineerID, cStartDate, cEndDate, cAssignMainEngineer, cUploadObjID, cTeamID) {
+		function searchQuery(cIsSubContract, cContractID, cCustomerID, cCustomerName, cSoSales, cMASales, cMainEngineerID, cDesc, cStartDate, cEndDate, cAssignMainEngineer, cUploadObjID, cTeamID) {
 			$("#dataDiv").html('');
 
 			$.ajax({
@@ -721,6 +722,7 @@
 					cSoSales: cSoSales,
 					cMASales: cMASales,
 					cMainEngineerID: cMainEngineerID,
+					cDesc: cDesc,
 					cStartDate: cStartDate,
 					cEndDate: cEndDate,
 					cAssignMainEngineer: cAssignMainEngineer,
@@ -746,7 +748,8 @@
 			$('#tbx_cSoSales').val("");
 			$('#lbl_cSoSales').html("");
 			$('#tbx_cMASales').val("");
-			$('#lbl_cMASales').html("");			
+			$('#lbl_cMASales').html("");
+			$('#tbx_cDesc').val("");
 			$('#tbx_cStartDate').val("");
 			$('#tbx_cEndDate').val("");
 			$("#chk_cMainEngineerID").iCheck('uncheck'); //拿掉勾勾
@@ -836,7 +839,13 @@
 								<input type="text" name="tbx_cMASales" id="tbx_cMASales" class="form-control Peoploe" placeholder="請輸入人名或英文關鍵字搜尋">
 								<label id="lbl_cMASales" class="col-form-label" style="color:blue;"></label>
 							</div>
-						</div>						
+						</div>
+						<div class="form-group row">						
+							<label class="col-lg-2 col-form-label">訂單說明</label>
+							<div class="col-lg-4">
+								<input type="text" id="tbx_cDesc" name="tbx_cDesc" class="form-control" placeholder="若有輸入訂單說明，最大限制1,000筆">
+							</div>
+						</div>
 						<div class="form-group row">
 							<label class="col-lg-2 col-form-label">主要工程師</label>
 							<div class="col-lg-10 col-sm-10 input-group">

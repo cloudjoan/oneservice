@@ -1,4 +1,10 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
+﻿#region 修改歷程記錄
+/* 
+ * 2024/07/31:elvis:合約主數據查詢/維護作業，新增加「訂單說明 」查詢
+ */
+#endregion
+
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
@@ -271,6 +277,7 @@ namespace OneService.Controllers
         /// <param name="cSoSales">業務員ERPID</param>
         /// <param name="cMASales">維護業務員ERPID</param>
         /// <param name="cMainEngineerID">主要工程師ERPID</param>
+        /// <param name="cDesc">訂單說明</param>
         /// <param name="cStartDate">合約期間(起)</param>
         /// <param name="cEndDate">合約期間(迄)</param>
         /// <param name="cAssignMainEngineer">未指派主要工程師(Y.未指派)</param>
@@ -278,7 +285,7 @@ namespace OneService.Controllers
         /// <param name="cTeamID">服務團隊(新)</param>
         /// <returns></returns>
         public IActionResult QueryContractMainResult(string cIsSubContract, string cContractID, string cCustomerID, string cCustomerName, 
-                                                   string cSoSales, string cMASales, string cMainEngineerID, string cStartDate, string cEndDate, 
+                                                   string cSoSales, string cMASales, string cMainEngineerID, string cDesc ,string cStartDate, string cEndDate, 
                                                    string cAssignMainEngineer, string cUploadObjID, string cTeamID)
         {
             List<string[]> QueryToList = new List<string[]>();    //查詢出來的清單
@@ -287,7 +294,9 @@ namespace OneService.Controllers
 
             StringBuilder tSQL = new StringBuilder();
 
-            string ttWhere = string.Empty;
+			string tLog = string.Empty;
+			string tTop = string.Empty;                 //是否有輸入說明，若有就要限制前1,000筆
+			string ttWhere = string.Empty;
             string ttSelect = string.Empty;
             string ttStrItem = string.Empty;
             string tUrl = string.Empty;
@@ -297,7 +306,29 @@ namespace OneService.Controllers
             string tDesc = string.Empty;
             string tContractNotes = string.Empty;
 
-            ttSelect = "ISNULL((select D.cEngineerID from TB_ONE_ContractDetail_ENG D where D.Disabled = 0 and M.cContractID = D.cContractID and D.cIsMainEngineer = 'Y'),'') as cEngineerID," + Environment.NewLine;
+			getLoginAccount();
+			getEmployeeInfo();
+
+			#region log記錄
+			tLog += CMF.getPersonalInfoLog("合約類型", cIsSubContract);
+			tLog += CMF.getPersonalInfoLog("文件編號", cContractID);
+			tLog += CMF.getPersonalInfoLog("客戶代號", cCustomerID);
+			tLog += CMF.getPersonalInfoLog("客戶名稱", cCustomerName);			
+			tLog += CMF.getPersonalInfoLog("業務員ERPID", cSoSales);
+			tLog += CMF.getPersonalInfoLog("維護業務員ERPID", cMASales);
+			tLog += CMF.getPersonalInfoLog("主要工程師ERPID", cMainEngineerID);
+			tLog += CMF.getPersonalInfoLog("訂單說明", cDesc);
+			tLog += CMF.getPersonalInfoLog("合約期間(起)", cStartDate);
+			tLog += CMF.getPersonalInfoLog("合約期間(迄)", cEndDate);
+			tLog += CMF.getPersonalInfoLog("未指派主要工程師", cAssignMainEngineer);
+			tLog += CMF.getPersonalInfoLog("未上傳合約標的", cUploadObjID);			
+			tLog += CMF.getPersonalInfoLog("服務團隊", cTeamID);			
+			tLog = "合約主數據查詢/維護作業_查詢條件如下：" + Environment.NewLine + tLog;
+
+			CMF.writeToLog("", "QueryContractMain_Query", tLog, ViewBag.empEngName);
+			#endregion
+
+			ttSelect = "ISNULL((select D.cEngineerID from TB_ONE_ContractDetail_ENG D where D.Disabled = 0 and M.cContractID = D.cContractID and D.cIsMainEngineer = 'Y'),'') as cEngineerID," + Environment.NewLine;
             ttSelect += "ISNULL((select D.cEngineerName from TB_ONE_ContractDetail_ENG D where D.Disabled = 0 and M.cContractID = D.cContractID and D.cIsMainEngineer = 'Y'),'') as cEngineerName";
 
             #region 合約類型
@@ -344,10 +375,18 @@ namespace OneService.Controllers
             {
                 ttWhere += "AND M.cSoSales = '" + cMASales + "' " + Environment.NewLine;
             }
-            #endregion           
+			#endregion
 
-            #region 合約期間
-            if (!string.IsNullOrEmpty(cStartDate) && !string.IsNullOrEmpty(cEndDate))
+			#region 說明
+			if (!string.IsNullOrEmpty(cDesc))
+			{
+				tTop = " TOP 1000 ";
+				ttWhere += "AND M.cDesc LIKE N'%" + cDesc.Trim() + "%' " + Environment.NewLine;
+			}
+			#endregion
+
+			#region 合約期間
+			if (!string.IsNullOrEmpty(cStartDate) && !string.IsNullOrEmpty(cEndDate))
             {
                 ttWhere += "AND (M.cStartDate between CONVERT(DATETIME, '" + cStartDate + "') and CONVERT(DATETIME, '" + cEndDate + "') or ";
                 ttWhere += "     M.cEndDate between CONVERT(DATETIME, '" + cStartDate + "') and CONVERT(DATETIME, '" + cEndDate + "')) " + Environment.NewLine;
@@ -423,18 +462,21 @@ namespace OneService.Controllers
 
                 ttWhere += ttStrItem + Environment.NewLine;
             }
-            #endregion
+			#endregion
 
-            #region 組待查詢清單
+			#region 組待查詢清單
 
-            #region SQL語法
-            tSQL.AppendLine(" Select distinct M.*, " + ttSelect);            
-            tSQL.AppendLine(" From TB_ONE_ContractMain M");
-            tSQL.AppendLine(" left join TB_ONE_ContractDetail_ENG D on M.cContractID = D.cContractID");
-            tSQL.AppendLine(" Where 1=1 AND M.disabled = 0 " + ttWhere);
-            #endregion
+			#region SQL語法
+			tSQL.AppendLine(" Select " + tTop + " T.* From ");
+			tSQL.AppendLine(" ( ");
+			tSQL.AppendLine("   Select distinct M.*, " + ttSelect);            
+            tSQL.AppendLine("   From TB_ONE_ContractMain M");
+            tSQL.AppendLine("   left join TB_ONE_ContractDetail_ENG D on M.cContractID = D.cContractID");
+            tSQL.AppendLine("   Where 1=1 AND M.disabled = 0 " + ttWhere);
+			tSQL.AppendLine(" ) as T ");
+			#endregion
 
-            dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");            
+			dt = CMF.getDataTableByDb(tSQL.ToString(), "dbOne");            
 
             foreach (DataRow dr in dt.Rows)
             {
