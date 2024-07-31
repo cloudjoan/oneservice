@@ -42,7 +42,7 @@ builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
 
 builder.Services.AddSession(options =>
 {
-	options.IdleTimeout = TimeSpan.FromSeconds(3600 * 3);
+	options.IdleTimeout = TimeSpan.FromSeconds(3600 * 12);
 	options.Cookie.HttpOnly = true;
 	options.Cookie.IsEssential = true;
 });
