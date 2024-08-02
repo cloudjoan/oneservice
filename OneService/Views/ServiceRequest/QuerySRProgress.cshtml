@@ -230,11 +230,11 @@
 							var ojbID = $(this).attr("id");
 
 							$.ajax({
-								url: '@Url.Action("AjaxfindEmployeeByKeyword", "ServiceRequest")',
+								url: '@Url.Action("AjaxfindEmployeeInCludeLeaveByKeyword", "ServiceRequest")',
 								type: 'post',
 								dataType: 'json',
 								data: {
-									functionName: 'AjaxfindEmployeeByKeyword', keyword: keyword
+									functionName: 'AjaxfindEmployeeInCludeLeaveByKeyword', keyword: keyword
 								},
 								success: function (result) {
 									objects = [];
