@@ -5555,7 +5555,7 @@ namespace OneService.Controllers
             con = new SqlConnection(tConnectionString);
             cmd.Connection = con;
             SqlDataAdapter sda = new SqlDataAdapter(cmd);
-            sda.SelectCommand.CommandTimeout = 600; //設定timeout為600秒
+            sda.SelectCommand.CommandTimeout = 60; //設定timeout為60秒
             sda.Fill(dt);
 
             return dt;
