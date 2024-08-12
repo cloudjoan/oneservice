@@ -3506,7 +3506,7 @@ namespace OneService.Controllers
                     {
                         tTempValue = prBean.Kna1Kunnr.Trim().Replace(" ", "") + "|" + cBUKRS + "|" + prBean.ContactName.Trim().Replace(" ", "");
 
-                        if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人姓名、聯絡門市不重覆才要顯示
+                        if (!tTempList.Contains(tTempValue)) //判斷客戶ID、公司別、聯絡人姓名不重覆才要顯示
                         {
                             tTempList.Add(tTempValue);
 
