@@ -206,6 +206,8 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_ContractMain");
 
+                entity.HasIndex(e => new { e.CSoSales, e.CSoSalesAss, e.CMasales, e.CCustomerId, e.CStartDate, e.CEndDate, e.CIsSubContract }, "NonClusteredIndex-20240806-133359");
+
                 entity.Property(e => e.CContractId)
                     .HasMaxLength(10)
                     .HasColumnName("cContractID");
@@ -1042,6 +1044,8 @@ namespace OneService.Models
                 entity.HasKey(e => e.CSrid);
 
                 entity.ToTable("TB_ONE_SRMain");
+
+                entity.HasIndex(e => new { e.CStatus, e.CreatedDate, e.CCustomerId, e.CMaserviceType, e.CSrtypeOne, e.CMainEngineerId, e.CContractId }, "NonClusteredIndex-20240806-132920");
 
                 entity.Property(e => e.CSrid)
                     .HasMaxLength(20)

@@ -3325,9 +3325,23 @@ namespace OneService.Controllers
                     }
                 }
             }
-            catch (Exception ex)
+			catch (ValidationException ex)
+			{
+				pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "Validation failed:" + ex.ValidationResult.ErrorMessage + Environment.NewLine;
+				pMsg += " 失敗行數：" + ex.ToString();
+
+				CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, ViewBag.empEngName);
+			}
+			catch (DbUpdateException ex)
+			{
+				pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "Database Update failed:" + ex.InnerException?.Message + Environment.NewLine;
+				pMsg += " 失敗行數：" + ex.ToString();
+
+				CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, ViewBag.empEngName);
+			}
+			catch (Exception ex)
             {
-                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
+                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.InnerException?.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
                 
                 CMF.writeToLog(pSRID, "SaveGenerallySR", pMsg, ViewBag.empEngName);
@@ -5701,7 +5715,21 @@ namespace OneService.Controllers
                     }
                 }
             }
-            catch (Exception ex)
+			catch (ValidationException ex)
+			{
+				pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "Validation failed:" + ex.ValidationResult.ErrorMessage + Environment.NewLine;
+				pMsg += " 失敗行數：" + ex.ToString();
+
+				CMF.writeToLog(pSRID, "SaveInstallSR", pMsg, ViewBag.empEngName);
+			}
+			catch (DbUpdateException ex)
+			{
+				pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "Database Update failed:" + ex.InnerException?.Message + Environment.NewLine;
+				pMsg += " 失敗行數：" + ex.ToString();
+
+				CMF.writeToLog(pSRID, "SaveInstallSR", pMsg, ViewBag.empEngName);
+			}			
+			catch (Exception ex)
             {
                 pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
                 pMsg += " 失敗行數：" + ex.ToString();
@@ -6458,13 +6486,27 @@ namespace OneService.Controllers
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
-                pMsg += " 失敗行數：" + ex.ToString();
+			catch (ValidationException ex)
+			{
+				pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "Validation failed:" + ex.ValidationResult.ErrorMessage + Environment.NewLine;
+				pMsg += " 失敗行數：" + ex.ToString();
 
-                CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, ViewBag.empEngName);
-            }
+				CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, ViewBag.empEngName);
+			}
+			catch (DbUpdateException ex)
+			{
+				pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "Database Update failed:" + ex.InnerException?.Message + Environment.NewLine;
+				pMsg += " 失敗行數：" + ex.ToString();
+
+				CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, ViewBag.empEngName);
+			}
+			catch (Exception ex)
+			{
+				pMsg += DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + "失敗原因:" + ex.Message + Environment.NewLine;
+				pMsg += " 失敗行數：" + ex.ToString();
+
+				CMF.writeToLog(pSRID, "SaveMaintainSR", pMsg, ViewBag.empEngName);
+			}			
 
             if (srCon == SRCondition.ADD)
             {
