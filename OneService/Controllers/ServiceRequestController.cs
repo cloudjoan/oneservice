@@ -8,6 +8,7 @@
  * 2024/06/27:elvis:調整1.一般/裝機/定維的回應時間要再改回「接單時間」 2.新增「確認回應客戶」按鈕並回寫回應時間
  * 2024/07/04:elvis:調整批次派工Excel表格中若有傳入「詳細描述」欄位，則以傳入的為主，反之則為系統預設值
  * 2024/07/04:elvis:新增加中心單位管理者權限
+ * 2024/08/14:elvis:某幾個方法新增加「timeout時間為60秒」，避免timeout
  */
 #endregion
 
@@ -2366,7 +2367,9 @@ namespace OneService.Controllers
         public IActionResult SaveGenerallySR(IFormCollection formCollection)
         {            
             getLoginAccount();
-            getEmployeeInfo();           
+            getEmployeeInfo();
+
+            dbOne.Database.SetCommandTimeout(60); //預設timeout時間為60秒 edit by elvis 2024/08/14
 
             pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
@@ -5000,9 +5003,11 @@ namespace OneService.Controllers
         public IActionResult SaveInstallSR(IFormCollection formCollection)
         {
             getLoginAccount();
-            getEmployeeInfo();           
+            getEmployeeInfo();
 
-            pSRID = formCollection["hid_cSRID"].FirstOrDefault();
+			dbOne.Database.SetCommandTimeout(60); //預設timeout時間為60秒 edit by elvis 2024/08/14
+
+			pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
             bool tIsFormal = false;
 
@@ -5978,9 +5983,11 @@ namespace OneService.Controllers
         public IActionResult SaveMaintainSR(IFormCollection formCollection)
         {
             getLoginAccount();
-            getEmployeeInfo();           
+            getEmployeeInfo();
 
-            pSRID = formCollection["hid_cSRID"].FirstOrDefault();
+			dbOne.Database.SetCommandTimeout(60); //預設timeout時間為60秒 edit by elvis 2024/08/14
+
+			pSRID = formCollection["hid_cSRID"].FirstOrDefault();
 
             bool tIsFormal = false;
 

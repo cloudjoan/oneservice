@@ -629,7 +629,7 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_SRDetail_Contact");
 
-                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20230322-164917");
+                entity.HasIndex(e => new { e.CSrid, e.Disabled }, "NonClusteredIndex-20230322-164917");
 
                 entity.Property(e => e.CId).HasColumnName("cID");
 
@@ -672,7 +672,7 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_SRDetail_MaterialInfo");
 
-                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20230418-143646");
+                entity.HasIndex(e => new { e.CSrid, e.Disabled }, "NonClusteredIndex-20230418-143646");
 
                 entity.Property(e => e.CId).HasColumnName("cID");
 
@@ -719,7 +719,7 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_SRDetail_PartsReplace");
 
-                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20230322-165049");
+                entity.HasIndex(e => new { e.CSrid, e.Disabled }, "NonClusteredIndex-20230322-165049");
 
                 entity.Property(e => e.CId).HasColumnName("cID");
 
@@ -795,7 +795,7 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_SRDetail_Product");
 
-                entity.HasIndex(e => new { e.CSrid, e.CSerialId, e.CNewSerialId }, "NonClusteredIndex-20230322-164937");
+                entity.HasIndex(e => new { e.CSrid, e.CSerialId, e.CNewSerialId, e.Disabled }, "NonClusteredIndex-20230322-164937");
 
                 entity.Property(e => e.CId).HasColumnName("cID");
 
@@ -842,7 +842,7 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_SRDetail_Record");
 
-                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20230322-165024");
+                entity.HasIndex(e => new { e.CSrid, e.Disabled }, "NonClusteredIndex-20230322-165024");
 
                 entity.Property(e => e.CId).HasColumnName("cID");
 
@@ -899,7 +899,7 @@ namespace OneService.Models
 
                 entity.ToTable("TB_ONE_SRDetail_SerialFeedback");
 
-                entity.HasIndex(e => e.CSrid, "NonClusteredIndex-20230418-143632");
+                entity.HasIndex(e => new { e.CSrid, e.Disabled }, "NonClusteredIndex-20230418-143632");
 
                 entity.Property(e => e.CId).HasColumnName("cID");
 
