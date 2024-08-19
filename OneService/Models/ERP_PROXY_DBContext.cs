@@ -181,6 +181,8 @@ namespace OneService.Models
 
                 entity.ToTable("F0005");
 
+                entity.HasComment("定義檔");
+
                 entity.Property(e => e.Modt)
                     .HasMaxLength(50)
                     .IsUnicode(false)

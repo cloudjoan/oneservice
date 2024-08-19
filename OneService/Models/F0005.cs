@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace OneService.Models
 {
+    /// <summary>
+    /// 定義檔
+    /// </summary>
     public partial class F0005
     {
         public int Id { get; set; }
