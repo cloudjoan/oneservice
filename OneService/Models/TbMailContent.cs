@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace OneService.Models
 {
+    /// <summary>
+    /// MAIL系統參數檔(記錄MAIL內容格式)
+    /// </summary>
     public partial class TbMailContent
     {
         public int Id { get; set; }

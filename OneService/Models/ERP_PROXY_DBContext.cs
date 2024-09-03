@@ -50,6 +50,8 @@ namespace OneService.Models
 
                 entity.ToTable("CUSTOMER_Contact");
 
+                entity.HasComment("客戶聯絡人檔");
+
                 entity.HasIndex(e => new { e.Kna1Kunnr, e.Knb1Bukrs }, "NonClusteredIndex-20221004-134356");
 
                 entity.Property(e => e.ContactId)
@@ -276,6 +278,8 @@ namespace OneService.Models
 
                 entity.ToTable("F4301CODetail");
 
+                entity.HasComment("內部訂單號碼檔");
+
                 entity.HasIndex(e => new { e.InternalNo, e.Applicant, e.OldInternalNo }, "NonClusteredIndex-20230110-140821");
 
                 entity.Property(e => e.CompanyId)
@@ -329,6 +333,8 @@ namespace OneService.Models
             modelBuilder.Entity<F4501>(entity =>
             {
                 entity.ToTable("F4501");
+
+                entity.HasComment("合約書文件編號檔");
 
                 entity.HasIndex(e => new { e.No, e.CrmOppNo }, "NonClusteredIndex-20231222-120620");
 
@@ -698,6 +704,8 @@ namespace OneService.Models
 
                 entity.ToTable("MATERIAL");
 
+                entity.HasComment("物料檔");
+
                 entity.Property(e => e.MaraMatnr)
                     .HasMaxLength(18)
                     .HasColumnName("MARA_MATNR")
@@ -781,6 +789,8 @@ namespace OneService.Models
 
                 entity.ToTable("PERSONAL_Contact");
 
+                entity.HasComment("OneService個人客戶檔");
+
                 entity.Property(e => e.ContactId)
                     .ValueGeneratedNever()
                     .HasColumnName("ContactID");
@@ -824,6 +834,8 @@ namespace OneService.Models
 
                 entity.ToTable("PostalaAddressAndCode");
 
+                entity.HasComment("郵遞區域地址檔");
+
                 entity.Property(e => e.Code)
                     .HasMaxLength(10)
                     .IsUnicode(false);
@@ -843,6 +855,8 @@ namespace OneService.Models
                     .HasName("PK_SO_1");
 
                 entity.ToTable("SO");
+
+                entity.HasComment("銷售訂單檔");
 
                 entity.HasIndex(e => new { e.Bstnk, e.Status, e.Matnr }, "NonClusteredIndex-20220826-192157");
 
@@ -1129,6 +1143,8 @@ namespace OneService.Models
                 entity.HasKey(e => e.IvSerial);
 
                 entity.ToTable("STOCKALL");
+
+                entity.HasComment("所有進出貨/保固資料檔");
 
                 entity.HasIndex(e => new { e.VendoromSdate, e.VendoromEdate, e.OmSdate, e.OmEdate, e.ExSdate, e.ExEdate, e.TmSdate, e.TmEdate }, "NonClusteredIndex-20220901-160826");
 
@@ -1418,6 +1434,8 @@ namespace OneService.Models
             modelBuilder.Entity<TbMailContent>(entity =>
             {
                 entity.ToTable("TB_MAIL_CONTENT");
+
+                entity.HasComment("MAIL系統參數檔(記錄MAIL內容格式)");
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 

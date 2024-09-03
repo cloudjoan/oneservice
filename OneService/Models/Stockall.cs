@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace OneService.Models
 {
+    /// <summary>
+    /// 所有進出貨/保固資料檔
+    /// </summary>
     public partial class Stockall
     {
         public string IvSerial { get; set; } = null!;

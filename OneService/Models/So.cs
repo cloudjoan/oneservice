@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace OneService.Models
 {
+    /// <summary>
+    /// 銷售訂單檔
+    /// </summary>
     public partial class So
     {
         /// <summary>

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace OneService.Models
 {
+    /// <summary>
+    /// 內部訂單號碼檔
+    /// </summary>
     public partial class F4301codetail
     {
         public string CompanyId { get; set; } = null!;

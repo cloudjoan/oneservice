@@ -804,7 +804,7 @@ namespace OneService.Models
                     .HasColumnName("cInstallID");
 
                 entity.Property(e => e.CMaterialId)
-                    .HasMaxLength(20)
+                    .HasMaxLength(40)
                     .HasColumnName("cMaterialID");
 
                 entity.Property(e => e.CMaterialName)
@@ -906,7 +906,7 @@ namespace OneService.Models
                 entity.Property(e => e.CConfigReport).HasColumnName("cConfigReport");
 
                 entity.Property(e => e.CMaterialId)
-                    .HasMaxLength(20)
+                    .HasMaxLength(40)
                     .HasColumnName("cMaterialID");
 
                 entity.Property(e => e.CMaterialName)

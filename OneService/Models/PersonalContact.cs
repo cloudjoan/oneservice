@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace OneService.Models
 {
+    /// <summary>
+    /// OneService個人客戶檔
+    /// </summary>
     public partial class PersonalContact
     {
         public Guid ContactId { get; set; }

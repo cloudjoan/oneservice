@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace OneService.Models
 {
+    /// <summary>
+    /// 郵遞區域地址檔
+    /// </summary>
     public partial class PostalaAddressAndCode
     {
         public string Code { get; set; } = null!;

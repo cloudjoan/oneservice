@@ -2500,7 +2500,7 @@ namespace OneService.Controllers
 
             using (var dbOne = new TSTIONEContext())
             {
-				dbOne.Database.SetCommandTimeout(60); //預設timeout時間為60秒 edit by elvis 2024/08/14
+				dbOne.Database.SetCommandTimeout(60); //預設timeout時間為60秒 edit by elvis 2024/08/14                
 
 				try
                 {
