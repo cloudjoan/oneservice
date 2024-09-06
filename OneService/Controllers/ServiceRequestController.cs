@@ -9,6 +9,7 @@
  * 2024/07/04:elvis:調整批次派工Excel表格中若有傳入「詳細描述」欄位，則以傳入的為主，反之則為系統預設值
  * 2024/07/04:elvis:新增加中心單位管理者權限
  * 2024/08/14:elvis:某幾個方法新增加「timeout時間為60秒」，避免timeout
+ * 2024/09/06:elvis:調整序號查詢時，改先找合約標的再找進出貨
  */
 #endregion
 
@@ -9900,46 +9901,118 @@ namespace OneService.Controllers
         /// <returns></returns>
         public IActionResult findMaterialAndContractObjBySerial(string IV_SERIAL)
         {
-            var beans = dbProxy.Stockalls.Where(x => x.IvSerial.Contains(IV_SERIAL.Trim())).Take(30);
+			//edit by elvis 2024/09/06 Start
+			#region 註解
+			//var beans = dbProxy.Stockalls.Where(x => x.IvSerial.Contains(IV_SERIAL.Trim())).Take(30);
 
-            List<SerialMaterialInfo> tList = new List<SerialMaterialInfo>();
+			//         List<SerialMaterialInfo> tList = new List<SerialMaterialInfo>();
 
-            if (beans.Count() > 0)
+			//         if (beans.Count() > 0)
+			//         {
+			//             #region 先找產品序號資訊
+			//             foreach (var bean in beans)
+			//             {
+			//                 SerialMaterialInfo ProBean = new SerialMaterialInfo();
+
+			//                 ProBean.IV_SERIAL = bean.IvSerial;
+			//                 ProBean.ProdID = bean.ProdId;
+			//                 ProBean.Product = bean.Product;
+
+			//                 tList.Add(ProBean);
+			//             }
+			//             #endregion
+			//         }
+			//         else
+			//         {
+			//             #region 再找合約標的
+			//             var beansObj = dbOne.TbOneContractDetailObjs.Where(x => x.Disabled == 0 && x.CSerialId == IV_SERIAL.Trim()).Take(30);
+
+			//             foreach (var bean in beansObj)
+			//             {
+			//                 SerialMaterialInfo ProBean = new SerialMaterialInfo();
+
+			//                 ProBean.IV_SERIAL = bean.CSerialId;
+			//                 ProBean.ProdID = bean.CPid;
+			//                 ProBean.Product = bean.CModel;
+
+			//                 tList.Add(ProBean);
+			//             }
+			//             #endregion
+			//         }
+			#endregion			
+
+			var beansObj = dbOne.TbOneContractDetailObjs.Where(x => x.Disabled == 0 && x.CSerialId == IV_SERIAL.Trim()).Take(30);
+
+			List<SerialMaterialInfo> tList = new List<SerialMaterialInfo>();
+
+			if (beansObj.Count() > 0)
+			{
+				#region 先找合約標的
+				foreach (var bean in beansObj)
+				{
+                    bool tIsExist = checkIsExistObj(tList, bean.CSerialId);
+
+                    if (!tIsExist)
+                    {
+                        SerialMaterialInfo ProBean = new SerialMaterialInfo();
+
+                        ProBean.IV_SERIAL = bean.CSerialId;
+                        ProBean.ProdID = bean.CPid;
+                        ProBean.Product = bean.CModel;
+
+                        tList.Add(ProBean);
+                    }
+				}
+				#endregion				
+			}
+			else
+			{
+				#region 找不到時再找產品序號資訊
+				var beans = dbProxy.Stockalls.Where(x => x.IvSerial.Contains(IV_SERIAL.Trim())).Take(30);
+
+				foreach (var bean in beans)
+				{
+					SerialMaterialInfo ProBean = new SerialMaterialInfo();
+
+					ProBean.IV_SERIAL = bean.IvSerial;
+					ProBean.ProdID = bean.ProdId;
+					ProBean.Product = bean.Product;
+
+					tList.Add(ProBean);
+				}
+				#endregion
+			}
+			//edit by elvis 2024/09/06 End
+
+			return Json(tList);
+        }
+		#endregion
+
+		//edit by elvis 2024/09/06 Start
+		#region 判斷是否有重覆的合約標的序號
+		/// <summary>
+		/// 判斷是否有重覆的合約標的序號
+		/// </summary>
+		/// <param name="tList"></param>
+		/// <param name="IV_SERIAL"></param>
+		/// <returns></returns>
+		private bool checkIsExistObj(List<SerialMaterialInfo> tList, string IV_SERIAL)
+        {
+            bool reValue = false;
+
+            foreach (var bean in tList)
             {
-                #region 先找產品序號資訊
-                foreach (var bean in beans)
+                if (bean.IV_SERIAL.Trim() == IV_SERIAL.Trim())
                 {
-                    SerialMaterialInfo ProBean = new SerialMaterialInfo();
-
-                    ProBean.IV_SERIAL = bean.IvSerial;
-                    ProBean.ProdID = bean.ProdId;
-                    ProBean.Product = bean.Product;
-
-                    tList.Add(ProBean);
+                    reValue = true;
+                    break;
                 }
-                #endregion
-            }
-            else
-            {
-                #region 再找合約標的
-                var beansObj = dbOne.TbOneContractDetailObjs.Where(x => x.Disabled == 0 && x.CSerialId == IV_SERIAL.Trim()).Take(30);
-
-                foreach (var bean in beansObj)
-                {
-                    SerialMaterialInfo ProBean = new SerialMaterialInfo();
-
-                    ProBean.IV_SERIAL = bean.CSerialId;
-                    ProBean.ProdID = bean.CPid;
-                    ProBean.Product = bean.CModel;
-
-                    tList.Add(ProBean);
-                }
-                #endregion
             }
 
-            return Json(tList);
+            return reValue;
         }
         #endregion
+        //edit by elvis 2024/09/06 End
 
         #region Ajax取得製造商零件號碼和裝機號碼
         /// <summary>
