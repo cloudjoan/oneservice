@@ -1,6 +1,7 @@
 ﻿#region 修改歷程記錄
 /* 
  * 2024/07/31:elvis:合約主數據查詢/維護作業，新增加「訂單說明 」查詢
+ * 2024/11/07:elvis:新增加合約人員-只能查詢(CONTRACTReadOnly)，只能查看合約書主數據、合約工程師、合約標的
  */
 #endregion
 
@@ -73,12 +74,17 @@ namespace OneService.Controllers
         /// <summary>
         /// 登入者是否為大世科合約主管(true.是 false.否)
         /// </summary>
-        bool pIsContractManager_T012 = false;       
+        bool pIsContractManager_T012 = false;
 
-        /// <summary>
-        /// 登入者是否為管理者(true.是 false.否)
-        /// </summary>
-        bool pIsManager = false;
+		/// <summary>
+		/// 登入者是否為大世科合約人員-只能查詢(true.是 false.否)
+		/// </summary>
+		bool pIsContractReadOnly_T012 = false;
+
+		/// <summary>
+		/// 登入者是否為管理者(true.是 false.否)
+		/// </summary>
+		bool pIsManager = false;
 
         /// <summary>
         /// 登入者是否為批次上傳裝機備料服務通知單、合約書文件人員(true.是 false.否)
@@ -186,9 +192,10 @@ namespace OneService.Controllers
             //pLoginAccount = @"etatung\Wenjui.Chan";     //詹文瑞        
             //pLoginAccount = @"etatung\Jordan.Chang";    //張景堯
             //pLoginAccount = @"etatung\Annie.Chuang";    //莊薈鈺
-            #endregion
+            //pLoginAccount = @"etatung\janice.kuo";      //郭妍君
+			#endregion
 
-            pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
+			pLoginAccount = HttpContext.Session.GetString(SessionKey.USER_ACCOUNT); //正式用
 
             #region One Service相關帳號
             pIsMIS = CMF.getIsMIS(pLoginAccount, pSysOperationID);
@@ -196,7 +203,8 @@ namespace OneService.Controllers
             pIsCS = CMF.getIsCustomerService(pLoginAccount, pSysOperationID);
             pIsDCC = CMF.getIsDocumentCenter(pLoginAccount, pSysOperationID);
             pIsContractManager_T012 = CMF.getContractManager(pLoginAccount, pSysOperationID, "T012");
-            pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
+			pIsContractReadOnly_T012 = CMF.getContractReadOnly(pLoginAccount, pSysOperationID, "T012");
+			pIsBatchUploadSecretary = CMF.getIsBatchUploadSecretary(pLoginAccount, pOperationID_BatchUploadStockNo);
             pIsExePerson = CMF.getIsExePerson(pLoginAccount, pOperationID_QueryBatchInstall);
             pIsExeMaintainPerson = CMF.getIsExeMaintainPerson(pLoginAccount, pOperationID_QueryBatchMaintain);
             pContractCenterID = CMF.getContractCenterID(pLoginAccount, pSysOperationID, "T012");
@@ -206,7 +214,8 @@ namespace OneService.Controllers
             ViewBag.pIsCS = pIsCS;
             ViewBag.pIsDCC = pIsDCC;
             ViewBag.pIsContractManager_T012 = pIsContractManager_T012;
-            ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
+			ViewBag.pIsContractReadOnly_T012 = pIsContractReadOnly_T012;
+			ViewBag.pIsBatchUploadSecretary = pIsBatchUploadSecretary;
             ViewBag.pIsExePerson = pIsExePerson;
             ViewBag.pIsExeMaintainPerson = pIsExeMaintainPerson;
             ViewBag.pContractCenterID = pContractCenterID;
@@ -549,6 +558,7 @@ namespace OneService.Controllers
             string tObjUrl = string.Empty;
             string tSubNotes = string.Empty;
             bool tIsContractManager = false;
+            bool tIsContractReadOnly = false;
 
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -583,7 +593,9 @@ namespace OneService.Controllers
             {
                 case "T012":
                     tIsContractManager = ViewBag.pIsContractManager_T012;
-                    break;
+					tIsContractReadOnly = ViewBag.pIsContractReadOnly_T012;
+
+					break;
 
                 case "T016":
                     
@@ -657,7 +669,7 @@ namespace OneService.Controllers
                 #endregion
 
                 #region 是否可顯示合約書link
-                pIsCanRead = CMF.checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, ViewBag.cLoginUser_ERPID, ViewBag.empEngName, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, tAPIURLName);
+                pIsCanRead = CMF.checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, ViewBag.cLoginUser_ERPID, ViewBag.empEngName, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, tIsContractReadOnly, ViewBag.pContractCenterID, tAPIURLName);
 
                 if (pIsCanRead)
                 {
@@ -910,6 +922,7 @@ namespace OneService.Controllers
             string tAPIURLName = string.Empty;
 
             bool tIsContractManager = false;
+            bool tIsContractReadOnly = false;
 
             if (HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) == null || HttpContext.Session.GetString(SessionKey.LOGIN_STATUS) != "true")
             {
@@ -937,7 +950,9 @@ namespace OneService.Controllers
             {
                 case "T012":
                     tIsContractManager = ViewBag.pIsContractManager_T012;
-                    break;
+					tIsContractReadOnly = ViewBag.pIsContractReadOnly_T012;
+
+					break;
 
                 case "T016":
 
@@ -982,7 +997,7 @@ namespace OneService.Controllers
                     #endregion
 
                     #region 是否可顯示合約書link
-                    pIsCanRead = CMF.checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, ViewBag.cLoginUser_ERPID, ViewBag.empEngName, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, ViewBag.pContractCenterID, tAPIURLName);                    
+                    pIsCanRead = CMF.checkIsCanReadContractReport(beanM.CContractId, beanM.CTeamId, ViewBag.cLoginUser_ERPID, ViewBag.empEngName, pIsMIS, pIsCSManager, pIsDCC, tIsContractManager, tIsContractReadOnly, ViewBag.pContractCenterID, tAPIURLName);                    
 
                     if (pIsCanRead)
                     {

@@ -2640,28 +2640,29 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion
+		#endregion
 
-        #region 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
-        /// <summary>
-        /// 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
-        /// </summary>        
-        /// <param name="cContractID">文件編號</param>
-        /// <param name="cTeamID">服務團隊</param>
-        /// <param name="tLoginERPID">登入者ERPID</param>
-        /// <param name="tLoginName">登入者姓名(中+英)</param>
-        /// <param name="tIsMIS">登入者是否為MIS</param>
-        /// <param name="tIsCSManager">登入者是否為客服主管</param>
-        /// <param name="tIsDCC">登入者是否為文管中心人員</param>
-        /// <param name="tIsContractManager">登入者是否為合約主管</param>
-        /// <param name="tContractCenterID">中心單位ID(若為中心單位合約管理員就會有值，ex.12G3)</param>
-        /// <param name="cAPIURLName">API URLName</param>
-        /// <returns></returns>
-        public bool checkIsCanReadContractReport(string cContractID, string cTeamID, string tLoginERPID, string tLoginName, bool tIsMIS, bool tIsCSManager, bool tIsDCC, bool tIsContractManager, List<string> tContractCenterID, string cAPIURLName)
+		#region 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
+		/// <summary>
+		/// 判斷是否可顯示合約書link(Y.可顯示 N.不可顯示)
+		/// </summary>        
+		/// <param name="cContractID">文件編號</param>
+		/// <param name="cTeamID">服務團隊</param>
+		/// <param name="tLoginERPID">登入者ERPID</param>
+		/// <param name="tLoginName">登入者姓名(中+英)</param>
+		/// <param name="tIsMIS">登入者是否為MIS</param>
+		/// <param name="tIsCSManager">登入者是否為客服主管</param>
+		/// <param name="tIsDCC">登入者是否為文管中心人員</param>
+		/// <param name="tIsContractManager">登入者是否為合約主管</param>
+		/// <param name="tIsContractReadOnly">登入者是否為合約人員-只能查詢/param>
+		/// <param name="tContractCenterID">中心單位ID(若為中心單位合約管理員就會有值，ex.12G3)</param>
+		/// <param name="cAPIURLName">API URLName</param>
+		/// <returns></returns>
+		public bool checkIsCanReadContractReport(string cContractID, string cTeamID, string tLoginERPID, string tLoginName, bool tIsMIS, bool tIsCSManager, bool tIsDCC, bool tIsContractManager, bool tIsContractReadOnly, List<string> tContractCenterID, string cAPIURLName)
         {
             bool reValue = false;          
 
-            if (tIsMIS || tIsCSManager || tIsDCC || tIsContractManager)
+            if (tIsMIS || tIsCSManager || tIsDCC || tIsContractManager || tIsContractReadOnly)
             {
                 reValue = true;
             }
@@ -3873,17 +3874,33 @@ namespace OneService.Controllers
 
             return reValue;
         }
-        #endregion
+		#endregion
 
-        #region 登入者是否為合約中心單位管理者(true.是 false.否)
-        /// <summary>
-        /// 登入者是否為合約中心單位管理者(true.是 false.否)
-        /// </summary>
-        /// <param name="LoginAccount">登入者帳號</param>
-        /// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
-        /// <param name="tBUKRS">公司別(T012、T016、C069、T022)</param>
-        /// <returns></returns>
-        public List<string> getContractCenterID(string LoginAccount, string tSysOperationID, string tBUKRS)
+		#region 登入者是否為合約人員-只能查詢(true.是 false.否)
+		/// <summary>
+		/// 登入者是否為合約人員-只能查詢(true.是 false.否)
+		/// </summary>
+		/// <param name="LoginAccount">登入者帳號</param>
+		/// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+		/// <param name="tBUKRS">公司別(T012、T016、C069、T022)</param>
+		/// <returns></returns>
+		public bool getContractReadOnly(string LoginAccount, string tSysOperationID, string tBUKRS)
+		{
+			bool reValue = getParaAuthority(LoginAccount, tSysOperationID, tBUKRS, "CONTRACTReadOnly");
+
+			return reValue;
+		}
+		#endregion
+
+		#region 登入者是否為合約中心單位管理者(true.是 false.否)
+		/// <summary>
+		/// 登入者是否為合約中心單位管理者(true.是 false.否)
+		/// </summary>
+		/// <param name="LoginAccount">登入者帳號</param>
+		/// <param name="tSysOperationID">程式作業編號檔系統ID(ALL，固定的GUID)</param>
+		/// <param name="tBUKRS">公司別(T012、T016、C069、T022)</param>
+		/// <returns></returns>
+		public List<string> getContractCenterID(string LoginAccount, string tSysOperationID, string tBUKRS)
         {
             List<string> tList = getContractCenterID(LoginAccount, tSysOperationID, tBUKRS, "CONTRACTCenterManager_");
 
